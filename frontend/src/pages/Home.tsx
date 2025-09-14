@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import Banner from "../components/Banner";
+import CategorySelector from "../components/CategorySelector";
 
 interface Product {
     id: number;
@@ -9,6 +11,11 @@ interface Product {
 
 export default function Home() {
     const [products, setProducts] = useState<Product[]>([]);
+    const categories = [
+        { name: "Quần", image: "/assets/logo.jpg" },
+        { name: "Áo", image: "/assets/logo.jpg" },
+        { name: "Giày", image: "/assets/logo.jpg" }
+    ];
 
     useEffect(() => {
         // Tạm hardcode dữ liệu, sau này sẽ fetch từ backend
@@ -20,22 +27,9 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="container mt-4">
-            <h2 className="mb-4">Sản phẩm nổi bật</h2>
-            <div className="row">
-                {products.map((p) => (
-                    <div key={p.id} className="col-md-4 mb-4">
-                        <div className="card h-100">
-                            <img src={p.image} className="card-img-top" alt={p.name} />
-                            <div className="card-body">
-                                <h5 className="card-title">{p.name}</h5>
-                                <p className="card-text">{p.price.toLocaleString()} ₫</p>
-                                <button className="btn btn-primary">Thêm vào giỏ</button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+        <>
+            <Banner />
+            <CategorySelector categories={categories} />
+        </>
     );
 }
