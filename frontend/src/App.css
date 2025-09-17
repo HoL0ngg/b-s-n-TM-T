@@ -1,0 +1,14 @@
+:root {
+    --bs-primary: #ff5722;
+    --bs-primary-rgb: 255, 87, 34;
+    /* R, G, B */
+    /* ví dụ màu cam */
+}
+
+.link-primary-hover {
+    transition: all 0.3s ease;
+}
+
+.link-primary-hover:hover {
+    color: var(--bs-primary) !important;
+}
