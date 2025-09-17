@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Cart from "./pages/Cart";
+import ChatbotFloating from "./components/ChatbotFloating";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
         </Routes>
       </div>
+      <ChatbotFloating />
       <Footer />
     </BrowserRouter>
   );
