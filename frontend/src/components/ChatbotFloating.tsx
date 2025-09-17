@@ -47,7 +47,7 @@ const ChatbotFloating: React.FC = () => {
             {/* Nút icon chatbot */}
             {!open && (
                 <button
-                    className="btn btn-primary rounded-circle shadow"
+                    className="btn bg-primary rounded-circle shadow"
                     style={{
                         position: "fixed",
                         bottom: "20px",
@@ -122,7 +122,7 @@ const ChatbotFloating: React.FC = () => {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                             />
-                            <button className="btn btn-primary" onClick={sendMessage}>
+                            <button className="btn bg-primary text-white" onClick={sendMessage}>
                                 Gửi
                             </button>
                         </div>
