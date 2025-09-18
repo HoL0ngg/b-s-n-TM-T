@@ -8,10 +8,12 @@ import Cart from "./pages/Cart";
 import Products from "./pages/Products";
 import ChatbotFloating from "./components/ChatbotFloating";
 import Information from "./pages/Information"
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar />
       <div style={{ minHeight: "80vh" }}>
         <Routes>

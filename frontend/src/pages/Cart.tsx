@@ -1,5 +1,6 @@
 import Breadcrumbs from "../components/Breadcrumb";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
     const cartShop = [
@@ -11,9 +12,31 @@ export default function Cart() {
         { shopid: 1, productid: 1, name: "Áo thun nam", price: 200000, quantity: 2 },
         { shopid: 1, productid: 2, name: "Quần jean nữ", price: 300000, quantity: 1 },
         { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
+        { shopid: 2, productid: 3, name: "Giày thể thao", price: 500000, quantity: 1 },
     ];
 
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleCheckboxChange = (productid: number) => {
         setSelectedItems(prevSelected =>
@@ -43,6 +66,13 @@ export default function Cart() {
             .filter(item => selectedItems.includes(item.productid))
             .reduce((sum, item) => sum + item.price * item.quantity, 0);
     };
+
+    const handleCheckout = () => {
+        setLoading(true);
+        setTimeout(() => {
+            navigate("/cart/Information");
+        }, 1000);
+    }
 
     return (
         <>
@@ -97,9 +127,14 @@ export default function Cart() {
                 })}
                 <h4 className="text-end">Tổng cộng: {calculateTotal().toLocaleString()}₫</h4>
                 <div className="d-flex justify-content-end">
-                    <button className="btn btn-success">Thanh toán</button>
+                    <button className="btn btn-success" onClick={handleCheckout}>{loading ? "Đang tải..." : "Thanh toán"}</button>
                 </div>
             </div>
+            {loading && (
+                <div className="loader-overlay">
+                    <div className="spinner"></div>
+                </div>
+            )}
         </>
     );
 }
