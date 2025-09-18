@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Cart from "./pages/Cart";
 import Products from "./pages/Products";
 import ChatbotFloating from "./components/ChatbotFloating";
+import Information from "./pages/Information"
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/cart/information" element={<Information />} />
         </Routes>
       </div>
       <ChatbotFloating />

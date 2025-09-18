@@ -21,7 +21,7 @@ const Breadcrumbs = () => {
                                 {isLast ? (
                                     <span className="ms-1 text-primary">{path}</span>
                                 ) : (
-                                    <Link to={route}>
+                                    <Link to={route} className="ms-1 text-decoration-none text-primary text-reset link-primary-hover">
                                         {path}
                                     </Link>
                                 )}

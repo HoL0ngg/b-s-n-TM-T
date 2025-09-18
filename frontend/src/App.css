@@ -12,3 +12,27 @@
 .link-primary-hover:hover {
     color: var(--bs-primary) !important;
 }
+
+/* Hiệu ứng fade-up (đang có) */
+.lazy-section {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.lazy-section.show.fade-up {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Hiệu ứng trượt từ trái qua phải */
+.lazy-section.slide-left {
+    opacity: 0;
+    transform: translateX(-60px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.lazy-section.show.slide-left {
+    opacity: 1;
+    transform: translateX(0);
+}

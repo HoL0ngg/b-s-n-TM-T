@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import Banner from "../components/Banner";
 import CategorySelector from "../components/CategorySelector";
+import LazySection from "../components/LazySection";
+
 
 interface Product {
     id: number;
@@ -28,8 +30,12 @@ export default function Home() {
 
     return (
         <>
-            <Banner />
-            <CategorySelector categories={categories} />
+            <LazySection threshold={0.2} animation="slide-left">
+                <Banner />
+            </LazySection>
+            <LazySection threshold={0.5}>
+                <CategorySelector categories={categories} />
+            </LazySection>
         </>
     );
 }
