@@ -1,41 +1,22 @@
-import { useEffect, useState } from "react";
-
-interface Product {
-    id: number;
-    name: string;
-    price: number;
-    image: string;
-}
+import Banner from "../components/Banner";
+import CategorySelector from "../components/CategorySelector";
+import LazySection from "../components/LazySection";
 
 export default function Home() {
-    const [products, setProducts] = useState<Product[]>([]);
-
-    useEffect(() => {
-        // Tạm hardcode dữ liệu, sau này sẽ fetch từ backend
-        setProducts([
-            { id: 1, name: "Laptop Dell XPS", price: 25000000, image: "/assets/react.svg" },
-            { id: 2, name: "iPhone 15 Pro", price: 32000000, image: "/assets/react.svg" },
-            { id: 3, name: "Tai nghe Sony", price: 3500000, image: "/assets/react.svg" },
-        ]);
-    }, []);
+    const categories = [
+        { name: "Quần", image: "/assets/logo.jpg" },
+        { name: "Áo", image: "/assets/logo.jpg" },
+        { name: "Giày", image: "/assets/logo.jpg" }
+    ];
 
     return (
-        <div className="container mt-4">
-            <h2 className="mb-4">Sản phẩm nổi bật</h2>
-            <div className="row">
-                {products.map((p) => (
-                    <div key={p.id} className="col-md-4 mb-4">
-                        <div className="card h-100">
-                            <img src={p.image} className="card-img-top" alt={p.name} />
-                            <div className="card-body">
-                                <h5 className="card-title">{p.name}</h5>
-                                <p className="card-text">{p.price.toLocaleString()} ₫</p>
-                                <button className="btn btn-primary">Thêm vào giỏ</button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+        <>
+            <LazySection threshold={0.2} animation="slide-left">
+                <Banner />
+            </LazySection>
+            <LazySection threshold={0.5}>
+                <CategorySelector categories={categories} />
+            </LazySection>
+        </>
     );
 }

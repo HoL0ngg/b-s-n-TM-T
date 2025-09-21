@@ -5,10 +5,15 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Cart from "./pages/Cart";
+import Products from "./pages/Products";
+import ChatbotFloating from "./components/ChatbotFloating";
+import Information from "./pages/Information"
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar />
       <div style={{ minHeight: "80vh" }}>
         <Routes>
@@ -16,8 +21,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/cart/information" element={<Information />} />
         </Routes>
       </div>
+      <ChatbotFloating />
       <Footer />
     </BrowserRouter>
   );
