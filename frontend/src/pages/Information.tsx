@@ -114,6 +114,7 @@ const UserInfoForm: React.FC = () => {
                         onChange={handleChange}
                         placeholder="Số nhà, đường..."
                         required
+                        disabled={savedAddresID != "-1"}
                     />
                 </div>
 

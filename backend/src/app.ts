@@ -26,7 +26,7 @@ app.post("/chat", async (req, res) => {
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini", // model gọn nhẹ, giá rẻ
             messages: [
-                { role: "system", content: "Bạn là chatbot hỗ trợ khách hàng cho cửa hàng TMĐT ShopX. Trả lời ngắn gọn, thân thiện." },
+                { role: "system", content: "Bạn là nhân viên trang web thương mại điện tử. Hãy trả lời một cách ngắn gọn và thân thiện" },
                 { role: "user", content: message },
             ],
         });
