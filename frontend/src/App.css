@@ -58,24 +58,31 @@
 .custom-button-next,
 .custom-button-prev {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 40%;
+  /* transform: translateY(-50%); */
   z-index: 10;
   cursor: pointer;
-  font-size: 24px;
-  /* background; */
-  color: black;
-  padding: 8px 12px;
-  border-radius: 50%; /* phóng to mũi tên */
+  font-size: 14px;
+  border: 1px solid #fd7e14;
+  color: var(--bs-primary);
+  opacity: 0.5;
 }
 
 .custom-button-next {
   right: 10px; /* chỉnh khoảng cách so với mép phải */
 }
-
 .custom-button-prev {
   left: 10px; /* chỉnh khoảng cách so với mép trái */
 }
+.btn-hover-scale {
+  transition: transform 0.2s ease-in-out;
+}
+
+.btn-hover-scale:hover {
+  transform: scale(1.1); /* phóng to 110% khi hover */
+  opacity: 1;
+}
+
 @keyframes spin {
   100% {
     transform: rotate(360deg);
