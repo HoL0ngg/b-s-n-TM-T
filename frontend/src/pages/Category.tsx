@@ -9,10 +9,21 @@ const Category = () => {
     const filteredProducts = products.filter(
         (p) => p.category.toLowerCase() === name?.toLowerCase()
     );
+
+    const filteredNameOfCategory = categories.find(
+        (cat) => cat.id.toLowerCase() === name?.toLowerCase()
+
+    );
+    
     return(
         <div className="container">
             <CategorySwiper categories={categories}/> 
-            <h2 className="mb-4 text-center">Danh muc: {name}</h2>
+            <div className="row row-cols-1 row-cols-md-2 g-4 w">
+                <h2 className="mb-4 text-left">{filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}</h2>
+                <div>
+                    <span className="fs-5">Sắp xếp theo: </span>
+                </div>
+            </div>
             <div className="row row-cols-1 row-cols-md-4 g-4">
                 {filteredProducts.length > 0 ? (
                     filteredProducts.map((product) => (

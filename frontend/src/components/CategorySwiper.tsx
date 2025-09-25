@@ -33,16 +33,22 @@ const CategorySwiper: React.FC<CategorySwiperProps> = ({ categories }) => {
                 768: { slidesPerView: 3 },
                 1024: { slidesPerView: 4 },
                 }}
+                loop={true}
+                autoplay={{ delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }}
             >
-                {categories.map((cat,index) => (
+                {categories.map((cat) => (
                     <SwiperSlide>
                         <CategoryItem category={cat}/>
                     </SwiperSlide>
                 ))}
                 {/* <div className="swiper-button-prev custom-nav"><i className="fa-solid fa-arrow-left"></i></div>
                 <div className="swiper-button-next custom-nav"><i className="fa-solid fa-arrow-right"></i></div> */}
-                <div className="custom-button-prev"><i className="fa-solid fa-arrow-left"></i></div>
-                <div className="custom-button-next"><i className="fa-solid fa-arrow-right"></i></div>
+                <div className="custom-button-prev shadow-sm py-1 px-1 btn-hover-scale">
+                    <i className="fa-solid fa-less-than"></i>
+                </div>
+                <div className="custom-button-next shadow-sm py-1 px-1 btn-hover-scale">
+                    <i className="fa-solid fa-greater-than"></i>
+                </div>
             </Swiper>
         // </div>
     );
