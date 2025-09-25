@@ -1,13 +1,9 @@
 import Banner from "../components/Banner";
 import CategorySelector from "../components/CategorySelector";
 import LazySection from "../components/LazySection";
-
+import { categories } from "../data/products";
 export default function Home() {
-    const categories = [
-        { name: "Quần", image: "/assets/logo.jpg" },
-        { name: "Áo", image: "/assets/logo.jpg" },
-        { name: "Giày", image: "/assets/logo.jpg" }
-    ];
+    
 
     return (
         <>

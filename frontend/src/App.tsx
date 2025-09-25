@@ -9,6 +9,7 @@ import Products from "./pages/Products";
 import ChatbotFloating from "./components/ChatbotFloating";
 import Information from "./pages/Information"
 import ScrollToTop from "./components/ScrollToTop";
+import Category from "./pages/Category";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />
+          <Route path="/category/:name" element={<Category />} />
         </Routes>
       </div>
       <ChatbotFloating />

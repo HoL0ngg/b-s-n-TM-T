@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
-
+import CategoryItem from "./CategoryItem";
 type Category = {
+    id: string;
     name: string;
     image: string;
 };
@@ -17,23 +18,8 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({ categories }) => {
         <div className="container" style={{ marginTop: '100px' }}>
             {/* Grid Bootstrap */}
             <div className="row row-cols-1 row-cols-md-4 g-4">
-                {categories.map((cat, index) => (
-                    <div className="col text-center" key={index} onClick={() => navigate(`/category/${cat.name.toLowerCase()}`)} style={{
-                        cursor: "pointer"
-                    }}>
-                        <img
-                            src={cat.image}
-                            alt={cat.name}
-                            className="img-fluid rounded-circle shadow-sm"
-                            style={{
-                                aspectRatio: "1 / 1",  // width : height = 1:1
-                                objectFit: "cover",    // cắt gọn ảnh cho vừa khung
-                                width: "100%",         // chiếm toàn bộ chiều rộng cột
-                                maxWidth: "150px",     // nhưng không vượt quá 150px
-                            }}
-                        />
-                        <p className="mt-2">{cat.name}</p>
-                    </div>
+                {categories.map((cat) => (
+                    <CategoryItem category={cat}/>
                 ))}
             </div>
         </div>

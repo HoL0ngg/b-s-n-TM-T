@@ -8,8 +8,8 @@ export type Product = {
 };
 
 export const products: Product[] = [
-    { id: 1, name: "iPhone 15", price: 1000, category: "Phone", image: "https://via.placeholder.com/150" },
-    { id: 2, name: "MacBook Pro", price: 2000, category: "Laptop", image: "https://via.placeholder.com/150" },
+    { id: 1, name: "iPhone 15", price: 1000, category: "quan", image: "https://via.placeholder.com/150" },
+    { id: 2, name: "MacBook Pro", price: 2000, category: "ao", image: "https://via.placeholder.com/150" },
     { id: 3, name: "AirPods Pro", price: 250, category: "Accessory", image: "https://via.placeholder.com/150" },
     { id: 4, name: "Samsung S23", price: 900, category: "Phone", image: "https://via.placeholder.com/150" },
     { id: 5, name: "Dell XPS 13", price: 1500, category: "Laptop", image: "https://via.placeholder.com/150" },
@@ -20,3 +20,15 @@ export const products: Product[] = [
     { id: 9, name: "Google Pixel 8", price: 800, category: "Phone", image: "https://via.placeholder.com/150" },
     { id: 10, name: "iPad Pro", price: 1200, category: "Tablet", image: "https://via.placeholder.com/150" },
 ];
+export type Category = {
+    id: string;
+    name: string;
+    image: string;
+}
+export const categories: Category[] = [
+        {id: "quan", name: "Quần", image: "/assets/logo.jpg" },
+        {id: "ao", name: "Áo", image: "/assets/logo.jpg" },
+        {id: "giay", name: "Giày", image: "/assets/logo.jpg" },
+        {id: "giay1", name: "Giày", image: "/assets/logo.jpg" },
+        {id: "giay2", name: "Giày", image: "/assets/logo.jpg" },
+    ];
