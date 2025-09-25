@@ -1,7 +1,7 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 
-import 'swiper/swiper.css';
+import 'swiper/swiper.css'; 
 
 import CategoryItem from "./CategoryItem";
 
@@ -22,9 +22,11 @@ const CategorySwiper: React.FC<CategorySwiperProps> = ({ categories }) => {
                 modules={[Navigation, Pagination]}
                 spaceBetween={20}
                 slidesPerView={4}
-                navigation={{
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
+                navigation
+                =
+                {{
+                    prevEl: ".custom-button-prev",
+                    nextEl: ".custom-button-next",
                 }}
                 breakpoints={{
                 320: { slidesPerView: 2 },
@@ -37,8 +39,10 @@ const CategorySwiper: React.FC<CategorySwiperProps> = ({ categories }) => {
                         <CategoryItem category={cat}/>
                     </SwiperSlide>
                 ))}
-                <div className="swiper-button-prev "><i className="fa-solid fa-arrow-left"></i></div>
-                <div className="swiper-button-next"><i className="fa-solid fa-arrow-right"></i></div>
+                {/* <div className="swiper-button-prev custom-nav"><i className="fa-solid fa-arrow-left"></i></div>
+                <div className="swiper-button-next custom-nav"><i className="fa-solid fa-arrow-right"></i></div> */}
+                <div className="custom-button-prev"><i className="fa-solid fa-arrow-left"></i></div>
+                <div className="custom-button-next"><i className="fa-solid fa-arrow-right"></i></div>
             </Swiper>
         // </div>
     );

@@ -55,8 +55,8 @@
   height: 50px;
   animation: spin 0.8s linear infinite;
 }
-.swiper-button-next,
-.swiper-button-prev {
+.custom-button-next,
+.custom-button-prev {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -69,11 +69,11 @@
   border-radius: 50%; /* phóng to mũi tên */
 }
 
-.swiper-button-next {
+.custom-button-next {
   right: 10px; /* chỉnh khoảng cách so với mép phải */
 }
 
-.swiper-button-prev {
+.custom-button-prev {
   left: 10px; /* chỉnh khoảng cách so với mép trái */
 }
 @keyframes spin {
