@@ -11,6 +11,7 @@ import Information from "./pages/Information"
 import ScrollToTop from "./components/ScrollToTop";
 import Category from "./pages/Category";
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -20,7 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/register" element={< Register />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />

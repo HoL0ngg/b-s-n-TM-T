@@ -1,20 +1,35 @@
-import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Breadcrumb";
+import Swal from "sweetalert2";
+import { sendOtp, verifyOtp } from "../api/otp";
 
 export default function Register() {
     const [phone, setPhone] = useState("");
     const [otp, setOtp] = useState(false);
     const [otpInput, setOtpInput] = useState(["", "", "", "", "", ""]);
+    const [mail, setMail] = useState("");
     const navigator = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePhoneNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.value.length > 10) return;
         const re = /^[0-9\b]+$/;
         if (e.target.value === "" || re.test(e.target.value)) setPhone(e.target.value);
+    };
+
+    const handleEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setMail(e.target.value);
+    }
+
+    const handleSuccess = () => {
+        Swal.fire({
+            title: "Thành công!",
+            text: "ĐÃ GỬI THÀNH CÔNG MÃ OTP TỚI EMAIL CỦA BẠN 🎉",
+            icon: "success",
+            confirmButtonText: "OK"
+        });
     };
 
     const validatePhone = (phone: string) => {
@@ -22,21 +37,34 @@ export default function Register() {
         return phoneRegex.test(phone);
     };
 
+    const validateEmail = (mail: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(mail);
+    }
+
     const handleSendOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validatePhone(phone)) {
             alert("Số điện thoại không hợp lệ. Vui lòng nhập lại.");
             return;
         }
+        if (!validateEmail(mail)) {
+            alert("Email không hợp lệ. Vui lòng nhập lại.");
+            return;
+        }
         setLoading(true);
         try {
-            // Call backend API to send OTP
-            await axios.post("http://localhost:5000/api/otp/send-otp", { phone });
+            const res = await sendOtp(mail);
+            if (!res.success) {
+                setError("Gửi mã OTP thất bại. Vui lòng thử lại.");
+                return;
+            }
+            handleSuccess();
             setOtp(true);
-        } catch (err) {
-            alert("Đã có lỗi xảy ra khi gửi mã OTP. Vui lòng thử lại.");
+        } catch (err: any) {
+            setError(err.message || "Đã có lỗi xảy ra. Vui lòng thử lại.");
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
     };
 
@@ -59,17 +87,25 @@ export default function Register() {
         setError("");
 
         const otpCode = otpInput.join(""); // Combine OTP digits into a single string
+        if (otpCode.length < 6) {
+            setError("Vui lòng nhập đầy đủ 6 chữ số của mã OTP.");
+            setLoading(false);
+            return;
+        }
+
         try {
-            // Call backend API to verify OTP
-            const response = await axios.post("http://localhost:3000/api/verify-otp", { phone, otp: otpCode });
-            if (response.data.success) {
-                alert("Đăng ký thành công!");
-                navigator("/login");
+            const res = await verifyOtp(mail, otpCode);
+            if (res.success) {
+                // OTP is correct, proceed with registration
+                handleSuccess();
+                navigator("/");
             } else {
-                setError("Mã OTP không chính xác. Vui lòng thử lại.");
+                setError("Mã OTP không đúng. Vui lòng thử lại.");
             }
-        } catch (err) {
-            setError("Đã có lỗi xảy ra khi xác minh OTP. Vui lòng thử lại.");
+        } catch (err: any) {
+            console.log(err);
+
+            setError(err.message || "Đã có lỗi xảy ra. Vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -93,7 +129,21 @@ export default function Register() {
                                     className="form-control"
                                     placeholder="Nhập số điện thoại"
                                     value={phone}
-                                    onChange={handleChange}
+                                    onChange={handlePhoneNumber}
+                                    required
+                                    disabled={otp} // Disable phone input after OTP is sent
+                                />
+                            </div>
+                            <div className="mb-3">
+                                <label htmlFor="email" className="form-label">Email</label>
+                                <input
+                                    type="tel"
+                                    id="email"
+                                    name="email"
+                                    className="form-control"
+                                    placeholder="Nhập email"
+                                    value={mail}
+                                    onChange={handleEmail}
                                     required
                                     disabled={otp} // Disable phone input after OTP is sent
                                 />
