@@ -27,13 +27,24 @@ export async function login(phone_number: string, password: string) {
     return token;
 }
 
-export async function register(phone_number: string, password: string) {
+export async function register(phone_number: string, email: string, password: string) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const [rows] = await pool.query(
-        "INSERT INTO users (phone_number, password) VALUES (?, ?)",
-        [phone_number, hashedPassword]
+        "INSERT INTO users (phone_number, email, password) VALUES (?, ?, ?)",
+        [phone_number, email, hashedPassword]
     );
 
     return { id: (rows as any).insertId, phone_number };
+}
+
+export async function changePassword(email: string, password: string) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [result]: any = await pool.query(
+        "UPDATE users SET password = ? WHERE email = ?",
+        [hashedPassword, email]
+    );
+
+    return { success: result.affectedRows > 0, affectedRows: result.affectedRows };
 }

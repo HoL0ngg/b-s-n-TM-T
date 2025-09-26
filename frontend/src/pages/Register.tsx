@@ -101,7 +101,6 @@ export default function Register() {
             const res = await verifyOtp(mail, otpCode);
             if (res.success) {
                 // OTP is correct, proceed with registration
-                handleSuccess();
                 setValidOTP(true);
             } else {
                 setError("Mã OTP không đúng. Vui lòng thử lại.");
@@ -121,7 +120,7 @@ export default function Register() {
             return;
         }
         try {
-            await register(phone, password);
+            await register(phone, mail, password);
             alert("Tạo tài khoản thành công");
             navigator("/login");
         } catch (err: any) {
