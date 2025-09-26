@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
+    const { user, logout } = useAuth();
+
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
             <div className="container">
@@ -19,6 +22,9 @@ export default function Navbar() {
 
                 </form>
                 <ul className="navbar-nav gap-2">
+                    {user && (<li>
+                        adu chafo {user.id}
+                    </li>)}
                     <li>
                         <Link to="/login" className="nav-link">
                             <i className="fa-regular fa-user text-primary fs-5"></i>

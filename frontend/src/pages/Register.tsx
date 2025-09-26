@@ -115,7 +115,7 @@ export default function Register() {
         }
     };
 
-    const handleRegis = async (e: React.FormEvent) => {
+    const handleRegis = async () => {
         if (password !== confirmPassword) {
             setError("Mật khẩu và xác nhận mật khẩu không khớp.");
             return;
