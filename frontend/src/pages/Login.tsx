@@ -24,8 +24,8 @@ export default function Login() {
 
             const token = res.token;
             await loginWithToken(token);
-            alert("dang nhap thanh cong");
             navigator("/");
+            alert("dang nhap thanh cong");
         } catch (err: any) {
             console.log(err);
 

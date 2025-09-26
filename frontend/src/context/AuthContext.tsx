@@ -1,7 +1,6 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { fetchProfile, setAuthToken } from "../api/jwt";
-import axios from "axios";
 
 type User = { id: number; username: string; role?: string } | null;
 

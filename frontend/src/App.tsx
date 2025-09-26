@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AuthRedirectRoute from "./components/AuthRedirectRoute";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -10,6 +12,7 @@ import ChatbotFloating from "./components/ChatbotFloating";
 import Information from "./pages/Information"
 import ScrollToTop from "./components/ScrollToTop";
 import Category from "./pages/Category";
+import Profile from "./pages/Profile";
 
 
 function App() {
@@ -20,8 +23,9 @@ function App() {
       <div style={{ minHeight: "80vh" }}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={< Register />} />
+          <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
+          <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />
