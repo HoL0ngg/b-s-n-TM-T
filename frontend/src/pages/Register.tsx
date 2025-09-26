@@ -1,8 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Breadcrumb";
 import Swal from "sweetalert2";
 import { sendOtp, verifyOtp } from "../api/otp";
+import { register } from "../api/jwt";
 
 export default function Register() {
     const [phone, setPhone] = useState("");
@@ -12,6 +13,9 @@ export default function Register() {
     const navigator = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [validOTP, setValidOTP] = useState(false);
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
 
     const handlePhoneNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.value.length > 10) return;
@@ -81,7 +85,7 @@ export default function Register() {
         }
     };
 
-    const handleRegis = async (e: React.FormEvent) => {
+    const handleConfirmOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
@@ -98,7 +102,7 @@ export default function Register() {
             if (res.success) {
                 // OTP is correct, proceed with registration
                 handleSuccess();
-                navigator("/");
+                setValidOTP(true);
             } else {
                 setError("Mã OTP không đúng. Vui lòng thử lại.");
             }
@@ -110,6 +114,20 @@ export default function Register() {
             setLoading(false);
         }
     };
+
+    const handleRegis = async (e: React.FormEvent) => {
+        if (password !== confirmPassword) {
+            setError("Mật khẩu và xác nhận mật khẩu không khớp.");
+            return;
+        }
+        try {
+            await register(phone, password);
+            alert("Tạo tài khoản thành công");
+            navigator("/login");
+        } catch (err: any) {
+            alert(err.response?.data?.message || "Login thất bại");
+        }
+    }
 
     return (
         <>
@@ -148,7 +166,7 @@ export default function Register() {
                                     disabled={otp} // Disable phone input after OTP is sent
                                 />
                             </div>
-                            {otp && (
+                            {otp && !validOTP && (
                                 <div className="mb-3">
                                     <label htmlFor="otp" className="form-label">Mã OTP</label>
                                     <div className="row">
@@ -167,13 +185,51 @@ export default function Register() {
                                     </div>
                                 </div>
                             )}
-                            {otp ? (
-                                <button onClick={handleRegis} className="btn btn-primary w-100" disabled={loading}>
-                                    {loading ? "Đang xử lý..." : "Xác nhận OTP"}
+                            {validOTP && (
+                                <>
+                                    <div className="mb-3">
+                                        <label htmlFor="password" className="form-label">Mật khẩu</label>
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            name="password"
+                                            className="form-control"
+                                            placeholder="Nhập mật khẩu"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="mb-3">
+                                        <label htmlFor="password-confirm" className="form-label">Nhập lại mật khẩu</label>
+                                        <input
+                                            type="password"
+                                            id="password-confirm"
+                                            name="password-confirm"
+                                            className="form-control"
+                                            placeholder="Nhập lại mật khẩu"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            {!validOTP ? (
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary w-100"
+                                    onClick={otp ? handleConfirmOTP : handleSendOTP}
+                                >
+                                    {otp ? "Xác nhận OTP" : "Gửi mã OTP"}
                                 </button>
                             ) : (
-                                <button onClick={handleSendOTP} className="btn btn-primary w-100" disabled={loading}>
-                                    {loading ? "Đang xử lý..." : "Gửi mã OTP"}
+                                <button
+                                    type="button"
+                                    className="btn btn-success w-100"
+                                    onClick={handleRegis}
+                                >
+                                    Xác nhận
                                 </button>
                             )}
                         </form>
@@ -189,7 +245,7 @@ export default function Register() {
                         <div className="spinner"></div>
                     </div>
                 )}
-            </div>
+            </div >
         </>
     );
 }
