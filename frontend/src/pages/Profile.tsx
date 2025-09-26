@@ -1,139 +1,99 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Breadcrumbs from "../components/Breadcrumb";
+import { getUser } from "../api/jwt";
+import { useAuth } from "../context/AuthContext";
+
+interface User {
+    id: number;
+    username: string;
+    email: string;
+    phone_number?: string;
+}
 
 export default function Profile() {
-    const [formData, setFormData] = useState({
-        name: "Nguyen Van A",
-        email: "nguyenvana@example.com",
-        phone: "0123456789",
-        password: "",
-        confirmPassword: "",
-    });
+    const { user } = useAuth();
 
+    const [avatar, setAvatar] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [userData, setUserData] = useState<User | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
+    useEffect(() => {
+        if (!user) return;
 
-    const handleSave = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError("");
-        setSuccess(false);
+        // user.id lấy từ JWT
+        getUser(String(user.id))
+            .then((res) => setUserData(res))
+            .catch((err) => console.error("Error fetching user:", err));
+    }, [user]);
 
-        // Basic validation
-        if (formData.password && formData.password !== formData.confirmPassword) {
-            setError("Mật khẩu và xác nhận mật khẩu không khớp.");
-            return;
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatar(URL.createObjectURL(file));
         }
-
-        // Simulate saving data
-        setTimeout(() => {
-            setSuccess(true);
-            setEditMode(false);
-        }, 1000);
     };
 
     return (
         <>
             <Breadcrumbs></Breadcrumbs>
-            <div className="container mt-5">
-                <h2 className="text-center mb-4">Thông tin cá nhân</h2>
-                {error && <div className="alert alert-danger text-center">{error}</div>}
-                {success && <div className="alert alert-success text-center">Cập nhật thông tin thành công!</div>}
-                <form onSubmit={handleSave} className="card shadow p-4" style={{ maxWidth: "600px", margin: "0 auto" }}>
-                    <div className="mb-3">
-                        <label htmlFor="name" className="form-label">Họ và tên</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            className="form-control"
-                            value={formData.name}
-                            onChange={handleChange}
-                            disabled={!editMode}
-                            required
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="email" className="form-label">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            className="form-control"
-                            value={formData.email}
-                            onChange={handleChange}
-                            disabled={!editMode}
-                            required
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <label htmlFor="phone" className="form-label">Số điện thoại</label>
-                        <input
-                            type="tel"
-                            id="phone"
-                            name="phone"
-                            className="form-control"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            disabled={!editMode}
-                            required
-                        />
-                    </div>
-                    {editMode && (
-                        <>
-                            <div className="mb-3">
-                                <label htmlFor="password" className="form-label">Mật khẩu mới</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    className="form-control"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="confirmPassword" className="form-label">Xác nhận mật khẩu</label>
-                                <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    className="form-control"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                        </>
-                    )}
-                    <div className="d-flex justify-content-between">
-                        {editMode ? (
-                            <>
-                                <button type="submit" className="btn btn-success">Lưu thay đổi</button>
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => setEditMode(false)}
-                                >
-                                    Hủy
-                                </button>
-                            </>
+            <div className="container mt-5 card shadow d-flex rounded flex-row">
+                {/* {error && <div className="alert alert-danger text-center">{error}</div>}
+                {success && <div className="alert alert-success text-center">Cập nhật thông tin thành công!</div>} */}
+                <div className="container col-3 text-center mt-2">
+                    <div className="d-flex justify-content-center">
+                        {avatar ? (
+                            <img
+                                src={avatar}
+                                alt="Avatar"
+                                className="img-fluid rounded-circle border"
+                                style={{ width: "200px", height: "200px", objectFit: "cover" }}
+                            />
                         ) : (
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                onClick={() => setEditMode(true)}
+                            <div
+                                className="d-flex align-items-center justify-content-center border rounded-circle bg-light"
+                                style={{ width: "200px", height: "200px" }}
                             >
-                                Chỉnh sửa
-                            </button>
+                                <span>Chưa có ảnh</span>
+                            </div>
                         )}
                     </div>
-                </form>
-            </div>
+
+                    <div className="text-center align-middle m-3">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            id="avatarInput"
+                            style={{ display: "none" }}
+                            onChange={handleFileChange}
+                        />
+                        <label htmlFor="avatarInput" className="btn btn-primary">
+                            Chọn hình ảnh
+                        </label>
+                    </div>
+                </div>
+                <div className="container col-9 border-start pt-2">
+                    <h3 className="mb-4 text-center">Thông tin cá nhân</h3>
+
+                    <div className="mb-3">
+                        <strong>ID:</strong> {userData?.id}
+                    </div>
+
+                    <div className="mb-3">
+                        <strong>Tên đăng nhập:</strong> {userData?.username}
+                    </div>
+
+                    <div className="mb-3">
+                        <strong>Email:</strong> {userData?.email}
+                    </div>
+
+                    <div className="mb-3">
+                        <strong>Số điện thoại:</strong> {userData?.phone_number}
+                    </div>
+                </div>
+            </div >
         </>
     );
 }

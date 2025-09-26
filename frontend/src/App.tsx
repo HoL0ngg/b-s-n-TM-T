@@ -13,6 +13,7 @@ import Information from "./pages/Information"
 import ScrollToTop from "./components/ScrollToTop";
 import Category from "./pages/Category";
 import Profile from "./pages/Profile";
+import ForgetPassword from "./pages/forgetPassword";
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />

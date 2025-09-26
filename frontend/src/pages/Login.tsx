@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Breadcrumbs from "../components/Breadcrumb";
 import { login } from "../api/jwt";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Swal from "sweetalert2";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -13,7 +13,15 @@ export default function Login() {
 
 
     const { loginWithToken } = useAuth();
-    const navigator = useNavigate();
+
+    const handleSuccess = () => {
+        Swal.fire({
+            title: "Thành công!",
+            text: "Chúc mừng bạn đã đăng nhập thành công 🎉",
+            icon: "success",
+            confirmButtonText: "OK"
+        });
+    };
 
     const handleLogin = async () => {
         setLoading(true);
@@ -24,8 +32,7 @@ export default function Login() {
 
             const token = res.token;
             await loginWithToken(token);
-            navigator("/");
-            alert("dang nhap thanh cong");
+            handleSuccess();
         } catch (err: any) {
             console.log(err);
 
@@ -37,7 +44,7 @@ export default function Login() {
     return (
         <>
             <Breadcrumbs />
-            <div className="container d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+            <div className="container d-flex justify-content-center align-items-center" style={{ height: "80vh" }}>
                 <div className="card shadow-lg" style={{ maxWidth: "450px", width: "100%" }}>
                     <div className="card-body">
                         <h3 className="card-title text-center mb-4">Đăng nhập</h3>
