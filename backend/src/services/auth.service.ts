@@ -48,3 +48,8 @@ export async function changePassword(email: string, password: string) {
 
     return { success: result.affectedRows > 0, affectedRows: result.affectedRows };
 }
+
+export async function findUserByPhoneNumber(id: number) {
+    const [rows] = await pool.query("SELECT * FROM users WHERE phone_number = ?", [id]);
+    return (rows as any[])[0];
+}

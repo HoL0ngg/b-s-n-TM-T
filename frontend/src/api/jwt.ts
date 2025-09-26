@@ -34,3 +34,8 @@ export async function changePassword(email: string, password: string): Promise<v
     }
 }
 export const fetchProfile = () => axios.get(`${API_URL}/profile`);
+
+export const getUser = async (id: string) => {
+    const res = await axios.get(`${API_URL}/user/${id}`);
+    return res.data;
+};

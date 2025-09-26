@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { login, register, changePassword } from "../services/auth.service";
+import { login, register, changePassword, findUserByPhoneNumber } from "../services/auth.service";
 
 export async function loginController(req: Request, res: Response) {
     try {
@@ -39,4 +39,14 @@ export async function changePasswordController(req: Request, res: Response) {
 
 export async function profileController(req: Request, res: Response) {
     res.json({ message: "Welcome!", user: (req as any).user });
+}
+
+export async function getUserByPhoneNumber(req: Request, res: Response) {
+    try {
+        const user = await findUserByPhoneNumber(Number(req.params.id));
+        if (!user) return res.status(404).json({ message: "không tìm thấy người dùng" });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: "Server error" });
+    }
 }
