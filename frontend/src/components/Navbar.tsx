@@ -1,41 +1,87 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+    const { user, logout } = useAuth();
+    const [isHovered, setIsHovered] = useState(false);
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
+    const handleLogout = (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setTimeout(() => {
+            logout();
+            navigate("/");
+            setLoading(false);
+        }, 1000)
+    }
+
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
-            <div className="container">
-                <Link to="/" className="navbar-brand">
-                    <img src={'/assets/logo.jpg'} alt="" style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
-                </Link>
+        <>
+            <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
+                <div className="container">
+                    <Link to="/" className="navbar-brand">
+                        <img src={'/assets/logo.jpg'} alt="" style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
+                    </Link>
 
-                <form className="d-flex mx-auto" style={{ maxWidth: "600px", width: "100%", position: "relative", height: '46px' }}>
-                    <input
-                        className="form-control me-2 shadow"
-                        placeholder="Tìm sản phẩm..."
-                        aria-label="Search"
-                        style={{ borderRadius: '24px' }}
-                    />
-                    <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle" style={{ position: "absolute", right: "14px", top: "50%", translate: "0 -50%", color: 'white' }}></i>
+                    <form className="d-flex mx-auto" style={{ maxWidth: "600px", width: "100%", position: "relative", height: '46px' }}>
+                        <input
+                            className="form-control me-2 shadow"
+                            placeholder="Tìm sản phẩm..."
+                            aria-label="Search"
+                            style={{ borderRadius: '24px' }}
+                        />
+                        <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle" style={{ position: "absolute", right: "14px", top: "50%", translate: "0 -50%", color: 'white' }}></i>
 
-                </form>
-                <ul className="navbar-nav gap-2">
-                    <li>
-                        <Link to="/login" className="nav-link">
-                            <i className="fa-regular fa-user text-primary fs-5"></i>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/" className="nav-link">
-                            <i className="fa-regular fa-heart text-primary fs-5"></i>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/cart" className="nav-link">
-                            <i className="fa-solid fa-cart-shopping text-primary fs-5"></i>
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+                    </form>
+                    <ul className="navbar-nav gap-2">
+                        {user && (<li>
+                            adu chafo {user.id}
+                        </li>)}
+                        <li className="position-relative"
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}>
+                            <Link to="/login" className="nav-link">
+                                <i className="fa-regular fa-user text-primary fs-5"></i>
+                                {/* <i className="fa-regular fa-user fa-lg text-primary nav-link fs-5" style={{ cursor: "pointer" }}></i> */}
+                                {isHovered && user && (
+                                    <div
+                                        className="position-absolute bg-white shadow rounded"
+                                        style={{
+                                            top: "100%",
+                                            right: 0,
+                                            zIndex: 1000,
+                                            padding: "10px",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={handleLogout}
+                                    >
+                                        Đăng xuất
+                                    </div>
+                                )}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/" className="nav-link">
+                                <i className="fa-regular fa-heart text-primary fs-5"></i>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/cart" className="nav-link">
+                                <i className="fa-solid fa-cart-shopping text-primary fs-5"></i>
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            {loading && (
+                <div className="loader-overlay">
+                    <div className="spinner"></div>
+                </div>
+            )}
+        </>
     );
 }

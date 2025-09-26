@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import pool from "../config/db";
 import { ENV } from "../config/env";
 
-const SECRET_KEY = ENV.JWT_SECRET || "supersecret";
+const SECRET_KEY = ENV.JWT_SECRET;
 
 export async function login(phone_number: string, password: string) {
     const [rows] = await pool.query(

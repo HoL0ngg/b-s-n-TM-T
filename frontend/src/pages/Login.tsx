@@ -2,6 +2,7 @@ import { useState } from "react";
 import Breadcrumbs from "../components/Breadcrumb";
 import { login } from "../api/jwt";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
     const [username, setUsername] = useState("");
@@ -10,17 +11,26 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+
+    const { loginWithToken } = useAuth();
     const navigator = useNavigate();
 
     const handleLogin = async () => {
         setLoading(true);
         setError("");
         try {
-            await login(username, password);
-            alert("dang nhap thanh cong");
+            const res = await login(username, password);
+            console.log(res);
+
+            const token = res.token;
+            await loginWithToken(token);
             navigator("/");
+            alert("dang nhap thanh cong");
         } catch (err: any) {
+            console.log(err);
+
             alert(err.response?.data?.message || "Login thất bại");
+            setLoading(false);
         }
     };
 

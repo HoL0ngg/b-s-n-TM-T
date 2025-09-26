@@ -20,3 +20,7 @@ export async function registerController(req: Request, res: Response) {
         res.status(400).json({ message: error.message });
     }
 }
+
+export async function profileController(req: Request, res: Response) {
+    res.json({ message: "Welcome!", user: (req as any).user });
+}
