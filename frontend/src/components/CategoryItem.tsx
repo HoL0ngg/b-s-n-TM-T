@@ -1,20 +1,20 @@
 import { useNavigate } from "react-router-dom";
 
 type Category = {
-    id: string;
-    name: string;
-    image: string;
-}
+  id: string;
+  name: string;
+  image: string;
+};
 
 type CategoryItemProps = {
   category: Category;
 };
 
-const CategoryItem: React.FC<CategoryItemProps> = ({category}) => {
-    const navigate = useNavigate();
+const CategoryItem: React.FC<CategoryItemProps> = ({ category }) => {
+  const navigate = useNavigate();
 
-    return (
-    <div className="col text-center" key={category.id} >
+  return (
+    <div className="col text-center">
       <img
         src={category.image}
         alt={category.name}
@@ -31,7 +31,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({category}) => {
       />
       <p className="mt-2">{category.name}</p>
     </div>
-    );
-}
+  );
+};
 
 export default CategoryItem;

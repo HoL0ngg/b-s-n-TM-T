@@ -3,6 +3,8 @@
   --bs-primary-rgb: 255, 87, 34;
   /* R, G, B */
   /* ví dụ màu cam */
+  --bs-orange: #ff7708;
+  --bs-orange-rgb: 253, 126, 20;
 }
 
 .link-primary-hover {
@@ -87,4 +89,24 @@
   100% {
     transform: rotate(360deg);
   }
+}
+.btn-outline-orange {
+  --bs-btn-color: var(--bs-orange);
+  --bs-btn-border-color: var(--bs-orange);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--bs-orange);
+  --bs-btn-hover-border-color: var(--bs-orange);
+  --bs-btn-focus-shadow-rgb: var(--bs-orange-rgb);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--bs-orange);
+  --bs-btn-active-border-color: var(--bs-orange);
+}
+.custom-select {
+  width: 40%;
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 1rem;
+  color: #333;
 }

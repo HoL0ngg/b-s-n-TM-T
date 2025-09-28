@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import CategoryItem from "./CategoryItem";
 type Category = {
     id: string;
@@ -12,14 +12,14 @@ type CategorySelectorProps = {
 };
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({ categories }) => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     return (
         <div className="container" style={{ marginTop: '100px' }}>
             {/* Grid Bootstrap */}
             <div className="row row-cols-1 row-cols-md-4 g-4">
                 {categories.map((cat) => (
-                    <CategoryItem category={cat}/>
+                    <CategoryItem key={cat.id} category={cat}/>
                 ))}
             </div>
         </div>
