@@ -10,7 +10,7 @@ export default function AuthRedirectRoute({ children }: Props) {
 
     if (loading) return <div>Loading...</div>;
 
-    if (user) return <Navigate to="/profile" replace />;
+    if (user) return <Navigate to="/user/profile" replace />;
 
     return children;
 }
