@@ -1,6 +1,10 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
 
 export default function UserLayout() {
+    const location = useLocation();
+
+    // Kiểm tra nếu đường dẫn bắt đầu bằng /account thì mở submenu
+    const isAccountPage = location.pathname.startsWith("/user/account");
     return (
         <div className="container py-4">
             <div className="row">
@@ -20,26 +24,43 @@ export default function UserLayout() {
                     </div>
 
                     <div className="list-group mt-3">
+                        {/* Tài khoản của tôi */}
                         <NavLink
-                            to="account/profile"
+                            to="account"
                             className={({ isActive }) =>
-                                `list-group-item list-group-item-action ${isActive ? "active" : ""}`
+                                `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
                             }
                         >
-                            Hồ sơ
+                            Tài khoản của tôi
                         </NavLink>
-                        <NavLink
-                            to="account/address"
-                            className={({ isActive }) =>
-                                `list-group-item list-group-item-action ${isActive ? "active" : ""}`
-                            }
-                        >
-                            Địa chỉ
-                        </NavLink>
+
+                        {/* Submenu chỉ hiện khi ở /account */}
+                        {isAccountPage && (
+                            <div className="ms-3">
+                                <NavLink
+                                    to="account/profile"
+                                    className={({ isActive }) =>
+                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
+                                    }
+                                >
+                                    Hồ sơ
+                                </NavLink>
+                                <NavLink
+                                    to="account/address"
+                                    className={({ isActive }) =>
+                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
+                                    }
+                                >
+                                    Địa chỉ
+                                </NavLink>
+                            </div>
+                        )}
+
+                        {/* Đơn mua */}
                         <NavLink
                             to="purchase"
                             className={({ isActive }) =>
-                                `list-group-item list-group-item-action ${isActive ? "active" : ""}`
+                                `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
                             }
                         >
                             Đơn mua

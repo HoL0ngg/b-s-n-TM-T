@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthRedirectRoute from "./components/AuthRedirectRoute";
 import Navbar from "./components/Navbar";
@@ -14,7 +14,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import Category from "./pages/Category";
 import ForgetPassword from "./pages/forgetPassword";
 import UserLayout from "./pages/User/UserLayout";
-import AccountLayout from "./pages/User/Account/AccountLayout";
 import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
 import Purchase from "./pages/User/Purchase";
@@ -38,7 +37,8 @@ function App() {
 
           {/* Path của user */}
           <Route path="/user" element={<UserLayout />}>
-            <Route path="account" element={<AccountLayout />}>
+            <Route path="account">
+              <Route index element={<Navigate to="profile" replace />} />
               <Route path="profile" element={<Profile />} />
               <Route path="address" element={<Address />} />
             </Route>
