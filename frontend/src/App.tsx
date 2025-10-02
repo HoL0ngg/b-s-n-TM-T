@@ -14,7 +14,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Category from "./pages/Category";
 import Profile from "./pages/Profile";
 import ForgetPassword from "./pages/forgetPassword";
-
+import ProductDetail from "./pages/ProductDetail";
 
 function App() {
   return (
@@ -32,6 +32,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />
           <Route path="/category/:name" element={<Category />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
       </div>
       <ChatbotFloating />

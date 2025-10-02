@@ -26,9 +26,22 @@ export type Category = {
     image: string;
 }
 export const categories: Category[] = [
-        {id: "quan", name: "Quần", image: "/assets/logo.jpg" },
-        {id: "ao", name: "Áo", image: "/assets/logo.jpg" },
-        {id: "giay", name: "Giày", image: "/assets/logo.jpg" },
-        {id: "giay1", name: "Giày", image: "/assets/logo.jpg" },
-        {id: "giay2", name: "Giày", image: "/assets/logo.jpg" },
-    ];
+    { id: "quan", name: "Quần", image: "/assets/logo.jpg" },
+    { id: "ao", name: "Áo", image: "/assets/logo.jpg" },
+    { id: "giay", name: "Giày", image: "/assets/logo.jpg" },
+    { id: "giay1", name: "Giày", image: "/assets/logo.jpg" },
+    { id: "giay2", name: "Giày", image: "/assets/logo.jpg" },
+];
+
+type Image = {
+    image_id: number;
+    image_url: string;
+    product_id: number;
+}
+
+export const images: Image[] = [
+    { image_id: 1, image_url: "/assets/logo.jpg", product_id: 1 },
+    { image_id: 2, image_url: "/assets/logo1.png", product_id: 1 },
+    { image_id: 3, image_url: "/assets/logo.jpg", product_id: 1 },
+    { image_id: 4, image_url: "/assets/logo.jpg", product_id: 1 },
+]
