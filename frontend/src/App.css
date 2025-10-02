@@ -110,3 +110,12 @@
   font-size: 1rem;
   color: #333;
 }
+
+.img-hover-zoom img {
+  transition: transform 0.2s ease;
+}
+
+.img-hover-zoom:hover img {
+  /* transform: translateY(-3px); */
+  transform: scale(1.1);
+}

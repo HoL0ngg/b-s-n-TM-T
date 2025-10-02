@@ -2,6 +2,8 @@ import { useParams } from "react-router-dom";
 import { images } from "../data/products";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
+
+
 const ProductDetail = () => {
     const { id } = useParams<{ id: string }>();
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
@@ -10,18 +12,18 @@ const ProductDetail = () => {
     const selectedImage = images.find(img => img.image_id === selectedImageId);
     return (
         <div className="container mt-5">
-            <div className="container text-center">
+            <div className="container">
                 <div className="row">
-                    <div className="col-2">
+                    <div className="col-1 border-red">
                         <ImageSlider images={images} onSelect={setSelectedImageId} selectedImageId={selectedImageId} />
                     </div>
-                    <div className="col-4 d-flex align-items-center justify-content-center">
+                    <div className="col-5 d-flex align-items-center justify-content-center">
                         {selectedImage ? (
                             <img
                                 src={selectedImage.image_url}
                                 alt="Selected"
-                                style={{ borderRadius: "10px" }}
-                                className="img-fluid"
+                                // className="rounded"
+                                style={{ width: "450px", height: "450px", objectFit: "cover", borderRadius: "10px" }}
                             />
                         ) : (
                             <p>Không có ảnh</p>

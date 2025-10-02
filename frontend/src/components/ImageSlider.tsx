@@ -22,11 +22,12 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
                     const isActive = img.image_id === selectedImageId;
                     return (
                         <div
-                            className="col p-2"
+                            className="col p-2 img-hover-zoom"
                             onClick={() => onSelect(img.image_id)}
                             key={img.image_id}
                         >
                             <img
+                                // className="custom-Image"
                                 src={img.image_url}
                                 alt=""
                                 style={{
@@ -34,7 +35,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
                                     height: "100px",
                                     borderRadius: "10px",
                                     cursor: "pointer",
-                                    border: isActive ? "3px solid blue" : "1px solid #ccc" // ✅ highlight ảnh đang chọn
+                                    border: isActive ? "3px solid red" : "1px solid #ccc" // ✅ highlight ảnh đang chọn
                                 }}
                             />
                         </div>
