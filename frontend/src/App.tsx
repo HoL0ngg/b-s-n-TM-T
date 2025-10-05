@@ -17,7 +17,7 @@ import UserLayout from "./pages/User/UserLayout";
 import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
 import Purchase from "./pages/User/Purchase";
-
+import ShopApp from "./pages/Shop";
 
 function App() {
   return (
@@ -34,6 +34,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />
           <Route path="/category/:name" element={<Category />} />
+          <Route path="/shop/*" element={<ShopApp />} />
 
           {/* Path của user */}
           <Route path="/user" element={<UserLayout />}>
