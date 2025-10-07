@@ -27,7 +27,9 @@
 
 /* Khi input được focus hoặc có giá trị */
 .floating-input input:focus+label,
-.floating-input input:not(:placeholder-shown)+label {
+.floating-input input:not(:placeholder-shown)+label,
+.floating-input select:focus+label,
+.floating-input select:not([value=""])+label {
     top: 0;
     left: 10px;
     font-size: 12px;

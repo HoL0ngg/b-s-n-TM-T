@@ -29,9 +29,9 @@ export default function UserLayout() {
                             to="account"
                             className={({ isActive }) =>
                                 `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
-                        }
+                            }
                         >
-                        <i className="fa-solid fa-user-tie me-2"></i>
+                            <i className="fa-solid fa-user-tie me-2"></i>
                             Tài khoản của tôi
                         </NavLink>
 
@@ -55,6 +55,15 @@ export default function UserLayout() {
                                 >
                                     <i className="fa-solid fa-house-user me-2"></i>
                                     Địa chỉ
+                                </NavLink>
+                                <NavLink
+                                    to="account/bank"
+                                    className={({ isActive }) =>
+                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""} ms-4`
+                                    }
+                                >
+                                    <i className="fa-solid fa-money-check-dollar me-2"></i>
+                                    Thẻ/ Ngân hàng
                                 </NavLink>
                             </div>
                         )}

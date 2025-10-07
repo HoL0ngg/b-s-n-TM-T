@@ -42,47 +42,51 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                         transition={{ duration: 0.25 }}
                     >
                         <h5 className="mb-4 text-center fw-bold">Thêm địa chỉ mới</h5>
-                        <div className="row">
-                            <div className="col-6">
-                                <div className="floating-input mb-4">
-                                    <input
-                                        type="text"
-                                        name="fullName"
-                                        value={form.fullName}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder=""
-                                    />
-                                    <label>Họ và tên</label>
-                                </div>
-                            </div>
-                            <div className="col-6">
-                                <div className="floating-input mb-4">
-                                    <input
-                                        type="text"
-                                        name="phone"
-                                        value={form.phone}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder=""
-                                    />
-                                    <label>Số điện thoại</label>
-                                </div>
-                            </div>
-
-                        </div>
-
-
                         <div className="floating-input mb-4">
                             <input
                                 type="text"
-                                name="address"
-                                value={form.address}
+                                name="fullName"
+                                value={form.fullName}
                                 onChange={handleChange}
                                 required
                                 placeholder=""
                             />
-                            <label>Tỉnh/Thành phố, Phường/Xã</label>
+                            <label>Họ và tên</label>
+                        </div>
+                        <div className="floating-input mb-4">
+                            <input
+                                type="text"
+                                name="phone"
+                                value={form.phone}
+                                onChange={handleChange}
+                                required
+                                placeholder=""
+                            />
+                            <label>Số điện thoại</label>
+                        </div>
+
+
+                        <div className="row">
+                            <div className="col-6">
+                                <div className="floating-input mb-4">
+                                    <select className="form-select p-2" id="select_thanhpho">
+                                        <option value="" disabled>Chọn đê</option>
+                                        <option value="sg">TP. Hồ Chí Minh</option>
+                                        <option value="hn">Hà Nội</option>
+                                        <option value="dn">Đà Nẵng</option>
+                                    </select>
+                                    <label>Tỉnh/Thành phố</label>
+                                </div>
+                            </div>
+                            <div className="col-6">
+                                <div className="floating-input mb-4">
+                                    <select className="form-select p-2" id="select_phuong">
+                                        <option value="" disabled>Chọn đê</option>
+                                        <option value="1">từ từ thêm sau</option>
+                                    </select>
+                                    <label>Phường/Xã</label>
+                                </div>
+                            </div>
                         </div>
                         <div className="floating-input mb-4">
                             <input
@@ -103,15 +107,15 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                             </div>
                         </div>
 
-                        <div className="mb-3">
+                        <div>
                             <label className="form-label">Loại địa chỉ:</label>
                             <div className="d-flex gap-2">
                                 <div className="btn btn-primary">Nhà riêng</div>
-                                <div className="btn btn-primary">Văn phòng</div>
+                                <div className="btn btn-secondary">Văn phòng</div>
                             </div>
                         </div>
 
-                        <div className="d-flex justify-content-end mt-4">
+                        <div className="d-flex justify-content-end">
                             <button className="btn btn-secondary me-2" onClick={onClose}>
                                 Hủy
                             </button>

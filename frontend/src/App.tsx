@@ -18,6 +18,7 @@ import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
 import Purchase from "./pages/User/Purchase";
 import ShopApp from "./pages/Shop";
+import Bank from "./pages/User/Account/Bank";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
               <Route index element={<Navigate to="profile" replace />} />
               <Route path="profile" element={<Profile />} />
               <Route path="address" element={<Address />} />
+              <Route path="bank" element={<Bank />} />
             </Route>
             <Route path="purchase" element={<Purchase />} />
           </Route>
