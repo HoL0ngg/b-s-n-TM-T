@@ -7,6 +7,16 @@
   --bs-orange-rgb: 253, 126, 20;
 }
 
+.btn-primary {
+  background-color: #ff7708 !important;
+  border-color: #ff7708 !important;
+}
+
+.btn-primary:hover {
+  background-color: #ff7708 !important;
+  border-color: #ff7708 !important;
+}
+
 .link-primary-hover {
   transition: all 0.3s ease;
 }
@@ -57,6 +67,7 @@
   height: 50px;
   animation: spin 0.8s linear infinite;
 }
+
 .custom-button-next,
 .custom-button-prev {
   position: absolute;
@@ -71,17 +82,22 @@
 }
 
 .custom-button-next {
-  right: 10px; /* chỉnh khoảng cách so với mép phải */
+  right: 10px;
+  /* chỉnh khoảng cách so với mép phải */
 }
+
 .custom-button-prev {
-  left: 10px; /* chỉnh khoảng cách so với mép trái */
+  left: 10px;
+  /* chỉnh khoảng cách so với mép trái */
 }
+
 .btn-hover-scale {
   transition: transform 0.2s ease-in-out;
 }
 
 .btn-hover-scale:hover {
-  transform: scale(1.1); /* phóng to 110% khi hover */
+  transform: scale(1.1);
+  /* phóng to 110% khi hover */
   opacity: 1;
 }
 
@@ -90,6 +106,7 @@
     transform: rotate(360deg);
   }
 }
+
 .btn-outline-orange {
   --bs-btn-color: var(--bs-orange);
   --bs-btn-border-color: var(--bs-orange);
@@ -101,6 +118,7 @@
   --bs-btn-active-bg: var(--bs-orange);
   --bs-btn-active-border-color: var(--bs-orange);
 }
+
 .custom-select {
   width: 40%;
   padding: 8px 12px;

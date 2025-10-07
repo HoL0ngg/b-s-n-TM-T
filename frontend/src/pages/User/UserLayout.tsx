@@ -23,14 +23,15 @@ export default function UserLayout() {
                         </div>
                     </div>
 
-                    <div className="list-group mt-3">
+                    <div className="list-group-flush mt-3">
                         {/* Tài khoản của tôi */}
                         <NavLink
                             to="account"
                             className={({ isActive }) =>
                                 `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
-                            }
+                        }
                         >
+                        <i className="fa-solid fa-user-tie me-2"></i>
                             Tài khoản của tôi
                         </NavLink>
 
@@ -40,17 +41,19 @@ export default function UserLayout() {
                                 <NavLink
                                     to="account/profile"
                                     className={({ isActive }) =>
-                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
+                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""} ms-4`
                                     }
                                 >
+                                    <i className="fa-solid fa-address-card me-2"></i>
                                     Hồ sơ
                                 </NavLink>
                                 <NavLink
                                     to="account/address"
                                     className={({ isActive }) =>
-                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
+                                        `list-group-item list-group-item-action ${isActive ? "text-primary" : ""} ms-4`
                                     }
                                 >
+                                    <i className="fa-solid fa-house-user me-2"></i>
                                     Địa chỉ
                                 </NavLink>
                             </div>
@@ -60,9 +63,10 @@ export default function UserLayout() {
                         <NavLink
                             to="purchase"
                             className={({ isActive }) =>
-                                `list-group-item list-group-item-action ${isActive ? "text-primary" : ""}`
+                                `list-group-item list-group-item-action ${isActive ? "text-primary" : ""} mt-1`
                             }
                         >
+                            <i className="fa-solid fa-receipt me-2"></i>
                             Đơn mua
                         </NavLink>
                     </div>
