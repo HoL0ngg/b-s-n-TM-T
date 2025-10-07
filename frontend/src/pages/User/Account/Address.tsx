@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AddressModal from "../../../components/AddressModel/AddressModel";
+import AddressModal from "../../../components/AddressModel";
 
 export default function Address() {
     const [isShow, setIsShow] = useState(false);

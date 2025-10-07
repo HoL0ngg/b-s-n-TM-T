@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
-import "./AddressModel.css";
-import MapPicker from "../MapPicker";
+import MapPicker from "./MapPicker";
 
 interface AddressModalProps {
     isShow: boolean;
