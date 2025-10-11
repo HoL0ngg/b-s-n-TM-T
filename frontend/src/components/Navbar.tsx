@@ -39,7 +39,7 @@ export default function Navbar() {
                     </form>
                     <ul className="navbar-nav gap-2">
                         <li>
-                            <Link to="/" className="nav-link">
+                            <Link to="/shop" className="nav-link">
                                 <i className="fa-solid fa-shop text-primary fs-5"></i>
                             </Link>
                         </li>
@@ -70,7 +70,7 @@ export default function Navbar() {
                             </Link>
                         </li>
                         <li>
-                            <Link to="/shop" className="nav-link">
+                            <Link to="/" className="nav-link">
                                 <i className="fa-regular fa-heart text-primary fs-5"></i>
                             </Link>
                         </li>
