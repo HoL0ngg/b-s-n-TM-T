@@ -2,21 +2,40 @@ import { useParams } from "react-router-dom";
 import { products } from "../data/products";
 import ProductCard from "../components/ProductCard";
 import CategorySwiper from "../components/CategorySwiper";
-import { categories } from "../data/products";
+import type { CategoryType } from "../types/CategoryType";
+import { fetchCategories } from "../api/categories";
+import { useEffect, useState } from "react";
 const Category = () => {
   const { name } = useParams<{ name: string }>();
+  const [Categories, setCategories] = useState<CategoryType[]>([]);
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await fetchCategories();
+        console.log(data);
+
+        setCategories(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const filteredProducts = products.filter(
-    (p) => p.category.toLowerCase() === name?.toLowerCase()
+    (p) => p.category === Number(name)
   );
 
-  const filteredNameOfCategory = categories.find(
-    (cat) => cat.id.toLowerCase() === name?.toLowerCase()
+  const filteredNameOfCategory = Categories.find(
+    (cat) => cat.id == Number(name)
   );
 
   return (
     <div className="container">
-      <CategorySwiper categories={categories} />
+      <CategorySwiper categories={Categories} />
       <div className="container my-3">
         <div className="row">
           <div className="col-lg-3 col-md-4 col-12">

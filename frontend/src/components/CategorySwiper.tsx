@@ -1,15 +1,10 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
-
+import type { Category } from "../types/CategoryType";
 import "swiper/swiper.css";
 
 import CategoryItem from "./CategoryItem";
 
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-};
 
 type CategorySwiperProps = {
   categories: Category[];

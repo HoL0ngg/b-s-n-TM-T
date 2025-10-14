@@ -1,10 +1,5 @@
 import { useNavigate } from "react-router-dom";
-
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-};
+import type { Category } from "../types/CategoryType";
 
 type CategoryItemProps = {
   category: Category;
@@ -16,7 +11,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ category }) => {
   return (
     <div className="col text-center">
       <img
-        src={category.image}
+        src={category.img_url}
         alt={category.name}
         className="img-fluid rounded-circle shadow-sm"
         style={{
@@ -27,7 +22,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ category }) => {
           margin: "0 auto",
           cursor: "pointer",
         }}
-        onClick={() => navigate(`/category/${category.id.toLowerCase()}`)}
+        onClick={() => navigate(`/category/${category.id}`)}
       />
       <p className="mt-2">{category.name}</p>
     </div>
