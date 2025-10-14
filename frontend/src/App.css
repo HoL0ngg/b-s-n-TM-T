@@ -119,3 +119,14 @@
   /* transform: translateY(-3px); */
   transform: scale(1.1);
 }
+.custom-text-orange {
+  color: var(--bs-primary);
+}
+.custom-border-orange {
+  border: 2px solid var(--bs-primary);
+}
+.custom-button-addtocart {
+  border: 2px solid var(--bs-orange);
+  background-color: white;
+  padding: 10px;
+}

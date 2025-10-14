@@ -2,7 +2,8 @@ import { useParams } from "react-router-dom";
 import { images } from "../data/products";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
-
+import { products } from "../data/products";
+import ProductInfo from "../components/ProductInfo";
 
 const ProductDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -10,6 +11,7 @@ const ProductDetail = () => {
     // const images = products.filter((p) => p.id == Number(id)).map((p) => p.image)
     const [selectedImageId, setSelectedImageId] = useState<number | null>(images.length > 0 ? images[0].image_id : null);
     const selectedImage = images.find(img => img.image_id === selectedImageId);
+    const product = products.find(p => p.id === Number(id));
     return (
         <div className="container mt-5">
             <div className="container">
@@ -29,8 +31,21 @@ const ProductDetail = () => {
                             <p>Không có ảnh</p>
                         )}
                     </div>
-                    <div className="col-6 border">Column 3</div>
+                    <div className="col-6 border">
+                        <ProductInfo product={product} />
+                        <div>
+                            <button
+                                className="custom-button-addtocart"
+
+                            >
+                                Thêm vào giỏ hàng
+                            </button>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div className="container">
+                <span className="fs-4 ms-4">Chi tiết sản phẩm</span>
             </div>
         </div>
 
