@@ -157,10 +157,10 @@
 }
 
 /* Khi input được focus hoặc có giá trị */
-.floating-input input:focus+label,
-.floating-input input:not(:placeholder-shown)+label,
-.floating-input select:focus+label,
-.floating-input select:not([value=""])+label {
+.floating-input input:focus + label,
+.floating-input input:not(:placeholder-shown) + label,
+.floating-input select:focus + label,
+.floating-input select:not([value=""]) + label {
   top: 0;
   left: 10px;
   font-size: 12px;
@@ -168,10 +168,28 @@
   padding: 0 4px;
 }
 
-
-
 /* Focus border */
 .floating-input input:focus {
   border-color: #ff7708;
   box-shadow: 0 0 0 3px rgba(253, 126, 20, 0.2);
+}
+
+.img-hover-zoom img {
+  transition: transform 0.2s ease;
+}
+
+.img-hover-zoom:hover img {
+  /* transform: translateY(-3px); */
+  transform: scale(1.1);
+}
+.custom-text-orange {
+  color: var(--bs-primary);
+}
+.custom-border-orange {
+  border: 2px solid var(--bs-primary);
+}
+.custom-button-addtocart {
+  border: 2px solid var(--bs-orange);
+  background-color: white;
+  padding: 10px;
 }

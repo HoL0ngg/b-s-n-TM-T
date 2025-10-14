@@ -19,6 +19,8 @@ import Address from "./pages/User/Account/Address";
 import Purchase from "./pages/User/Purchase";
 import ShopApp from "./pages/Shop";
 import Bank from "./pages/User/Account/Bank";
+import ProductDetail from "./pages/ProductDetail";
+
 
 function App() {
   return (
@@ -35,6 +37,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/cart/information" element={<Information />} />
           <Route path="/category/:name" element={<Category />} />
+
           <Route path="/shop/*" element={<ShopApp />} />
 
           {/* Path của user */}
@@ -47,11 +50,14 @@ function App() {
             </Route>
             <Route path="purchase" element={<Purchase />} />
           </Route>
-        </Routes>
-      </div>
+
+          <Route path="/product/:id" element={<ProductDetail />} />
+
+        </Routes >
+      </div >
       <ChatbotFloating />
       <Footer />
-    </BrowserRouter>
+    </BrowserRouter >
   );
 }
 
