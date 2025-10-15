@@ -1,23 +1,49 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { images } from "../data/products";
+// import { images } from "../data/products";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
-import { products } from "../data/products";
+import type { ProductType, ProductImageType } from "../types/ProductType";
+import { fecthProductsByID, fecthProductImg } from "../api/products";
 import ProductInfo from "../components/ProductInfo";
 
 const ProductDetail = () => {
-    const { id } = useParams<{ id: string }>();
+    const [product, setProduct] = useState<ProductType>();
+    const { id } = useParams<{ id: string | undefined }>();
+    const [images, setImages] = useState<ProductImageType[]>([]);
+    const [selectedImage, setSelectedImage] = useState<ProductImageType>();
+    useEffect(() => {
+        const loadProduct = async () => {
+            if (!id) return;
+            try {
+                const data = await fecthProductsByID(id);
+                // console.log(data);
+                setProduct(data);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        const loadProductImg = async () => {
+            if (!id) return;
+            const data = await fecthProductImg(id);
+            console.log(data);
+
+            setImages(data);
+            if (data.length > 0) {
+                setSelectedImage(data[0]);
+            }
+        }
+        loadProduct();
+        loadProductImg();
+    }, [id]);
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
     // const images = products.filter((p) => p.id == Number(id)).map((p) => p.image)
-    const [selectedImageId, setSelectedImageId] = useState<number | null>(images.length > 0 ? images[0].image_id : null);
-    const selectedImage = images.find(img => img.image_id === selectedImageId);
-    const product = products.find(p => p.id === Number(id));
     return (
         <div className="container mt-5">
             <div className="container">
                 <div className="row">
                     <div className="col-1 border-red">
-                        <ImageSlider images={images} onSelect={setSelectedImageId} selectedImageId={selectedImageId} />
+                        <ImageSlider images={images} onSelect={setSelectedImage} selectedImageId={selectedImage} />
                     </div>
                     <div className="col-5 d-flex align-items-center justify-content-center">
                         {selectedImage ? (
@@ -32,15 +58,18 @@ const ProductDetail = () => {
                         )}
                     </div>
                     <div className="col-6 border">
-                        <ProductInfo product={product} />
-                        <div>
-                            <button
-                                className="custom-button-addtocart"
-
-                            >
-                                Thêm vào giỏ hàng
-                            </button>
-                        </div>
+                        {!product ? (
+                            <p>Đang tải sản phẩm...</p>
+                        ) : (
+                            <>
+                                <ProductInfo product={product} />
+                                <div>
+                                    <button className="custom-button-addtocart">
+                                        Thêm vào giỏ hàng
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

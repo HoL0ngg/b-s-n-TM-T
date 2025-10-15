@@ -1,33 +1,44 @@
 import { useParams } from "react-router-dom";
-import { products } from "../data/products";
 import ProductCard from "../components/ProductCard";
 import CategorySwiper from "../components/CategorySwiper";
 import type { CategoryType } from "../types/CategoryType";
+import type { ProductType } from "../types/ProductType";
 import { fetchCategories } from "../api/categories";
+import { fecthProducts } from "../api/products";
 import { useEffect, useState } from "react";
 const Category = () => {
   const { name } = useParams<{ name: string }>();
   const [Categories, setCategories] = useState<CategoryType[]>([]);
+  const [products, setProducts] = useState<ProductType[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
     const loadCategories = async () => {
       try {
+        setLoading(true);
         const data = await fetchCategories();
-        console.log(data);
-
         setCategories(data);
       } catch (err) {
         console.error(err);
       } finally {
-        // setLoading(false);
+        setLoading(false);
       }
     };
 
-    loadCategories();
-  }, []);
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        const data2 = await fecthProducts(Number(name));
+        setProducts(data2);
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const filteredProducts = products.filter(
-    (p) => p.category === Number(name)
-  );
+    loadCategories();
+    loadProducts();
+  }, [name]);
 
   const filteredNameOfCategory = Categories.find(
     (cat) => cat.id == Number(name)
@@ -82,8 +93,13 @@ const Category = () => {
               </div>
             </div>
             <div className="row row-cols-1 row-cols-md-3 g-4">
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
+              {loading && (
+                <div className="loader-overlay">
+                  <div className="spinner"></div>
+                </div>
+              )}
+              {products.length > 0 ? (
+                products.map((product) => (
                   <div className="col" key={product.id}>
                     <ProductCard product={product} />
                   </div>

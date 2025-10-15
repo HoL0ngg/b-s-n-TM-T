@@ -1,13 +1,13 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
-import type { Category } from "../types/CategoryType";
+import type { CategoryType } from "../types/CategoryType";
 import "swiper/swiper.css";
 
 import CategoryItem from "./CategoryItem";
 
 
 type CategorySwiperProps = {
-  categories: Category[];
+  categories: CategoryType[];
 };
 
 const CategorySwiper: React.FC<CategorySwiperProps> = ({ categories }) => {

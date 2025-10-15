@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import type { Category } from "../types/CategoryType";
+import type { CategoryType } from "../types/CategoryType";
 
 type CategoryItemProps = {
-  category: Category;
+  category: CategoryType;
 };
 
 const CategoryItem: React.FC<CategoryItemProps> = ({ category }) => {

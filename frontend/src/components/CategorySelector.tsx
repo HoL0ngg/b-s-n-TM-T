@@ -1,9 +1,9 @@
 // import { useNavigate } from "react-router-dom";
 import CategoryItem from "./CategoryItem";
-import type { Category } from "../types/CategoryType";
+import type { CategoryType } from "../types/CategoryType";
 
 type CategorySelectorProps = {
-    categories: Category[];
+    categories: CategoryType[];
 };
 
 const CategorySelector: React.FC<CategorySelectorProps> = ({ categories }) => {

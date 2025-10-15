@@ -15,8 +15,6 @@ export default function Home() {
         const loadCategories = async () => {
             try {
                 const data = await fetchCategories();
-                console.log(data);
-
                 setCategories(data);
             } catch (err) {
                 setError("Không thể tải danh mục 😢");

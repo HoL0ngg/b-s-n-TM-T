@@ -1,17 +1,10 @@
 import React, { useState } from "react";
+import type { ProductImageType } from "../types/ProductType";
 
-// type Image = {
-//     url: string;
-// };
-type Image = {
-    image_id: number;
-    image_url: string;
-    product_id: number;
-}
 type ImageSliderProps = {
-    images: Image[];
-    onSelect: (id: number) => void;
-    selectedImageId: number | null;
+    images: ProductImageType[];
+    onSelect: (img: ProductImageType) => void;
+    selectedImageId?: ProductImageType;
 }
 
 const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedImageId }) => {
@@ -19,11 +12,11 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
         <div className="container text-center">
             {images.length > 0 ? (
                 images.map((img) => {
-                    const isActive = img.image_id === selectedImageId;
+                    const isActive = img.image_id === selectedImageId?.image_id;
                     return (
                         <div
                             className="col p-2 img-hover-zoom"
-                            onClick={() => onSelect(img.image_id)}
+                            onClick={() => onSelect(img)}
                             key={img.image_id}
                         >
                             <img

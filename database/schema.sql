@@ -36,8 +36,8 @@ CREATE TABLE Products (
     name VARCHAR(255) NOT NULL,
     description VARCHAR(1000),
     status INT DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATE DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATE DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     base_price INT,
     category_id INT,
     shop_id INT,
@@ -92,3 +92,19 @@ INSERT INTO categories VALUES   (1, "Mỹ phẩm", "Danh mục Mỹ phẩm bao g
                                 (3, "Áo", "Danh mục Áo gồm nhiều lựa chọn thời trang như áo thun, áo sơ mi, áo khoác, áo len và áo polo. Các sản phẩm được thiết kế tinh tế, chất liệu thoáng mát, dễ phối đồ và phù hợp cho mọi hoàn cảnh — từ công sở đến đi chơi.", "/assets/categories/ao.jpg"),
                                 (4, "Giày", "Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.", "/assets/categories/giay.webp");
 INSERT INTO generic VALUES (1, "son", 1), (2, "Phấn phủ", 1),  (3, "kem nền", 1), (4, "Quần dài", 2), (5, "Quần short", 2), (6, "Quẩn thun", 2), (7, "Áo sơ mi", 3), (8, "Giày đá banh", 4);
+
+INSERT INTO users VALUES ("0987654321", "hihi@gmail.com", "123456");
+INSERT INTO shops VALUES (1, "Shop Test", "/assets/logo.jpg", "Shop này để test data", 1, "0987654321");
+
+INSERT INTO products VALUES (1, "Son Kem Bóng Maybelline Bền Màu, Nhẹ Môi New York Superstay Vinyl Ink 4.2ml", "Son Kem Bóng Bền Màu, Nhẹ Môi Maybelline New York Superstay Vinyl Ink 4.2ml là son kem lì đến từ thương hiệu Maybelline chứa công thức đột phá mới với công nghệ “khóa” màu thách thức lem trôi, nhẹ mướt, để lại lớp bóng nhẹ tinh tế, cho đôi môi căng tràn sức sống. Son bóng lên màu chuẩn, nhưng vẫn duy trì độ ẩm và giữ được sự mềm mịn cho môi.", 1, "2025-10-10", "2025-10-10", 228000, 1, 1);
+INSERT INTO products VALUES (2, "Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni", "Giày đá banh, mang vô đá như Messi", 1, "2025-10-10", "2025-10-10", 2128000, 4, 1);
+INSERT INTO products VALUES (3, "Áo Sơ Mi Nam Tay Dài Aristino OwenShop", "Áo sơ mi trắng", 1, "2025-10-10", "2025-10-10", 1128000, 3, 1);
+INSERT INTO products VALUES (4, "Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop", "Quần tây đen", 1, "2025-10-10", "2025-10-10", 280000, 2, 1);
+
+INSERT INTO ProductImages VALUES (1, "/assets/products/son1.jpg", 1, 1);
+INSERT INTO ProductImages VALUES (2, "/assets/products/giay1.webp", 2, 1);
+INSERT INTO ProductImages VALUES (3, "/assets/products/ao1.webp", 3, 1);
+INSERT INTO ProductImages VALUES (4, "/assets/products/quan1.webp", 4, 1);
+INSERT INTO ProductImages VALUES (5, "/assets/products/son1.1.jpg", 1, 0);
+INSERT INTO ProductImages VALUES (6, "/assets/products/son1.2.jpg", 1, 0);
+INSERT INTO ProductImages VALUES (7, "/assets/products/son1.3.jpg", 1, 0);
