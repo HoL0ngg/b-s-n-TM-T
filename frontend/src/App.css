@@ -5,6 +5,7 @@
   /* ví dụ màu cam */
   --bs-orange: #ff7708;
   --bs-orange-rgb: 253, 126, 20;
+  --bs-bg-grey: #f8f7f7;
 }
 
 .link-primary-hover {
@@ -71,11 +72,12 @@
 }
 
 .custom-button-next {
-  right: 10px; /* chỉnh khoảng cách so với mép phải */
+  right: 7px;
 }
 .custom-button-prev {
-  left: 10px; /* chỉnh khoảng cách so với mép trái */
+  left: 7px;
 }
+
 .btn-hover-scale {
   transition: transform 0.2s ease-in-out;
 }
@@ -126,7 +128,18 @@
   border: 2px solid var(--bs-primary);
 }
 .custom-button-addtocart {
-  border: 2px solid var(--bs-orange);
+  border: 1px solid var(--bs-orange);
   background-color: white;
   padding: 10px;
+  color: var(--bs-orange);
+  background-color: #ff8c0017;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-button-addtocart:hover {
+  background-color: #ff8c000d;
+}
+.custom-bg-grey {
+  background-color: var(--bs-bg-grey);
 }

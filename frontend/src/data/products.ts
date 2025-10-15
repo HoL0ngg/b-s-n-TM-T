@@ -44,4 +44,5 @@ export const images: Image[] = [
     { image_id: 2, image_url: "/assets/logo1.png", product_id: 1 },
     { image_id: 3, image_url: "/assets/logo.jpg", product_id: 1 },
     { image_id: 4, image_url: "/assets/logo.jpg", product_id: 1 },
+    { image_id: 5, image_url: "/assets/logo1.png", product_id: 1 },
 ]

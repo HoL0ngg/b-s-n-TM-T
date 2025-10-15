@@ -43,8 +43,6 @@ const CategorySwiper: React.FC<CategorySwiperProps> = ({ categories }) => {
             <CategoryItem category={cat} />
           </SwiperSlide>
         ))}
-        {/* <div className="swiper-button-prev custom-nav"><i className="fa-solid fa-arrow-left"></i></div>
-                <div className="swiper-button-next custom-nav"><i className="fa-solid fa-arrow-right"></i></div> */}
         <div className="custom-button-prev shadow-sm p-1 btn-hover-scale">
           <i className="fa-solid fa-less-than"></i>
         </div>
