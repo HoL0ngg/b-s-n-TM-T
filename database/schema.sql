@@ -11,6 +11,7 @@ create table Shops(
     logo_url varchar(255),
     description varchar(255),
     status int,
+    created_at DATE DEFAULT CURRENT_TIMESTAMP,
     owner_id varchar(10),
     FOREIGN KEY (owner_id) REFERENCES Users(phone_number)
 );
