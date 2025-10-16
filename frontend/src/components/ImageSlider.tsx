@@ -100,7 +100,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
                                     height: "100px",
                                     borderRadius: "10px",
                                     cursor: "pointer",
-                                    border: isActive ? "3px solid red" : "1px solid #ccc" // ✅ highlight ảnh đang chọn
+                                    border: isActive ? "3px solid red" : "1px solid #ccc"
                                 }}
                             />
                         </div>

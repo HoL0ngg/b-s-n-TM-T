@@ -83,7 +83,7 @@ const ProductDetail = () => {
                                 selectedImageId={selectedImage ? selectedImage.image_id : null} />
                         </div>
                     </div> */}
-                    <div className="col-1 border-red">
+                    <div className="col-12 col-md-1 border-red">
                         <ImageSlider images={images} onSelect={setSelectedImage} selectedImageId={selectedImage} />
                     </div>
                     {/* <div className="col-12 col-md-6 border">
@@ -114,7 +114,7 @@ const ProductDetail = () => {
                             )}
                         </div>
                     </div> */}
-                    <div className="col-5 d-flex align-items-center justify-content-center">
+                    <div className="col-12 col-md-5 d-flex align-items-center justify-content-center">
                         {selectedImage ? (
                             <img
                                 src={selectedImage.image_url}
@@ -126,15 +126,18 @@ const ProductDetail = () => {
                             <p>Không có ảnh</p>
                         )}
                     </div>
-                    <div className="col-6 border rounded border-2">
+                    <div className="col-12 col-md-6 border rounded border-2 pb-4">
                         {!product ? (
                             <p>Đang tải sản phẩm...</p>
                         ) : (
                             <>
                                 <ProductInfo product={product} />
-                                <div>
+                                <div className="d-flex gap-4 align-items-center">
                                     <button className="custom-button-addtocart">
                                         Thêm vào giỏ hàng
+                                    </button>
+                                    <button className="custom-button-buynow">
+                                        Mua ngay
                                     </button>
                                 </div>
                             </>
@@ -151,7 +154,7 @@ const ProductDetail = () => {
                     <div className="fs-4">{shop?.name}</div>
                     <div className="text-muted">online 10 phút trc</div>
                     <div className="d-flex gap-2">
-                        <div className="btn btn-primary">+ Theo dõi</div>
+                        <div className="btn btn-primary"><i className="fa-solid fa-plus"></i> Theo dõi</div>
                         <div className="btn btn-secondary">Xem shop</div>
                     </div>
                 </div>
@@ -172,9 +175,6 @@ const ProductDetail = () => {
                     </div>
                 </div>
             </div>
-            {/* <div className="container">
-                <span className="fs-4 ms-4">Chi tiết sản phẩm</span>
-            </div> */}
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <span className="fw-bold fs-4">Chi tiết sản phẩm</span>
             </div>

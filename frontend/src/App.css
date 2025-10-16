@@ -196,9 +196,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 170px;
 }
-.custom-button-addtocart:hover {
+.custom-button-addtocart:hover,
+.custom-button-buynow:hover {
   background-color: #ff8c000d;
+}
+.custom-button-buynow {
+  border: 1px solid var(--bs-orange);
+  background-color: white;
+  padding: 10px;
+  color: var(--bs-orange);
+  background-color: #ff8c0017;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 170px;
 }
 .custom-bg-grey {
   background-color: var(--bs-bg-grey);
