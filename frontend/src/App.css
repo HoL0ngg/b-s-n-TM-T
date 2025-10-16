@@ -216,3 +216,10 @@
 .custom-bg-grey {
   background-color: var(--bs-bg-grey);
 }
+.product-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* số dòng muốn hiển thị */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
