@@ -17,7 +17,12 @@ export const fecthProductsByID = async (id: string): Promise<ProductType> => {
 
 export const fecthProductImg = async (id: string): Promise<ProductImageType[]> => {
     const res = await axios.get(`${API_URl}/images/${id}`);
-    console.log(res);
+    // console.log(res);
+    return res.data;
+}
 
+export const fetch5ProductByShopId = async (id: Number): Promise<ProductType[]> => {
+    const res = await axios.get(`${API_URl}/shops/${id}`);
+    console.log(res.data);
     return res.data;
 }

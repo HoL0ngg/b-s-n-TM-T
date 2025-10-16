@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { motion, useAnimation, useMotionValue } from "framer-motion";
+import React, { useRef, useState } from "react";
 
 interface ChatMessage {
     role: "user" | "bot";
@@ -9,6 +10,7 @@ const ChatbotFloating: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
+    const isDragging = useRef(false);
 
     const sendMessage = async () => {
         if (!input.trim()) return;
@@ -39,24 +41,59 @@ const ChatbotFloating: React.FC = () => {
                 { role: "bot", content: "⚠️ Lỗi kết nối server." },
             ]);
         }
+    };
 
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const controls = useAnimation();
+
+    const handleDragStart = () => {
+        isDragging.current = true;
+    };
+
+    const handleDragEnd = async () => {
+        // Khi người dùng thả chuột, quay về vị trí gốc
+        await controls.start({
+            x: 0,
+            y: 0,
+            transition: { type: "spring", stiffness: 200, damping: 15 },
+        });
+        setTimeout(() => {
+            isDragging.current = false;
+        }, 100);
+    };
+
+    const handleButtonClick = () => {
+        if (isDragging.current) return;
+        setOpen(true);
     };
 
     return (
-        <>
+        <motion.div
+            drag
+            style={{
+                position: "fixed",
+                bottom: 30,
+                right: 30,
+                x,
+                y,
+                cursor: "grab",
+                zIndex: 1000,
+            }}
+            animate={controls}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
             {/* Nút icon chatbot */}
             {!open && (
                 <button
                     className="btn bg-primary rounded-circle shadow"
                     style={{
-                        position: "fixed",
-                        bottom: "20px",
-                        right: "20px",
-                        width: "60px",
-                        height: "60px",
-                        fontSize: "24px",
+                        width: 60,
+                        height: 60,
+                        fontSize: 24,
                     }}
-                    onClick={() => setOpen(true)}
+                    onClick={() => handleButtonClick()}
                 >
                     💬
                 </button>
@@ -67,11 +104,8 @@ const ChatbotFloating: React.FC = () => {
                 <div
                     className="card shadow"
                     style={{
-                        position: "fixed",
-                        bottom: "80px",
-                        right: "20px",
-                        width: "320px",
-                        height: "420px",
+                        width: 320,
+                        height: 420,
                         display: "flex",
                         flexDirection: "column",
                     }}
@@ -95,7 +129,9 @@ const ChatbotFloating: React.FC = () => {
                         {messages.map((msg, i) => (
                             <div
                                 key={i}
-                                className={`d-flex mb-2 ${msg.role === "user" ? "justify-content-end" : "justify-content-start"
+                                className={`d-flex mb-2 ${msg.role === "user"
+                                    ? "justify-content-end"
+                                    : "justify-content-start"
                                     }`}
                             >
                                 <div
@@ -122,14 +158,17 @@ const ChatbotFloating: React.FC = () => {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                             />
-                            <button className="btn bg-primary text-white" onClick={sendMessage}>
+                            <button
+                                className="btn bg-primary text-white"
+                                onClick={sendMessage}
+                            >
                                 Gửi
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-        </>
+        </motion.div>
     );
 };
 

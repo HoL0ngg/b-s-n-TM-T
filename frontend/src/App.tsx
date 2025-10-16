@@ -17,7 +17,7 @@ import UserLayout from "./pages/User/UserLayout";
 import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
 import Purchase from "./pages/User/Purchase";
-import ShopApp from "./pages/Shop";
+import Shop from "./pages/Shop";
 import Bank from "./pages/User/Account/Bank";
 import ProductDetail from "./pages/ProductDetail";
 
@@ -34,11 +34,11 @@ function App() {
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/products" element={<Products />} />
+          {/* <Route path="/products" element={<Products />} /> */}
           <Route path="/cart/information" element={<Information />} />
           <Route path="/category/:name" element={<Category />} />
 
-          <Route path="/shop/*" element={<ShopApp />} />
+          <Route path="/shop/:id" element={<Shop />} />
 
           {/* Path của user */}
           <Route path="/user" element={<UserLayout />}>
