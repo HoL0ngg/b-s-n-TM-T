@@ -7,6 +7,7 @@ import type { ShopType } from "../types/ShopType";
 import { fecthProductsByID, fecthProductImg } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
+import { StarRating } from "../components/StarRating";
 
 
 const ProductDetail = () => {
@@ -177,6 +178,26 @@ const ProductDetail = () => {
             </div> */}
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <span className="fw-bold fs-4">Chi tiết sản phẩm</span>
+            </div>
+
+            <div className="container mt-4 bg-light p-4">
+                <div className="fs-4">Đánh giá sản phẩm</div>
+                <div className="p-4 mt-2 d-flex align-items-center justify-content-center" style={{ background: "#fff5edff", border: "1px solid #ffb98aff" }}>
+                    <div className="col-3">
+                        <div className="text-center text-primary"><span className="fs-3">4.7</span> trên 5</div>
+                        <div className="text-center text-primary"><StarRating rating={4.7} /></div>
+                    </div>
+                    <div className="col-9 d-flex flex-wrap gap-4">
+                        <div className="border border-primary px-4 py-1 text-primary">Tất cả</div>
+                        <div className="border border-primary px-4 py-1 bg-light">5 sao (10k)</div>
+                        <div className="border border-primary px-4 py-1 bg-light">4 sao (20k)</div>
+                        <div className="border border-primary px-4 py-1 bg-light">3 sao (100)</div>
+                        <div className="border border-primary px-4 py-1 bg-light">2 sao</div>
+                        <div className="border border-primary px-4 py-1 bg-light">1 sao</div>
+                        <div className="border border-primary px-4 py-1 bg-light">Có bình luận</div>
+                        <div className="border border-primary px-4 py-1 bg-light">Có hình ảnh/video</div>
+                    </div>
+                </div>
             </div>
         </div>
 
