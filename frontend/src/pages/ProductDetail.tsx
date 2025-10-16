@@ -169,7 +169,7 @@ const ProductDetail = () => {
                     </div>
                     <div>
                         <div className="text-muted">Tham gia: <span className="text-primary">{shop?.created_at
-                            ? new Date(shop.created_at).toLocaleDateString("vi-VN")
+                            ? new Date(shop.created_at.toString()).toLocaleDateString("vi-VN")
                             : "Đang tải ..."}</span></div>
                         <div className="text-muted mt-2">Người theo dõi</div>
                     </div>

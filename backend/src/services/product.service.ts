@@ -15,3 +15,8 @@ export const getProductImgOnIdService = async (id: number): Promise<string[]> =>
     const [rows] = await pool.query("SELECT image_id, image_url FROM productimages where product_id = ?", [id]) as unknown as [string[], any];
     return rows;
 }
+
+export const get5ProductOnShopIdService = async (id: Number): Promise<Product[]> => {
+    const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url FROM products JOIN productimages on productimages.product_id = products.id where shop_id = ? Group by id limit 5", [id]);
+    return rows as Product[];
+}
