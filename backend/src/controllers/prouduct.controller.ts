@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { getProductOnCategoryIdService, getProductOnIdService, getProductImgOnIdService, get5ProductOnShopIdService } from "../services/product.service"
+import { getProductOnCategoryIdService, getProductOnIdService, getProductImgOnIdService, get5ProductOnShopIdService, getProductOnShopIdService } from "../services/product.service"
 
 export const getProductOnCategoryIdController = async (req: Request, res: Response) => {
     try {
@@ -32,10 +32,24 @@ export const getProductImgOnIdController = async (req: Request, res: Response) =
     }
 }
 
-export const get5ProductOnShopIdController = async (req: Request, res: Response) => {
+export const getProductOnShopIdController = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
-        const data = await get5ProductOnShopIdService(Number(id));
+        const type = req.query.type;
+        const sort = req.query.sortBy || "popular";
+        // console.log(sort);
+
+        let data;
+        switch (type) {
+            case 'all':
+                data = await getProductOnShopIdService(Number(id), String(sort));
+                break;
+            case 'suggest':
+                data = await get5ProductOnShopIdService(Number(id));
+                break;
+            default:
+                break;
+        }
         res.status(200).json(data);
     } catch (err) {
         console.log(err);

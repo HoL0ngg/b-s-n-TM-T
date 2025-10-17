@@ -36,6 +36,7 @@ CREATE TABLE Products (
     updated_at DATE DEFAULT CURRENT_TIMESTAMP,
     base_price INT,
     category_id INT,
+    sold_count INT,
     shop_id INT,
     FOREIGN KEY (category_id) REFERENCES Categories(id),
     FOREIGN KEY (shop_id) REFERENCES Shops(id)
@@ -122,6 +123,7 @@ VALUES (
         "/assets/logo.jpg",
         "Shop này để test data",
         1,
+        "2025-08-25",
         "0987654321"
     );
 INSERT INTO products
@@ -130,10 +132,11 @@ VALUES (
         "Son Kem Bóng Maybelline Bền Màu, Nhẹ Môi New York Superstay Vinyl Ink 4.2ml",
         "Son Kem Bóng Bền Màu, Nhẹ Môi Maybelline New York Superstay Vinyl Ink 4.2ml là son kem lì đến từ thương hiệu Maybelline chứa công thức đột phá mới với công nghệ “khóa” màu thách thức lem trôi, nhẹ mướt, để lại lớp bóng nhẹ tinh tế, cho đôi môi căng tràn sức sống. Son bóng lên màu chuẩn, nhưng vẫn duy trì độ ẩm và giữ được sự mềm mịn cho môi.",
         1,
-        "2025-10-10",
+        "2025-01-10",
         "2025-10-10",
         228000,
         1,
+        100,
         1
     );
 INSERT INTO products
@@ -142,10 +145,11 @@ VALUES (
         "Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni",
         "Giày đá banh, mang vô đá như Messi",
         1,
-        "2025-10-10",
+        "2025-8-10",
         "2025-10-10",
         2128000,
         4,
+        20,
         1
     );
 INSERT INTO products
@@ -154,10 +158,11 @@ VALUES (
         "Áo Sơ Mi Nam Tay Dài Aristino OwenShop",
         "Áo sơ mi trắng",
         1,
-        "2025-10-10",
+        "2025-02-10",
         "2025-10-10",
         1128000,
         3,
+        22,
         1
     );
 INSERT INTO products
@@ -170,6 +175,7 @@ VALUES (
         "2025-10-10",
         280000,
         2,
+        50,
         1
     );
 INSERT INTO ProductImages

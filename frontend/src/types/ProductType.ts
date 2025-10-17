@@ -7,6 +7,7 @@ export interface ProductType {
     category_id: number;
     shop_id: number;
     image_url: string;
+    sold_count: number;
 }
 
 export interface ProductImageType {

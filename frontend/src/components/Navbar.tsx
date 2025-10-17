@@ -34,7 +34,7 @@ export default function Navbar() {
                             aria-label="Search"
                             style={{ borderRadius: '24px' }}
                         />
-                        <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle" style={{ position: "absolute", right: "14px", top: "50%", translate: "0 -50%", color: 'white' }}></i>
+                        <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle align-middle" style={{ position: "absolute", right: "14px", top: "50%", translate: "0 -50%", color: 'white' }}></i>
 
                     </form>
                     <ul className="navbar-nav gap-2">
@@ -43,7 +43,7 @@ export default function Navbar() {
                                 <i className="fa-solid fa-shop text-primary fs-5"></i>
                             </Link>
                         </li>
-                        {user && (<li>
+                        {user && (<li className="d-flex align-items-center">
                             adu chafo {user.id}
                         </li>)}
                         <li className="position-relative"

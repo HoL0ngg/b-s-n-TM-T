@@ -22,7 +22,16 @@ export const fecthProductImg = async (id: string): Promise<ProductImageType[]> =
 }
 
 export const fetch5ProductByShopId = async (id: Number): Promise<ProductType[]> => {
-    const res = await axios.get(`${API_URl}/shops/${id}`);
-    console.log(res.data);
+    const res = await axios.get(`${API_URl}/shops/${id}?type=suggest`);
+    // console.log(res.data);
+    return res.data;
+}
+
+export const fetchProductsByShopId = async (id: Number, state: Number): Promise<ProductType[]> => {
+    const sort = state == 1 ? "popular" : state == 2 ? "new" : "hot";
+    // console.log(sort);
+
+    const res = await axios.get(`${API_URl}/shops/${id}?type=all&sortBy=${sort}`);
+    // console.log(res.data);
     return res.data;
 }

@@ -15,8 +15,8 @@ export async function sendOtpEmail(to: string) {
     const mailOptions = {
         from: `"My App" <${ENV.EMAIL_USER}>`,
         to,
-        subject: "Your OTP Code",
-        text: `Your OTP code is: ${otp}. It will expire in 5 minutes.`,
+        subject: "Code OTP của bạn nè",
+        text: `Mã OTP của bạn là: ${otp}. Hết hạn sau 5 phút nka.`,
     };
 
     await transporter.sendMail(mailOptions);

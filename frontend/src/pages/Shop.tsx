@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchShop } from "../api/shop";
-import { fetch5ProductByShopId } from "../api/products";
+import { fetch5ProductByShopId, fetchProductsByShopId } from "../api/products";
 import type { ShopType } from "../types/ShopType";
 import type { ProductType } from "../types/ProductType";
 import ProductCard from "../components/ProductCard";
@@ -11,6 +11,10 @@ const Shop = () => {
     const { id } = useParams<{ id: string | undefined }>();
     const [shop, setShop] = useState<ShopType>();
     const [suggestedProducts, setSuggestedProducts] = useState<ProductType[]>([]);
+    // const [currentCate, setCurrentCate] = useState<number>(1);
+    const [productList, setProductList] = useState<ProductType[]>([]);
+    const [curState, setCurState] = useState<number>(1);
+    // const [curPriceState, setCurPriceState] = useState<string>("0");
     useEffect(() => {
         const loadShopAndProduct = async () => {
             if (!id) return;
@@ -20,9 +24,11 @@ const Shop = () => {
                 setShop(data);
                 try {
                     const hihi = await fetch5ProductByShopId(data.id);
-                    console.log(hihi);
+                    const hehe = await fetchProductsByShopId(data.id, curState);
+                    console.log(hehe);
 
                     setSuggestedProducts(hihi);
+                    setProductList(hehe);
                 } catch (err) {
                     console.log(err);
                 }
@@ -31,7 +37,18 @@ const Shop = () => {
             }
         }
         loadShopAndProduct();
-    }, [id]);
+    }, [id, curState]);
+
+    const handleChangeState = (id: number) => {
+        if (id === curState) return;
+        setCurState(id);
+    }
+
+    // const handleChangePriceState = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const value = e.target.value;
+    //     if (value === curPriceState) return;
+    //     setCurPriceState(value);
+    // };
 
     const bgStyle: React.CSSProperties = {
         position: "relative",
@@ -44,8 +61,8 @@ const Shop = () => {
     const overlayStyle: React.CSSProperties = {
         position: "absolute",
         inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.3)",
-        backdropFilter: "blur(2px)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backdropFilter: "blur(4px)",
         zIndex: -1,
     };
     return (
@@ -60,7 +77,7 @@ const Shop = () => {
                             </div>
                             <div>
                                 <div className="fs-4 text-white">{shop?.name}</div>
-                                <div className="text-muted">Online 1 phút trc</div>
+                                <div className="text-info">Online 1 phút trc</div>
                             </div>
                         </div>
                         <div>
@@ -80,13 +97,13 @@ const Shop = () => {
                 </div>
                 <div className="row">
                     <div className="d-flex p-0 flex-nowrap text-center">
-                        <div className="p-3 border-bottom border-2 border-primary text-primary" style={{ minWidth: '15%' }}>Dạo</div>
-                        <div className="p-3" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3" style={{ minWidth: '10%' }}>Thêm</div>
+                        <div className="p-3 border-bottom border-2 border-primary text-primary category-component" style={{ minWidth: '15%' }}>Dạo</div>
+                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
+                        <div className="p-3 category-component active" style={{ minWidth: '15%' }}>Sản phẩm</div>
+                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
+                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
+                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
+                        <div className="p-3 category-component" style={{ minWidth: '10%' }}>Thêm</div>
 
                     </div>
                 </div>
@@ -111,29 +128,36 @@ const Shop = () => {
                             </div>
                         )}
                     </div>
-                    <div className="row align-items-center mt-4">
-                        <div className="col-2">
+                    <div className="row mt-4">
+                        <div className="col-2 mt-2">
                             <i className="me-2 fa-solid fa-list-ul"></i>
                             Danh mục
                         </div>
                         <div className="col-10">
-                            <div className="d-flex align-items-center gap-2 justify-content-between">
+                            <div className="d-flex align-items-center justify-content-between">
                                 <div className="d-flex align-items-center gap-2">
                                     <span className="text-muted align-middle">Sắp xếp theo</span>
-                                    <span className="btn btn-primary">Phổ biến nhất</span>
-                                    <span className="btn btn-secondary">Mới nhất</span>
-                                    <span className="btn btn-secondary">Bán chạy</span>
-                                    <select className="form-select" style={{ maxWidth: "20%" }}>
-                                        <option value="0" selected>Giá</option>
+                                    <span className={curState == 1 ? "btn btn-primary" : "btn btn-secondary"} onClick={() => handleChangeState(1)}>Phổ biến nhất</span>
+                                    <span className={curState == 2 ? "btn btn-primary" : "btn btn-secondary"} onClick={() => handleChangeState(2)}>Mới nhất</span>
+                                    <span className={curState == 3 ? "btn btn-primary" : "btn btn-secondary"} onClick={() => handleChangeState(3)}>Bán chạy</span>
+                                    {/* <select className="form-select" style={{ maxWidth: "25%" }} value={curPriceState} onChange={handleChangePriceState}>
+                                        <option value="0">Giá</option>
                                         <option value="1">Thấp đến cao</option>
                                         <option value="2">Cao đến thấp</option>
-                                    </select>
+                                    </select> */}
                                 </div>
                                 <div>
                                     <span className="text-primary">1</span>/<span>2</span>
                                     <span className="ms-4 border border-2 py-1 px-2"><i className="fa-solid fa-less-than fa-xs text-muted"></i></span>
                                     <span className="border border-2 py-1 px-2"><i className="fa-solid fa-greater-than fa-xs"></i></span>
                                 </div>
+                            </div>
+                            <div className="row mt-4 g-4">
+                                {productList.map((product) => (
+                                    <div className="col-6 col-md-3" key={product.id}>
+                                        <ProductCard product={product} />
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ import { fecthProductsByID, fecthProductImg } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
+import { useNavigate } from "react-router-dom";
 
 
 const ProductDetail = () => {
@@ -15,7 +16,8 @@ const ProductDetail = () => {
     const { id } = useParams<{ id: string | undefined }>();
     const [images, setImages] = useState<ProductImageType[]>([]);
     const [selectedImage, setSelectedImage] = useState<ProductImageType>();
-    const [shop, setShop] = useState<ShopType>()
+    const [shop, setShop] = useState<ShopType>();
+    const navigator = useNavigate();
     useEffect(() => {
         const loadProductAndShop = async () => {
             if (!id) return;
@@ -50,6 +52,11 @@ const ProductDetail = () => {
         loadProductAndShop();
         loadProductImg();
     }, [id]);
+
+    const handleClick = () => {
+        navigator(`/shop/${product?.shop_id}`)
+    }
+
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
     return (
         <div className="container mt-5">
@@ -152,11 +159,11 @@ const ProductDetail = () => {
                     <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "100px", width: "100px" }} />
                 </div>
                 <div className="">
-                    <div className="fs-4">{shop?.name}</div>
-                    <div className="text-muted">online 10 phút trc</div>
-                    <div className="d-flex gap-2">
+                    <div className="fs-4 ps-1">{shop?.name}</div>
+                    <div className="text-muted ps-1">online 10 phút trc</div>
+                    <div className="d-flex gap-2 mt-1">
                         <div className="btn btn-primary"><i className="fa-solid fa-plus"></i> Theo dõi</div>
-                        <div className="btn btn-secondary">Xem shop</div>
+                        <div className="btn btn-secondary" onClick={() => handleClick()}>Xem shop</div>
                     </div>
                 </div>
                 <div className="border-start d-flex gap-4 justify-content-between flex-fill p-3">
