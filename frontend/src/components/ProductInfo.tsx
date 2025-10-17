@@ -1,6 +1,19 @@
 import type { ProductType } from "../types/ProductType"
+import { useState } from "react";
 
 export default function ProductInfo({ product }: { product: ProductType }) {
+    const [count, setCount] = useState(1);
+    const increment = () => {
+        setCount(prev => prev + 1);
+    }
+    const decrement = () => {
+        if (count > 1) {
+            setCount(prev => prev - 1);
+        }
+    }
+    const logQuantity = () => {
+        console.log("Số lượng sản phẩm:", count);
+    }
     if (!product) return null;
     {
         return (
@@ -12,9 +25,9 @@ export default function ProductInfo({ product }: { product: ProductType }) {
                 <div className="mt-2 d-flex align-items-center gap-3">
                     <div className="text-muted">Số lượng</div>
                     <div className="d-flex mt-1 mb-1">
-                        <div className="border px-2">-</div>
-                        <input type="text" className="text-center text-primary border" value={1} readOnly style={{ outline: "none", width: "60px" }} />
-                        <div className="border px-2">+</div>
+                        <div className="border px-2 btn" onClick={decrement}><i className="fa-solid fa-minus"></i></div>
+                        <input type="text" className="text-center text-primary border rounded" value={count} readOnly style={{ outline: "none", width: "60px" }} />
+                        <div className="border px-2 btn" onClick={increment}><i className="fa-solid fa-plus"></i></div>
                     </div>
                     <div className="text-muted">696 Sản phẩm có sẵn</div>
                 </div>

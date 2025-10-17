@@ -4,5 +4,5 @@ export interface ShopType {
     logo_url: String;
     description: String;
     status: Number;
-    created_at: String;
+    created_at: Date;
 }
