@@ -6,3 +6,8 @@ export interface Shop {
     status: Number;
     created_at: String;
 }
+
+export interface ShopCategories {
+    id: Number;
+    name: String;
+}

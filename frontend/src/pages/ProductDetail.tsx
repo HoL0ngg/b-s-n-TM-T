@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
-import type { ProductType, ProductImageType } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
-import { fecthProductsByID, fecthProductImg } from "../api/products";
+import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
@@ -15,8 +15,13 @@ const ProductDetail = () => {
     const [product, setProduct] = useState<ProductType>();
     const { id } = useParams<{ id: string | undefined }>();
     const [images, setImages] = useState<ProductImageType[]>([]);
+    const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
     const [selectedImage, setSelectedImage] = useState<ProductImageType>();
     const [shop, setShop] = useState<ShopType>();
+    const [rating, setRating] = useState<number>(0);
+    const [ratingSummary, setRatingSummary] = useState<ProductReviewSummaryType>({
+        5: 0, 4: 0, 3: 0, 2: 0, 1: 0, total: 0, avg: 0.0
+    });
     const navigator = useNavigate();
     useEffect(() => {
         const loadProductAndShop = async () => {
@@ -24,9 +29,12 @@ const ProductDetail = () => {
             try {
                 const data = await fecthProductsByID(id);
                 setProduct(data);
-                // Fetch shop using the shop_id from the fetched product immediately
                 try {
                     const shopData = await fetchShop(data.shop_id);
+                    const reviewData = await fetchReviewByProductId(data.id);
+                    const hihi = await fetchReviewSummaryByProductId(data.id);
+                    setRatingSummary(hihi);
+                    setProductReviews(reviewData);
                     setShop(shopData);
                 } catch (shopErr) {
                     console.error("Failed to fetch shop:", shopErr);
@@ -53,8 +61,43 @@ const ProductDetail = () => {
         loadProductImg();
     }, [id]);
 
+    const reloadReview = async (hihi: number) => {
+        if (!product?.id) return;
+        try {
+            const data = await fetchReviewByProductId(product.id, hihi);
+            setProductReviews(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleClick = () => {
         navigator(`/shop/${product?.shop_id}`)
+    }
+
+    const formatPhone = (phone: string): string => {
+        if (!phone) return "";
+        // Lấy 3 ký tự cuối
+        const lastThreeDigits = phone.slice(-3);
+
+        // Nối với 7 dấu *
+        return "*******" + lastThreeDigits;
+    }
+
+    function formatCount(num: number): string {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'tr';
+        }
+        if (num >= 1000) {
+            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        }
+        return num.toString();
+    }
+
+    const handleChange = (id: number) => {
+        if (id == rating) return;
+        setRating(id);
+        reloadReview(id);
     }
 
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
@@ -191,22 +234,37 @@ const ProductDetail = () => {
                 <div className="fs-4">Đánh giá sản phẩm</div>
                 <div className="p-4 mt-2 d-flex align-items-center justify-content-center" style={{ background: "#fff5edff", border: "1px solid #ffb98aff" }}>
                     <div className="col-3">
-                        <div className="text-center text-primary"><span className="fs-3">4.7</span> trên 5</div>
-                        <div className="text-center text-primary"><StarRating rating={4.7} /></div>
+                        <div className="text-center text-primary"><span className="fs-3">{ratingSummary.avg}</span> trên 5</div>
+                        <div className="text-center text-primary"><StarRating rating={ratingSummary.avg} size="32px" /></div>
                     </div>
                     <div className="col-9 d-flex flex-wrap gap-4">
-                        <div className="border border-primary px-4 py-1 text-primary">Tất cả</div>
-                        <div className="border border-primary px-4 py-1 bg-light">5 sao (10k)</div>
-                        <div className="border border-primary px-4 py-1 bg-light">4 sao (20k)</div>
-                        <div className="border border-primary px-4 py-1 bg-light">3 sao (100)</div>
-                        <div className="border border-primary px-4 py-1 bg-light">2 sao</div>
-                        <div className="border border-primary px-4 py-1 bg-light">1 sao</div>
-                        <div className="border border-primary px-4 py-1 bg-light">Có bình luận</div>
-                        <div className="border border-primary px-4 py-1 bg-light">Có hình ảnh/video</div>
+                        <div className={rating == 0 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(0)}>Tất cả ({ratingSummary.total})</div>
+                        <div className={rating == 5 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(5)}>5 sao ({formatCount(ratingSummary[5])})</div>
+                        <div className={rating == 4 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(4)}>4 sao ({formatCount(ratingSummary[4])})</div>
+                        <div className={rating == 3 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(3)}>3 sao ({formatCount(ratingSummary[3])})</div>
+                        <div className={rating == 2 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(2)}>2 sao ({formatCount(ratingSummary[2])})</div>
+                        <div className={rating == 1 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(1)}>1 sao ({formatCount(ratingSummary[1])})</div>
+                        {/* <div className={rating == 6 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(6)}>Có bình luận</div> */}
+                        {/* <div className={rating == 7 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(7)}>Có hình ảnh/video</div> */}
                     </div>
                 </div>
+                {productReviews.length > 0 ? productReviews.map((review) => (
+                    <div className="d-flex p-4" key={review.id}>
+                        <div><img src={review?.avatar_url ? review.avatar_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "50px", width: "50px" }} /></div>
+                        <div className="ms-4" >
+                            <div className="fw-bolder">{formatPhone(review.phone_number)}</div>
+                            <StarRating rating={review.rating} size="22px" />
+                            <div className="text-muted fs-6">{review?.created_at
+                                ? new Date(review.created_at.toString()).toLocaleDateString("vi-VN")
+                                : "Đang tải ..."}</div>
+                            <div>{review.comment}</div>
+                        </div>
+                    </div>
+                )) : (
+                    <div className="fs-4 text-center mt-4">Chưa có đánh giá b ei</div>
+                )}
             </div>
-        </div>
+        </div >
 
     );
 };

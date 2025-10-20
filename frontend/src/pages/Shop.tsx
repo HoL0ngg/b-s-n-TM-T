@@ -1,20 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchShop } from "../api/shop";
+import { fetchShop, fetchCateByShopId } from "../api/shop";
 import { fetch5ProductByShopId, fetchProductsByShopId } from "../api/products";
-import type { ShopType } from "../types/ShopType";
+import type { ShopType, ShopCateType } from "../types/ShopType";
 import type { ProductType } from "../types/ProductType";
 import ProductCard from "../components/ProductCard";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Shop = () => {
 
     const { id } = useParams<{ id: string | undefined }>();
     const [shop, setShop] = useState<ShopType>();
     const [suggestedProducts, setSuggestedProducts] = useState<ProductType[]>([]);
-    // const [currentCate, setCurrentCate] = useState<number>(1);
     const [productList, setProductList] = useState<ProductType[]>([]);
+    const [shopCateList, setShopCateList] = useState<ShopCateType[]>([]);
+    const [curShopCate, setCurShopCate] = useState<number>(0);
     const [curState, setCurState] = useState<number>(1);
-    // const [curPriceState, setCurPriceState] = useState<string>("0");
+
+    const daoCategory = { id: 0, name: 'Dạo' };
+    const fullCateList = useMemo(() => {
+        // Nếu shopCateList chưa có, chỉ trả về mảng có "Dạo"
+        if (!shopCateList) {
+            return [daoCategory];
+        }
+        // Nối object "Dạo" vào đầu mảng shopCateList
+        return [daoCategory, ...shopCateList];
+    }, [shopCateList]); // Chỉ tính toán lại khi shopCateList thay đổi
+
     useEffect(() => {
         const loadShopAndProduct = async () => {
             if (!id) return;
@@ -23,10 +35,10 @@ const Shop = () => {
 
                 setShop(data);
                 try {
-                    const hihi = await fetch5ProductByShopId(data.id);
-                    const hehe = await fetchProductsByShopId(data.id, curState);
-                    console.log(hehe);
-
+                    const hihi = await fetch5ProductByShopId(Number(data.id));
+                    const hehe = await fetchProductsByShopId(Number(data.id), curState, curShopCate);
+                    const listCate = await fetchCateByShopId(Number(data.id));
+                    setShopCateList(listCate);
                     setSuggestedProducts(hihi);
                     setProductList(hehe);
                 } catch (err) {
@@ -37,11 +49,16 @@ const Shop = () => {
             }
         }
         loadShopAndProduct();
-    }, [id, curState]);
+    }, [id, curState, curShopCate]);
 
     const handleChangeState = (id: number) => {
         if (id === curState) return;
         setCurState(id);
+    }
+
+    const handleChangeCate = (id: number) => {
+        if (id === curShopCate) return;
+        setCurShopCate(id);
     }
 
     // const handleChangePriceState = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -96,14 +113,32 @@ const Shop = () => {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="d-flex p-0 flex-nowrap text-center">
-                        <div className="p-3 border-bottom border-2 border-primary text-primary category-component" style={{ minWidth: '15%' }}>Dạo</div>
-                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3 category-component active" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3 category-component" style={{ minWidth: '10%' }}>Thêm</div>
+                    <div className="d-flex p-0 flex-nowrap text-center position-relative">
+                        {fullCateList?.map((item, index) => (
+                            <div
+                                // 4. Gán ref cho từng item
+                                key={Number(item.id)}
+                                // Bỏ class border, chỉ giữ lại class active cho text
+                                className={curShopCate === item.id ? "p-3 text-primary position-relative category-component" : "p-3 category-component position-relative"}
+                                style={{ minWidth: '15%', cursor: 'pointer', textAlign: 'center' }}
+                                onClick={() => handleChangeCate(Number(item.id))}
+                            >
+                                {item.name}
+                                {curShopCate === item.id && (
+                                    // 3. Sử dụng motion.div và layoutId
+                                    <motion.div
+                                        className="position-absolute bottom-0 start-0 end-0"
+                                        style={{ height: '2px', backgroundColor: '#ff7708' }}
+                                        // layoutId là "chìa khóa" để Framer Motion hiểu đây là cùng một element
+                                        layoutId="underline"
+                                        // Tùy chỉnh hiệu ứng (ví dụ: spring)
+                                        transition={{ type: 'spring', stiffness: 380, damping: 10 }}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                        {/* <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
+                        <div className="p-3 category-component" style={{ minWidth: '10%' }}>Thêm</div> */}
 
                     </div>
                 </div>

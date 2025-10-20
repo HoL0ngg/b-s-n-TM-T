@@ -15,3 +15,23 @@ export interface ProductImageType {
     image_url: string;
     is_main: number;
 }
+
+export interface ProductReviewType {
+    id: number;
+    rating: number;
+    comment: number;
+    created_at: string;
+    phone_number: string;
+    email: string;
+    avatar_url: string;
+}
+
+export interface ProductReviewSummaryType {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+    total: number;
+    avg: number;
+}

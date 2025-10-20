@@ -1,9 +1,12 @@
+DROP DATABASE basan;
+
 create DATABASE basan;
 use basan;
 create table users (
     phone_number VARCHAR(10) primary key,
     email varchar(255),
-    password varchar(255)
+    password varchar(255),
+    avatar_url varchar(255) DEFAULT '/assets/panda.png'
 );
 create table Shops(
     id int AUTO_INCREMENT primary key,
@@ -21,6 +24,14 @@ CREATE table Categories(
     description varchar(255),
     img_url varchar(255)
 );
+
+CREATE table shop_categories(
+    id int AUTO_INCREMENT primary key,
+    shop_id int,
+    name varchar(255),
+    FOREIGN KEY (shop_id) REFERENCES shops(id)
+);
+
 CREATE table Generic(
     id int AUTO_INCREMENT primary key,
     name varchar(255),
@@ -38,8 +49,10 @@ CREATE TABLE Products (
     category_id INT,
     sold_count INT,
     shop_id INT,
+    shop_cate_id INT,
     FOREIGN KEY (category_id) REFERENCES Categories(id),
-    FOREIGN KEY (shop_id) REFERENCES Shops(id)
+    FOREIGN KEY (shop_id) REFERENCES Shops(id),
+    FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id)
 );
 CREATE TABLE ProductImages (
     image_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -115,7 +128,8 @@ VALUES (1, "son", 1),
     (7, "Áo sơ mi", 3),
     (8, "Giày đá banh", 4);
 INSERT INTO users
-VALUES ("0987654321", "hihi@gmail.com", "123456");
+VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png");
+
 INSERT INTO shops
 VALUES (
         1,
@@ -126,6 +140,9 @@ VALUES (
         "2025-08-25",
         "0987654321"
     );
+
+INSERT INTO shop_categories VALUES (1, 1, "Sản phẩm thu đông"), (2, 1, "Sản phẩm mùa hè");
+
 INSERT INTO products
 VALUES (
         1,
@@ -137,10 +154,9 @@ VALUES (
         228000,
         1,
         100,
+        1,
         1
-    );
-INSERT INTO products
-VALUES (
+    ), (
         2,
         "Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni",
         "Giày đá banh, mang vô đá như Messi",
@@ -150,10 +166,9 @@ VALUES (
         2128000,
         4,
         20,
-        1
-    );
-INSERT INTO products
-VALUES (
+        1,
+        2
+    ), (
         3,
         "Áo Sơ Mi Nam Tay Dài Aristino OwenShop",
         "Áo sơ mi trắng",
@@ -163,10 +178,9 @@ VALUES (
         1128000,
         3,
         22,
-        1
-    );
-INSERT INTO products
-VALUES (
+        1,
+        2
+    ), (
         4,
         "Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop",
         "Quần tây đen",
@@ -176,19 +190,21 @@ VALUES (
         280000,
         2,
         50,
+        1,
         1
     );
 INSERT INTO ProductImages
-VALUES (1, "/assets/products/son1.jpg", 1, 1);
-INSERT INTO ProductImages
-VALUES (2, "/assets/products/giay1.webp", 2, 1);
-INSERT INTO ProductImages
-VALUES (3, "/assets/products/ao1.webp", 3, 1);
-INSERT INTO ProductImages
-VALUES (4, "/assets/products/quan1.webp", 4, 1);
-INSERT INTO ProductImages
-VALUES (5, "/assets/products/son1.1.jpg", 1, 0);
-INSERT INTO ProductImages
-VALUES (6, "/assets/products/son1.2.jpg", 1, 0);
-INSERT INTO ProductImages
-VALUES (7, "/assets/products/son1.3.jpg", 1, 0);
+VALUES  (1, "/assets/products/son1.jpg", 1, 1),
+        (2, "/assets/products/giay1.webp", 2, 1), 
+        (3, "/assets/products/ao1.webp", 3, 1), 
+        (4, "/assets/products/quan1.webp", 4, 1),
+        (5, "/assets/products/son1.1.jpg", 1, 0),
+        (6, "/assets/products/son1.2.jpg", 1, 0),
+        (7, "/assets/products/son1.3.jpg", 1, 0);
+
+INSERT INTO productreviews
+VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),
+        (2, 3, "Tạm được đấy iem", "2025-10-20", "0987654321", 3),
+        (3, 5, "SIUUUUUUUUUU", "2025-10-20", "0987654321", 2),
+        (4, 5, "MU 2 - 1 Liver", "2025-10-20", "0987654321", 2),
+        (5, 4, "Hơi chật đấy iem", "2025-10-20", "0987654321", 3);

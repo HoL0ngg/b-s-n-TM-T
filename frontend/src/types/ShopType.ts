@@ -6,3 +6,8 @@ export interface ShopType {
     status: Number;
     created_at: Date;
 }
+
+export interface ShopCateType {
+    id: Number;
+    name: String;
+}

@@ -1,6 +1,6 @@
 // import { FaStar } from "react-icons/fa";
 
-export const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
+export const StarRating: React.FC<{ rating: number, size: string }> = ({ rating, size }) => {
     const percentage = (rating / 5) * 100;
 
     return (
@@ -8,7 +8,7 @@ export const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
             style={{
                 position: "relative",
                 display: "inline-block",
-                fontSize: "32px",
+                fontSize: size,
                 color: "#ccc",
             }}
         >
