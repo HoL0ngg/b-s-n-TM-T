@@ -38,7 +38,7 @@ export async function changePasswordController(req: Request, res: Response) {
 }
 
 export async function profileController(req: Request, res: Response) {
-    res.json({ message: "Welcome!", user: (req as any).user });
+    res.json({ message: "Welcome!", user: (req as any).user, userProfile: (req as any).userProfile });
 }
 
 export async function getUserByPhoneNumber(req: Request, res: Response) {

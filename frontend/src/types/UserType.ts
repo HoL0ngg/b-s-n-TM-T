@@ -1,8 +1,7 @@
-export interface UserType {
+export type UserType = {
     id: number;
     email: string;
-    avatar_url: string;
-}
+} | null;
 
 export interface AddressType {
     id: number;
@@ -15,10 +14,10 @@ export interface AddressType {
     phone_number_jdo: string;
 }
 
-export interface UserProfileType {
+export type UserProfileType = {
     username: string;
     dob: string;
     gender: number;
     avatar_url: string;
     updated_at: string;
-}
+} | null;

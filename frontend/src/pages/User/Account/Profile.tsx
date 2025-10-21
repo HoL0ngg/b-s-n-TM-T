@@ -1,85 +1,84 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
-import { fetchUserProfile, updateProfile } from "../../../api/user";
-import type { UserProfileType } from "../../../types/UserType";
+import { updateProfile } from "../../../api/user";
 
 export default function Profile() {
-    const [name, setName] = useState("");
-    const [birthday, setBirthday] = useState("");
-    const { user } = useAuth();
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
+    const { user, userProfile, setUserProfile } = useAuth();
+
+    const [name, setName] = useState('');
+    const [birthday, setBirthday] = useState('');
     const [gender, setGender] = useState<number>(0);
-    const [userProfile, setUserProfile] = useState<UserProfileType>();
+
     const [isEditable, setIsEditable] = useState(false);
     const [daysRemaining, setDaysRemaining] = useState(0);
 
     useEffect(() => {
-        const loadUserProfile = async () => {
-            if (user) {
-                setEmail(user.email);
-                setPhone(user.id);
-                const data = await fetchUserProfile(user.id);
-                setUserProfile(data);
-                setName(data?.username ?? "");
-                setBirthday(data?.dob ?? "");
-                setGender(data?.gender ?? 10);
-                console.log(data);
-                if (data?.updated_at) {
-                    const lastUpdated = new Date(data?.updated_at);
-                    console.log(lastUpdated);
+        if (userProfile) {
+            setName(userProfile.username || '');
+            setBirthday(userProfile.dob);
+            setGender(Number(userProfile.gender) || 0);
 
-                    const now = new Date();
+            const { updated_at } = userProfile;
+            console.log(userProfile);
 
-                    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-                    const timeDiff = now.getTime() - lastUpdated.getTime();
+            if (updated_at) {
+                const lastUpdated = new Date(updated_at);
+                const now = new Date();
+                const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+                const timeDiff = now.getTime() - lastUpdated.getTime();
 
-                    if (timeDiff > sevenDaysInMs) {
-                        setIsEditable(true);
-                    } else {
-                        setIsEditable(false);
-                        // Tính số ngày còn lại (làm tròn lên)
-                        const remainingMs = sevenDaysInMs - timeDiff;
-                        const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
-                        setDaysRemaining(remainingDays);
-                    }
-                } else {
-                    // Nếu chưa update bao giờ, cho phép sửa
+                if (timeDiff > sevenDaysInMs) {
                     setIsEditable(true);
+                } else {
+                    setIsEditable(false);
+                    const remainingMs = sevenDaysInMs - timeDiff;
+                    const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+                    setDaysRemaining(remainingDays);
                 }
+            } else {
+                setIsEditable(true);
             }
         }
-        loadUserProfile();
-    }, [user])
+    }, [userProfile]);
 
-    const handleSubmit = async (e: any) => {
+    // 4. HÀM SUBMIT
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!isEditable) {
             alert(`Bạn cần đợi ${daysRemaining} ngày nữa để có thể thay đổi.`);
             return;
         }
-        const updatedProfile = {
-            id: phone,
+
+        if (!user?.id) {
+            alert("Lỗi: Không tìm thấy ID người dùng.");
+            return;
+        }
+
+        const updatedProfileData = {
+            id: user.id,
             name: name,
             gender: gender,
             birthday: birthday,
         };
+
         try {
-            const response = await updateProfile(updatedProfile);
-            console.log(response);
+            const response = await updateProfile(updatedProfileData);
 
             const newProfile = response.user;
-            setUserProfile(newProfile);
+            console.log(newProfile);
 
-            setIsEditable(false);
-            setDaysRemaining(7);
 
-            alert('Cập nhật thành công! Vui lòng đợi 7 ngày cho lần đổi tiếp theo.');
+            setUserProfile(newProfile); // 👈 TỐI ƯU QUAN TRỌNG
+            alert('Cập nhật thành công!');
 
         } catch (error) {
             console.error('Lỗi khi submit:', error);
             alert("Cập nhật thất bại");
         }
+    };
+
+    if (!user || !userProfile) {
+        return <div>Đang tải thông tin...</div>;
     }
 
     return (
@@ -96,7 +95,7 @@ export default function Profile() {
                         <div className="mb-3 row">
                             <label className="col-sm-3 col-form-label">Email</label>
                             <div className="col-sm-9 d-flex align-items-center">
-                                <span>{email}</span>
+                                <span>{user.email}</span>
                                 <a href="#" className="ms-2 text-primary">
                                     Thay Đổi
                                 </a>
@@ -130,7 +129,7 @@ export default function Profile() {
                         <div className="mb-3 row">
                             <label className="col-sm-3 col-form-label">Số điện thoại</label>
                             <div className="col-sm-9 d-flex align-items-center">
-                                <span>{phone}</span>
+                                <span>{user.id}</span>
 
                             </div>
                         </div>
