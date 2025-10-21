@@ -1,7 +1,10 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function UserLayout() {
     const location = useLocation();
+    const { user } = useAuth();
+    console.log(user);
 
     // Kiểm tra nếu đường dẫn bắt đầu bằng /account thì mở submenu
     const isAccountPage = location.pathname.startsWith("/user/account");
@@ -14,11 +17,12 @@ export default function UserLayout() {
                         <div className="card-body text-center">
                             {/* Avatar user */}
                             <img
-                                src="https://via.placeholder.com/80"
+                                src="/assets/lion.png"
                                 alt="User Avatar"
                                 className="rounded-circle mb-2"
+                                style={{ height: '120px', width: '120px' }}
                             />
-                            <h6 className="mb-0">Xin chào, User</h6>
+                            <h6 className="mb-0">Xin chào, {user?.username === '' ? user.id : user?.username}</h6>
                             <small className="text-muted">Tài khoản của tôi</small>
                         </div>
                     </div>

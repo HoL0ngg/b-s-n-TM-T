@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { fetchProfile, setAuthToken } from "../api/jwt";
 
-type User = { id: number; username: string; role?: string } | null;
+type User = { id: string; email: string; username?: string } | null;
 
 type AuthContextType = {
     user: User;
@@ -23,7 +23,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (token) {
             setAuthToken(token);
             fetchProfile()
-                .then(res => setUser(res.data.user))
+                .then(res => {
+                    console.log(res.data);
+                    setUser(res.data.user)
+                })
                 .catch(() => {
                     // token invalid/expired
                     localStorage.removeItem("token");

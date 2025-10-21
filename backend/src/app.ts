@@ -7,13 +7,14 @@ import authRoutes from "./routes/auth.route";
 import CategoryRouter from "./routes/category.route";
 import ProductRouter from "./routes/product.route";
 import ShopRouter from "./routes/shop.route";
+import UserRouter from "./routes/user.route";
 
 const app = express();
 app.use(bodyParser.json());
 
 app.use(cors({
     origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT'],
     credentials: true
 }))
 
@@ -23,6 +24,7 @@ app.use("/api/jwt", authRoutes);
 app.use("/api/categories", CategoryRouter);
 app.use("/api/products", ProductRouter);
 app.use("/api/shops", ShopRouter);
+app.use("/api/user", UserRouter);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");

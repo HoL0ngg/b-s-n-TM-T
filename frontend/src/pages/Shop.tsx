@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchShop, fetchCateByShopId } from "../api/shop";
 import { fetch5ProductByShopId, fetchProductsByShopId } from "../api/products";
 import type { ShopType, ShopCateType } from "../types/ShopType";
 import type { ProductType } from "../types/ProductType";
 import ProductCard from "../components/ProductCard";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const Shop = () => {
 
@@ -114,7 +114,7 @@ const Shop = () => {
                 </div>
                 <div className="row">
                     <div className="d-flex p-0 flex-nowrap text-center position-relative">
-                        {fullCateList?.map((item, index) => (
+                        {fullCateList?.map((item) => (
                             <div
                                 // 4. Gán ref cho từng item
                                 key={Number(item.id)}

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
+// import ProtectedRoute from "./components/ProtectedRoute";
 import AuthRedirectRoute from "./components/AuthRedirectRoute";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -7,7 +7,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Cart from "./pages/Cart";
-import Products from "./pages/Products";
 import ChatbotFloating from "./components/ChatbotFloating";
 import Information from "./pages/Information"
 import ScrollToTop from "./components/ScrollToTop";

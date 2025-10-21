@@ -8,6 +8,15 @@ create table users (
     password varchar(255),
     avatar_url varchar(255) DEFAULT '/assets/panda.png'
 );
+CREATE table user_profile(
+    username varchar (255),
+    dob DATETIME,
+    gender tinyInt(1),
+    avatar_url varchar(255),
+    updated_at DATETIME,
+    phone_number varchar(10) primary key,
+    FOREIGN key (phone_number) REFERENCES users(phone_number)
+);
 create table Shops(
     id int AUTO_INCREMENT primary key,
     name varchar(255),
@@ -93,6 +102,25 @@ CREATE TABLE ProductReviews (
     FOREIGN KEY (user_id) REFERENCES Users(phone_number),
     FOREIGN KEY (product_id) REFERENCES Products(id)
 );
+
+CREATE table Address(
+    id int AUTO_INCREMENT primary key,
+    city varchar(255),
+    ward varchar(255),
+    street varchar(255),
+    home_number varchar(255)
+);
+
+CREATE TABLE Address_User(
+    address_id int,
+    phone_number varchar(10),
+    is_default tinyInt(1),
+    user_name varchar(255),
+    phone_number_jdo varchar(10),
+    FOREIGN key (address_id) REFERENCES Address(id),
+    FOREIGN key (phone_number) REFERENCES Users(phone_number)
+);
+
 INSERT INTO categories
 VALUES (
         1,
@@ -129,6 +157,7 @@ VALUES (1, "son", 1),
     (8, "Giày đá banh", 4);
 INSERT INTO users
 VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png");
+INSERT INTO user_profile VALUES ("", "2005-08-25", 1, "/assets/lion.png", null, "0987654321");
 
 INSERT INTO shops
 VALUES (
@@ -208,3 +237,7 @@ VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),
         (3, 5, "SIUUUUUUUUUU", "2025-10-20", "0987654321", 2),
         (4, 5, "MU 2 - 1 Liver", "2025-10-20", "0987654321", 2),
         (5, 4, "Hơi chật đấy iem", "2025-10-20", "0987654321", 3);
+
+INSERT INTO Address VALUES (1, "TP. Hồ Chí Minh", "Phường Chợ Quán", "An Dương Vương", "273");
+INSERT INTO Address VALUES (2, "TP. Hồ Chí Minh", "Phường Chợ Quán", "An Dương Vương", "275");
+INSERT INTO Address_User VALUES (1, "0987654321", 1, "L0ngkute", "0937211264"), (2, "0987654321", 0, "0 phải L0ngg", "0937211265");
