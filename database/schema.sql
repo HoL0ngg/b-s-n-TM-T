@@ -12,7 +12,6 @@ CREATE table user_profile(
     username varchar (255),
     dob DATETIME,
     gender tinyInt(1),
-    avatar_url varchar(255),
     updated_at DATETIME,
     phone_number varchar(10) primary key,
     FOREIGN key (phone_number) REFERENCES users(phone_number)
@@ -145,6 +144,18 @@ VALUES (
         "Giày",
         "Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.",
         "/assets/categories/giay.webp"
+    ),
+    (
+        5,
+        "Laptop",
+        "Adudu",
+        "/assets/categories/laptop.jpg"
+    ),
+    (
+        6,
+        "Sức khỏe",
+        "adudu",
+        "/assets/categories/suckhoe.png"
     );
 INSERT INTO generic
 VALUES (1, "son", 1),
@@ -157,14 +168,14 @@ VALUES (1, "son", 1),
     (8, "Giày đá banh", 4);
 INSERT INTO users
 VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png");
-INSERT INTO user_profile VALUES ("", "2005-08-25", 1, "/assets/lion.png", null, "0987654321");
+INSERT INTO user_profile VALUES ("", "2005-08-25", 1, null, "0987654321");
 
 INSERT INTO shops
 VALUES (
         1,
-        "Shop Test",
-        "/assets/logo.jpg",
-        "Shop này để test data",
+        "Thế giới skin food",
+        "/assets/shops/thegioiskinfood.png",
+        "Shop chuyên về mỹ phẩm",
         1,
         "2025-08-25",
         "0987654321"

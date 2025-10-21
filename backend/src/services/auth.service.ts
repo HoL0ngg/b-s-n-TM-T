@@ -47,7 +47,7 @@ export async function register(phone_number: string, email: string, password: st
         [phone_number, email, hashedPassword]
     );
 
-    await pool.query("INSERT INTO user_profile (username, dob, gender, avatar_url, updated_at, phone_number) values (?, ?, ?, ?, ?, ?)", ['', '', '', '/assets/lion.png', '', phone_number])
+    await pool.query("INSERT INTO user_profile (username, dob, gender, updated_at, phone_number) values (?, ?, ?, ?, ?)", ['', '', '', '', phone_number])
 
     return { id: (rows as any).insertId, phone_number };
 }
