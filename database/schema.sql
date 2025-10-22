@@ -232,6 +232,54 @@ VALUES (
         50,
         1,
         1
+    ), (
+        5,
+        "[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g",
+        "Son Dưỡng Thuần Chay Romand Glasting Melting Balm là son thỏi màu có dưỡng đến từ thương hiệu Romand với tinh chất dầu thực vật thuần chay cùng chất son siêu nhẹ môi có độ dưỡng cao, giúp dưỡng ẩm cho đôi môi mềm mại, căng mọng tự nhiên trong thời gian dài.",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        199000,
+        1,
+        10,
+        1,
+        1
+    ), (
+        6,
+        "Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy Tint 5ml",
+        "Son Kem Lì Bông Bền Màu Maybelline Superstay Teddy Tint là son kem lì nằm trong bộ sưu tập gấu hồng Teddy đáng yêu của thương hiệu Maybelline với công nghệ bồng bềnh Teddy Fluff siêu mềm mịn cho môi. Cùng với bảng màu son ngọt ngào có thể tô mờ hoặc tô đậm trên môi mang đến hiệu ứng mờ lì, căng mịn, cho môi sắc sảo.",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        218000,
+        1,
+        12,
+        1,
+        1
+    ), (
+        7,
+        "Son Thỏi 3CE Mịn Lì, Mềm Môi Cashmere Hug Lipstick 3.5g",
+        "Son Thỏi Mịn Lì, Mềm Môi 3CE Cashmere Hug Lipstick là son thỏi đến từ thương hiệu 3CE. Chất son matte mịn mờ, lướt nhẹ trên môi, mang lại cảm giác thoải mái, nhẹ môi suốt cả ngày. Màu lên chuẩn ngay từ lần quẹt đầu tiên. Thiết kế vỏ son nhám, có vân sọc cầm chắc tay, độc đáo, sang trọng.",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        369000,
+        1,
+        2,
+        1,
+        1
+    ), (
+        8,
+        "Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick 2g",
+        "Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick là son thỏi đến từ thương hiệu Romand. Chất son trong trẻo, lớp bóng mỏng và độ sáng trong mang đến cho bạn môi căng mịn như miếng thạch. Có độ lên màu ngay từ lần chạm đầu tiên và giữ màu lâu. Thành phần chiết xuất thiên nhiên có độ dưỡng ẩm sâu, mang đến môi căng mịn, mà không gây dính môi.",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        199000,
+        1,
+        42,
+        1,
+        1
     );
 INSERT INTO ProductImages
 VALUES  (1, "/assets/products/son1.jpg", 1, 1),
@@ -240,7 +288,19 @@ VALUES  (1, "/assets/products/son1.jpg", 1, 1),
         (4, "/assets/products/quan1.webp", 4, 1),
         (5, "/assets/products/son1.1.jpg", 1, 0),
         (6, "/assets/products/son1.2.jpg", 1, 0),
-        (7, "/assets/products/son1.3.jpg", 1, 0);
+        (7, "/assets/products/son1.3.jpg", 1, 0),
+        (8, "/assets/products/son2.jpg", 5, 1),
+        (9, "/assets/products/son2.1.jpg", 5, 0),
+        (10, "/assets/products/son3.jpg", 6, 1),
+        (11, "/assets/products/son3.1.jpg", 6, 0),
+        (12, "/assets/products/son3.2.jpg", 6, 0),
+        (13, "/assets/products/son3.3.jpg", 6, 0),
+        (14, "/assets/products/son3.4.jpg", 6, 0),
+        (15, "/assets/products/son4.jpg", 7, 1),
+        (16, "/assets/products/son4.1.jpeg", 7, 0),
+        (17, "/assets/products/son4.2.jpeg", 7, 0),
+        (18, "/assets/products/son5.jpg", 8, 1),
+        (19, "/assets/products/son5.1.jpg", 8, 0);
 
 INSERT INTO productreviews
 VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),
