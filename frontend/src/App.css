@@ -243,3 +243,53 @@
   color: var(--bs-primary);
   transition: all 0.4s ease;
 }
+
+.custom-slider-wrapper {
+  position: relative;
+  width: 120px;
+
+  /* Tạo không gian ở trên và dưới để đặt nút */
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.myVerticalSwiper {
+  height: 480px;
+}
+
+.custom-swiper-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* Đảm bảo nút nằm trên cùng */
+  z-index: 10;
+
+  width: 30px;
+  height: 30px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+
+.custom-swiper-nav:hover {
+  background: #f0f0f0;
+}
+
+#my-custom-prev-button {
+  top: 0;
+}
+
+#my-custom-next-button {
+  bottom: 0;
+}
+
+.custom-swiper-nav.swiper-button-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

@@ -56,7 +56,7 @@ export const getReviewByProductIdService = async (id: number, type: number): Pro
     return reviews as ProductReview[];
 }
 
-export const getReviewSummaryByProductIdService = async(id: number) => {
+export const getReviewSummaryByProductIdService = async (id: number) => {
     const sql = `
             SELECT 
                 rating, 
@@ -69,35 +69,37 @@ export const getReviewSummaryByProductIdService = async(id: number) => {
                 rating;
         `;
 
-        const [results] = await pool.query(sql, [id]) as [Array<{ rating: number; count: number }>, any];
-        
-        // 2. Khởi tạo một object kết quả chuẩn
-        // Để đảm bảo 1 sao, 2 sao... luôn có, kể cả khi count = 0
-        const summary = {
-            5: 0,
-            4: 0,
-            3: 0,
-            2: 0,
-            1: 0,
-            'total': 0,
-            'avg': 0
-        };
+    const [results] = await pool.query(sql, [id]) as [Array<{ rating: number; count: number }>, any];
 
-        let totalCount = 0;
-        let cnt = 0;
+    // 2. Khởi tạo một object kết quả chuẩn
+    // Để đảm bảo 1 sao, 2 sao... luôn có, kể cả khi count = 0
+    const summary = {
+        5: 0,
+        4: 0,
+        3: 0,
+        2: 0,
+        1: 0,
+        'total': 0,
+        'avg': 0
+    };
 
-        // 3. Đổ dữ liệu từ database vào object summary
-        for (const row of results) {
-            // row sẽ có dạng { rating: 5, count: 20000 }
-            if (summary.hasOwnProperty(row.rating)) {
-                summary[row.rating as keyof typeof summary] = row.count; // Gán số lượng đếm
-                totalCount += row.count;
-                cnt += row.rating * row.count;
-            }
+    let totalCount = 0;
+    let cnt = 0;
+
+    // 3. Đổ dữ liệu từ database vào object summary
+    for (const row of results) {
+        // row sẽ có dạng { rating: 5, count: 20000 }
+        if (summary.hasOwnProperty(row.rating)) {
+            summary[row.rating as keyof typeof summary] = row.count; // Gán số lượng đếm
+            totalCount += row.count;
+            cnt += row.rating * row.count;
         }
-        
-        summary.total = totalCount;
-        summary.avg = cnt / totalCount;
+    }
 
-        return summary;
+    summary.total = totalCount;
+    if (totalCount)
+        summary.avg = cnt / totalCount;
+    else summary.avg = 0;
+
+    return summary;
 }
