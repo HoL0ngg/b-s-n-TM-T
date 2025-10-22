@@ -13,13 +13,14 @@ export async function login(phone_number: string, password: string) {
     );
 
     const user = (rows as any[])[0];
+
     if (!user) throw new Error("Sai tài khoản");
 
     const validPass = await bcrypt.compare(password, user.password);
     if (!validPass) throw new Error("Sai mật khẩu");
 
     const token = jwt.sign(
-        { id: user.phone_number, email: user.email, username: "" },
+        { id: user.phone_number, email: user.email, username: "", avatar_url: user.avatar_url },
         SECRET_KEY,
         { expiresIn: "1h" }
     );
@@ -42,12 +43,27 @@ export async function register(phone_number: string, email: string, password: st
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const defaultAvatars = [
+        'lion.png',
+        'panda.png',
+        'bear.png',
+        'bee.png',
+        'crab.png',
+        'penguin.png'
+    ];
+    const AVATAR_BASE_URL = '/assets/avatar/';
+    const randomIndex = Math.floor(Math.random() * defaultAvatars.length);
+    const randomAvatarFile = defaultAvatars[randomIndex];
+    const defaultAvatarUrl = AVATAR_BASE_URL + randomAvatarFile;
+    console.log(defaultAvatarUrl);
+
+
     const [rows] = await pool.query(
-        "INSERT INTO users (phone_number, email, password) VALUES (?, ?, ?)",
-        [phone_number, email, hashedPassword]
+        "INSERT INTO users (phone_number, email, password, avatar_url) VALUES (?, ?, ?, ?)",
+        [phone_number, email, hashedPassword, defaultAvatarUrl]
     );
 
-    await pool.query("INSERT INTO user_profile (username, dob, gender, updated_at, phone_number) values (?, ?, ?, ?, ?)", ['', '', '', '', phone_number])
+    await pool.query("INSERT INTO user_profile (username, dob, gender, updated_at, phone_number) values (?, ?, ?, ?, ?)", ['', '', 10, '', phone_number])
 
     return { id: (rows as any).insertId, phone_number };
 }

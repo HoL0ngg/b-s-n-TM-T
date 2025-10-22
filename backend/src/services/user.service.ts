@@ -39,3 +39,58 @@ export const updateProfileService = async (id: string, data: any) => {
 
     return updatedUserRows[0];
 }
+
+export const postAddressUserService = async (id: string, data: any) => {
+    let connection;
+    try {
+        // 1. Lấy 1 connection từ pool
+        connection = await pool.getConnection();
+
+        // 2. Bắt đầu transaction
+        await connection.beginTransaction();
+
+        // 3. Gọi Repository để tạo địa chỉ (truyền connection vào)
+        const newAddressId = await createAddress(data, connection);
+
+        if (newAddressId <= 0) {
+            throw new Error('Tạo địa chỉ thất bại');
+        }
+
+        // 4. Gọi Repository để liên kết (truyền connection vào)
+        await linkUser(id, newAddressId, data, connection);
+
+        // 5. Commit nếu mọi thứ OK
+        await connection.commit();
+
+        console.log(`Transaction thành công cho user ${id}`);
+        return { id: newAddressId, ...data };
+
+    } catch (error: any) {
+        // 6. Rollback nếu có lỗi
+        if (connection) {
+            await connection.rollback();
+        }
+        console.error('Lỗi Service (đã rollback):', error.message);
+        // Ném lỗi ra để Controller bắt
+        throw new Error('Lỗi trong quá trình xử lý CSDL');
+    } finally {
+        // 7. Luôn trả connection về pool
+        if (connection) {
+            connection.release();
+        }
+    }
+}
+
+export const createAddress = async (data: any, connection: any): Promise<number> => {
+    const { city, ward, street } = data;
+    const query = 'INSERT INTO Address (city, ward, street) VALUES (?, ?, ?)';
+
+    // Dùng connection.query() chứ không phải pool.query()
+    const [result] = await connection.query(query, [city, ward, street]);
+    return result.insertId;
+}
+
+export const linkUser = async (id: string, newAddressId: number, data: any, connection: any) => {
+    const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo) VALUES (?, ?, ?, ?)';
+    await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo]);
+}

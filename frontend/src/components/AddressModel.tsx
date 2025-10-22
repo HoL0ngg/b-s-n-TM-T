@@ -1,22 +1,109 @@
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MapPicker from "./MapPicker";
+import { useAuth } from "../context/AuthContext";
+import { createAndLinkAddress } from "../api/user";
 
 interface AddressModalProps {
     isShow: boolean;
     onClose: () => void;
+    onSaveSuccess: () => void;
 }
 
-export default function AddressModal({ isShow, onClose }: AddressModalProps) {
-    const [form, setForm] = useState({
-        fullName: "",
-        phone: "",
-        address: "",
-    });
+export default function AddressModal({ isShow, onClose, onSaveSuccess }: AddressModalProps) {
+    const { user } = useAuth();
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [city, setCity] = useState<any[]>([]);
+    const [ward, setWard] = useState<any[]>([]);
+    const [selectedCityName, setSelectedCityName] = useState("");
+    const [selectedWardName, setSelectedWardName] = useState("");
+    const [selectedCityCode, setSelectedCityCode] = useState("");
+    const [selectedWardCode, setSelectedWardCode] = useState("");
+    const [street, setStreet] = useState("");
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                const response = await fetch('https://provinces.open-api.vn/api/v2/p/');
+                const data = await response.json();
+                setCity(data); // Lưu danh sách tỉnh/thành
+            } catch (error) {
+                console.error("Lỗi khi lấy danh sách tỉnh/thành:", error);
+            }
+        };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        fetchProvinces();
+    }, []);
+    useEffect(() => {
+        if (isShow) {
+            setName("");
+            setPhone("");
+            setSelectedCityName("");
+            setSelectedWardName("");
+            setSelectedWardCode("");
+            setSelectedCityCode("");
+            setStreet("");
+        }
+    }, [isShow]);
+
+    const handleCityChange = async (event: any) => {
+        const cityCode = event.target.value; // Lấy code của tỉnh vừa chọn
+        setSelectedCityCode(cityCode);
+
+        if (cityCode) {
+            const tmp = city.find(hihi => hihi.code == cityCode);
+            setSelectedCityName(tmp.name);
+            setSelectedWardName('');
+            setSelectedWardCode('');
+            try {
+                // Gọi API để lấy phường/xã
+                const response = await fetch(`https://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
+                const data = await response.json();
+
+                setWard(data.wards);
+            } catch (error) {
+                console.error("Lỗi khi lấy danh sách quận/huyện:", error);
+            }
+        } else {
+            setWard([]); // Nếu không chọn tỉnh nào thì reset
+        }
     };
+
+    const handleChangeWard = (e: any) => {
+        const wardCode = e.target.value;
+        setSelectedWardCode(wardCode);
+        const tmp = ward.find(hihi => hihi.code == wardCode);
+
+        setSelectedWardName(tmp.name);
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name || !phone || !selectedCityName || !selectedWardName || !street) {
+            alert("Nhập đủ thông tin đi b ei");
+            return;
+        }
+        try {
+            const newData = {
+                user_name: name,
+                phone_number_jdo: phone,
+                city: selectedCityName,
+                ward: selectedWardName,
+                street: street
+            };
+
+            console.log(newData);
+            if (user)
+                await createAndLinkAddress(user?.id.toString(), newData); // API POST
+            onSaveSuccess();
+
+        } catch (error) {
+            console.error("Lỗi khi lưu:", error);
+            alert("Lưu địa chỉ thất bại!");
+        }
+    };
+
+    if (!isShow) return null;
 
     return (
         <AnimatePresence>
@@ -45,8 +132,8 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                             <input
                                 type="text"
                                 name="fullName"
-                                value={form.fullName}
-                                onChange={handleChange}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                                 placeholder=""
                             />
@@ -56,8 +143,8 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                             <input
                                 type="text"
                                 name="phone"
-                                value={form.phone}
-                                onChange={handleChange}
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
                                 required
                                 placeholder=""
                             />
@@ -68,20 +155,32 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                         <div className="row">
                             <div className="col-6">
                                 <div className="floating-input mb-4">
-                                    <select className="form-select p-2" id="select_thanhpho">
-                                        <option value="" disabled>Chọn đê</option>
-                                        <option value="sg">TP. Hồ Chí Minh</option>
-                                        <option value="hn">Hà Nội</option>
-                                        <option value="dn">Đà Nẵng</option>
+                                    <select className="form-select p-2" id="select_thanhpho" onChange={(e) => handleCityChange(e)} value={selectedCityCode}>
+                                        <option value="" disabled>-- Chọn Tỉnh/Thành phố --</option>
+                                        {city.map((c) => (
+                                            <option
+                                                key={c.code}
+                                                value={c.code}
+                                            >
+                                                {c.name}
+                                            </option>
+                                        ))}
                                     </select>
                                     <label>Tỉnh/Thành phố</label>
                                 </div>
                             </div>
                             <div className="col-6">
                                 <div className="floating-input mb-4">
-                                    <select className="form-select p-2" id="select_phuong">
-                                        <option value="" disabled>Chọn đê</option>
-                                        <option value="1">từ từ thêm sau</option>
+                                    <select className="form-select p-2" id="select_phuong" onChange={(e) => handleChangeWard(e)} value={selectedWardCode} >
+                                        <option value="" disabled>-- Chọn Phường/Xã --</option>
+                                        {ward.map((m) => (
+                                            <option
+                                                key={m.code}
+                                                value={m.code}
+                                            >
+                                                {m.name}
+                                            </option>
+                                        ))}
                                     </select>
                                     <label>Phường/Xã</label>
                                 </div>
@@ -91,8 +190,8 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                             <input
                                 type="text"
                                 name="address"
-                                value={form.address}
-                                onChange={handleChange}
+                                value={street}
+                                onChange={(e) => setStreet(e.target.value)}
                                 required
                                 placeholder=""
                             />
@@ -118,7 +217,7 @@ export default function AddressModal({ isShow, onClose }: AddressModalProps) {
                             <button className="btn btn-secondary me-2" onClick={onClose}>
                                 Hủy
                             </button>
-                            <button className="btn btn-primary ">Lưu</button>
+                            <button className="btn btn-primary" onClickCapture={handleSubmit}>Lưu</button>
                         </div>
                     </motion.div>
                 </>

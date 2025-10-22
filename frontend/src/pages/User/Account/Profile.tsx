@@ -216,7 +216,7 @@ export default function Profile() {
                     <div className="container">
                         <div className="text-center">
                             <img
-                                src="/assets/lion.png"
+                                src={user.avatar_url}
                                 alt="User Avatar"
                                 className="rounded-circle mb-2"
                                 style={{ height: '150px', width: '150px' }}

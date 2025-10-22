@@ -2,24 +2,35 @@ import { useEffect, useState } from "react";
 import AddressModal from "../../../components/AddressModel";
 import type { AddressType } from "../../../types/UserType";
 import { fetchAddressByUserId } from "../../../api/user";
+import { MdOutlineAddHomeWork } from "react-icons/md";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function Address() {
+    const { user } = useAuth();
     const [isShow, setIsShow] = useState(false);
     const [addresses, setAddress] = useState<AddressType[]>([]);
-    useEffect(() => {
-        const loadAddress = async () => {
+    const loadAddress = async () => {
+        if (user)
             try {
-                const data = await fetchAddressByUserId("0987654321");
+                const data = await fetchAddressByUserId(user.id.toString());
+                console.log(data);
+
                 setAddress(data);
             } catch (error) {
                 console.log(error);
             }
-        }
+    }
+    useEffect(() => {
         loadAddress();
-    }, []);
+    }, [user]);
+    const handleSaveSuccess = () => {
+        setIsShow(false);     // Đóng modal
+        loadAddress(); // Tải lại danh sách (để reload)
+    };
+    if (!user) return (<div>Đang tải b ei</div>);
     return (
         <div>
-            <AddressModal isShow={isShow} onClose={() => setIsShow(false)} />
+            <AddressModal isShow={isShow} onClose={() => setIsShow(false)} onSaveSuccess={handleSaveSuccess} />
             <div className="d-flex justify-content-between text-center border-bottom border-2">
                 <h5 className="mt-2 ms-2">Địa chỉ của tôi</h5>
                 <div className="btn btn-primary mb-3" onClick={() => setIsShow(true)}>+ Thêm địa chỉ mới</div>
@@ -59,7 +70,7 @@ export default function Address() {
                     </div>
                 </div>
             )) :
-                (<div>Chưa có địa chỉ bạn ei</div>)}
+                (<div className="text-center text-primary fs-4"><div>Chưa có địa chỉ b ei</div><div><MdOutlineAddHomeWork className="fs-1" /></div></div>)}
 
         </div>
     );

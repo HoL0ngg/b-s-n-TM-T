@@ -16,7 +16,7 @@ export default function UserLayout() {
                         <div className="card-body text-center">
                             {/* Avatar user */}
                             <img
-                                src="/assets/lion.png"
+                                src={user?.avatar_url}
                                 alt="User Avatar"
                                 className="rounded-circle mb-2"
                                 style={{ height: '120px', width: '120px' }}

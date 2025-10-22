@@ -6,7 +6,7 @@ create table users (
     phone_number VARCHAR(10) primary key,
     email varchar(255),
     password varchar(255),
-    avatar_url varchar(255) DEFAULT '/assets/panda.png'
+    avatar_url varchar(255)
 );
 CREATE table user_profile(
     username varchar (255),

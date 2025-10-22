@@ -24,7 +24,7 @@ export default function Navbar() {
             <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
                 <div className="container">
                     <Link to="/" className="navbar-brand">
-                        <img src={'/assets/logo.jpg'} alt="" style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
+                        <img src={'/assets/avatar/logo.jpg'} alt="" style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
                     </Link>
 
                     <form className="d-flex mx-auto" style={{ maxWidth: "600px", width: "100%", position: "relative", height: '46px' }}>

@@ -1,6 +1,7 @@
 export type UserType = {
     id: number;
     email: string;
+    avatar_url: string;
 } | null;
 
 export interface AddressType {
@@ -18,6 +19,5 @@ export type UserProfileType = {
     username: string;
     dob: string;
     gender: number;
-    avatar_url: string;
     updated_at: string;
 } | null;

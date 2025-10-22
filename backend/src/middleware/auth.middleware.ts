@@ -17,8 +17,6 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
         (req as any).user = userPayload;
 
         const phone = userPayload.id;
-        console.log(userPayload);
-
 
         const [profileRows] = await pool.query(
             `SELECT username, gender, DATE_FORMAT(dob, '%Y-%m-%d') AS dob, updated_at FROM user_profile WHERE phone_number = ?`,

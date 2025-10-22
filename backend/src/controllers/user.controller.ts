@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getUserByIdService, getAddressByuserIdService, getUserProfileService, updateProfileService } from "../services/user.service";
+import { getUserByIdService, getAddressByuserIdService, getUserProfileService, updateProfileService, postAddressUserService } from "../services/user.service";
 
 export const getUserByIdController = async (req: Request, res: Response) => {
     const id = req.params.id;
@@ -39,6 +39,20 @@ export const updateProfileController = async (req: Request, res: Response) => {
 
         // Lỗi chung của server
         console.error(error);
+        res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+    }
+}
+
+export const postAddressUserController = async (req: Request, res: Response) => {
+    try {
+        const data = req.body;
+        console.log(data);
+
+        const userPhone = req.params.id;
+        await postAddressUserService(userPhone, data);
+        res.status(200).json({ message: 'Ngon' });
+    } catch (Err) {
+        console.log(Err);
         res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
     }
 }

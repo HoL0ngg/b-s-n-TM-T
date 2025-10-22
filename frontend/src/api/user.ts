@@ -20,6 +20,17 @@ export const fetchUserProfile = async (id: string): Promise<UserProfileType> => 
 
 export const updateProfile = async (hihi: any) => {
     const res = await axios.put(`${API_URL}/${hihi.id}/profile`, hihi);
-    console.log(res);
+    // console.log(res);
     return res.data;
+}
+
+export async function createAndLinkAddress(userId: string, newData: any) {
+    try {
+        // Gửi tất cả dữ liệu trong 1 lần
+        const response = await axios.post(`${API_URL}/${userId}/address`, newData);
+        return response.data; // Trả về { message: '...', addressId: ... }
+    } catch (error: any) {
+        console.error('Lỗi khi tạo và liên kết:', error.response.data);
+        throw error;
+    }
 }
