@@ -105,66 +105,9 @@ const ProductDetail = () => {
         <div className="container mt-5">
             <div className="container">
                 <div className="row">
-                    {/* <div className="col-12 col-md-6 d-flex flex-column align-items-center justify-content-center">
-                        <div>
-                            {selectedImage ? (
-                                <img
-                                    src={selectedImage.image_url}
-                                    alt="Selected"
-                                    className="rounded"
-                                    style={{
-                                        width: "100%",
-                                        maxHeight: "500px",
-                                        objectFit: "contain",
-                                        borderRadius: "10px",
-                                    }}
-                                />
-                            ) : (
-                                <p>Không có ảnh</p>
-                            )}
-                        </div>
-                        <div className="col-12 border-red position-relative mt-3" style={{ width: "100%" }}>
-                            <ImageSlider
-                                images={images}
-                                onSelect={(id: number) => {
-                                    const img = images.find(img => img.image_id === id);
-                                    if (img) setSelectedImage(img);
-                                }}
-
-                                selectedImageId={selectedImage ? selectedImage.image_id : null} />
-                        </div>
-                    </div> */}
-                    <div className="col-12 col-md-1 border-red">
+                    <div className="col-12 col-md-1">
                         <ImageSlider images={images} onSelect={setSelectedImage} selectedImageId={selectedImage} />
                     </div>
-                    {/* <div className="col-12 col-md-6 border">
-                        <div className="col-5 d-flex align-items-center justify-content-center">
-                            {selectedImage ? (
-                                <img
-                                    src={selectedImage.image_url}
-                                    alt="Selected"
-                                    // className="rounded"
-                                    style={{ width: "450px", height: "450px", objectFit: "cover", borderRadius: "10px" }}
-                                />
-                            ) : (
-                                <p>Không có ảnh</p>
-                            )}
-                        </div>
-                        <div className="col-6 border rounded border-2">
-                            {!product ? (
-                                <p>Đang tải sản phẩm...</p>
-                            ) : (
-                                <>
-                                    <ProductInfo product={product} />
-                                    <div>
-                                        <button className="custom-button-addtocart">
-                                            Thêm vào giỏ hàng
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div> */}
                     <div className="col-12 col-md-5 d-flex align-items-center justify-content-center">
                         {selectedImage ? (
                             <img
@@ -228,6 +171,10 @@ const ProductDetail = () => {
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <span className="fw-bold fs-4">Chi tiết sản phẩm</span>
+            </div>
+            <div className="row mt-4 p-3 rounded shadow-sm">
+                <div className="fw-bold fs-4">Mô tả sản phẩm</div>
+                <div>{product?.description}</div>
             </div>
 
             <div className="container mt-4 bg-light p-4">
