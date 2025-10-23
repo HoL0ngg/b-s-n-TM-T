@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import MapPicker from "./MapPicker";
 import { useAuth } from "../context/AuthContext";
 import { createAndLinkAddress } from "../api/user";
-
+import { isValidPhoneNumber, isLength } from "../utils/validator";
 interface AddressModalProps {
     isShow: boolean;
     onClose: () => void;
@@ -77,12 +77,29 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
         setSelectedWardName(tmp.name);
     }
 
+    const validateData = () => {
+        if (!isValidPhoneNumber(phone)) {
+            alert("Nhập đúng sđt đi b ei")
+            return false;
+        }
+        if (!isLength(name, { min: 1, max: 20 })) {
+            return false;
+        }
+        if (!isLength(street, { min: 10 })) {
+            alert("Nhập địa chỉ dài dài lên b ei")
+            return false;
+        }
+
+        return true;
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !phone || !selectedCityName || !selectedWardName || !street) {
             alert("Nhập đủ thông tin đi b ei");
             return;
         }
+        if (!validateData()) return false;
         try {
             const newData = {
                 user_name: name,
@@ -186,7 +203,7 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                                 </div>
                             </div>
                         </div>
-                        <div className="floating-input mb-4">
+                        <div className="floating-input mb-3">
                             <input
                                 type="text"
                                 name="address"
@@ -194,23 +211,22 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                                 onChange={(e) => setStreet(e.target.value)}
                                 required
                                 placeholder=""
+                                disabled={selectedCityName == ''}
                             />
                             <label>Địa chỉ cụ thể</label>
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label">Chọn vị trí trên bản đồ</label>
-                            <div className="border rounded">
-                                <MapPicker onPick={(pos: any) => console.log("Đã chọn:", pos)} />
-                            </div>
+                            <MapPicker
+                                address={street}
+                                setAddress={setStreet}
+                            />
                         </div>
-
-                        <div>
-                            <label className="form-label">Loại địa chỉ:</label>
-                            <div className="d-flex gap-2">
-                                <div className="btn btn-primary">Nhà riêng</div>
-                                <div className="btn btn-secondary">Văn phòng</div>
-                            </div>
+                        <div className="form-check">
+                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" />
+                            <label className="form-check-label user-select-none" htmlFor="flexCheckChecked">
+                                Đặt làm địa chỉ mặc định
+                            </label>
                         </div>
 
                         <div className="d-flex justify-content-end">

@@ -1,60 +1,165 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     MapContainer,
     TileLayer,
     Marker,
     useMapEvents,
     Popup,
+    useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L, { type LeafletMouseEvent } from "leaflet";
+import { shortenAddress } from "../utils/validator";
 
-function LocationMarker({ setPosition: any }) {
-    const [markerPos, setMarkerPos] = useState(null);
+// @ts-ignore
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+});
+
+// --- Component 1: Tự động di chuyển map ---
+interface ChangeViewProps {
+    center: [number, number];
+    zoom: number;
+}
+function ChangeView({ center, zoom }: ChangeViewProps) {
+    const map = useMap();
+    map.flyTo(center, zoom);
+    return null;
+}
+
+// --- Component 2: Bắt sự kiện click ---
+interface LocationMarkerProps {
+    setPosition: (pos: [number, number]) => void;
+    setAddress: (address: string) => void; // Thêm prop để set address
+    isMapClickRef: React.MutableRefObject<boolean>;
+}
+
+function LocationMarker({ setPosition, setAddress, isMapClickRef }: LocationMarkerProps) {
+
+    // Lấy địa chỉ từ tọa độ
+    const fetchAddressFromCoords = async (lat: number, lng: number) => {
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data && data.display_name) {
+                // *** BẬT CỜ LÊN TRƯỚC KHI SET ADDRESS ***
+                isMapClickRef.current = true;
+
+                // Dòng này sẽ kích hoạt useEffect ở cha,
+                // nhưng cờ đã được bật
+                setAddress(data.display_name);
+            }
+
+            if (data && data.display_name) {
+                // Cập nhật ô input ở component cha
+                setAddress(shortenAddress(data.display_name));
+            } else {
+                setAddress("Không tìm thấy địa chỉ cho vị trí này");
+            }
+        } catch (error) {
+            console.error("Lỗi khi reverse geocoding:", error);
+            setAddress("Lỗi khi lấy địa chỉ");
+        }
+    };
 
     useMapEvents({
-        click(e: any) {
-            setMarkerPos(e.latlng);
-            setPosition(e.latlng);
+        click(e: LeafletMouseEvent) {
+            const newPos: [number, number] = [e.latlng.lat, e.latlng.lng];
+            // 1. Set vị trí marker
+            setPosition(newPos);
+            // 2. Gọi hàm tìm địa chỉ từ tọa độ
+            fetchAddressFromCoords(newPos[0], newPos[1]);
         },
     });
 
-    return markerPos === null ? null : (
-        <Marker position={markerPos}>
-            <Popup>
-                <b>Vĩ độ:</b> {markerPos.lat.toFixed(6)} <br />
-                <b>Kinh độ:</b> {markerPos.lng.toFixed(6)}
-            </Popup>
-        </Marker>
-    );
+    return null;
 }
 
-export default function MapPicker({ onPick: any }) {
-    const [position, setPosition] = useState(null);
+// --- Props MapPicker ---
+interface MapPickerProps {
+    address: string; // Nhận địa chỉ từ cha
+    setAddress: (address: string) => void; // Nhận hàm cập nhật từ cha
+}
+
+// --- Component 3: Component Cha ---
+export default function MapPicker({ address, setAddress }: MapPickerProps) {
+    const [position, setPosition] = useState<[number, number]>([
+        10.760000, 106.681980,
+    ]);
+    const debounceTimeout = useRef<number | null>(null);
+    const isMapClick = useRef(false);
+
+    const searchGeocode = async (addressToSearch: string) => {
+        if (addressToSearch.trim() === "") return;
+        try {
+            const query = encodeURIComponent(addressToSearch);
+            const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                setPosition([parseFloat(lat), parseFloat(lon)]);
+            }
+        } catch (error) {
+            console.error("Lỗi khi tìm địa chỉ:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (isMapClick.current) {
+            // Nếu sự thay đổi này là do click,
+            // reset cờ và KHÔNG làm gì cả (không search)
+            isMapClick.current = false;
+            return;
+        }
+
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        debounceTimeout.current = setTimeout(() => {
+            // Chỉ tìm khi address không rỗng
+            if (address.trim() !== "") {
+                searchGeocode(address);
+            }
+        }, 1500); // Đợi 1.5s sau khi user ngừng gõ
+
+        // Cleanup khi component unmount
+        return () => {
+            if (debounceTimeout.current) {
+                clearTimeout(debounceTimeout.current);
+            }
+        };
+    }, [address]); // <-- Chỉ chạy lại khi 'address' prop thay đổi
 
     return (
         <div>
             <MapContainer
-                center={[10.762622, 106.660172]}
+                center={position}
                 zoom={13}
-                style={{ height: "200px", width: "100%", borderRadius: "12px" }}
+                style={{ height: "240px", width: "100%", borderRadius: "12px" }}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution="&copy; OpenStreetMap contributors"
                 />
-                <LocationMarker setPosition={setPosition} />
-            </MapContainer>
+                <Marker position={position}>
+                    <Popup>
+                        <b>Vĩ độ:</b> {position[0].toFixed(6)} <br />
+                        <b>Kinh độ:</b> {position[1].toFixed(6)}
+                    </Popup>
+                </Marker>
 
-            {/* <div className="flex flex-col items-start mt-4">
-                <p>
-                    📍 <b>Vĩ độ:</b>{" "}
-                    {position ? position.lat.toFixed(6) : "Chưa chọn"}
-                </p>
-                <p>
-                    📍 <b>Kinh độ:</b>{" "}
-                    {position ? position.lng.toFixed(6) : "Chưa chọn"}
-                </p>
-            </div> */}
+                {/* 2. Truyền 'setAddress' xuống cho LocationMarker */}
+                <LocationMarker setPosition={setPosition} setAddress={setAddress} isMapClickRef={isMapClick} />
+
+                <ChangeView center={position} zoom={15} />
+            </MapContainer>
         </div>
     );
 }
