@@ -8,6 +8,7 @@ import CategoryRouter from "./routes/category.route";
 import ProductRouter from "./routes/product.route";
 import ShopRouter from "./routes/shop.route";
 import UserRouter from "./routes/user.route";
+import CartRouter from "./routes/cart.route";
 
 const app = express();
 app.use(bodyParser.json());
@@ -25,6 +26,7 @@ app.use("/api/categories", CategoryRouter);
 app.use("/api/products", ProductRouter);
 app.use("/api/shops", ShopRouter);
 app.use("/api/user", UserRouter);
+app.use("/api/cart", CartRouter);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");

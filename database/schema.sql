@@ -126,6 +126,15 @@ CREATE TABLE `product_detail` (
   `value` varchar(100) NOT NULL,
   FOREIGN KEY (product_id) REFERENCES products(id)
 );
+CREATE TABLE Cart(
+    user_id VARCHAR(10),
+    product_id int,
+    quantity int,
+    added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN key (user_id) REFERENCES Users(phone_number),
+    FOREIGN key (product_id) REFERENCES Products(id),
+    primary key (user_id, product_id)
+);
 INSERT INTO categories
 VALUES (
         1,
@@ -173,8 +182,8 @@ VALUES (1, "son", 1),
     (7, "Áo sơ mi", 3),
     (8, "Giày đá banh", 4);
 INSERT INTO users
-VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png");
-INSERT INTO user_profile VALUES ("", "2005-08-25", 1, null, "0987654321");
+VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png"), ("0987654333", "hehe@gmail.com", "123456", "/assets/bear.png");
+INSERT INTO user_profile VALUES ("", "2005-08-25", 1, null, "0987654321"), ("", "2005-08-26", 1, null, "0987654333");
 
 INSERT INTO shops
 VALUES (
@@ -185,9 +194,17 @@ VALUES (
         1,
         "2025-08-25",
         "0987654321"
+    ),(
+        2,
+        "Coolmate - Official Store",
+        "/assets/shops/coolmate.webp",
+        "Shop chuyên về quần áo",
+        1,
+        "2025-08-26",
+        "0987654333"
     );
 
-INSERT INTO shop_categories VALUES (1, 1, "Sản phẩm thu đông"), (2, 1, "Sản phẩm mùa hè");
+INSERT INTO shop_categories VALUES (1, 1, "Sản phẩm thu đông"), (2, 1, "Sản phẩm mùa hè"), (3, 2, "Sản phẩm mới");
 
 INSERT INTO products
 VALUES (
@@ -286,6 +303,42 @@ VALUES (
         42,
         1,
         1
+    ), (
+        9,
+        "Áo Polo thể thao nam ProMax S1 Logo Coolmate",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        219000,
+        3,
+        2192,
+        2,
+        1
+    ), (
+        10,
+        "Áo Sơ Mi Dài Tay Essentials Cotton mềm mại thoáng mát Coolmate",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        271320,
+        3,
+        395,
+        2,
+        1
+    ), (
+        11,
+        "Quần dài nam Kaki Excool co giãn đàn hồi Coolmate",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        389000,
+        2,
+        519,
+        2,
+        1
     );
 INSERT INTO ProductImages
 VALUES  (1, "/assets/products/son1.jpg", 1, 1),
@@ -306,7 +359,23 @@ VALUES  (1, "/assets/products/son1.jpg", 1, 1),
         (16, "/assets/products/son4.1.jpeg", 7, 0),
         (17, "/assets/products/son4.2.jpeg", 7, 0),
         (18, "/assets/products/son5.jpg", 8, 1),
-        (19, "/assets/products/son5.1.jpg", 8, 0);
+        (19, "/assets/products/son5.1.jpg", 8, 0),
+        (20, "/assets/products/ao polo 1.webp", 9, 1),
+        (21, "/assets/products/ao polo1.1.webp", 9, 0),
+        (22, "/assets/products/ao polo1.2.webp", 9, 0),
+        (23, "/assets/products/ao polo1.3", 9, 0),
+        (24, "/assets/products/ao polo1.4.webp", 9, 0),
+        (25, "/assets/products/ao somi 1.webp", 10, 1),
+        (26, "/assets/products/ao somi1.1.webp", 10, 0),
+        (27, "/assets/products/ao somi1.2.webp", 10, 0),
+        (28, "/assets/products/ao somi1.3.webp", 10, 0),
+        (29, "/assets/products/quan kaki 1.webp", 11, 1),
+        (30, "/assets/products/quan kaki1.1.webp", 11, 0),
+        (31, "/assets/products/quan kaki1.2.webp", 11, 0),
+        (32, "/assets/products/quan kaki1.3.webp", 11, 0),
+        (33, "/assets/products/quan kaki1.4.webp", 11, 0),
+        (34, "/assets/products/quan kaki1.5.webp", 11, 0),
+        (35, "/assets/products/quan kaki1.6.webp", 11, 0);
 
 INSERT INTO productreviews
 VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),

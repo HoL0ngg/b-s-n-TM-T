@@ -18,7 +18,7 @@ interface CheckoutStepperProps {
 
 export default function CheckoutStepper({ activeStep }: CheckoutStepperProps) {
     return (
-        <Box sx={{ width: '75%', padding: '24px 0', margin: '0 auto' }}>
+        <Box sx={{ width: '75%', padding: '24px 0', margin: '24px auto 0px' }}>
             <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
@@ -9,13 +9,13 @@ import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
 import { useNavigate } from "react-router-dom";
-import { div } from "framer-motion/client";
+// import { div } from "framer-motion/client";
 
 
 const ProductDetail = () => {
+    const [images, setImages] = useState<ProductImageType[]>([]);
     const [product, setProduct] = useState<ProductType>();
     const { id } = useParams<{ id: string | undefined }>();
-    const [images, setImages] = useState<ProductImageType[]>([]);
     const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
     const [selectedImage, setSelectedImage] = useState<ProductImageType>();
     const [shop, setShop] = useState<ShopType>();
@@ -136,17 +136,7 @@ const ProductDetail = () => {
                         {!product ? (
                             <p>Đang tải sản phẩm...</p>
                         ) : (
-                            <>
-                                <ProductInfo product={product} />
-                                <div className="d-flex gap-4 align-items-center">
-                                    <button className="custom-button-addtocart rounded-pill">
-                                        Thêm vào giỏ hàng
-                                    </button>
-                                    <button className="custom-button-buynow rounded-pill">
-                                        Mua ngay
-                                    </button>
-                                </div>
-                            </>
+                            <ProductInfo product={product} />
                         )}
                     </div>
                 </div >

@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { getUserByIdController, getAddressByuserIdController, getUserProfileController, updateProfileController, postAddressUserController } from "../controllers/user.controller";
 import { verifyToken } from "../middleware/auth.middleware";
+import userController from "../controllers/user.controller";
 
 const UserRouter = Router();
 
-UserRouter.get("/:id", getUserByIdController);
-UserRouter.get("/:id/address", getAddressByuserIdController);
-UserRouter.post("/:id/address", postAddressUserController)
-UserRouter.get("/:id/profile", getUserProfileController);
-UserRouter.put("/:id/profile", verifyToken, updateProfileController);
+UserRouter.get("/:id", userController.getUserByIdController);
+UserRouter.get("/:id/address", userController.getAddressByuserIdController);
+UserRouter.post("/:id/address", userController.postAddressUserController)
+UserRouter.get("/:id/profile", userController.getUserProfileController);
+UserRouter.put("/:id/profile", verifyToken, userController.updateProfileController);
 
 export default UserRouter;

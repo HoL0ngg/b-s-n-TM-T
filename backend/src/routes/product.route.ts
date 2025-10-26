@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { getProductOnCategoryIdController, getProductOnIdController, getProductImgOnIdController, getProductOnShopIdController, getReviewByProductIdController, getReviewSummaryByProductIdController, getProductDetailsByProductIdController } from "../controllers/product.controller";
+import productController from "../controllers/product.controller";
 
 const ProductRouter = Router();
 
-ProductRouter.get("/", getProductOnCategoryIdController);
-ProductRouter.get("/:id", getProductOnIdController);
-ProductRouter.get("/images/:id", getProductImgOnIdController);
-ProductRouter.get("/shops/:id", getProductOnShopIdController);
-ProductRouter.get("/reviews/:id", getReviewByProductIdController);
-ProductRouter.get("/reviews/:id/summary", getReviewSummaryByProductIdController);
-ProductRouter.get("/productdetails/:id", getProductDetailsByProductIdController);
+ProductRouter.get("/", productController.getProductOnCategoryIdController);
+ProductRouter.get("/:id", productController.getProductOnIdController);
+ProductRouter.get("/images/:id", productController.getProductImgOnIdController);
+ProductRouter.get("/shops/:id", productController.getProductOnShopIdController);
+ProductRouter.get("/reviews/:id", productController.getReviewByProductIdController);
+ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByProductIdController);
+ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
 
 export default ProductRouter;
