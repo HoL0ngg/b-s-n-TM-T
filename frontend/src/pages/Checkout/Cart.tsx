@@ -16,6 +16,7 @@ export default function Cart() {
     ];
 
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
+    const [count, setCount] = useState<number>(1);
     const [loading, setLoading] = useState(false);
     // const navigate = useNavigate();
 
@@ -41,6 +42,9 @@ export default function Cart() {
             }
         });
     };
+
+    const increment = () => setCount(count + 1);
+    const decrement = () => setCount(count - 1);
 
     const calculateTotal = () => {
         return cartItems
@@ -88,20 +92,25 @@ export default function Cart() {
                                             />
                                             <img src="/assets/products/son2.jpg" className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
                                         </div>
-                                        <div className="col-7 d-flex flex-column justify-content-between">
+                                        <div className="col-8 d-flex flex-column justify-content-between">
                                             <div>
                                                 <div className="fw-bolder">{item.name}</div>
                                                 <div>Ghi các biến thể ở đây</div>
                                                 <div>Ghi các biến thể ở đây</div>
                                             </div>
-                                            <div>{item.price.toLocaleString()} ₫</div>
+                                            <div><span className="fw-bolder">{item.price.toLocaleString()} </span>₫</div>
                                         </div>
-                                        <div className="col-3 text-end d-flex flex-column justify-content-between">
-                                            <div className="pointer">x</div>
-                                            <div>
-                                                <span>-</span>
-                                                <span>1</span>
-                                                <span>+</span>
+                                        <div className="col-2 text-end d-flex flex-column justify-content-between">
+                                            <div className="d-flex justify-content-end">
+                                                <div className="pointer">x</div>
+                                            </div>
+                                            <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
+                                                <div className="d-flex my-1 border rounded-pill">
+                                                    <div className="border-end px-2 py-1" onClick={decrement}><i className="fa-solid fa-minus"></i></div>
+                                                    <input type="text" className="text-center text-primary" value={count} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
+                                                    <div className="border-start px-2 py-1" onClick={increment}><i className="fa-solid fa-plus"></i></div>
+                                                </div>
+                                                {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
                                             </div>
                                         </div>
                                     </div>
