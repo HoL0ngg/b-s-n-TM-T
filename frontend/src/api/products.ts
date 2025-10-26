@@ -49,6 +49,6 @@ export const fetchReviewSummaryByProductId = async (id: number) => {
 }
 
 export const fetchProductDetails = async (id: number): Promise<ProductDetails[]> => {
-    const res = await axios.get(`${API_URl}/product/${id}`);
+    const res = await axios.get(`${API_URl}/productdetails/${id}`);
     return res.data;
 }
