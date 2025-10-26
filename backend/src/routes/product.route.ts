@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProductOnCategoryIdController, getProductOnIdController, getProductImgOnIdController, getProductOnShopIdController, getReviewByProductIdController, getReviewSummaryByProductIdController } from "../controllers/prouduct.controller";
+import { getProductOnCategoryIdController, getProductOnIdController, getProductImgOnIdController, getProductOnShopIdController, getReviewByProductIdController, getReviewSummaryByProductIdController, getProductDetailsByProductIdController } from "../controllers/product.controller";
 
 const ProductRouter = Router();
 
@@ -9,5 +9,6 @@ ProductRouter.get("/images/:id", getProductImgOnIdController);
 ProductRouter.get("/shops/:id", getProductOnShopIdController);
 ProductRouter.get("/reviews/:id", getReviewByProductIdController);
 ProductRouter.get("/reviews/:id/summary", getReviewSummaryByProductIdController);
+ProductRouter.get("/productdetails/:id", getProductDetailsByProductIdController);
 
 export default ProductRouter;

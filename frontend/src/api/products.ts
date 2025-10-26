@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ProductType, ProductImageType, ProductReviewType } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductDetails } from "../types/ProductType";
 
 const API_URl = "http://localhost:5000/api/products";
 
@@ -45,5 +45,10 @@ export const fetchReviewByProductId = async (id: number, type?: number): Promise
 
 export const fetchReviewSummaryByProductId = async (id: number) => {
     const res = await axios.get(`${API_URl}/reviews/${id}/summary`);
+    return res.data;
+}
+
+export const fetchProductDetails = async (id: number): Promise<ProductDetails[]> => {
+    const res = await axios.get(`${API_URl}/productdetails/${id}`);
     return res.data;
 }

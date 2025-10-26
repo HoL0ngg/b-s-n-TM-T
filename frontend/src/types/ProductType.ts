@@ -35,3 +35,10 @@ export interface ProductReviewSummaryType {
     total: number;
     avg: number;
 }
+
+export interface ProductDetails {
+    id: number,
+    product_id: number,
+    attribute: string,
+    value: string,
+}

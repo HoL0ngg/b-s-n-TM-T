@@ -119,7 +119,13 @@ CREATE TABLE Address_User(
     FOREIGN key (address_id) REFERENCES Address(id),
     FOREIGN key (phone_number) REFERENCES Users(phone_number)
 );
-
+CREATE TABLE `product_detail` (
+  `id` int(11) AUTO_INCREMENT PRIMARY KEY NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `attribute` varchar(100) NOT NULL,
+  `value` varchar(100) NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(id)
+);
 INSERT INTO categories
 VALUES (
         1,
@@ -312,3 +318,12 @@ VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),
 INSERT INTO Address VALUES (1, "TP. Hồ Chí Minh", "Phường Chợ Quán", "An Dương Vương", "273");
 INSERT INTO Address VALUES (2, "TP. Hồ Chí Minh", "Phường Chợ Quán", "An Dương Vương", "275");
 INSERT INTO Address_User VALUES (1, "0987654321", 1, "L0ngkute", "0937211264"), (2, "0987654321", 0, "0 phải L0ngg", "0937211265");
+INSERT INTO `product_detail` (`id`, `product_id`, `attribute`, `value`) VALUES
+(1, 1, 'Thương hiệu', 'Maybelline'),
+(2, 1, 'Dòng sản phẩm', 'SuperStay Matte Ink'),
+(3, 1, 'Mã màu', '210'),
+(4, 1, 'Tên màu', 'Versatile (Hồng đất)'),
+(5, 1, 'Chất son', 'Son kem lì'),
+(6, 1, 'Độ bền màu', 'Lên đến 16 giờ'),
+(7, 1, 'Dung tích', '5ml'),
+(8, 1, 'Xuất xứ', 'Mỹ');

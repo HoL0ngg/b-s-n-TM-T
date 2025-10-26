@@ -3,7 +3,7 @@ import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 
-import { FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaChevronUp, FaChevronDown, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import type { ProductImageType } from "../types/ProductType";
 
 type ImageSliderProps = {
@@ -18,19 +18,33 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
 
             {/* 2. TẠO NÚT BẤM PREV (Nằm ngoài Swiper) */}
             <button id="my-custom-prev-button" className="custom-swiper-nav">
-                <FaChevronUp /> {/* 👈 Chèn icon của bạn ở đây */}
+                <FaChevronUp className="icon-vertical" />
+                <FaChevronLeft className="icon-horizontal" />
             </button>
 
             <Swiper
                 modules={[Navigation]}
-                direction={'vertical'}
-                spaceBetween={10}
-                slidesPerView={4}
+                direction={'horizontal'}
+                spaceBetween={1}
+                slidesPerView={2}
                 className="myVerticalSwiper"
                 // 3. BẢO SWIPER DÙNG CÁC NÚT TÙY CHỈNH
                 navigation={{
-                    prevEl: '#my-custom-prev-button', // 👈 Selector của nút prev
-                    nextEl: '#my-custom-next-button', // 👈 Selector của nút next
+                    prevEl: '#my-custom-prev-button',
+                    nextEl: '#my-custom-next-button',
+                }}
+
+                breakpoints={{
+                    768: {
+                        direction: 'vertical',
+                        slidesPerView: 4,
+                        spaceBetween: 10,
+                    },
+                    // 1024: {
+                    //     direction: 'vertical',
+                    //     slidesPerView: 4,
+                    //     spaceBetween: 10
+                    // }
                 }}
             >
                 {images.map((img) => {
@@ -60,7 +74,8 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
 
             {/* 4. TẠO NÚT BẤM NEXT (Nằm ngoài Swiper) */}
             <button id="my-custom-next-button" className="custom-swiper-nav">
-                <FaChevronDown /> {/* 👈 Chèn icon của bạn ở đây */}
+                <FaChevronDown className="icon-vertical" />
+                <FaChevronRight className="icon-horizontal" />
             </button>
         </div >
     );

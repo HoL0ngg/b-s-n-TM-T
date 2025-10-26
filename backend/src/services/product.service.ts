@@ -1,5 +1,5 @@
 import pool from "../config/db";
-import { Product, ProductReview } from "../models/product.model";
+import { Product, ProductReview, ProductDetails } from "../models/product.model";
 
 export const getProductOnCategoryIdService = async (Category_id: number): Promise<Product[]> => {
     const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where category_id = ? Group by id", [Category_id]);
@@ -102,4 +102,9 @@ export const getReviewSummaryByProductIdService = async (id: number) => {
     else summary.avg = 0;
 
     return summary;
+}
+
+export const getProductDetailsByProductId = async (id: number) => {
+    const [row] = await pool.query("SELECT * FROM products JOIN product_detail ON products.id = product_detail.product_id WHERE products.id = ?", [id]);
+    return row as ProductDetails[];
 }

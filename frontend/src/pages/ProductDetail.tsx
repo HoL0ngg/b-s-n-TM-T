@@ -2,13 +2,14 @@ import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
-import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetails } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
-import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId } from "../api/products";
+import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
 import { useNavigate } from "react-router-dom";
+import { div } from "framer-motion/client";
 
 
 const ProductDetail = () => {
@@ -22,7 +23,18 @@ const ProductDetail = () => {
     const [ratingSummary, setRatingSummary] = useState<ProductReviewSummaryType>({
         5: 0, 4: 0, 3: 0, 2: 0, 1: 0, total: 0, avg: 0.0
     });
+    const [productDetails, setProductDetails] = useState<ProductDetails[]>([]);
     const navigator = useNavigate();
+    const loadProductDetails = async () => {
+        if (!id) return;
+        try {
+            const data = await fetchProductDetails(Number(id));
+
+            setProductDetails(data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
     useEffect(() => {
         const loadProductAndShop = async () => {
             if (!id) return;
@@ -56,7 +68,7 @@ const ProductDetail = () => {
                 console.error("Failed to fetch product images:", err);
             }
         };
-
+        loadProductDetails();
         loadProductAndShop();
         loadProductImg();
     }, [id]);
@@ -105,89 +117,32 @@ const ProductDetail = () => {
         <div className="container mt-5">
             <div className="container">
                 <div className="row">
-                    {/* <div className="col-12 col-md-6 d-flex flex-column align-items-center justify-content-center">
-                        <div>
-                            {selectedImage ? (
-                                <img
-                                    src={selectedImage.image_url}
-                                    alt="Selected"
-                                    className="rounded"
-                                    style={{
-                                        width: "100%",
-                                        maxHeight: "500px",
-                                        objectFit: "contain",
-                                        borderRadius: "10px",
-                                    }}
-                                />
-                            ) : (
-                                <p>Không có ảnh</p>
-                            )}
-                        </div>
-                        <div className="col-12 border-red position-relative mt-3" style={{ width: "100%" }}>
-                            <ImageSlider
-                                images={images}
-                                onSelect={(id: number) => {
-                                    const img = images.find(img => img.image_id === id);
-                                    if (img) setSelectedImage(img);
-                                }}
-
-                                selectedImageId={selectedImage ? selectedImage.image_id : null} />
-                        </div>
-                    </div> */}
-                    <div className="col-12 col-md-1 border-red">
+                    <div className="col-12 col-md-1">
                         <ImageSlider images={images} onSelect={setSelectedImage} selectedImageId={selectedImage} />
                     </div>
-                    {/* <div className="col-12 col-md-6 border">
-                        <div className="col-5 d-flex align-items-center justify-content-center">
-                            {selectedImage ? (
-                                <img
-                                    src={selectedImage.image_url}
-                                    alt="Selected"
-                                    // className="rounded"
-                                    style={{ width: "450px", height: "450px", objectFit: "cover", borderRadius: "10px" }}
-                                />
-                            ) : (
-                                <p>Không có ảnh</p>
-                            )}
-                        </div>
-                        <div className="col-6 border rounded border-2">
-                            {!product ? (
-                                <p>Đang tải sản phẩm...</p>
-                            ) : (
-                                <>
-                                    <ProductInfo product={product} />
-                                    <div>
-                                        <button className="custom-button-addtocart">
-                                            Thêm vào giỏ hàng
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div> */}
-                    <div className="col-12 col-md-5 d-flex align-items-center justify-content-center">
+                    <div className="col-12 col-md-6 d-flex align-items-center justify-content-center">
                         {selectedImage ? (
                             <img
                                 src={selectedImage.image_url}
                                 alt="Selected"
                                 // className="rounded"
-                                style={{ width: "450px", height: "450px", objectFit: "cover", borderRadius: "10px" }}
+                                style={{ width: "550px", height: "550px", objectFit: "cover", borderRadius: "10px" }}
                             />
                         ) : (
                             <p>Không có ảnh</p>
                         )}
                     </div>
-                    <div className="col-12 col-md-6 border rounded border-2 pb-4">
+                    <div className="col-12 col-md-5 border rounded border-2 pb-4">
                         {!product ? (
                             <p>Đang tải sản phẩm...</p>
                         ) : (
                             <>
                                 <ProductInfo product={product} />
                                 <div className="d-flex gap-4 align-items-center">
-                                    <button className="custom-button-addtocart">
+                                    <button className="custom-button-addtocart rounded-pill">
                                         Thêm vào giỏ hàng
                                     </button>
-                                    <button className="custom-button-buynow">
+                                    <button className="custom-button-buynow rounded-pill">
                                         Mua ngay
                                     </button>
                                 </div>
@@ -226,8 +181,33 @@ const ProductDetail = () => {
                     </div>
                 </div>
             </div>
+            <div className="row mt-4 p-3">
+                <div className="fw-bold fs-4">Chi tiết sản phẩm</div>
+                <div className="row">
+                    <div className="col-7">
+                        {productDetails.length > 0 ? (
+                            productDetails.map((productDetail) => (
+                                <div className="border-bottom py-2" key={productDetail.id}>
+                                    <div className="row">
+                                        <div className="col-3 fw-bold">{productDetail.attribute}</div>
+                                        <div className="col-9 text-muted">{productDetail.value}</div>
+                                    </div>
+                                </div>
+                            ))
+                        )
+                            :
+                            (
+                                <div>
+                                    <p>Khong co chi tiet sp</p>
+                                </div>
+                            )}
+                    </div>
+                    <div className="col-5"></div>
+                </div>
+            </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
-                <span className="fw-bold fs-4">Chi tiết sản phẩm</span>
+                <div className="fw-bold fs-4">Mô tả sản phẩm</div>
+                <div>{product?.description}</div>
             </div>
 
             <div className="container mt-4 bg-light p-4">

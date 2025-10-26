@@ -156,10 +156,10 @@
 }
 
 /* Khi input được focus hoặc có giá trị */
-.floating-input input:focus+label,
-.floating-input input:not(:placeholder-shown)+label,
-.floating-input select:focus+label,
-.floating-input select:not([value=""])+label {
+.floating-input input:focus + label,
+.floating-input input:not(:placeholder-shown) + label,
+.floating-input select:focus + label,
+.floating-input select:not([value=""]) + label {
   top: 0;
   left: 10px;
   font-size: 12px;
@@ -246,25 +246,16 @@
 
 .custom-slider-wrapper {
   position: relative;
-  width: 120px;
-
-  /* Tạo không gian ở trên và dưới để đặt nút */
+  width: 500px;
   padding-top: 30px;
   padding-bottom: 30px;
 }
 
-.myVerticalSwiper {
-  height: 480px;
-}
-
 .custom-swiper-nav {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  /* Đảm bảo nút nằm trên cùng */
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 10;
-
   width: 30px;
   height: 30px;
   background: #fff;
@@ -281,12 +272,12 @@
   background: #f0f0f0;
 }
 
-#my-custom-prev-button {
-  top: 0;
-}
+/* #my-custom-prev-button {
+  left: 0;
+} */
 
 #my-custom-next-button {
-  bottom: 0;
+  right: 0;
 }
 
 .custom-swiper-nav.swiper-button-disabled {
@@ -294,6 +285,48 @@
   cursor: not-allowed;
 }
 
+<<<<<<< HEAD
 .pointer {
   cursor: pointer;
 }
+=======
+/* 1. Mặc định (cho màn hình nhỏ, horizontal) */
+.myVerticalSwiper {
+  width: 400px;
+  height: auto;
+}
+.icon-vertical {
+  display: none;
+}
+.icon-horizontal {
+  display: inline-block;
+}
+/* Đổi lại icon cho đúng chiều */
+@media (min-width: 768px) {
+  .myVerticalSwiper {
+    height: 494px;
+    width: 100%;
+  }
+  .custom-slider-wrapper {
+    width: 120px;
+  }
+  .custom-swiper-nav {
+    left: 50%;
+    transform: translateX(-50%);
+    top: unset;
+  }
+  #my-custom-prev-button {
+    top: 0;
+  }
+
+  #my-custom-next-button {
+    bottom: 0;
+  }
+  .icon-vertical {
+    display: inline-block;
+  }
+  .icon-horizontal {
+    display: none;
+  }
+}
+>>>>>>> nghiakute

@@ -19,3 +19,10 @@ export interface ProductReview {
     email: string;
     avatar_url: string;
 }
+
+export interface ProductDetails {
+    id: number,
+    product_id: number,
+    attribute: string,
+    value: string,
+}
