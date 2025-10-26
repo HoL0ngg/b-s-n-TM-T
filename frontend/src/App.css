@@ -285,11 +285,9 @@
   cursor: not-allowed;
 }
 
-<<<<<<< HEAD
 .pointer {
   cursor: pointer;
 }
-=======
 /* 1. Mặc định (cho màn hình nhỏ, horizontal) */
 .myVerticalSwiper {
   width: 400px;
@@ -329,4 +327,3 @@
     display: none;
   }
 }
->>>>>>> nghiakute
