@@ -6,9 +6,8 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Cart from "./pages/Cart";
 import ChatbotFloating from "./components/ChatbotFloating";
-import Information from "./pages/Information"
+// import Information from "./pages/Information"
 import ScrollToTop from "./components/ScrollToTop";
 import Category from "./pages/Category";
 import ForgetPassword from "./pages/forgetPassword";
@@ -19,6 +18,8 @@ import Purchase from "./pages/User/Purchase";
 import Shop from "./pages/Shop";
 import Bank from "./pages/User/Account/Bank";
 import ProductDetail from "./pages/ProductDetail";
+import CheckoutLayout from "./pages/Checkout/CheckoutLayout";
+import Cart from "./pages/Checkout/Cart";
 
 
 function App() {
@@ -32,9 +33,8 @@ function App() {
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/cart" element={<Cart />} />
+          {/* <Route path="/cart" element={<Cart />} /> */}
           {/* <Route path="/products" element={<Products />} /> */}
-          <Route path="/cart/information" element={<Information />} />
           <Route path="/category/:name" element={<Category />} />
 
           <Route path="/shop/:id" element={<Shop />} />
@@ -48,6 +48,13 @@ function App() {
               <Route path="bank" element={<Bank />} />
             </Route>
             <Route path="purchase" element={<Purchase />} />
+          </Route>
+
+          {/* Path của checkout */}
+          <Route element={<CheckoutLayout />}>
+            <Route path="/cart" element={<Cart />}></Route>
+            {/* <Route path="/checkout/address" element={<AddressPage />} /> */}
+            {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
           </Route>
 
           <Route path="/product/:id" element={<ProductDetail />} />
