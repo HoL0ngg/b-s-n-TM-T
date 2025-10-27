@@ -11,8 +11,16 @@ export const addToCart = async (user_id: number, product_id: number, quantity: n
     return response.data;
 }
 
-export const getCartByUserId = async (user_id: number) => {
-    const res = await axios.get(`${API_URL}/getCart/${user_id}`);
+export const getCartByUserId = async () => {
+    const res = await axios.get(`${API_URL}/getCart`);
+
+    return res.data;
+}
+
+export const updateProductQuantity = async (product_id: number, quantity: number) => {
+    const res = await axios.patch(`${API_URL}/updateCart/${product_id}`, {
+        quantity: quantity
+    });
 
     return res.data;
 }

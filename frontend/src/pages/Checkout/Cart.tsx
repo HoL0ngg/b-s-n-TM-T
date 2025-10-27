@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getCartByUserId } from "../../api/cart";
+import { getCartByUserId, updateProductQuantity } from "../../api/cart";
 import { useAuth } from "../../context/AuthContext";
 import type { CartItem, CartType } from "../../types/CartType";
 // import { useNavigate } from "react-router-dom";
@@ -15,11 +15,9 @@ export default function Cart() {
     const debounceTimers = useRef<{ [key: string]: number }>({});
 
     useEffect(() => {
-        const loadCart = async (id: number) => {
-
+        const loadCart = async () => {
             try {
-                const data = await getCartByUserId(id);
-                console.log(data);
+                const data = await getCartByUserId();
 
                 const grouped = data.reduce((acc: any, item: any) => {
                     // Lấy thông tin shop
@@ -43,17 +41,28 @@ export default function Cart() {
 
                     return acc;
                 }, {});
-                console.log(grouped);
+                // console.log(grouped);
 
                 setCart(Object.values(grouped));
             } catch (err) {
                 console.log(err);
             }
-
         }
-        if (user)
-            loadCart(user.id);
-    }, [user])
+        loadCart();
+    }, [user]);
+
+    // Hàm (giả lập) gọi API để cập nhật CSDL
+    const updateCartInDatabase = async (productId: number, newQuantity: number) => {
+        console.log(`%cCALLING API:`, 'color: #f0a;', `Cập nhật product_id ${productId} thành số lượng ${newQuantity}`);
+        try {
+            const res = await updateProductQuantity(productId, newQuantity);
+            if (!res.success) {
+                console.log("Có lỗi");
+            }
+        } catch (Err) {
+            console.log(Err);
+        }
+    };
 
     const handleCheckboxChange = (productid: number) => {
         setSelectedItems(prevSelected =>
@@ -80,9 +89,6 @@ export default function Cart() {
         });
     };
 
-    const increment = () => (console.log("hihi"));
-    const decrement = () => (console.log("heheh"));
-
     const calculateTotal = () => {
         if (!cart || cart.length === 0) {
             return 0;
@@ -103,6 +109,60 @@ export default function Cart() {
             }, 0);
     };
 
+    /**
+ * Hàm chính xử lý tất cả logic thay đổi số lượng.
+ */
+    const handleQuantityChange = (productId: number, newQuantity: number) => {
+        const finalQuantity = Math.max(newQuantity, 1);
+
+        setCart(currentCart => {
+            // Dùng map để tạo mảng shop mới (immutable)
+            return currentCart.map(shop => {
+                // Tìm xem item có trong shop này không
+                const itemExistsInThisShop = shop.items.some(
+                    item => item.product_id === productId
+                );
+
+                // Nếu không có, trả về shop này y nguyên
+                if (!itemExistsInThisShop) {
+                    return shop;
+                }
+
+                // Nếu có, tạo mảng 'items' mới cho shop này
+                const newItems = shop.items.map(item => {
+                    // Nếu không phải item cần tìm, trả về y nguyên
+                    if (item.product_id !== productId) {
+                        return item;
+                    }
+                    // Nếu đúng là item, trả về item mới với quantity đã cập nhật
+                    return { ...item, quantity: finalQuantity };
+                });
+
+                // Trả về shop với mảng 'items' đã được cập nhật
+                return { ...shop, items: newItems };
+            });
+        });
+
+        // Hủy bỏ timer cũ của sản phẩm này (nếu có)
+        if (debounceTimers.current[productId]) {
+            clearTimeout(debounceTimers.current[productId]);
+        }
+
+        // Đặt một timer mới
+        debounceTimers.current[productId] = setTimeout(() => {
+            // Gọi API sau 1.5 giây
+            updateCartInDatabase(productId, finalQuantity);
+        }, 1500); // 1.5 giây
+    };
+
+    const handleIncrease = (productId: number, currentQuantity: number) => {
+        handleQuantityChange(productId, currentQuantity + 1);
+    };
+
+    const handleDecrease = (productId: number, currentQuantity: number) => {
+        handleQuantityChange(productId, currentQuantity - 1);
+    };
+
     const handleCheckout = () => {
         setLoading(true);
         setTimeout(() => {
@@ -110,13 +170,12 @@ export default function Cart() {
         }, 1000);
     }
 
-    if (!user) return (<div>Đang tải hihi ...</div>)
+    if (!user) return (<div>Đăng nhập đi b ei</div>)
 
     return (
         <>
             <div className="container p-4">
                 {cart.map(shop => {
-                    console.log(shop);
                     const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
 
                     return (
@@ -159,9 +218,9 @@ export default function Cart() {
                                             </div>
                                             <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
                                                 <div className="d-flex my-1 border rounded-pill">
-                                                    <div className="border-end px-2 py-1 pointer" onClick={decrement}><i className="fa-solid fa-minus"></i></div>
+                                                    <div className="border-end px-2 py-1 pointer" onClick={() => handleDecrease(item.product_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
                                                     <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
-                                                    <div className="border-start px-2 py-1 pointer" onClick={increment}><i className="fa-solid fa-plus"></i></div>
+                                                    <div className="border-start px-2 py-1 pointer" onClick={() => handleIncrease(item.product_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
                                                 </div>
                                                 {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
                                             </div>
