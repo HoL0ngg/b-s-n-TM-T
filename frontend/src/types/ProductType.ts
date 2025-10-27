@@ -36,9 +36,13 @@ export interface ProductReviewSummaryType {
     avg: number;
 }
 
-export interface ProductDetails {
+export interface ProductDetailsType {
     id: number,
     product_id: number,
     attribute: string,
     value: string,
+}
+export interface AttributeOfProductVariantsType {
+    attribute: string,
+    values: string[],
 }

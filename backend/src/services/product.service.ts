@@ -1,5 +1,5 @@
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants } from "../models/product.model";
 
 class productService {
     getProductOnCategoryIdService = async (Category_id: number): Promise<Product[]> => {
@@ -108,6 +108,24 @@ class productService {
     getProductDetailsByProductId = async (id: number) => {
         const [row] = await pool.query("SELECT * FROM products JOIN product_detail ON products.id = product_detail.product_id WHERE products.id = ?", [id]);
         return row as ProductDetails[];
+    }
+
+    getAttributeOfProductVariantsByProductIdService = async (id: number) => {
+        const [rows] = await pool.query(`
+                    SELECT pa.name as attribute_name, 
+                    GROUP_CONCAT(DISTINCT vov.value ORDER BY vov.value SEPARATOR ', ') AS attribute_values
+                    FROM products as p JOIN productvariants as pv on pv.product_id = p.id 
+                    JOIN variantoptionvalues as vov on vov.variant_id = pv.id 
+                    JOIN product_attributes as pa on pa.id = vov.attribute_id 
+                    WHERE p.id = ?
+                    GROUP BY pa.name
+                `, [id]);
+
+        const result = (rows as any[]).map(r => ({
+            attribute: r.attribute_name,
+            values: r.attribute_values ? r.attribute_values.split(', ') : []
+        }));
+        return result as AttributeOfProductVariants[];
     }
 }
 

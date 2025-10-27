@@ -26,3 +26,8 @@ export interface ProductDetails {
     attribute: string,
     value: string,
 }
+
+export interface AttributeOfProductVariants {
+    attribute: string,
+    values: string[],
+}

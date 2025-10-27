@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ProductType, ProductImageType, ProductReviewType, ProductDetails } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType } from "../types/ProductType";
 
 const API_URl = "http://localhost:5000/api/products";
 
@@ -48,7 +48,12 @@ export const fetchReviewSummaryByProductId = async (id: number) => {
     return res.data;
 }
 
-export const fetchProductDetails = async (id: number): Promise<ProductDetails[]> => {
+export const fetchProductDetails = async (id: number): Promise<ProductDetailsType[]> => {
     const res = await axios.get(`${API_URl}/productdetails/${id}`);
+    return res.data;
+}
+
+export const fetchAttributeOfProductVariants = async (id: number): Promise<AttributeOfProductVariantsType[]> => {
+    const res = await axios.get(`${API_URl}/attributeofproductvariants/${id}`);
     return res.data;
 }
