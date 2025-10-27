@@ -4,7 +4,8 @@ import cartService from "../services/cart.service";
 class CartController {
     addToCartController = async (req: Request, res: Response) => {
         try {
-            const { product_id, user_id, quantity } = req.body;
+            const { product_id, quantity } = req.body;
+            const user_id = (req as any).user.id;
 
             await cartService.addToCartService(user_id, product_id, quantity);
             res.status(200).json({ message: 'Ngon', result: true });

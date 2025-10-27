@@ -2,9 +2,8 @@ import axios from "axios"
 
 const API_URL = "http://localhost:5000/api/cart";
 
-export const addToCart = async (user_id: number, product_id: number, quantity: number) => {
+export const addToCart = async (product_id: number, quantity: number) => {
     const response = await axios.post(`${API_URL}/add`, {
-        user_id: user_id,
         product_id: product_id,
         quantity: quantity
     });
@@ -13,6 +12,7 @@ export const addToCart = async (user_id: number, product_id: number, quantity: n
 
 export const getCartByUserId = async () => {
     const res = await axios.get(`${API_URL}/getCart`);
+    console.log(res.data);
 
     return res.data;
 }

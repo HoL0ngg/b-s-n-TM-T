@@ -4,7 +4,7 @@ import { verifyToken } from "../middleware/auth.middleware";
 
 const CartRouter = Router();
 
-CartRouter.post("/add", cartController.addToCartController)
+CartRouter.post("/add", verifyToken, cartController.addToCartController)
 CartRouter.get("/getCart", verifyToken, cartController.getCartByIdController);
 CartRouter.patch("/updateCart/:product_id", verifyToken, cartController.updateProductQuantity);
 

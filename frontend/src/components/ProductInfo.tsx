@@ -1,11 +1,9 @@
-import Swal from "sweetalert2";
-import { addToCart } from "../api/cart";
-import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import type { ProductType } from "../types/ProductType"
 import { useState } from "react";
 
 export default function ProductInfo({ product }: { product: ProductType }) {
-    const { user } = useAuth();
+    const { AddToCart } = useCart();
     const [count, setCount] = useState(1);
     const increment = () => {
         setCount(prev => prev + 1);
@@ -16,36 +14,9 @@ export default function ProductInfo({ product }: { product: ProductType }) {
         }
     }
 
-    const handleSuccess = () => {
-        Swal.fire({
-            title: "Thành công!",
-            text: "Thêm sản phẩm vào giỏ hàng thành công 🎉",
-            icon: "success",
-            // confirmButtonText: "OK"
-        });
-    };
-
-    const KeuDangNhapDi = () => {
-        Swal.fire({
-            title: "Thông báo!",
-            text: "Đăng nhập đi b ei",
-            icon: "info",
-            confirmButtonText: "OK"
-        });
-    };
-
     const handleAddCart = async () => {
-        if (!user) {
-            KeuDangNhapDi();
-        }
-        if (user && product) {
-            const res = await addToCart(user.id, product.id, count);
-            console.log(res);
-
-            if (res.result == true) {
-                handleSuccess();
-            }
-        }
+        const res = await AddToCart(product.id, count);
+        console.log(res);
     }
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;

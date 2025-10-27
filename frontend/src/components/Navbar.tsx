@@ -1,13 +1,33 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { cart } = useCart();
     const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+
+    const totalItemCount = useMemo(() => {
+        // 'cart' là mảng các shop [shop1, shop2, ...]
+
+        // Dùng reduce để "gom" mảng shop lại thành 1 con số
+        return cart.reduce((total, shop) => {
+            // total: tổng số lượng hiện tại
+            // shop: shop hiện tại đang lặp qua
+
+            // Lấy số lượng item CỦA RIÊNG shop này
+            const shopItemCount = shop.items.length;
+
+            // Cộng dồn vào tổng
+            return total + shopItemCount;
+
+        }, 0); // Bắt đầu đếm từ 0
+
+    }, [cart]); // Phụ thuộc vào 'cart'
 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,7 +96,9 @@ export default function Navbar() {
                         </li>
                         <li>
                             <Link to="/cart" className="nav-link">
-                                <i className="fa-solid fa-cart-shopping text-primary fs-5"></i>
+                                <i className="fa-solid fa-cart-shopping text-primary fs-5 position-relative">
+                                    <span className="position-absolute top-0 start-100 translate-middle badge border border-light rounded-circle bg-danger">{totalItemCount > 0 && <span>{totalItemCount}</span>}</span>
+                                </i>
                             </Link>
                         </li>
                     </ul>

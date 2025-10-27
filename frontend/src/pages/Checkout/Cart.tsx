@@ -1,67 +1,20 @@
-import { useEffect, useRef, useState } from "react";
-import { getCartByUserId, updateProductQuantity } from "../../api/cart";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import type { CartItem, CartType } from "../../types/CartType";
-// import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import type { CartItem } from "../../types/CartType";
+import { useNavigate } from "react-router-dom";
+import { TiDeleteOutline } from "react-icons/ti";
+import { FaRegCircle } from "react-icons/fa";
 
 export default function Cart() {
-    const [cart, setCart] = useState<CartType[]>([]);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const { user } = useAuth();
+    const { cart, updateQuantity } = useCart();
 
-    // Ref để lưu trữ các timer (mỗi sản phẩm 1 timer)
-    const debounceTimers = useRef<{ [key: string]: number }>({});
-
-    useEffect(() => {
-        const loadCart = async () => {
-            try {
-                const data = await getCartByUserId();
-
-                const grouped = data.reduce((acc: any, item: any) => {
-                    // Lấy thông tin shop
-                    const shopId = item.shop_id;
-                    const shopName = item.shop_name;
-                    const logoUrl = item.logo_url;
-
-                    // Nếu shop này chưa có trong 'acc' (accumulator)
-                    if (!acc[shopId]) {
-                        // Tạo một mục mới cho shop
-                        acc[shopId] = {
-                            shop_id: shopId,
-                            shop_name: shopName,
-                            logo_url: logoUrl,
-                            items: [] // và một mảng rỗng để chứa sản phẩm
-                        };
-                    }
-
-                    // Thêm sản phẩm này vào mảng 'items' của shop đó
-                    acc[shopId].items.push(item);
-
-                    return acc;
-                }, {});
-                // console.log(grouped);
-
-                setCart(Object.values(grouped));
-            } catch (err) {
-                console.log(err);
-            }
-        }
-        loadCart();
-    }, [user]);
-
-    // Hàm (giả lập) gọi API để cập nhật CSDL
     const updateCartInDatabase = async (productId: number, newQuantity: number) => {
-        console.log(`%cCALLING API:`, 'color: #f0a;', `Cập nhật product_id ${productId} thành số lượng ${newQuantity}`);
-        try {
-            const res = await updateProductQuantity(productId, newQuantity);
-            if (!res.success) {
-                console.log("Có lỗi");
-            }
-        } catch (Err) {
-            console.log(Err);
-        }
+        updateQuantity(productId, newQuantity);
     };
 
     const handleCheckboxChange = (productid: number) => {
@@ -94,12 +47,8 @@ export default function Cart() {
             return 0;
         }
 
-        // 1. Dùng `flatMap` để "làm phẳng" cấu trúc nhóm
-        // Biến `allItems` này sẽ là một mảng `CartItem[]` đơn giản
         const allItems: CartItem[] = cart.flatMap(shop => shop.items);
 
-        // 2. Bây giờ, bạn dùng logic .filter().reduce()
-        //    giống hệt như tôi đã đề xuất
         return allItems
             .filter(item => selectedItems.includes(item.product_id))
             .reduce((sum, item) => {
@@ -109,68 +58,23 @@ export default function Cart() {
             }, 0);
     };
 
-    /**
- * Hàm chính xử lý tất cả logic thay đổi số lượng.
- */
-    const handleQuantityChange = (productId: number, newQuantity: number) => {
-        const finalQuantity = Math.max(newQuantity, 1);
-
-        setCart(currentCart => {
-            // Dùng map để tạo mảng shop mới (immutable)
-            return currentCart.map(shop => {
-                // Tìm xem item có trong shop này không
-                const itemExistsInThisShop = shop.items.some(
-                    item => item.product_id === productId
-                );
-
-                // Nếu không có, trả về shop này y nguyên
-                if (!itemExistsInThisShop) {
-                    return shop;
-                }
-
-                // Nếu có, tạo mảng 'items' mới cho shop này
-                const newItems = shop.items.map(item => {
-                    // Nếu không phải item cần tìm, trả về y nguyên
-                    if (item.product_id !== productId) {
-                        return item;
-                    }
-                    // Nếu đúng là item, trả về item mới với quantity đã cập nhật
-                    return { ...item, quantity: finalQuantity };
-                });
-
-                // Trả về shop với mảng 'items' đã được cập nhật
-                return { ...shop, items: newItems };
-            });
-        });
-
-        // Hủy bỏ timer cũ của sản phẩm này (nếu có)
-        if (debounceTimers.current[productId]) {
-            clearTimeout(debounceTimers.current[productId]);
-        }
-
-        // Đặt một timer mới
-        debounceTimers.current[productId] = setTimeout(() => {
-            // Gọi API sau 1.5 giây
-            updateCartInDatabase(productId, finalQuantity);
-        }, 1500); // 1.5 giây
-    };
-
     const handleIncrease = (productId: number, currentQuantity: number) => {
-        handleQuantityChange(productId, currentQuantity + 1);
+        updateCartInDatabase(productId, currentQuantity + 1);
     };
 
     const handleDecrease = (productId: number, currentQuantity: number) => {
-        handleQuantityChange(productId, currentQuantity - 1);
+        updateCartInDatabase(productId, currentQuantity - 1);
     };
 
     const handleCheckout = () => {
         setLoading(true);
         setTimeout(() => {
-            // navigate("/cart/Information");
+            navigate("/checkout/address");
         }, 1000);
     }
 
     if (!user) return (<div>Đăng nhập đi b ei</div>)
+    if (!cart) return (<div>Đang tải b ei</div>)
 
     return (
         <>
@@ -214,7 +118,7 @@ export default function Cart() {
                                         </div>
                                         <div className="col-2 text-end d-flex flex-column justify-content-between">
                                             <div className="d-flex justify-content-end">
-                                                <div className="pointer">x</div>
+                                                <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" /></div>
                                             </div>
                                             <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
                                                 <div className="d-flex my-1 border rounded-pill">

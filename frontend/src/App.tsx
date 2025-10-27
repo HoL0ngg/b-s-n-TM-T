@@ -20,6 +20,7 @@ import Bank from "./pages/User/Account/Bank";
 import ProductDetail from "./pages/ProductDetail";
 import CheckoutLayout from "./pages/Checkout/CheckoutLayout";
 import Cart from "./pages/Checkout/Cart";
+import { AddressPage } from "./pages/Checkout/AddressPage";
 
 
 function App() {
@@ -53,7 +54,7 @@ function App() {
           {/* Path của checkout */}
           <Route element={<CheckoutLayout />}>
             <Route path="/cart" element={<Cart />}></Route>
-            {/* <Route path="/checkout/address" element={<AddressPage />} /> */}
+            <Route path="/checkout/address" element={<AddressPage />} />
             {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
           </Route>
 
