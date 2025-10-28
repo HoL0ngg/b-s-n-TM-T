@@ -90,7 +90,7 @@ export default function Navbar() {
                             </Link>
                         </li>
                         <li>
-                            <Link to="/" className="nav-link">
+                            <Link to="/register-shop" className="nav-link">
                                 <i className="fa-regular fa-heart text-primary fs-5"></i>
                             </Link>
                         </li>
