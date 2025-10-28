@@ -1,0 +1,100 @@
+/* src/layouts/ShopLayout.css */
+
+:root {
+  /* Chiều cao Navbar, bạn có thể chỉnh nếu Navbar của bạn cao hơn */
+  --navbar-height: 56px; 
+  
+  /* Chiều rộng của Sidebar khi mở và đóng */
+  --sidebar-width-open: 250px;
+  --sidebar-width-closed: 70px; /* Chỉ đủ cho icons */
+}
+
+/* --- Navbar --- */
+/* (Navbar dùng 'fixed-top' của Bootstrap nên không cần CSS) */
+/* Chúng ta chỉ cần 1 màu nền tùy chỉnh cho nó */
+.navbar-custom-dark {
+  /* Đây là màu xanh/xám đậm giống trong ảnh CoreUI */
+  background-color: #ff953d !important; 
+}
+
+
+/* --- Sidebar --- */
+.shop-sidebar {
+  position: fixed;
+  top: var(--navbar-height); /* Nằm ngay DƯỚI Navbar */
+  left: 0;
+  height: calc(100vh - var(--navbar-height)); /* Chiếm 100% chiều cao còn lại */
+  z-index: 1020; /* Dưới Navbar (1030) nhưng trên nội dung */
+  
+  overflow-y: auto; /* Tự cuộn khi menu dài */
+  overflow-x: hidden; /* Ẩn text khi co lại */
+  
+  /* Hiệu ứng co/dãn */
+  transition: width 0.3s ease;
+}
+
+.shop-sidebar.open {
+  width: var(--sidebar-width-open);
+}
+
+.shop-sidebar.closed {
+  width: var(--sidebar-width-closed);
+}
+
+/* Ẩn/hiện chữ trong sidebar */
+.sidebar-link-text {
+  display: inline-block;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+  white-space: nowrap; /* Ngăn text rớt dòng */
+}
+
+.shop-sidebar.closed .sidebar-link-text {
+  opacity: 0;
+  width: 0;
+}
+
+
+/* --- Main Content --- */
+.shop-main-content {
+  padding-top: var(--navbar-height); /* Đẩy nội dung xuống dưới Navbar */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(241, 241, 241);
+  
+  /* Hiệu ứng đẩy nội dung */
+  transition: margin-left 0.3s ease;
+}
+
+.shop-main-content.open {
+  margin-left: var(--sidebar-width-open);
+}
+
+.shop-main-content.closed {
+  margin-left: var(--sidebar-width-closed);
+}
+
+.shop-page-content {
+  flex-grow: 1; /* Luôn chiếm đầy không gian, đẩy Footer xuống dưới */
+  padding: 1.5rem; /* Khoảng cách cho nội dung trang */
+}
+/* --- TÙY CHỈNH LINK KHI ĐƯỢC CHỌN (ACTIVE) --- */
+
+/* Bỏ màu xanh mặc định, đổi thành màu cam */
+.shop-sidebar .nav-link.active {
+  background-color: #ff953d !important;
+  color: white !important; /* Chữ đổi thành màu trắng */
+  font-weight: 600; /* In đậm chữ lên */
+}
+
+/* Đổi màu icon thành trắng khi được chọn */
+.shop-sidebar .nav-link.active i {
+  color: white !important;
+}
+
+/* Đổi màu nền khi di chuột (hover) qua link CHƯA active */
+.shop-sidebar .nav-link:not(.active):hover {
+  background-color: #fff0e6; /* Màu cam rất nhạt */
+  color: #333;
+}
