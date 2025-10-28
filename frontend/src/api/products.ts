@@ -3,8 +3,8 @@ import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsTy
 
 const API_URl = "http://localhost:5000/api/products";
 
-export const fecthProducts = async (category_id?: Number): Promise<ProductType[]> => {
-    const res = await axios.get(`${API_URl}?category_id=${category_id}`);
+export const fecthProducts = async (category_id?: number, page: number = 1, limit: number = 12): Promise<{ data: ProductType[]; totalPages: number }> => {
+    const res = await axios.get(`${API_URl}?category_id=${category_id}&page=${page}&limit=${limit}`);
     // console.log(res.data);
     return res.data;
 }

@@ -2,9 +2,26 @@ import pool from "../config/db";
 import { Product, ProductReview, ProductDetails, AttributeOfProductVariants } from "../models/product.model";
 
 class productService {
-    getProductOnCategoryIdService = async (Category_id: number): Promise<Product[]> => {
-        const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where category_id = ? Group by id", [Category_id]);
-        return rows as Product[];
+    getProductOnCategoryIdService = async (Category_id: number, page: number, limit: number): Promise<{
+        data: Product[]; totalPages: number
+    }> => {
+        const offset = (page - 1) * limit;
+        const [countRows] = await pool.query("SELECT COUNT(*) as total FROM products WHERE category_id = ?", [Category_id]);
+
+        const total = (countRows as any)[0].total;
+        const totalPages = Math.ceil(total / limit);
+        const [rows] = await pool.query(
+            `SELECT products.id, products.name, products.description, products.base_price, products.shop_id, 
+                productimages.image_url, products.sold_count
+         FROM products 
+         JOIN productimages ON productimages.product_id = products.id
+         WHERE products.category_id = ?
+         GROUP BY products.id
+         LIMIT ? OFFSET ?`,
+            [Category_id, limit, offset]
+        );
+        return { data: rows as Product[], totalPages }
+
     };
 
     getProductOnIdService = async (id: number): Promise<Product> => {
@@ -106,7 +123,7 @@ class productService {
     }
 
     getProductDetailsByProductId = async (id: number) => {
-        const [row] = await pool.query("SELECT * FROM products JOIN product_detail ON products.id = product_detail.product_id WHERE products.id = ?", [id]);
+        const [row] = await pool.query("SELECT id,product_id,attribute,value FROM product_detail WHERE product_id = ?", [id]);
         return row as ProductDetails[];
     }
 

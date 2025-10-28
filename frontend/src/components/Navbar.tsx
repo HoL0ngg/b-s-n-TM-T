@@ -81,6 +81,7 @@ export default function Navbar() {
                                             zIndex: 1000,
                                             padding: "10px",
                                             cursor: "pointer",
+                                            width: "100px"
                                         }}
                                         onClick={handleLogout}
                                     >

@@ -304,7 +304,22 @@
   border: 1px solid var(--bs-orange);
   background-color: #ff8c0017;
 }
-
+.pagenum-nonactive {
+  border: none;
+  background-color: white;
+  border-radius: 50%;
+}
+.pagenum-active {
+  border: none;
+  background-color: #ff8c00a7;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.pagenum-nonactive:hover {
+  background-color: #ff8c007c;
+}
 /* Đổi lại icon cho đúng chiều */
 @media (min-width: 768px) {
   .myVerticalSwiper {

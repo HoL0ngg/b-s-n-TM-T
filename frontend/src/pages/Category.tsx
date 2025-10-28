@@ -6,11 +6,29 @@ import type { ProductType } from "../types/ProductType";
 import { fetchCategories } from "../api/categories";
 import { fecthProducts } from "../api/products";
 import { useEffect, useState } from "react";
+import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
+import { useStepContext } from "@mui/material/Step";
 const Category = () => {
-  const { name } = useParams<{ name: string }>();
+  const { id } = useParams<{ id: string }>();
   const [Categories, setCategories] = useState<CategoryType[]>([]);
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fecthProducts(Number(id), currentPage, 2);
+
+      // console.log(res);
+      setProducts(res.data)
+      setTotalPages(res.totalPages);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  }
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -24,24 +42,14 @@ const Category = () => {
       }
     };
 
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const data2 = await fecthProducts(Number(name));
-        setProducts(data2);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadCategories();
     loadProducts();
-  }, [name]);
-
+  }, [id]);
+  useEffect(() => {
+    loadProducts();
+  }, [currentPage]);
   const filteredNameOfCategory = Categories.find(
-    (cat) => cat.id == Number(name)
+    (cat) => cat.id == Number(id)
   );
 
   return (
@@ -81,7 +89,7 @@ const Category = () => {
               <h2 className="mb-4 text-left">
                 {filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}
               </h2>
-              <div className="">
+              <div className="mb-3">
                 <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
                 <select name="sortBy" id="sortBy" className="custom-select">
                   <option value="default">
@@ -92,7 +100,7 @@ const Category = () => {
                 </select>
               </div>
             </div>
-            <div className="row row-cols-1 row-cols-md-3 g-4">
+            <div className="row row-cols-1 row-cols-md-4 g-4">
               {loading && (
                 <div className="loader-overlay">
                   <div className="spinner"></div>
@@ -107,11 +115,51 @@ const Category = () => {
               ) : (
                 <div className="w-100">
                   <p className="text-center fs-5">
-                    Không có sản phẩm nào trong danh mục
+                    Không có sản phẩm
                   </p>
                 </div>
               )}
             </div>
+            <div className="d-flex align-items-center justify-content-center mt-4 gap-2">
+              {/* Prev */}
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => prev - 1)}
+                style={{ background: "none", border: "none" }}
+              >
+                <FaLessThan />
+              </button>
+
+              {/* Pages */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .slice(0, 5) // chỉ render tối đa 5 nút đầu
+                .map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`
+          ${currentPage === page
+                        ? "pagenum-active"
+                        : "pagenum-nonactive"
+                      } `}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+              {/* Dots nếu còn trang */}
+              {totalPages > 5 && <span className="px-2">...</span>}
+
+              {/* Next */}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((prev) => prev + 1)}
+                style={{ background: "none", border: "none" }}
+              >
+                <FaGreaterThan />
+              </button>
+            </div>
+
           </div>
         </div>
       </div>

@@ -36,12 +36,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const handleSuccess = () => {
         Swal.fire({
-            title: "Thành công!",
-            text: "Thêm sản phẩm vào giỏ hàng thành công 🎉",
+            title: "Đã thêm vào giỏ hàng!",
+            text: "Sản phẩm đã được thêm",
             icon: "success",
-            // confirmButtonText: "OK"
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: "#d4edda",
         });
     };
+
 
     const handleKeuDangNhap = () => {
         Swal.fire({

@@ -4,8 +4,14 @@ import productService from "../services/product.service";
 class productController {
     getProductOnCategoryIdController = async (req: Request, res: Response) => {
         try {
-            const category_id = req.query.category_id;
-            const product = await productService.getProductOnCategoryIdService(Number(category_id));
+            const category_id = Number(req.query.category_id);
+            if (!category_id) {
+                console.log("⚠️ category_id không hợp lệ hoặc không được gửi lên");
+                return res.status(400).json({ message: "Missing or invalid category_id" });
+            }
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 12;
+            const product = await productService.getProductOnCategoryIdService(category_id, page, limit);
             res.status(200).json(product);
         } catch (err) {
             console.log(err);

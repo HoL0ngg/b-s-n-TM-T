@@ -44,7 +44,7 @@ function App() {
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/category/:name" element={<Category />} />
+          <Route path="/category/:id" element={<Category />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />
 
