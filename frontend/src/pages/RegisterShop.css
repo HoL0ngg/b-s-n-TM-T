@@ -1,0 +1,75 @@
+/* src/pages/RegisterShop.css */
+
+.stepper-wrapper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2.5rem; /* Tăng khoảng cách dưới */
+}
+
+.stepper-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1; /* Chia đều không gian */
+}
+
+/* Dấu chấm */
+.stepper-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 1.5rem; /* 24px */
+  height: 1.5rem; /* 24px */
+  border-radius: 50%;
+  background-color: #e0e0e0; /* Màu xám nhạt */
+  border: 4px solid #e0e0e0;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+/* Đường gạch nối */
+.stepper-item::after {
+  content: "";
+  position: absolute;
+  top: 0.65rem; /* Nằm giữa dấu chấm */
+  left: -50%;
+  width: 100%;
+  height: 3px; /* Độ dày gạch */
+  background-color: #e0e0e0; /* Màu xám nhạt */
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+/* Ghi đè màu cho item "active" (bước hiện tại) */
+.stepper-item.active::before {
+  background-color: #ff7708; /* Màu cam */
+  border-color: #ff7708;
+}
+
+/* Ghi đè màu cho item "completed" (đã hoàn thành) */
+.stepper-item.completed::before {
+  background-color: #ff7708; /* Màu cam */
+  border-color: #ff7708;
+}
+
+/* Ghi đè màu cho GẠCH NỐI khi đã hoàn thành */
+.stepper-item.completed::after {
+  background-color: #ff7708; /* Màu cam */
+}
+
+/* Ẩn gạch nối của item đầu tiên */
+.stepper-item:first-child::after {
+  content: none;
+}
+
+.stepper-label {
+  margin-top: 2.5rem; /* Đẩy chữ xuống dưới */
+  font-size: 0.9rem;
+  color: #757575; /* Màu xám chữ */
+}
+
+.stepper-item.active .stepper-label {
+  font-weight: 600;
+  color: #ff7708; /* Màu cam */
+}

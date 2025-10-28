@@ -20,4 +20,5 @@ export type UserProfileType = {
     dob: string;
     gender: number;
     updated_at: string;
+    phone_number: string;
 } | null;
