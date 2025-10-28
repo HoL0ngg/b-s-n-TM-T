@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 // Import CSS
-import './RegisterShop.css'; 
+import './RegisterShop.css';
 
 // Import các component con
 import Stepper from '../components/Stepper';
@@ -13,19 +13,19 @@ import Step2Shipping from '../components/ShopSteps/Step2Shipping';
 // ...
 
 const steps = [
-  'Thông tin Shop', 
-  'Cài đặt vận chuyển', 
-  'Thông tin thuế', 
-  'Thông tin định danh', 
+  'Thông tin Shop',
+  'Cài đặt vận chuyển',
+  'Thông tin thuế',
+  'Thông tin định danh',
   'Hoàn tất'
 ];
 
 const RegisterShop = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const navigate = useNavigate();
-  
+
   // SỬA LỖI 1: Lấy toàn bộ context, không destructure
-  const auth = useAuth(); 
+  const auth = useAuth();
 
   const [formData, setFormData] = useState({
     shopName: '',
@@ -36,16 +36,16 @@ const RegisterShop = () => {
   });
 
   // Dùng useEffect để điền thông tin khi user đã được tải
-useEffect(() => {
-if (auth.user && auth.userProfile) {
-setFormData(prevData => ({
-...prevData,
-        
- email: auth.user?.email || '', // Lấy email từ `auth.user`
+  useEffect(() => {
+    if (auth.user && auth.userProfile) {
+      setFormData(prevData => ({
+        ...prevData,
 
- }));
-}
- },[auth.user, auth.userProfile]);
+        email: auth.user?.email || '', // Lấy email từ `auth.user`
+
+      }));
+    }
+  }, [auth.user, auth.userProfile]);
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -63,7 +63,7 @@ setFormData(prevData => ({
       <div className="card shadow-sm border-0" style={{ maxWidth: '900px', margin: '0 auto' }}>
         <div className="card-body p-5">
           <h2 className="card-title text-center mb-4">Đăng ký trở thành Người bán Shopee</h2>
-          
+
           <div className="px-md-5 my-5">
             <Stepper steps={steps} currentStep={currentStep} />
           </div>
@@ -71,7 +71,7 @@ setFormData(prevData => ({
           <div className="px-md-4">
             {renderStepContent()}
           </div>
-          
+
           {/* ... (Các nút bấm giữ nguyên) ... */}
         </div>
       </div>

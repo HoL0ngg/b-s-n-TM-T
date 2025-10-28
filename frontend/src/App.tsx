@@ -33,13 +33,13 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      
+
       <Routes>
-        
+
         {/* === 1. CÁC TRANG CÔNG KHAI (DÙNG MAIN LAYOUT) === */}
         {/* Tất cả các route bên trong này sẽ có Navbar/Footer chung */}
         <Route element={<MainLayout />}>
-          
+
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
@@ -65,20 +65,16 @@ function App() {
           {/* Path của checkout (dùng CheckoutLayout lồng bên trong MainLayout) */}
           <Route element={<CheckoutLayout />}>
             <Route path="/cart" element={<Cart />}></Route>
-<<<<<<< HEAD
-            {/* <Route path="/checkout/address" element={<AddressPage />} /> */}
-=======
             <Route path="/checkout/address" element={<AddressPage />} />
             {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
->>>>>>> a91b28fe9af389e6d5124c4152b4e6cf0c1ab15c
           </Route>
 
         </Route>
-        
+
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
         {/* Đã đổi path thành "/seller" để tránh xung đột với "/shop/:id" */}
         <Route path="/seller" element={<ShopLayout />}>
-          <Route index element={<Dashboard />} /> 
+          <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           {/* <Route path="products" element={<ShopProducts />} /> */}
         </Route>
