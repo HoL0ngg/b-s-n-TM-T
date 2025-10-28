@@ -87,6 +87,16 @@ class productController {
             console.log(error);
         }
     }
+    getAttributeOfProductVariantsController = async (req: Request, res: Response) => {
+        try {
+            const id = req.params.id;
+            const attributes = await productService.getAttributeOfProductVariantsByProductIdService(Number(id));
+            res.status(200).json(attributes);
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
 }
 
 export default new productController();

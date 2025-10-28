@@ -1,4 +1,5 @@
 import pool from "../config/db"
+import { ResultSetHeader } from 'mysql2'
 
 class CartService {
     addToCartService = async (user_id: number, product_id: number, quantity: number) => {
@@ -43,6 +44,34 @@ class CartService {
         } catch (err) {
             console.log(err);
             throw new Error('Lỗi CSDL khi lấy giỏ hàng');
+        }
+    }
+
+    updateProductQuantity = async (user_id: number, product_id: string, quantity: number) => {
+        const sql = `
+      UPDATE cart
+      SET 
+        quantity = ?,
+        added_at = NOW() -- (Nên cập nhật cả thời gian)
+      WHERE 
+        user_id = ? AND product_id = ?;
+    `;
+
+        // VALUES phải đúng thứ tự: [quantity, userId, productId]
+        const values = [quantity, user_id, product_id];
+
+        try {
+            const [result] = await pool.query<ResultSetHeader>(sql, values);
+
+            // Kiểm tra xem có hàng nào được cập nhật không
+            if (result.affectedRows === 0) {
+                throw new Error('Sản phẩm không có trong giỏ hàng hoặc dữ liệu không đổi');
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Lỗi khi UPDATE GioHang:", error);
+            throw new Error('Lỗi CSDL khi cập nhật số lượng');
         }
     }
 }

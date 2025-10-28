@@ -7,10 +7,13 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
 import { AuthProvider } from './context/AuthContext.tsx';
+import { CartProvider } from './context/CartContext.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <App />
+      <CartProvider>
+        <App />
+      </CartProvider>
     </AuthProvider>
-  </StrictMode>,
+  </StrictMode >,
 )

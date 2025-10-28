@@ -84,7 +84,7 @@ const Category = () => {
               <div className="">
                 <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
                 <select name="sortBy" id="sortBy" className="custom-select">
-                  <option value="default" selected>
+                  <option value="default">
                     Mặc định
                   </option>
                   <option value="priceDescrease">Giá giảm dần</option>

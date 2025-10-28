@@ -299,6 +299,12 @@
 .icon-horizontal {
   display: inline-block;
 }
+
+.border-product-attribute {
+  border: 1px solid var(--bs-orange);
+  background-color: #ff8c0017;
+}
+
 /* Đổi lại icon cho đúng chiều */
 @media (min-width: 768px) {
   .myVerticalSwiper {

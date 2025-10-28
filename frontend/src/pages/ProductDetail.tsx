@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
-import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetails } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetailsType, AttributeOfProductVariantsType } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
-import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails } from "../api/products";
+import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
@@ -23,7 +23,8 @@ const ProductDetail = () => {
     const [ratingSummary, setRatingSummary] = useState<ProductReviewSummaryType>({
         5: 0, 4: 0, 3: 0, 2: 0, 1: 0, total: 0, avg: 0.0
     });
-    const [productDetails, setProductDetails] = useState<ProductDetails[]>([]);
+    const [productDetails, setProductDetails] = useState<ProductDetailsType[]>([]);
+    const [attributeOfProductVariants, setAttributeOfProductVariants] = useState<AttributeOfProductVariantsType[]>([]);
     const navigator = useNavigate();
     const loadProductDetails = async () => {
         if (!id) return;
@@ -33,6 +34,17 @@ const ProductDetail = () => {
             setProductDetails(data);
         } catch (error) {
             console.error(error);
+        }
+    }
+    const loadAttributeOfProduct = async () => {
+        if (!id) return;
+        try {
+            const data = await fetchAttributeOfProductVariants(Number(id));
+            setAttributeOfProductVariants(data);
+
+        } catch (error) {
+            console.log(error);
+
         }
     }
     useEffect(() => {
@@ -68,6 +80,7 @@ const ProductDetail = () => {
                 console.error("Failed to fetch product images:", err);
             }
         };
+        loadAttributeOfProduct();
         loadProductDetails();
         loadProductAndShop();
         loadProductImg();
@@ -136,7 +149,7 @@ const ProductDetail = () => {
                         {!product ? (
                             <p>Đang tải sản phẩm...</p>
                         ) : (
-                            <ProductInfo product={product} />
+                            <ProductInfo product={product} attributes={attributeOfProductVariants} />
                         )}
                     </div>
                 </div >

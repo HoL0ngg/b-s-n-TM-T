@@ -22,6 +22,7 @@ import Address from "./pages/User/Account/Address";
 import Bank from "./pages/User/Account/Bank";
 import Purchase from "./pages/User/Purchase";
 import Cart from "./pages/Checkout/Cart";
+import { AddressPage } from "./pages/Checkout/AddressPage";
 
 // --- Các trang cho ShopLayout ---
 import Dashboard from "./pages/Shop/Dashboard";
@@ -64,7 +65,12 @@ function App() {
           {/* Path của checkout (dùng CheckoutLayout lồng bên trong MainLayout) */}
           <Route element={<CheckoutLayout />}>
             <Route path="/cart" element={<Cart />}></Route>
+<<<<<<< HEAD
             {/* <Route path="/checkout/address" element={<AddressPage />} /> */}
+=======
+            <Route path="/checkout/address" element={<AddressPage />} />
+            {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
+>>>>>>> a91b28fe9af389e6d5124c4152b4e6cf0c1ab15c
           </Route>
 
         </Route>

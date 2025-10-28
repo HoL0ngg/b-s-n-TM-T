@@ -6,6 +6,7 @@ export interface CartItem {
     product_name: string;
     product_price: number;
     product_url: string;
+    logo_url: string;
 }
 
 export interface CartType {

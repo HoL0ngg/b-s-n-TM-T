@@ -1,59 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import { getCartByUserId } from "../../api/cart";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import type { CartItem, CartType } from "../../types/CartType";
-// import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import type { CartItem } from "../../types/CartType";
+import { useNavigate } from "react-router-dom";
+import { TiDeleteOutline } from "react-icons/ti";
+import { FaRegCircle } from "react-icons/fa";
 
 export default function Cart() {
-    const [cart, setCart] = useState<CartType[]>([]);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const { user } = useAuth();
+    const { cart, updateQuantity } = useCart();
 
-    // Ref để lưu trữ các timer (mỗi sản phẩm 1 timer)
-    const debounceTimers = useRef<{ [key: string]: number }>({});
-
-    useEffect(() => {
-        const loadCart = async (id: number) => {
-
-            try {
-                const data = await getCartByUserId(id);
-                console.log(data);
-
-                const grouped = data.reduce((acc: any, item: any) => {
-                    // Lấy thông tin shop
-                    const shopId = item.shop_id;
-                    const shopName = item.shop_name;
-                    const logoUrl = item.logo_url;
-
-                    // Nếu shop này chưa có trong 'acc' (accumulator)
-                    if (!acc[shopId]) {
-                        // Tạo một mục mới cho shop
-                        acc[shopId] = {
-                            shop_id: shopId,
-                            shop_name: shopName,
-                            logo_url: logoUrl,
-                            items: [] // và một mảng rỗng để chứa sản phẩm
-                        };
-                    }
-
-                    // Thêm sản phẩm này vào mảng 'items' của shop đó
-                    acc[shopId].items.push(item);
-
-                    return acc;
-                }, {});
-                console.log(grouped);
-
-                setCart(Object.values(grouped));
-            } catch (err) {
-                console.log(err);
-            }
-
-        }
-        if (user)
-            loadCart(user.id);
-    }, [user])
+    const updateCartInDatabase = async (productId: number, newQuantity: number) => {
+        updateQuantity(productId, newQuantity);
+    };
 
     const handleCheckboxChange = (productid: number) => {
         setSelectedItems(prevSelected =>
@@ -80,20 +42,13 @@ export default function Cart() {
         });
     };
 
-    const increment = () => (console.log("hihi"));
-    const decrement = () => (console.log("heheh"));
-
     const calculateTotal = () => {
         if (!cart || cart.length === 0) {
             return 0;
         }
 
-        // 1. Dùng `flatMap` để "làm phẳng" cấu trúc nhóm
-        // Biến `allItems` này sẽ là một mảng `CartItem[]` đơn giản
         const allItems: CartItem[] = cart.flatMap(shop => shop.items);
 
-        // 2. Bây giờ, bạn dùng logic .filter().reduce()
-        //    giống hệt như tôi đã đề xuất
         return allItems
             .filter(item => selectedItems.includes(item.product_id))
             .reduce((sum, item) => {
@@ -103,20 +58,28 @@ export default function Cart() {
             }, 0);
     };
 
+    const handleIncrease = (productId: number, currentQuantity: number) => {
+        updateCartInDatabase(productId, currentQuantity + 1);
+    };
+
+    const handleDecrease = (productId: number, currentQuantity: number) => {
+        updateCartInDatabase(productId, currentQuantity - 1);
+    };
+
     const handleCheckout = () => {
         setLoading(true);
         setTimeout(() => {
-            // navigate("/cart/Information");
+            navigate("/checkout/address");
         }, 1000);
     }
 
-    if (!user) return (<div>Đang tải hihi ...</div>)
+    if (!user) return (<div>Đăng nhập đi b ei</div>)
+    if (!cart) return (<div>Đang tải b ei</div>)
 
     return (
         <>
             <div className="container p-4">
                 {cart.map(shop => {
-                    console.log(shop);
                     const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
 
                     return (
@@ -155,13 +118,13 @@ export default function Cart() {
                                         </div>
                                         <div className="col-2 text-end d-flex flex-column justify-content-between">
                                             <div className="d-flex justify-content-end">
-                                                <div className="pointer">x</div>
+                                                <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" /></div>
                                             </div>
                                             <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
                                                 <div className="d-flex my-1 border rounded-pill">
-                                                    <div className="border-end px-2 py-1 pointer" onClick={decrement}><i className="fa-solid fa-minus"></i></div>
+                                                    <div className="border-end px-2 py-1 pointer" onClick={() => handleDecrease(item.product_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
                                                     <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
-                                                    <div className="border-start px-2 py-1 pointer" onClick={increment}><i className="fa-solid fa-plus"></i></div>
+                                                    <div className="border-start px-2 py-1 pointer" onClick={() => handleIncrease(item.product_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
                                                 </div>
                                                 {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
                                             </div>

@@ -5,9 +5,9 @@ import StepLabel from '@mui/material/StepLabel';
 
 // Định nghĩa các bước
 const steps = [
-    'Cart',
-    'Address',
-    'Payment',
+    'Giỏ hàng',
+    'Thông tin',
+    'Thanh toán',
 ];
 
 interface CheckoutStepperProps {
@@ -22,7 +22,31 @@ export default function CheckoutStepper({ activeStep }: CheckoutStepperProps) {
             <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
+                        <StepLabel
+                            sx={{
+                                // Kiểu cho Icon (cái vòng tròn)
+                                '& .MuiStepIcon-root': {
+                                    // Màu của vòng tròn chưa active
+                                    color: '#9e9e9e', // Màu xám
+
+                                    '&.Mui-active': {
+                                        color: '#ff7708', // Màu đỏ cho bước hiện tại
+                                    },
+                                    '&.Mui-completed': {
+                                        color: '#ff7708', // Màu xanh cho bước đã qua
+                                    },
+                                },
+                                // Kiểu cho Chữ (label)
+                                '& .MuiStepLabel-label': {
+                                    '&.Mui-active': {
+                                        fontWeight: 'bold', // In đậm chữ của bước hiện tại
+                                    },
+                                    '&.Mui-completed': {
+                                        color: '#ff7708', // Màu xanh cho chữ đã qua
+                                    },
+                                },
+                            }}
+                        >{label}</StepLabel>
                     </Step>
                 ))}
             </Stepper>
