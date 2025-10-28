@@ -43,6 +43,20 @@ class CartController {
         }
     }
 
+    deleteProduct = async (req: Request, res: Response) => {
+        try {
+            const product_id = req.params.id;
+            const user_id = (req as any).user.id;
+            console.log(product_id);
+            const data = await cartService.deleteProduct(user_id, product_id);
+            res.status(200).json({ success: data });
+
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ success: false });
+        }
+    }
+
 }
 
 export default new CartController();

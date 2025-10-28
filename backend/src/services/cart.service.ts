@@ -49,13 +49,13 @@ class CartService {
 
     updateProductQuantity = async (user_id: number, product_id: string, quantity: number) => {
         const sql = `
-      UPDATE cart
-      SET 
-        quantity = ?,
-        added_at = NOW() -- (Nên cập nhật cả thời gian)
-      WHERE 
-        user_id = ? AND product_id = ?;
-    `;
+            UPDATE cart
+            SET 
+                quantity = ?,
+                added_at = NOW() -- (Nên cập nhật cả thời gian)
+            WHERE 
+                user_id = ? AND product_id = ?;
+            `;
 
         // VALUES phải đúng thứ tự: [quantity, userId, productId]
         const values = [quantity, user_id, product_id];
@@ -72,6 +72,22 @@ class CartService {
         } catch (error) {
             console.error("Lỗi khi UPDATE GioHang:", error);
             throw new Error('Lỗi CSDL khi cập nhật số lượng');
+        }
+    }
+
+    deleteProduct = async (user_id: number, product_id: string) => {
+        const sql = `
+            DELETE FROM cart
+            WHERE 
+                user_id = ? AND product_id = ?;
+            `;
+        const value = [user_id, product_id];
+        try {
+            const [row] = await pool.query(sql, value) as any[];
+            return row.length > 0;
+        } catch (err) {
+            console.log(err);
+            throw new Error('Lỗi CSDL khi lấy giỏ hàng');
         }
     }
 }
