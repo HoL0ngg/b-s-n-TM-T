@@ -6,7 +6,7 @@ class productController {
         try {
             const category_id = Number(req.query.category_id);
             if (!category_id) {
-                console.log("⚠️ category_id không hợp lệ hoặc không được gửi lên");
+                console.log("hahah");
                 return res.status(400).json({ message: "Missing or invalid category_id" });
             }
             const page = Number(req.query.page) || 1;
@@ -98,6 +98,19 @@ class productController {
             const id = req.params.id;
             const attributes = await productService.getAttributeOfProductVariantsByProductIdService(Number(id));
             res.status(200).json(attributes);
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+    getProductsInPriceOrderController = async (req: Request, res: Response) => {
+        try {
+            const category_id = Number(req.query.category_id);
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 12;
+            const typeOfSort = String(req.query.sort);
+            const products = await productService.getProductsInPriceOrderService(category_id, page, limit, typeOfSort);
+            return res.status(200).json(products);
         } catch (error) {
             console.log(error);
 

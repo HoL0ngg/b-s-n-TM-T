@@ -26,12 +26,12 @@ const CategorySwiper: React.FC<CategorySwiperProps> = ({ categories }) => {
           768: { slidesPerView: 3 },
           1024: { slidesPerView: 4 },
         }}
-        loop={true}
-        autoplay={{
-          delay: 3000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
+      // loop={true}
+      // autoplay={{
+      //   delay: 3000,
+      //   disableOnInteraction: false,
+      //   pauseOnMouseEnter: true,
+      // }}
       >
         {categories.map((cat) => (
           <SwiperSlide>

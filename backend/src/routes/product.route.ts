@@ -11,5 +11,5 @@ ProductRouter.get("/reviews/:id", productController.getReviewByProductIdControll
 ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByProductIdController);
 ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
 ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
-
+ProductRouter.get("/sortproducts", productController.getProductsInPriceOrderController);
 export default ProductRouter;

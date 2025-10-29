@@ -11,13 +11,24 @@ class productService {
         const total = (countRows as any)[0].total;
         const totalPages = Math.ceil(total / limit);
         const [rows] = await pool.query(
-            `SELECT products.id, products.name, products.description, products.base_price, products.shop_id, 
-                productimages.image_url, products.sold_count
-         FROM products 
-         JOIN productimages ON productimages.product_id = products.id
-         WHERE products.category_id = ?
-         GROUP BY products.id
-         LIMIT ? OFFSET ?`,
+            `SELECT 
+                products.id, 
+                products.name, 
+                products.description, 
+                products.base_price, 
+                products.shop_id, 
+                productimages.image_url, 
+                products.sold_count
+            FROM 
+                products 
+            LEFT JOIN 
+                productimages ON productimages.product_id = products.id 
+                            AND productimages.isMain = 1
+            WHERE 
+                products.category_id = ?                
+            GROUP BY 
+                products.id
+            LIMIT ? OFFSET ?`,
             [Category_id, limit, offset]
         );
         return { data: rows as Product[], totalPages }
@@ -143,6 +154,43 @@ class productService {
             values: r.attribute_values ? r.attribute_values.split(', ') : []
         }));
         return result as AttributeOfProductVariants[];
+    }
+
+    getProductsInPriceOrderService = async (category_id: number, page: number, limit: number, typeOfSort: string): Promise<{ data: Product[], totalPages: number }> => {
+        const offset = (page - 1) * limit;
+        const [countRows] = await pool.query("SELECT COUNT(*) as total FROM products WHERE category_id = ?", [category_id]);
+
+        const total = (countRows as any)[0].total;
+        const totalPages = Math.ceil(total / limit);
+
+        // Sử dụng LEFT JOIN như khuyến nghị ở lần trước
+        let queryStr = `SELECT products.id, products.name, products.description, products.base_price, products.shop_id, 
+            productimages.image_url, products.sold_count
+       FROM products 
+       LEFT JOIN productimages ON productimages.product_id = products.id AND productimages.isMain = 1
+       WHERE products.category_id = ?
+       GROUP BY products.id `;
+
+        switch (typeOfSort) {
+            case 'priceDesc':
+                // THÊM DẤU CÁCH Ở ĐẦU
+                queryStr += ` ORDER BY products.base_price DESC`;
+                break;
+            case 'priceAsc':
+                // THÊM DẤU CÁCH Ở ĐẦU (và thêm ASC cho rõ ràng)
+                queryStr += ` ORDER BY products.base_price ASC`;
+                break;
+            default:
+                // Thêm một sắp xếp mặc định để đảm bảo thứ tự
+                queryStr += ` ORDER BY products.id DESC`;
+                break;
+        }
+
+        // THÊM DẤU CÁCH Ở ĐẦU
+        queryStr += ` LIMIT ? OFFSET ?`;
+
+        const [rows] = await pool.query(queryStr, [category_id, limit, offset]);
+        return { data: rows as Product[], totalPages }
     }
 }
 

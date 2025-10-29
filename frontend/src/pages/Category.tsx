@@ -4,10 +4,9 @@ import CategorySwiper from "../components/CategorySwiper";
 import type { CategoryType } from "../types/CategoryType";
 import type { ProductType } from "../types/ProductType";
 import { fetchCategories } from "../api/categories";
-import { fecthProducts } from "../api/products";
+import { fecthProducts, fetchProductsInPriceOrder } from "../api/products";
 import { useEffect, useState } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
-import { useStepContext } from "@mui/material/Step";
 const Category = () => {
   const { id } = useParams<{ id: string }>();
   const [Categories, setCategories] = useState<CategoryType[]>([]);
@@ -18,7 +17,7 @@ const Category = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const res = await fecthProducts(Number(id), currentPage, 2);
+      const res = await fecthProducts(Number(id), currentPage, 3);
 
       // console.log(res);
       setProducts(res.data)
@@ -51,7 +50,28 @@ const Category = () => {
   const filteredNameOfCategory = Categories.find(
     (cat) => cat.id == Number(id)
   );
+  const handleSort = async (val: string) => {
+    let typeOfSort = "";
+    switch (val) {
+      case 'default':
+        loadProducts();
+        break;
+      case 'priceDesc':
+        typeOfSort = "priceDesc";
+        console.log("giam");
+        break;
+      case 'priceAsc':
+        console.log("tang");
+        typeOfSort = "priceAsc";
+        break;
+      default:
+        break;
+    }
+    const res = await fetchProductsInPriceOrder(Number(id), currentPage, 2, typeOfSort);
+    setProducts(res.data);
+    setTotalPages(res.totalPages);
 
+  }
   return (
     <div className="container">
       <CategorySwiper categories={Categories} />
@@ -91,12 +111,12 @@ const Category = () => {
               </h2>
               <div className="mb-3">
                 <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
-                <select name="sortBy" id="sortBy" className="custom-select">
+                <select name="sortBy" id="sortBy" className="custom-select" onChange={(e) => { handleSort(e.target.value) }}>
                   <option value="default">
                     Mặc định
                   </option>
-                  <option value="priceDescrease">Giá giảm dần</option>
-                  <option value="priceIncrease">Giá tăng dần</option>
+                  <option value="priceDesc">Giá giảm dần</option>
+                  <option value="priceAsc">Giá tăng dần</option>
                 </select>
               </div>
             </div>

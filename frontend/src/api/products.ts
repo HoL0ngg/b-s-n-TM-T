@@ -57,3 +57,7 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
     const res = await axios.get(`${API_URl}/attributeofproductvariants/${id}`);
     return res.data;
 }
+export const fetchProductsInPriceOrder = async (category_id?: number, page: number = 1, limit: number = 12, sort: string = "default"): Promise<{ data: ProductType[], totalPages: number }> => {
+    const res = await axios.get(`${API_URl}/sortproducts?category_id=${category_id}&page=${page}&limit=${limit}&sort=${sort}`);
+    return res.data
+}
