@@ -128,12 +128,12 @@ CREATE TABLE `product_detail` (
 );
 CREATE TABLE Cart(
     user_id VARCHAR(10),
-    product_id int,
+    product_variant_id int,
     quantity int,
     added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN key (user_id) REFERENCES Users(phone_number),
-    FOREIGN key (product_id) REFERENCES Products(id),
-    primary key (user_id, product_id)
+    FOREIGN key (product_variant_id) REFERENCES ProductVariants(id),
+    primary key (user_id, product_variant_id)
 );
 INSERT INTO categories
 VALUES (
@@ -414,7 +414,16 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`) VALU
 (15, 3, 1153000, 14, 'AST-DEN-L'),
 (16, 3, 1138000, 16, 'AST-XANH-S'),
 (17, 3, 1148000, 14, 'AST-XANH-M'),
-(18, 3, 1158000, 12, 'AST-XANH-L');
+(18, 3, 1158000, 12, 'AST-XANH-L'),
+(19, 4, 280000, 2, 'hjhj'),
+(20, 5, 199000, 10, 'hjhj'),
+(21, 6, 218000, 69, 'hjhj'),
+(22, 7, 369000, 2, 'hjhj'),
+(23, 8, 199000, 2, 'hjhj'),
+(24, 9, 219000, 2, 'hjhj'),
+(25, 10, 271320, 2, 'hjhj'),
+(26, 11, 389000, 1, 'hjhj');
+
 INSERT INTO `product_attributes` (`id`, `name`) VALUES
 (1, 'Màu sắc'),
 (2, 'Kích thước'),

@@ -54,13 +54,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
+    const handleFail = () => {
+        Swal.fire({
+            title: "Thông báo!",
+            text: "Có lỗi xảy ra",
+            icon: "warning",
+            confirmButtonText: "OK"
+        });
+    }
+
     const loadCart = async () => {
         if (!user) return;
         setIsCartLoading(true);
 
         try {
             const flatItems: CartItem[] = await getCartByUserId();
-            console.log(flatItems);
 
             //DÙNG REDUCE ĐỂ GOM NHÓM DỮ LIỆU LẠI
             const groupedData = flatItems.reduce((acc, item) => {
@@ -124,7 +132,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             await loadCart();
         } catch (error) {
             console.error('Lỗi khi thêm vào giỏ:', error);
-            // alert('Thêm sản phẩm thất bại');
+            handleFail();
         }
     };
 
@@ -135,7 +143,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return currentCart.map((shop) => ({
                 ...shop,
                 items: shop.items.map((item) =>
-                    item.product_id === productId
+                    item.product_variant_id === productId
                         ? { ...item, quantity: finalQuantity }
                         : item
                 ),

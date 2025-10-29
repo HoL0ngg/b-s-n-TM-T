@@ -4,7 +4,6 @@ import { useCart } from "../../context/CartContext";
 import type { CartItem } from "../../types/CartType";
 import { useNavigate } from "react-router-dom";
 import { TiDeleteOutline } from "react-icons/ti";
-import { FaRegCircle } from "react-icons/fa";
 import { BsCartXFill } from "react-icons/bs";
 
 export default function Cart() {
@@ -69,9 +68,31 @@ export default function Cart() {
 
     const handleCheckout = () => {
         setLoading(true);
+
+        const allItems: CartItem[] = cart.flatMap(shop => shop.items);
+        const itemsToCheckout = allItems.filter(item =>
+            selectedItems.includes(item.product_id)
+        );
+        const total = calculateTotal(); // (Hàm của bạn)
+
+        sessionStorage.setItem('checkoutItems', JSON.stringify(itemsToCheckout));
+        sessionStorage.setItem('checkoutTotal', JSON.stringify(total));
+
+        // 3. Vẫn gửi qua 'state' như cũ để load nhanh
+        // navigate('/checkout', {
+        //     state: {
+        //         checkoutItems: itemsToCheckout,
+        //         total: total
+        //     }
+        // });
         setTimeout(() => {
-            navigate("/checkout/address");
-        }, 1000);
+            navigate("/checkout/address", {
+                state: {
+                    checkoutItems: itemsToCheckout,
+                    total: total
+                }
+            });
+        }, 800);
     }
 
     const handleDelete = (product_id: number) => {
@@ -80,6 +101,7 @@ export default function Cart() {
 
     if (!user) return (<div>Đăng nhập đi b ei</div>)
     if (!cart) return (<div>Đang tải b ei</div>)
+    console.log(cart);
 
     return (
         <>
@@ -122,20 +144,25 @@ export default function Cart() {
                                             <div className="col-8 d-flex flex-column justify-content-between">
                                                 <div>
                                                     <div className="fw-bolder">{item.product_name}</div>
-                                                    <div>Ghi các biến thể ở đây</div>
-                                                    <div>Ghi các biến thể ở đây</div>
+                                                    {
+                                                        item.options?.map((opt) => (
+                                                            <div key={opt.attribute} className="text-muted small">
+                                                                {opt.attribute}: {opt.value}
+                                                            </div>
+                                                        ))
+                                                    }
                                                 </div>
                                                 <div><span className="fw-bolder">{item.product_price.toLocaleString()} </span>₫</div>
                                             </div>
                                             <div className="col-2 text-end d-flex flex-column justify-content-between">
                                                 <div className="d-flex justify-content-end">
-                                                    <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" onClick={() => handleDelete(item.product_id)} /></div>
+                                                    <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" onClick={() => handleDelete(item.product_variant_id)} /></div>
                                                 </div>
                                                 <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
                                                     <div className="d-flex my-1 border rounded-pill">
-                                                        <div className="border-end px-2 py-1 pointer" onClick={() => handleDecrease(item.product_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
+                                                        <div className="px-2 py-1 pointer" onClick={() => handleDecrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
                                                         <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
-                                                        <div className="border-start px-2 py-1 pointer" onClick={() => handleIncrease(item.product_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
+                                                        <div className="px-2 py-1 pointer" onClick={() => handleIncrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
                                                     </div>
                                                     {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
                                                 </div>

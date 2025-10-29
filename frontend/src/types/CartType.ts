@@ -6,7 +6,15 @@ export interface CartItem {
     product_name: string;
     product_price: number;
     product_url: string;
+    product_variant_id: number;
     logo_url: string;
+
+    options?: IVariantOption[];
+}
+
+interface IVariantOption {
+    attribute: string;
+    value: string;
 }
 
 export interface CartType {

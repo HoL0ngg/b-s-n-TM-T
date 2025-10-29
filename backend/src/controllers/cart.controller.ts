@@ -20,6 +20,7 @@ class CartController {
             console.log((req as any).user.id);
             const user_id = (req as any).user.id;
             const data = await cartService.getCartByIdService(user_id);
+
             res.status(200).json(data);
             return data;
         } catch (err) {
