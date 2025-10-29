@@ -12,12 +12,12 @@ const Category = () => {
   const [Categories, setCategories] = useState<CategoryType[]>([]);
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const res = await fecthProducts(Number(id), currentPage, 3);
+      const res = await fecthProducts(Number(id), currentPage, 12);
 
       // console.log(res);
       setProducts(res.data)
@@ -43,6 +43,7 @@ const Category = () => {
 
     loadCategories();
     loadProducts();
+    setCurrentPage((prev) => prev = 1);
   }, [id]);
   useEffect(() => {
     loadProducts();
@@ -51,23 +52,12 @@ const Category = () => {
     (cat) => cat.id == Number(id)
   );
   const handleSort = async (val: string) => {
-    let typeOfSort = "";
-    switch (val) {
-      case 'default':
-        loadProducts();
-        break;
-      case 'priceDesc':
-        typeOfSort = "priceDesc";
-        console.log("giam");
-        break;
-      case 'priceAsc':
-        console.log("tang");
-        typeOfSort = "priceAsc";
-        break;
-      default:
-        break;
+    if (val === "default") {
+      loadProducts();
+      return;
     }
-    const res = await fetchProductsInPriceOrder(Number(id), currentPage, 2, typeOfSort);
+    const res = await fetchProductsInPriceOrder(Number(id), currentPage, 12, val);
+    // const res = await fecthProducts(Number(id), currentPage, 3);
     setProducts(res.data);
     setTotalPages(res.totalPages);
 
@@ -150,25 +140,43 @@ const Category = () => {
                 <FaLessThan />
               </button>
 
-              {/* Pages */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .slice(0, 5) // chỉ render tối đa 5 nút đầu
-                .map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`
-          ${currentPage === page
-                        ? "pagenum-active"
-                        : "pagenum-nonactive"
-                      } `}
-                  >
-                    {page}
-                  </button>
-                ))}
+              {/* Smart Pages */}
+              {(() => {
+                let pages = [];
 
-              {/* Dots nếu còn trang */}
-              {totalPages > 5 && <span className="px-2">...</span>}
+                if (totalPages <= 3) {
+                  for (let i = 1; i <= totalPages; i++) pages.push(i);
+                } else if (currentPage <= 3) {
+                  pages.push(1, 2, 3);
+                  pages.push("dots");
+                  pages.push(totalPages);
+                } else if (currentPage >= totalPages - 2) {
+                  pages.push(1);
+                  pages.push("dots");
+                  for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+
+                } else {
+                  pages.push(1);
+                  pages.push("dots");
+                  pages.push(currentPage - 1, currentPage, currentPage + 1);
+                  pages.push("dots");
+                  pages.push(totalPages);
+                }
+
+                return pages.map((page, index) =>
+                  page === "dots" ? (
+                    <span key={`dots-${index}`} className="px-2">...</span>
+                  ) : (
+                    <button
+                      key={`page-${page}`}
+                      onClick={() => setCurrentPage(Number(page))}
+                      className={currentPage === page ? "pagenum-active" : "pagenum-nonactive"}
+                    >
+                      {page}
+                    </button>
+                  )
+                );
+              })()}
 
               {/* Next */}
               <button
@@ -179,6 +187,8 @@ const Category = () => {
                 <FaGreaterThan />
               </button>
             </div>
+
+
 
           </div>
         </div>

@@ -181,12 +181,8 @@ class productService {
                 queryStr += ` ORDER BY products.base_price ASC`;
                 break;
             default:
-                // Thêm một sắp xếp mặc định để đảm bảo thứ tự
-                queryStr += ` ORDER BY products.id DESC`;
                 break;
         }
-
-        // THÊM DẤU CÁCH Ở ĐẦU
         queryStr += ` LIMIT ? OFFSET ?`;
 
         const [rows] = await pool.query(queryStr, [category_id, limit, offset]);
