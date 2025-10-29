@@ -11,6 +11,7 @@ import {
     getCartByUserId,
     addToCart,
     updateProductQuantity,
+    deleteProduct
     // clearCartApi, // (Giả sử bạn có hàm này)
 } from '../api/cart';
 import type { CartItem, CartType } from '../types/CartType';
@@ -23,6 +24,7 @@ interface ICartContext {
     AddToCart: (productId: number, quantity: number) => Promise<void>;
     updateQuantity: (productId: number, newQuantity: number) => void;
     clearCart: () => void;
+    deleteProductOnCart: (productId: number) => Promise<void>;
     isCartLoading: boolean; // Thêm state loading cho giỏ hàng
 }
 
@@ -34,10 +36,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [isCartLoading, setIsCartLoading] = useState(false);
     const debounceTimers = useRef<{ [key: string]: number }>({});
 
-    const handleSuccess = () => {
+    const handleSuccess = (text: string) => {
         Swal.fire({
-            title: "Đã thêm vào giỏ hàng!",
-            text: "Sản phẩm đã được thêm",
+            title: "Thành công!",
+            text: `${text} 🎉`,
             icon: "success",
             toast: true,
             position: "top-end",
@@ -58,13 +60,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
+    const handleFail = () => {
+        Swal.fire({
+            title: "Thông báo!",
+            text: "Có lỗi xảy ra",
+            icon: "warning",
+            confirmButtonText: "OK"
+        });
+    }
+
     const loadCart = async () => {
         if (!user) return;
         setIsCartLoading(true);
 
         try {
             const flatItems: CartItem[] = await getCartByUserId();
-            console.log(flatItems);
 
             //DÙNG REDUCE ĐỂ GOM NHÓM DỮ LIỆU LẠI
             const groupedData = flatItems.reduce((acc, item) => {
@@ -122,13 +132,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
             // 1. Gọi API (dùng UPSERT - INSERT ON DUPLICATE)
             await addToCart(productId, quantity);
-            handleSuccess();
+            handleSuccess("Thêm sản phẩm vào giỏ hàng thành công");
             // 2. Tải lại toàn bộ giỏ hàng để đồng bộ
             // (Cách này đảm bảo UI luôn đúng 100% với CSDL)
             await loadCart();
         } catch (error) {
             console.error('Lỗi khi thêm vào giỏ:', error);
-            // alert('Thêm sản phẩm thất bại');
+            handleFail();
         }
     };
 
@@ -139,7 +149,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return currentCart.map((shop) => ({
                 ...shop,
                 items: shop.items.map((item) =>
-                    item.product_id === productId
+                    item.product_variant_id === productId
                         ? { ...item, quantity: finalQuantity }
                         : item
                 ),
@@ -178,6 +188,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         // }
     };
 
+    const deleteProductOnCart = async (product_id: number) => {
+        if (!user) {
+            handleKeuDangNhap();
+            return;
+        }
+        try {
+            await deleteProduct(product_id);
+            handleSuccess("Xóa sản phẩm thành công");
+            await loadCart();
+        } catch (err) {
+            console.log("lỗi khi xóa sản phẩm");
+        }
+
+    }
+
     // Giá trị cung cấp cho các component con
     const value = {
         cart,
@@ -185,6 +210,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         AddToCart,
         updateQuantity,
         clearCart,
+        deleteProductOnCart,
         isCartLoading,
     };
 

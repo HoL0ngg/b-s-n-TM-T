@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AddressModal from "../../../components/AddressModel";
 import type { AddressType } from "../../../types/UserType";
-import { fetchAddressByUserId } from "../../../api/user";
+import { changeDefaultAddress, fetchAddressByUserId } from "../../../api/user";
 import { MdOutlineAddHomeWork } from "react-icons/md";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -27,6 +27,15 @@ export default function Address() {
         setIsShow(false);     // Đóng modal
         loadAddress(); // Tải lại danh sách (để reload)
     };
+
+    const handleDefault = async (id: number) => {
+        try {
+            await changeDefaultAddress(id);
+        } catch (err) {
+            console.log(err);
+        }
+        loadAddress();
+    }
     if (!user) return (<div>Đang tải b ei</div>);
     return (
         <div>
@@ -65,7 +74,7 @@ export default function Address() {
                             <div className="ms-4 text-muted">{address.ward}, {address.city}</div>
                         </div>
                         <div>
-                            {!address.is_default ? (<div className="border p-2 fs-6 cursor-pointer" style={{ cursor: "pointer" }}>Thiệt lập mặc định</div>) : (<div className="text-primary fw-bolder">Mặc định r b ei</div>)}
+                            {!address.is_default ? (<div className="border p-2 fs-6 cursor-pointer" onClick={() => handleDefault(address.id)} style={{ cursor: "pointer" }}>Thiệt lập mặc định</div>) : (<div className="text-primary fw-bolder">Mặc định r b ei</div>)}
                         </div>
                     </div>
                 </div>

@@ -4,14 +4,14 @@ import { useCart } from "../../context/CartContext";
 import type { CartItem } from "../../types/CartType";
 import { useNavigate } from "react-router-dom";
 import { TiDeleteOutline } from "react-icons/ti";
-import { FaRegCircle } from "react-icons/fa";
+import { BsCartXFill } from "react-icons/bs";
 
 export default function Cart() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { cart, updateQuantity } = useCart();
+    const { cart, updateQuantity, deleteProductOnCart } = useCart();
 
     const updateCartInDatabase = async (productId: number, newQuantity: number) => {
         updateQuantity(productId, newQuantity);
@@ -68,78 +68,116 @@ export default function Cart() {
 
     const handleCheckout = () => {
         setLoading(true);
+
+        const allItems: CartItem[] = cart.flatMap(shop => shop.items);
+        const itemsToCheckout = allItems.filter(item =>
+            selectedItems.includes(item.product_id)
+        );
+        const total = calculateTotal(); // (Hàm của bạn)
+
+        sessionStorage.setItem('checkoutItems', JSON.stringify(itemsToCheckout));
+        sessionStorage.setItem('checkoutTotal', JSON.stringify(total));
+
+        // 3. Vẫn gửi qua 'state' như cũ để load nhanh
+        // navigate('/checkout', {
+        //     state: {
+        //         checkoutItems: itemsToCheckout,
+        //         total: total
+        //     }
+        // });
         setTimeout(() => {
-            navigate("/checkout/address");
-        }, 1000);
+            navigate("/checkout/address", {
+                state: {
+                    checkoutItems: itemsToCheckout,
+                    total: total
+                }
+            });
+        }, 800);
+    }
+
+    const handleDelete = (product_id: number) => {
+        deleteProductOnCart(product_id);
     }
 
     if (!user) return (<div>Đăng nhập đi b ei</div>)
     if (!cart) return (<div>Đang tải b ei</div>)
+    console.log(cart);
 
     return (
         <>
-            <div className="container p-4">
-                {cart.map(shop => {
-                    const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
+            {cart.length == 0 ?
+                (<div className="d-flex justify-content-center mt-4 flex-column align-items-center gap-4">
+                    <BsCartXFill className="fs-1 text-primary" />
+                    <div className="fs-3 text-primary fw-bolder">Mua hàng đi b ei</div>
+                </div>)
+                :
+                (<div className="container p-4">
+                    {cart.map(shop => {
+                        const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
 
-                    return (
-                        <div key={shop.shop_id} className="mb-4">
-                            <div className="m-2 fs-4 d-flex align-items-center justify-content-between">
-                                <div>
-                                    <input
-                                        type="checkbox"
-                                        checked={allShopItemsSelected}
-                                        onChange={() => handleShopCheckboxChange(shop.items)}
-                                    />
-                                    <img className="m-2" src={shop.logo_url} style={{ height: '50px', width: '50px' }} /> {shop.shop_name}
-                                </div>
-                                <div className="text-muted pointer" style={{ fontSize: '0.8rem' }}>
-                                    XÓA TẤT CẢ
-                                </div>
-                            </div>
-                            <div className="container bg-light px-4 rounded border">
-                                {shop.items.map(item => (
-                                    <div key={item.product_id} className="row mb-4 border-top pt-4">
-                                        <div className="col-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedItems.includes(item.product_id)}
-                                                onChange={() => handleCheckboxChange(item.product_id)}
-                                            />
-                                            <img src={item.product_url} className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
-                                        </div>
-                                        <div className="col-8 d-flex flex-column justify-content-between">
-                                            <div>
-                                                <div className="fw-bolder">{item.product_name}</div>
-                                                <div>Ghi các biến thể ở đây</div>
-                                                <div>Ghi các biến thể ở đây</div>
-                                            </div>
-                                            <div><span className="fw-bolder">{item.product_price.toLocaleString()} </span>₫</div>
-                                        </div>
-                                        <div className="col-2 text-end d-flex flex-column justify-content-between">
-                                            <div className="d-flex justify-content-end">
-                                                <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" /></div>
-                                            </div>
-                                            <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
-                                                <div className="d-flex my-1 border rounded-pill">
-                                                    <div className="border-end px-2 py-1 pointer" onClick={() => handleDecrease(item.product_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
-                                                    <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
-                                                    <div className="border-start px-2 py-1 pointer" onClick={() => handleIncrease(item.product_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
-                                                </div>
-                                                {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
-                                            </div>
-                                        </div>
+                        return (
+                            <div key={shop.shop_id} className="mb-4">
+                                <div className="m-2 fs-4 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <input
+                                            type="checkbox"
+                                            checked={allShopItemsSelected}
+                                            onChange={() => handleShopCheckboxChange(shop.items)}
+                                        />
+                                        <img className="m-2" src={shop.logo_url} style={{ height: '50px', width: '50px' }} /> {shop.shop_name}
                                     </div>
-                                ))}
+                                    <div className="text-muted pointer" style={{ fontSize: '0.8rem' }}>
+                                        XÓA TẤT CẢ
+                                    </div>
+                                </div>
+                                <div className="container bg-light px-4 rounded border">
+                                    {shop.items.map(item => (
+                                        <div key={item.product_id} className="row mb-4 border-top pt-4">
+                                            <div className="col-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedItems.includes(item.product_id)}
+                                                    onChange={() => handleCheckboxChange(item.product_id)}
+                                                />
+                                                <img src={item.product_url} className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
+                                            </div>
+                                            <div className="col-8 d-flex flex-column justify-content-between">
+                                                <div>
+                                                    <div className="fw-bolder">{item.product_name}</div>
+                                                    {
+                                                        item.options?.map((opt) => (
+                                                            <div key={opt.attribute} className="text-muted small">
+                                                                {opt.attribute}: {opt.value}
+                                                            </div>
+                                                        ))
+                                                    }
+                                                </div>
+                                                <div><span className="fw-bolder">{item.product_price.toLocaleString()} </span>₫</div>
+                                            </div>
+                                            <div className="col-2 text-end d-flex flex-column justify-content-between">
+                                                <div className="d-flex justify-content-end">
+                                                    <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" onClick={() => handleDelete(item.product_variant_id)} /></div>
+                                                </div>
+                                                <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
+                                                    <div className="d-flex my-1 border rounded-pill">
+                                                        <div className="px-2 py-1 pointer" onClick={() => handleDecrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
+                                                        <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
+                                                        <div className="px-2 py-1 pointer" onClick={() => handleIncrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
+                                                    </div>
+                                                    {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
-                <h4 className="text-end">Tổng cộng: {calculateTotal().toLocaleString()}₫</h4>
-                <div className="d-flex justify-content-end">
-                    <button className="btn btn-success" onClick={handleCheckout}>{loading ? "Đang tải..." : "Thanh toán"}</button>
-                </div>
-            </div>
+                        );
+                    })}
+                    <h4 className="text-end">Tổng cộng: {calculateTotal().toLocaleString()}₫</h4>
+                    <div className="d-flex justify-content-end">
+                        <button className="btn btn-success" onClick={handleCheckout}>{loading ? "Đang tải..." : "Thanh toán"}</button>
+                    </div>
+                </div>)}
             {loading && (
                 <div className="loader-overlay">
                     <div className="spinner"></div>

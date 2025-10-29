@@ -21,6 +21,7 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
     const [selectedCityCode, setSelectedCityCode] = useState("");
     const [selectedWardCode, setSelectedWardCode] = useState("");
     const [street, setStreet] = useState("");
+    const [isDefault, setIsDefault] = useState(false);
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
@@ -106,7 +107,8 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                 phone_number_jdo: phone,
                 city: selectedCityName,
                 ward: selectedWardName,
-                street: street
+                street: street,
+                isDefault: isDefault
             };
 
             console.log(newData);
@@ -223,7 +225,7 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                             />
                         </div>
                         <div className="form-check">
-                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" />
+                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" onChange={() => setIsDefault(!isDefault)} />
                             <label className="form-check-label user-select-none" htmlFor="flexCheckChecked">
                                 Đặt làm địa chỉ mặc định
                             </label>

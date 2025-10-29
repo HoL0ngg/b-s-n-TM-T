@@ -20,6 +20,7 @@ class CartController {
             console.log((req as any).user.id);
             const user_id = (req as any).user.id;
             const data = await cartService.getCartByIdService(user_id);
+
             res.status(200).json(data);
             return data;
         } catch (err) {
@@ -40,6 +41,20 @@ class CartController {
         } catch (err) {
             console.log(err);
             res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
+    }
+
+    deleteProduct = async (req: Request, res: Response) => {
+        try {
+            const product_id = req.params.id;
+            const user_id = (req as any).user.id;
+            console.log(product_id);
+            const data = await cartService.deleteProduct(user_id, product_id);
+            res.status(200).json({ success: data });
+
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ success: false });
         }
     }
 

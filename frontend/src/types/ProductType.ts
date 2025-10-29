@@ -8,6 +8,8 @@ export interface ProductType {
     shop_id: number;
     image_url: string;
     sold_count: number;
+    product_variants: ProductVariantType[];
+    images: string[];
 }
 
 export interface ProductImageType {
@@ -45,4 +47,16 @@ export interface ProductDetailsType {
 export interface AttributeOfProductVariantsType {
     attribute: string,
     values: string[],
+}
+
+interface VariantOption {
+    attribute: string; // "Màu sắc"
+    value: string;     // "Cam"
+}
+
+export interface ProductVariantType {
+    id: number;           // 1, 2, 3...
+    price: number;        // 223000
+    stock: number;        // 40
+    options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
 }

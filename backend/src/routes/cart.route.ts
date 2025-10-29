@@ -7,5 +7,6 @@ const CartRouter = Router();
 CartRouter.post("/add", verifyToken, cartController.addToCartController)
 CartRouter.get("/getCart", verifyToken, cartController.getCartByIdController);
 CartRouter.patch("/updateCart/:product_id", verifyToken, cartController.updateProductQuantity);
+CartRouter.delete("/delete/:id", verifyToken, cartController.deleteProduct);
 
 export default CartRouter;

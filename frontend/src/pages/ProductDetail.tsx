@@ -52,6 +52,8 @@ const ProductDetail = () => {
             if (!id) return;
             try {
                 const data = await fecthProductsByID(id);
+                console.log(data);
+
                 setProduct(data);
                 try {
                     const shopData = await fetchShop(data.shop_id);
@@ -185,27 +187,39 @@ const ProductDetail = () => {
                 </div>
             </div>
             <div className="row mt-4 p-3">
-                <div className="fw-bold fs-4">Chi tiết sản phẩm</div>
-                <div className="row">
-                    <div className="col-7">
-                        {productDetails.length > 0 ? (
-                            productDetails.map((productDetail) => (
-                                <div className="border-bottom py-2" key={productDetail.id}>
-                                    <div className="row">
-                                        <div className="col-3 fw-bold">{productDetail.attribute}</div>
-                                        <div className="col-9 text-muted">{productDetail.value}</div>
-                                    </div>
+                <div className="col-7">
+                    <div className="fw-bold fs-4">Chi tiết sản phẩm</div>
+                    {productDetails.length > 0 ? (
+                        productDetails.map((productDetail) => (
+                            <div className="border-bottom py-2" key={productDetail.id}>
+                                <div className="row">
+                                    <div className="col-3 fw-bold">{productDetail.attribute}</div>
+                                    <div className="col-9 text-muted">{productDetail.value}</div>
                                 </div>
-                            ))
-                        )
-                            :
-                            (
-                                <div>
-                                    <p>Khong co chi tiet sp</p>
-                                </div>
-                            )}
+                            </div>
+                        ))
+                    )
+                        :
+                        (
+                            <div>
+                                <p>Khong co chi tiet sp</p>
+                            </div>
+                        )}
+                </div>
+                <div className="col-5">
+                    {/* <div className="container p-4 border rounded">
+                        <div className="d-flex align-items-center">
+                            <div className="">
+                                <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "70px", width: "70px" }} />
+                            </div>
+                            <div className="ms-3">
+                                <div className="fs-4 fw-bolder text-primary">{shop?.name}</div>
+                                <div className="text-muted">Sao</div>
+                            </div>
+                        </div>
+                        <div className="btn custom-btn w-100 mt-3">Xem shop</div>
                     </div>
-                    <div className="col-5"></div>
+                    <div className="container p-2 border mt-4 rounded"></div> */}
                 </div>
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">

@@ -1,5 +1,6 @@
+import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption } from "../models/product.model";
 
 class productService {
     getProductOnCategoryIdService = async (Category_id: number, page: number, limit: number): Promise<{
@@ -36,8 +37,52 @@ class productService {
     };
 
     getProductOnIdService = async (id: number): Promise<Product> => {
-        const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where products.id = ?", [id]) as [Product[], any];
-        return rows[0] as Product;
+        // --- TRUY VẤN 1: Lấy thông tin sản phẩm cốt lõi ---
+        const [productRows] = await pool.query<Product[] & RowDataPacket[]>(
+            `SELECT id, name, description, base_price, shop_id, sold_count 
+         FROM products 
+         WHERE id = ?`,
+            [id]
+        );
+        const product = productRows[0];
+
+        if (!product) {
+            throw new Error('Không tìm thấy sản phẩm');
+        }
+
+        const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
+            `SELECT id, price, stock, sku 
+         FROM productvariants 
+         WHERE product_id = ?`,
+            [id]
+        );
+
+        const [optionRows] = await pool.query<VariantOption[] & RowDataPacket[]>(
+            `SELECT
+            vov.variant_id,
+            pa.name AS attribute,
+            vov.value
+         FROM
+            variantoptionvalues vov
+         JOIN
+            product_attributes pa ON vov.attribute_id = pa.id
+         WHERE
+            vov.variant_id IN (
+                -- Lấy các variant_id từ truy vấn 3 (chỉ cho sản phẩm này)
+                SELECT id FROM productvariants WHERE product_id = ?
+            )`,
+            [id]
+        );
+
+        variantRows.forEach(variant => {
+            // Lọc ra các tùy chọn (từ Query 4) thuộc về biến thể này
+            variant.options = optionRows
+                .filter(opt => opt.variant_id === variant.id);
+        });
+        // Gán mảng các biến thể (đã có options) vào object product
+        product.product_variants = variantRows;
+
+        return product as Product;
     }
 
     getProductImgOnIdService = async (id: number): Promise<string[]> => {

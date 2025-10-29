@@ -24,3 +24,8 @@ export const updateProductQuantity = async (product_id: number, quantity: number
 
     return res.data;
 }
+
+export const deleteProduct = async (product_id: number) => {
+    const res = await axios.delete(`${API_URL}/delete/${product_id}`);
+    return res.data;
+}
