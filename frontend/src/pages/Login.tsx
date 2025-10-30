@@ -56,12 +56,12 @@ export default function Login() {
                             }}
                         >
                             <div className="mb-3">
-                                <label htmlFor="username" className="form-label">Tên đăng nhập</label>
+                                <label htmlFor="username" className="form-label">Số điện thoại</label>
                                 <input
                                     type="text"
                                     id="username"
                                     className="form-control"
-                                    placeholder="Nhập tên đăng nhập"
+                                    placeholder="Nhập số điện thoại"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                     required
