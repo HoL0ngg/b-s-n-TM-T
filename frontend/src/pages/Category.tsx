@@ -14,12 +14,11 @@ const Category = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [typeOfSort, setTypeOfSort] = useState<string>("default");
   const loadProducts = async () => {
     try {
       setLoading(true);
       const res = await fecthProducts(Number(id), currentPage, 12);
-
-      // console.log(res);
       setProducts(res.data)
       setTotalPages(res.totalPages);
     } catch (err) {
@@ -43,7 +42,8 @@ const Category = () => {
 
     loadCategories();
     loadProducts();
-    setCurrentPage((prev) => prev = 1);
+    setCurrentPage(1);
+    setTypeOfSort("default");
   }, [id]);
   useEffect(() => {
     loadProducts();
@@ -52,6 +52,7 @@ const Category = () => {
     (cat) => cat.id == Number(id)
   );
   const handleSort = async (val: string) => {
+    setTypeOfSort(val);
     if (val === "default") {
       loadProducts();
       return;
@@ -60,7 +61,6 @@ const Category = () => {
     // const res = await fecthProducts(Number(id), currentPage, 3);
     setProducts(res.data);
     setTotalPages(res.totalPages);
-
   }
   return (
     <div className="container">
@@ -71,11 +71,11 @@ const Category = () => {
             <div className="border-top p-3 m-2">
               <h5>Danh mục sản phẩm</h5>
               <ul className="list-unstyled">
-                <li className="nav-link">Hihihi</li>
-                <li>Hihihi</li>
-                <li>Hihihi</li>
-                <li>Hihihi</li>
-                <li>Hihihi</li>
+                {/* <li className="nav-link">Hihihi</li> */}
+                <li>Son</li>
+                <li>Sữa rửa mặt</li>
+                <li>Kem</li>
+                {/* <li>Hihihi</li> */}
               </ul>
             </div>
             <div className="border-top p-3 m-2">
@@ -101,7 +101,7 @@ const Category = () => {
               </h2>
               <div className="mb-3">
                 <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
-                <select name="sortBy" id="sortBy" className="custom-select" onChange={(e) => { handleSort(e.target.value) }}>
+                <select name="sortBy" id="sortBy" className="custom-select" value={typeOfSort} onChange={(e) => { handleSort(e.target.value) }}>
                   <option value="default">
                     Mặc định
                   </option>
