@@ -48,8 +48,20 @@ class CartController {
         try {
             const product_id = req.params.id;
             const user_id = (req as any).user.id;
-            console.log(product_id);
             const data = await cartService.deleteProduct(user_id, product_id);
+            res.status(200).json({ success: data });
+
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ success: false });
+        }
+    }
+
+    deleteShop = async (req: Request, res: Response) => {
+        try {
+            const shop_id = req.params.id;
+            const user_id = (req as any).user.id;
+            const data = await cartService.deleteShop(user_id, Number(shop_id));
             res.status(200).json({ success: data });
 
         } catch (err) {

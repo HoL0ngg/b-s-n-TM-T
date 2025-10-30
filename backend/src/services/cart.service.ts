@@ -149,6 +149,29 @@ class CartService {
             throw new Error('Lỗi CSDL khi lấy giỏ hàng');
         }
     }
+
+    deleteShop = async (user_id: number, shop_id: number) => {
+        const sql = `
+            DELETE 
+                cart
+            FROM 
+                cart
+            JOIN
+                productvariants on cart.product_variant_id = productvariants.id
+            JOIN
+                products on products.id = productvariants.product_id
+            WHERE 
+                cart.user_id = ? AND products.shop_id = ?;
+            `;
+        const value = [user_id, shop_id];
+        try {
+            const [row] = await pool.query(sql, value) as any[];
+            return row.length > 0;
+        } catch (err) {
+            console.log(err);
+            throw new Error('Lỗi CSDL khi lấy giỏ hàng');
+        }
+    }
 }
 
 export default new CartService();

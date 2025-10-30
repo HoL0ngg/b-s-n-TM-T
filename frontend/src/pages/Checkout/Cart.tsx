@@ -11,7 +11,7 @@ export default function Cart() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { cart, updateQuantity, deleteProductOnCart } = useCart();
+    const { cart, updateQuantity, deleteProductOnCart, deleteShopOnCart } = useCart();
 
     const updateCartInDatabase = async (productId: number, newQuantity: number) => {
         updateQuantity(productId, newQuantity);
@@ -65,6 +65,10 @@ export default function Cart() {
     const handleDecrease = (productId: number, currentQuantity: number) => {
         updateCartInDatabase(productId, currentQuantity - 1);
     };
+
+    const deleteProductByShopId = (shop_id: number) => {
+        deleteShopOnCart(shop_id);
+    }
 
     const handleCheckout = () => {
         setLoading(true);
@@ -126,7 +130,7 @@ export default function Cart() {
                                         />
                                         <img className="m-2" src={shop.logo_url} style={{ height: '50px', width: '50px' }} /> {shop.shop_name}
                                     </div>
-                                    <div className="text-muted pointer" style={{ fontSize: '0.8rem' }}>
+                                    <div className="pointer delete-all" style={{ fontSize: '0.8rem' }} onClick={() => deleteProductByShopId(shop.shop_id)}>
                                         XÓA TẤT CẢ
                                     </div>
                                 </div>
@@ -156,7 +160,7 @@ export default function Cart() {
                                             </div>
                                             <div className="col-2 text-end d-flex flex-column justify-content-between">
                                                 <div className="d-flex justify-content-end">
-                                                    <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" onClick={() => handleDelete(item.product_variant_id)} /></div>
+                                                    <div className="pointer"><TiDeleteOutline className="fs-3 delete-all" onClick={() => handleDelete(item.product_variant_id)} /></div>
                                                 </div>
                                                 <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
                                                     <div className="d-flex my-1 border rounded-pill">

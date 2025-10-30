@@ -29,3 +29,8 @@ export const deleteProduct = async (product_id: number) => {
     const res = await axios.delete(`${API_URL}/delete/${product_id}`);
     return res.data;
 }
+
+export const deleteProductByShopId = async (shop_id: number) => {
+    const res = await axios.delete(`${API_URL}/delete-shop/${shop_id}`);
+    return res.data;
+}

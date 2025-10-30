@@ -8,5 +8,6 @@ CartRouter.post("/add", verifyToken, cartController.addToCartController)
 CartRouter.get("/getCart", verifyToken, cartController.getCartByIdController);
 CartRouter.patch("/updateCart/:product_id", verifyToken, cartController.updateProductQuantity);
 CartRouter.delete("/delete/:id", verifyToken, cartController.deleteProduct);
+CartRouter.delete("/delete-shop/:id", verifyToken, cartController.deleteShop);
 
 export default CartRouter;

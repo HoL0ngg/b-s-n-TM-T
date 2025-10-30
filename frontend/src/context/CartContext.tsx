@@ -11,7 +11,8 @@ import {
     getCartByUserId,
     addToCart,
     updateProductQuantity,
-    deleteProduct
+    deleteProduct,
+    deleteProductByShopId
     // clearCartApi, // (Giả sử bạn có hàm này)
 } from '../api/cart';
 import type { CartItem, CartType } from '../types/CartType';
@@ -25,6 +26,7 @@ interface ICartContext {
     updateQuantity: (productId: number, newQuantity: number) => void;
     clearCart: () => void;
     deleteProductOnCart: (productId: number) => Promise<void>;
+    deleteShopOnCart: (shopId: number) => Promise<void>;
     isCartLoading: boolean; // Thêm state loading cho giỏ hàng
 }
 
@@ -174,7 +176,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                     alert('Cập nhật thất bại, đang đồng bộ lại...');
                     loadCart();
                 });
-        }, 1500); // Đợi 1.5 giây
+        }, 1000); // Đợi 1 giây
     };
 
     /**
@@ -200,7 +202,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         } catch (err) {
             console.log("lỗi khi xóa sản phẩm");
         }
+    }
 
+    const deleteShopOnCart = async (shop_id: number) => {
+        if (!user) {
+            handleKeuDangNhap();
+            return;
+        }
+        try {
+            await deleteProductByShopId(shop_id);
+            handleSuccess("Xóa thành công");
+            await loadCart();
+        } catch (err) {
+            console.log("lỗi khi xóa sản phẩm");
+        }
     }
 
     // Giá trị cung cấp cho các component con
@@ -211,16 +226,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         updateQuantity,
         clearCart,
         deleteProductOnCart,
+        deleteShopOnCart,
         isCartLoading,
     };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-// --- 6. TẠO HOOK TÙY CHỈNH ---
-/**
- * Hook tùy chỉnh để sử dụng CartContext
- */
 export const useCart = () => {
     const context = useContext(CartContext);
     if (context === null) {
