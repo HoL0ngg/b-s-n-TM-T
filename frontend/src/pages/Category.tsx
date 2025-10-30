@@ -132,13 +132,14 @@ const Category = () => {
             </div>
             <div className="d-flex align-items-center justify-content-center mt-4 gap-2">
               {/* Prev */}
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => prev - 1)}
-                style={{ background: "none", border: "none" }}
-              >
-                <FaLessThan />
-              </button>
+              {products.length > 0 &&
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  style={{ background: "none", border: "none" }}
+                >
+                  <FaLessThan />
+                </button>}
 
               {/* Smart Pages */}
               {(() => {
@@ -158,7 +159,7 @@ const Category = () => {
                 } else {
                   pages.push(1);
                   pages.push("dots");
-                  pages.push(currentPage - 1, currentPage, currentPage + 1);
+                  pages.push(currentPage);
                   pages.push("dots");
                   pages.push(totalPages);
                 }
@@ -179,13 +180,14 @@ const Category = () => {
               })()}
 
               {/* Next */}
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((prev) => prev + 1)}
-                style={{ background: "none", border: "none" }}
-              >
-                <FaGreaterThan />
-              </button>
+              {products.length > 0 &&
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  style={{ background: "none", border: "none" }}
+                >
+                  <FaGreaterThan />
+                </button>}
             </div>
 
 
