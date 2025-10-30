@@ -185,9 +185,9 @@ VALUES (
         "/assets/categories/trangsuc.png"
     );
 INSERT INTO generic
-VALUES (1, "son", 1),
+VALUES (1, "Son", 1),
     (2, "Phấn phủ", 1),
-    (3, "kem nền", 1),
+    (3, "Kem nền", 1),
     (4, "Quần dài", 2),
     (5, "Quần short", 2),
     (6, "Quẩn thun", 2),

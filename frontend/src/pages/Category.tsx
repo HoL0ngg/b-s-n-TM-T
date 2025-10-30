@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import CategorySwiper from "../components/CategorySwiper";
-import type { CategoryType } from "../types/CategoryType";
+import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 import type { ProductType } from "../types/ProductType";
-import { fetchCategories } from "../api/categories";
+import { fetchCategories, fetchSubCategories } from "../api/categories";
 import { fecthProducts, fetchProductsInPriceOrder } from "../api/products";
 import { useEffect, useState } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
@@ -15,6 +15,8 @@ const Category = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [typeOfSort, setTypeOfSort] = useState<string>("default");
+  const [subCategories, setSubCategories] = useState<SubCategoryType[]>([]);
+
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -27,6 +29,19 @@ const Category = () => {
       setLoading(false);
     }
   }
+
+  const loadSubCategories = async () => {
+    try {
+      const res = await fetchSubCategories(Number(id));
+      console.log(res);
+      setSubCategories(res);
+    } catch (error) {
+      console.log(error);
+
+    }
+
+  }
+
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -39,18 +54,20 @@ const Category = () => {
         setLoading(false);
       }
     };
-
+    loadSubCategories();
     loadCategories();
     loadProducts();
     setCurrentPage(1);
     setTypeOfSort("default");
   }, [id]);
+
   useEffect(() => {
     loadProducts();
   }, [currentPage]);
   const filteredNameOfCategory = Categories.find(
     (cat) => cat.id == Number(id)
   );
+
   const handleSort = async (val: string) => {
     setTypeOfSort(val);
     if (val === "default") {
@@ -62,6 +79,7 @@ const Category = () => {
     setProducts(res.data);
     setTotalPages(res.totalPages);
   }
+
   return (
     <div className="container">
       <CategorySwiper categories={Categories} />
