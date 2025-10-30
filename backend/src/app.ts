@@ -28,6 +28,8 @@ app.use("/api/shops", ShopRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
 
+app.post
+
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");
 });

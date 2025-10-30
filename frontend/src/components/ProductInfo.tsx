@@ -31,7 +31,6 @@ export default function ProductInfo({ product, attributes }: ProductInfoProps) {
         );
     }, [selectedAttributes, product.product_variants, attributes]); // Tính toán lại khi 1 trong 3 thay đổi
 
-
     const increment = () => {
         // --- SỬA LẠI: Kiểm tra tồn kho của biến thể ---
         const maxStock = currentVariant ? currentVariant.stock : 100; // Lấy tồn kho của biến thể
@@ -73,6 +72,8 @@ export default function ProductInfo({ product, attributes }: ProductInfoProps) {
     }
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;
+    console.log(product.product_variants);
+
 
     return (
         <div className="container">
