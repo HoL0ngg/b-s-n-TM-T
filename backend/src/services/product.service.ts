@@ -234,5 +234,3 @@ class productService {
         return { data: rows as Product[], totalPages }
     }
 }
-
-export default new productService();

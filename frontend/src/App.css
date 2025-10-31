@@ -156,10 +156,10 @@
 }
 
 /* Khi input được focus hoặc có giá trị */
-.floating-input input:focus+label,
-.floating-input input:not(:placeholder-shown)+label,
-.floating-input select:focus+label,
-.floating-input select:not([value=""])+label {
+.floating-input input:focus + label,
+.floating-input input:not(:placeholder-shown) + label,
+.floating-input select:focus + label,
+.floating-input select:not([value=""]) + label {
   top: 0;
   left: 10px;
   font-size: 12px;
@@ -333,22 +333,25 @@
 .pagenum-nonactive {
   border: none;
   background-color: white;
-  border-radius: 50%;
+  /* border-radius: 50%; */
 }
 
 .pagenum-active {
   border: none;
-  background-color: #ff8c00a7;
-  border-radius: 50%;
+  color: #ff8c00ce;
+  /* border-radius: 50%; */
+  background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .pagenum-nonactive:hover {
-  background-color: #ff8c007c;
+  color: #ff8c007c;
 }
-
+.subCategoryText.active {
+  color: var(--bs-orange);
+}
 /* Đổi lại icon cho đúng chiều */
 @media (min-width: 768px) {
   .myVerticalSwiper {

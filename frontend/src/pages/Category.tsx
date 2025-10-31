@@ -16,7 +16,7 @@ const Category = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [typeOfSort, setTypeOfSort] = useState<string>("default");
   const [subCategories, setSubCategories] = useState<SubCategoryType[]>([]);
-
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -80,6 +80,9 @@ const Category = () => {
     setTotalPages(res.totalPages);
   }
 
+  const handleSelectedSubCategory = (val: string) => {
+    setSelectedSubCategory(val);
+  }
   return (
     <div className="container">
       <CategorySwiper categories={Categories} />
@@ -89,11 +92,15 @@ const Category = () => {
             <div className="border-top p-3 m-2">
               <h5>Danh mục sản phẩm</h5>
               <ul className="list-unstyled">
-                {/* <li className="nav-link">Hihihi</li> */}
-                <li>Son</li>
-                <li>Sữa rửa mặt</li>
-                <li>Kem</li>
-                {/* <li>Hihihi</li> */}
+                <li onClick={() => handleSelectedSubCategory("all")} className={`pointer subCategoryText ${selectedSubCategory === 'all' ? "active" : ""}`} >Tất cả</li>
+                {subCategories.map((subCat) => (
+                  <li
+                    className={`pointer my-1 subCategoryText ${subCat.name === selectedSubCategory ? "active" : ""} `}
+                    onClick={() => handleSelectedSubCategory(subCat.name)}
+                  >
+                    {subCat.name}
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="border-top p-3 m-2">
@@ -155,6 +162,7 @@ const Category = () => {
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => prev - 1)}
                   style={{ background: "none", border: "none" }}
+                  className="px-0"
                 >
                   <FaLessThan />
                 </button>}
@@ -177,19 +185,19 @@ const Category = () => {
                 } else {
                   pages.push(1);
                   pages.push("dots");
-                  pages.push(currentPage);
+                  pages.push(currentPage, currentPage + 1);
                   pages.push("dots");
                   pages.push(totalPages);
                 }
 
                 return pages.map((page, index) =>
                   page === "dots" ? (
-                    <span key={`dots-${index}`} className="px-2">...</span>
+                    <span key={`dots-${index}`} className="px-1">...</span>
                   ) : (
                     <button
                       key={`page-${page}`}
                       onClick={() => setCurrentPage(Number(page))}
-                      className={currentPage === page ? "pagenum-active" : "pagenum-nonactive"}
+                      className={`${currentPage === page ? "pagenum-active fw-bolder fs-5" : "pagenum-nonactive"}`}
                     >
                       {page}
                     </button>
@@ -203,6 +211,7 @@ const Category = () => {
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => prev + 1)}
                   style={{ background: "none", border: "none" }}
+                  className="px-0"
                 >
                   <FaGreaterThan />
                 </button>}
