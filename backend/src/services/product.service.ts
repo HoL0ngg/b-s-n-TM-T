@@ -1,39 +1,14 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption } from "../models/product.model";
-
+import { paginationProducts } from "../helpers/pagination.helper";
 class productService {
-    getProductOnCategoryIdService = async (Category_id: number, page: number, limit: number): Promise<{
-        data: Product[]; totalPages: number
-    }> => {
-        const offset = (page - 1) * limit;
-        const [countRows] = await pool.query("SELECT COUNT(*) as total FROM products WHERE category_id = ?", [Category_id]);
-
-        const total = (countRows as any)[0].total;
-        const totalPages = Math.ceil(total / limit);
-        const [rows] = await pool.query(
-            `SELECT 
-                products.id, 
-                products.name, 
-                products.description, 
-                products.base_price, 
-                products.shop_id, 
-                productimages.image_url, 
-                products.sold_count
-            FROM 
-                products 
-            LEFT JOIN 
-                productimages ON productimages.product_id = products.id 
-                            AND productimages.isMain = 1
-            WHERE 
-                products.category_id = ?                
-            GROUP BY 
-                products.id
-            LIMIT ? OFFSET ?`,
-            [Category_id, limit, offset]
-        );
-        return { data: rows as Product[], totalPages }
-
+    getProductOnCategoryIdService = async (categoryId: number, page: number, limit: number) => {
+        const whereClause = `
+      WHERE products.generic_id IN (
+        SELECT gen.id FROM generic gen WHERE gen.category_id = ?
+      )`;
+        return paginationProducts(whereClause, [categoryId], page, limit);
     };
 
     getProductOnIdService = async (id: number): Promise<Product> => {
@@ -201,36 +176,28 @@ class productService {
         return result as AttributeOfProductVariants[];
     }
 
-    getProductsInPriceOrderService = async (category_id: number, page: number, limit: number, typeOfSort: string): Promise<{ data: Product[], totalPages: number }> => {
-        const offset = (page - 1) * limit;
-        const [countRows] = await pool.query("SELECT COUNT(*) as total FROM products WHERE category_id = ?", [category_id]);
+    getProductsInPriceOrderService = async (categoryId: number, page: number, limit: number, typeOfSort: string) => {
+        const whereClause = `
+      WHERE products.generic_id IN (
+        SELECT gen.id FROM generic gen WHERE gen.category_id = ?
+      )`;
 
-        const total = (countRows as any)[0].total;
-        const totalPages = Math.ceil(total / limit);
-
-        // Sử dụng LEFT JOIN như khuyến nghị ở lần trước
-        let queryStr = `SELECT products.id, products.name, products.description, products.base_price, products.shop_id, 
-            productimages.image_url, products.sold_count
-       FROM products 
-       LEFT JOIN productimages ON productimages.product_id = products.id AND productimages.isMain = 1
-       WHERE products.category_id = ?
-       GROUP BY products.id `;
-
+        let orderBy = "";
         switch (typeOfSort) {
-            case 'priceDesc':
-                // THÊM DẤU CÁCH Ở ĐẦU
-                queryStr += ` ORDER BY products.base_price DESC`;
+            case "priceDesc":
+                orderBy = "ORDER BY products.base_price DESC";
                 break;
-            case 'priceAsc':
-                // THÊM DẤU CÁCH Ở ĐẦU (và thêm ASC cho rõ ràng)
-                queryStr += ` ORDER BY products.base_price ASC`;
-                break;
-            default:
+            case "priceAsc":
+                orderBy = "ORDER BY products.base_price ASC";
                 break;
         }
-        queryStr += ` LIMIT ? OFFSET ?`;
 
-        const [rows] = await pool.query(queryStr, [category_id, limit, offset]);
-        return { data: rows as Product[], totalPages }
-    }
+        return paginationProducts(whereClause, [categoryId], page, limit, orderBy);
+    };
+    getProductsBySubCategoryService = async (subCategoryId: number, page: number = 1, limit: number = 10) => {
+        const whereClause = `WHERE products.generic_id = ?`;
+        return paginationProducts(whereClause, [subCategoryId], page, limit);
+    };
 }
+
+export default new productService();

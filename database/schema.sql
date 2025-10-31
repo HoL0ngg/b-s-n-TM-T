@@ -54,11 +54,11 @@ CREATE TABLE Products (
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
     updated_at DATE DEFAULT CURRENT_TIMESTAMP,
     base_price INT,
-    generic INT,
+    generic_id INT,
     sold_count INT,
     shop_id INT,
     shop_cate_id INT,
-    FOREIGN KEY (generic) REFERENCES Generic(id),
+    FOREIGN KEY (generic_id) REFERENCES Generic(id),
     FOREIGN KEY (shop_id) REFERENCES Shops(id),
     FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id)
 );
@@ -192,7 +192,17 @@ VALUES (1, "Son", 1),
     (5, "Quần short", 2),
     (6, "Quẩn thun", 2),
     (7, "Áo sơ mi", 3),
-    (8, "Giày đá banh", 4);
+    (8, "Giày đá banh", 4),
+    (9, "Tivi", 7),
+    (10, "Tủ lạnh", 7),
+    (11, "Máy lạnh", 7),
+    (12, "Máy giặt", 7),
+    (13, "Máy sấy", 7),
+    (14, "Gel trị mụn", 1),
+    (15, "Tẩy tế bào chết", 1),
+    (16, "Sữa rửa mặt", 6),
+    (17, "Dầu gội đầu", 6),
+    (18, "Vòng tay", 8);
 
 INSERT INTO users
     VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png"), 
@@ -270,24 +280,12 @@ VALUES (
     );
 
 INSERT INTO shop_categories 
-    VALUES (1, "Son", 1),
-    (2, "Phấn phủ", 1),
-    (3, "Kem nền", 1),
-    (4, "Quần dài", 2),
-    (5, "Quần short", 2),
-    (6, "Quẩn thun", 2),
-    (7, "Áo sơ mi", 3),
-    (8, "Giày đá banh", 4),
-    (9, "Tivi", 7),
-    (10, "Tủ lạnh", 7),
-    (11, "Máy lạnh", 7),
-    (12, "Máy giặt", 7),
-    (13, "Máy sấy", 7),
-    (14, "Gel trị mụn", 1),
-    (15, "Tẩy tế bào chết", 1),
-    (16, "Sữa rửa mặt", 6),
-    (17, "Dầu gội đầu", 6),
-    (18, "Vòng tay", 8);
+    VALUES (1, 1, "Sản phẩm mới")
+    ,(2, 2, "Sản phẩm mùa hè")
+    ,(3, 3, "Sản phẩm mới")
+    ,(4, 4, "Sản phẩm mới")
+    ,(5, 5, "Sản phẩm mới")
+    ,(6, 6, "Sản phẩm mới");
 
 INSERT INTO products
 VALUES (

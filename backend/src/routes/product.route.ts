@@ -4,6 +4,7 @@ import productController from "../controllers/product.controller";
 const ProductRouter = Router();
 
 ProductRouter.get("/", productController.getProductOnCategoryIdController);
+ProductRouter.get("/productSubCategory", productController.getProductsBySubCategoryController);
 ProductRouter.get("/sortproducts", productController.getProductsInPriceOrderController);
 ProductRouter.get("/images/:id", productController.getProductImgOnIdController);
 ProductRouter.get("/shops/:id", productController.getProductOnShopIdController);

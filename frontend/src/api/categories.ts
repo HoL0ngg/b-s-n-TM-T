@@ -11,4 +11,5 @@ export const fetchCategories = async (): Promise<CategoryType[]> => {
 export const fetchSubCategories = async (category_id: number): Promise<SubCategoryType[]> => {
     const res = await axios.get(`${API_URl}/subCategories/${category_id}`);
     return res.data;
-}
+};
+
