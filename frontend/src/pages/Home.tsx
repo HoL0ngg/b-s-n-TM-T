@@ -5,6 +5,7 @@ import LazySection from "../components/LazySection";
 import { fetchCategories } from "../api/categories";
 import { useEffect, useState } from "react";
 import type { CategoryType } from "../types/CategoryType";
+import HomeProduct from "../components/HomeProduct";
 
 export default function Home() {
     const [Categories, setCategories] = useState<CategoryType[]>([]);
@@ -35,6 +36,9 @@ export default function Home() {
             </LazySection>
             <LazySection threshold={0.5}>
                 <CategorySelector categories={Categories} />
+            </LazySection>
+            <LazySection threshold={0.5}>
+                <HomeProduct />
             </LazySection>
         </>
     );

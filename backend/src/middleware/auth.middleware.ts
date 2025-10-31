@@ -35,3 +35,25 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
         return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }
 }
+
+export async function checkOptionalAuth(req: Request, res: Response, next: NextFunction) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+        return next();
+    }
+
+    try {
+        const userPayload = jwt.verify(token, SECRET_KEY) as {
+            id: string;[key: string]: any
+        };;
+
+        (req as any).user = userPayload;
+
+        next();
+
+    } catch (err) {
+        return next();
+    }
+}

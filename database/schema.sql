@@ -135,6 +135,19 @@ CREATE TABLE Cart(
     FOREIGN key (product_variant_id) REFERENCES ProductVariants(id),
     primary key (user_id, product_variant_id)
 );
+CREATE TABLE UserViewHistory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(10),
+    product_id INT NOT NULL,
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES Users(phone_number),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+    
+    -- Thêm index để tăng tốc độ truy vấn
+    -- INDEX idx_user_view (user_id),
+    -- INDEX idx_session_view (session_id)
+);
 INSERT INTO categories
 VALUES (
         1,

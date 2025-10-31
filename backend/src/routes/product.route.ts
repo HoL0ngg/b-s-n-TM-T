@@ -1,5 +1,6 @@
 import { Router } from "express";
 import productController from "../controllers/product.controller";
+import { checkOptionalAuth } from "../middleware/auth.middleware";
 
 const ProductRouter = Router();
 
@@ -11,5 +12,5 @@ ProductRouter.get("/reviews/:id", productController.getReviewByProductIdControll
 ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByProductIdController);
 ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
 ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
-ProductRouter.get("/:id", productController.getProductOnIdController);
+ProductRouter.get("/:id", checkOptionalAuth, productController.getProductOnIdController);
 export default ProductRouter;

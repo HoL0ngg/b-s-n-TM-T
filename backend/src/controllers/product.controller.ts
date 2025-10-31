@@ -21,7 +21,13 @@ class productController {
     getProductOnIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
+            const user_id = (req as any).user?.id;
             const product = await productService.getProductOnIdService(Number(id));
+
+            if (product && user_id) {
+                productService.logView(user_id, Number(product.id))
+                    .catch((err: any) => console.error("Lỗi ghi log xem sản phẩm:", err));
+            }
             res.status(200).json(product);
         } catch (err) {
             console.log(err);

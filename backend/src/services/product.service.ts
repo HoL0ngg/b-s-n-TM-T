@@ -233,6 +233,13 @@ class productService {
         const [rows] = await pool.query(queryStr, [category_id, limit, offset]);
         return { data: rows as Product[], totalPages }
     }
+
+    logView = async (userId: string | undefined, productId: number) => {
+        const sql = `
+            INSERT INTO UserViewHistory (user_id, product_id) 
+            VALUES (?, ?)`;
+        await pool.query(sql, [userId, productId]);
+    }
 }
 
 export default new productService();
