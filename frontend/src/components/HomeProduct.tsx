@@ -1,9 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import type { ProductType } from "../types/ProductType";
+import { fecthProducts } from "../api/products";
 
 export default function HomeProduct() {
     const menuList = ["Dành cho bạn", "Hàng mới về", "Hàng hót"];
     const [selectedList, setSelectedList] = useState(0);
+    const [products, setProducts] = useState<ProductType[]>([]);
+
+    useEffect(() => {
+        const loadProduct = async () => {
+            try {
+                // const data = await fecthProducts();
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        loadProduct();
+    }, [selectedList])
 
     const handleChangeMenu = (id: number) => {
         if (id == selectedList) return;

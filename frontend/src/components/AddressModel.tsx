@@ -221,6 +221,8 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                         <div className="mb-3">
                             <MapPicker
                                 address={street}
+                                city={selectedCityName}   // <-- Prop mới
+                                ward={selectedWardName}    // <-- Prop mới
                                 setAddress={setStreet}
                             />
                         </div>
