@@ -34,3 +34,10 @@ export const deleteProductByShopId = async (shop_id: number) => {
     const res = await axios.delete(`${API_URL}/delete-shop/${shop_id}`);
     return res.data;
 }
+
+export const createVietQROrder = async (checkoutData: any) => {
+    const res = await axios.post(`${API_URL}/vietqr-create`, checkoutData);
+
+    // Backend sẽ trả về { orderId: "DH123", qrDataURL: "data:image/png;base64,..." }
+    return res.data;
+}

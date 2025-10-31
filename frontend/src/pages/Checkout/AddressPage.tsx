@@ -11,6 +11,7 @@ import { FaRegCircle } from "react-icons/fa";
 import { FaAngleDown } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
+import { createVietQROrder } from "../../api/cart";
 
 export const AddressPage = () => {
     const location = useLocation();
@@ -23,6 +24,8 @@ export const AddressPage = () => {
     const [isShow, setIsShow] = useState(false);
     const { user } = useAuth();
     const [hoveredId, setHoveredId] = useState<number | null>(null);
+    const [qrImage, setQrImage] = useState("");
+    const [orderId, setOrderId] = useState("");
 
     let [show, setShow] = useState(false);
     useEffect(() => {
@@ -125,12 +128,28 @@ export const AddressPage = () => {
         loadAddress(); // Tải lại danh sách (để reload)
     };
 
+    const handlePlaceOrder = async () => {
+        try {
+            // Gọi API backend (Bước 2)
+            const checkoutData = {
+                total: total
+            }
+            const response = await createVietQROrder(checkoutData);
+
+            setQrImage(response.qrDataURL); // "data:image/png;base64,iVBORw..."
+            setOrderId(response.orderId);
+
+        } catch (error) {
+            alert("Có lỗi, không thể tạo mã QR.");
+        }
+    }
+
     return (
         <>
             <AddressModal isShow={isShow} onClose={() => setIsShow(false)} onSaveSuccess={handleSaveSuccess} />
             <div className="container p-4">
                 <div className="row gx-5">
-                    <div className="col-7">
+                    <div className="col-8">
                         <div className="container p-4">
                             {groupedCart.map((shopGroup) => (
                                 <div key={shopGroup.shop_id} className="shop-container mb-4">
@@ -140,12 +159,12 @@ export const AddressPage = () => {
                                     </div>
 
                                     {/* --- PHẦN DANH SÁCH SẢN PHẨM CỦA SHOP --- */}
-                                    <div className="items-list border rounded p-3">
+                                    <div className="items-list border rounded">
 
                                         {/* 2. Vòng lặp TRONG: Lặp qua từng SẢN PHẨM của shop đó */}
                                         {shopGroup.items.map((item) => (
 
-                                            <div key={item.product_variant_id} className="cart-item d-flex mb-3">
+                                            <div key={item.product_variant_id} className="cart-item d-flex mb-3 p-3">
                                                 <img src={item.product_url} alt={item.product_name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
 
                                                 <div className="item-details ms-3 d-flex flex-column justify-content-between">
@@ -162,10 +181,18 @@ export const AddressPage = () => {
                                                     <div className="text-danger fw-bold">{item.product_price.toLocaleString()}đ</div>
                                                 </div>
 
-                                                {/* (Thêm nút tăng/giảm số lượng ở đây) */}
                                             </div>
-
                                         ))}
+                                        <div className="bg-light border border-top p-2 d-flex justify-content-end gap-4">
+                                            <div>
+                                                <div>Tiền ship: </div>
+                                                <div>Tổng tiền: </div>
+                                            </div>
+                                            <div className="text-end">
+                                                <div>20.000đ</div>
+                                                <div>231.000đ</div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div>
                                         <div>Tiền ship: 30k</div>
@@ -176,7 +203,7 @@ export const AddressPage = () => {
                             ))}
                         </div>
                     </div>
-                    <div className="col-5">
+                    <div className="col-4">
                         <div className="mb-2 fs-4 ms-2">Chọn địa chỉ giao hàng</div>
                         <div className="bg-light border rounded p-2">
                             {selectedAddress
@@ -269,10 +296,18 @@ export const AddressPage = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="btn btn-primary w-100 mt-4 p-2">Thanh toán</div>
+                        <div className="btn btn-primary w-100 mt-4 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
                     </div>
                 </div>
-            </div>
+                {/* ... */}
+                {qrImage && (
+                    <div className="position-fixed top-50 start-50 translate-middle bg-light p-4 border rounded">
+                        <h4 className="text-center">Quét mã để thanh toán</h4>
+                        <img src={qrImage} alt="Mã VietQR" />
+                        <p>Nội dung chuyển khoản: <strong>{orderId}</strong></p>
+                    </div>
+                )}
+            </div >
         </>
     );
 }
