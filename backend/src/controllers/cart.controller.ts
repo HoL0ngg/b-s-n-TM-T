@@ -111,7 +111,7 @@ class CartController {
 
 
             // 4. Lấy mã QR (dạng base64 data URL)
-            const qrDataURL = response.data?.data?.qrDataURL;
+            const qrDataURL = "";
 
             // 5. Trả về cho Frontend
             res.json({
