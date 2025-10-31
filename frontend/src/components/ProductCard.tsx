@@ -20,7 +20,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 src={product.image_url}
                 alt={product.name}
                 className="card-img-top"
-                style={{ objectFit: "contain", height: "200px" }}
+                style={{ height: "200px" }}
             />
             <div className="d-flex flex-column mt-2 gap-2 p-1">
                 <span className="product-name cart-title text-center fs-5">{product.name}</span>

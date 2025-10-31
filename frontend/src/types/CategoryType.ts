@@ -5,3 +5,9 @@ export interface CategoryType {
     description: string;
     img_url: string;
 }
+
+export interface SubCategoryType {
+    id: number;
+    name: string;
+
+}

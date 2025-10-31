@@ -4,3 +4,8 @@ export interface Category {
     description: string;
     img_url: string;
 }
+
+export interface SubCategory {
+    id: number;
+    name: string;
+}

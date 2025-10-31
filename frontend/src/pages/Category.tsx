@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import CategorySwiper from "../components/CategorySwiper";
-import type { CategoryType } from "../types/CategoryType";
+import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 import type { ProductType } from "../types/ProductType";
-import { fetchCategories } from "../api/categories";
+import { fetchCategories, fetchSubCategories } from "../api/categories";
 import { fecthProducts, fetchProductsInPriceOrder } from "../api/products";
 import { useEffect, useState } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
@@ -14,12 +14,13 @@ const Category = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [typeOfSort, setTypeOfSort] = useState<string>("default");
+  const [subCategories, setSubCategories] = useState<SubCategoryType[]>([]);
+
   const loadProducts = async () => {
     try {
       setLoading(true);
       const res = await fecthProducts(Number(id), currentPage, 12);
-
-      // console.log(res);
       setProducts(res.data)
       setTotalPages(res.totalPages);
     } catch (err) {
@@ -28,6 +29,19 @@ const Category = () => {
       setLoading(false);
     }
   }
+
+  const loadSubCategories = async () => {
+    try {
+      const res = await fetchSubCategories(Number(id));
+      console.log(res);
+      setSubCategories(res);
+    } catch (error) {
+      console.log(error);
+
+    }
+
+  }
+
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -40,18 +54,22 @@ const Category = () => {
         setLoading(false);
       }
     };
-
+    loadSubCategories();
     loadCategories();
     loadProducts();
-    setCurrentPage((prev) => prev = 1);
+    setCurrentPage(1);
+    setTypeOfSort("default");
   }, [id]);
+
   useEffect(() => {
     loadProducts();
   }, [currentPage]);
   const filteredNameOfCategory = Categories.find(
     (cat) => cat.id == Number(id)
   );
+
   const handleSort = async (val: string) => {
+    setTypeOfSort(val);
     if (val === "default") {
       loadProducts();
       return;
@@ -60,8 +78,8 @@ const Category = () => {
     // const res = await fecthProducts(Number(id), currentPage, 3);
     setProducts(res.data);
     setTotalPages(res.totalPages);
-
   }
+
   return (
     <div className="container">
       <CategorySwiper categories={Categories} />
@@ -71,11 +89,11 @@ const Category = () => {
             <div className="border-top p-3 m-2">
               <h5>Danh mục sản phẩm</h5>
               <ul className="list-unstyled">
-                <li className="nav-link">Hihihi</li>
-                <li>Hihihi</li>
-                <li>Hihihi</li>
-                <li>Hihihi</li>
-                <li>Hihihi</li>
+                {/* <li className="nav-link">Hihihi</li> */}
+                <li>Son</li>
+                <li>Sữa rửa mặt</li>
+                <li>Kem</li>
+                {/* <li>Hihihi</li> */}
               </ul>
             </div>
             <div className="border-top p-3 m-2">
@@ -101,7 +119,7 @@ const Category = () => {
               </h2>
               <div className="mb-3">
                 <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
-                <select name="sortBy" id="sortBy" className="custom-select" onChange={(e) => { handleSort(e.target.value) }}>
+                <select name="sortBy" id="sortBy" className="custom-select" value={typeOfSort} onChange={(e) => { handleSort(e.target.value) }}>
                   <option value="default">
                     Mặc định
                   </option>
@@ -132,13 +150,14 @@ const Category = () => {
             </div>
             <div className="d-flex align-items-center justify-content-center mt-4 gap-2">
               {/* Prev */}
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => prev - 1)}
-                style={{ background: "none", border: "none" }}
-              >
-                <FaLessThan />
-              </button>
+              {products.length > 0 &&
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  style={{ background: "none", border: "none" }}
+                >
+                  <FaLessThan />
+                </button>}
 
               {/* Smart Pages */}
               {(() => {
@@ -158,7 +177,7 @@ const Category = () => {
                 } else {
                   pages.push(1);
                   pages.push("dots");
-                  pages.push(currentPage - 1, currentPage, currentPage + 1);
+                  pages.push(currentPage);
                   pages.push("dots");
                   pages.push(totalPages);
                 }
@@ -179,13 +198,14 @@ const Category = () => {
               })()}
 
               {/* Next */}
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((prev) => prev + 1)}
-                style={{ background: "none", border: "none" }}
-              >
-                <FaGreaterThan />
-              </button>
+              {products.length > 0 &&
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  style={{ background: "none", border: "none" }}
+                >
+                  <FaGreaterThan />
+                </button>}
             </div>
 
 
