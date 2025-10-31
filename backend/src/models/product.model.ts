@@ -7,6 +7,7 @@ export interface Product {
     status: number;
     base_price: number;
     category_id: number;
+    category_name: string;
     shop_id: number;
     product_variants: ProductVariant[];
 }

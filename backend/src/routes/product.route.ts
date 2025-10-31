@@ -12,5 +12,6 @@ ProductRouter.get("/reviews/:id", productController.getReviewByProductIdControll
 ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByProductIdController);
 ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
 ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
-ProductRouter.get("/:id", checkOptionalAuth, productController.getProductOnIdController);
+ProductRouter.get("/product/:id", checkOptionalAuth, productController.getProductOnIdController);
+ProductRouter.get("/for-you/", checkOptionalAuth, productController.getRecommendedProduct);
 export default ProductRouter;

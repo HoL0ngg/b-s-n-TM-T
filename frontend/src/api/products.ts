@@ -10,7 +10,7 @@ export const fecthProducts = async (category_id: number, page: number = 1, limit
 }
 
 export const fecthProductsByID = async (id: string): Promise<ProductType> => {
-    const res = await axios.get(`${API_URl}/${id}`);
+    const res = await axios.get(`${API_URl}/product/${id}`);
     // console.log(res.data);
     return res.data;
 }
@@ -60,4 +60,11 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
 export const fetchProductsInPriceOrder = async (category_id?: number, page: number = 1, limit: number = 12, sort: string = "default"): Promise<{ data: ProductType[], totalPages: number }> => {
     const res = await axios.get(`${API_URl}/sortproducts?category_id=${category_id}&page=${page}&limit=${limit}&sort=${sort}`);
     return res.data
+}
+
+export const apiGetForYouRecommendations = async () => {
+    const res = await axios.get(`${API_URl}/for-you`);
+    console.log(res.data);
+
+    return res.data;
 }

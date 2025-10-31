@@ -19,12 +19,15 @@ class productService {
                 products.base_price, 
                 products.shop_id, 
                 productimages.image_url, 
-                products.sold_count
+                products.sold_count,
+                categories.name as category_name
             FROM 
                 products 
             LEFT JOIN 
                 productimages ON productimages.product_id = products.id 
                             AND productimages.isMain = 1
+            JOIN
+                categories ON categories.id = products.category_id
             WHERE 
                 products.category_id = ?                
             GROUP BY 
@@ -239,6 +242,89 @@ class productService {
             INSERT INTO UserViewHistory (user_id, product_id) 
             VALUES (?, ?)`;
         await pool.query(sql, [userId, productId]);
+    }
+
+    getForYouRecommendations = async (user_id: number | undefined) => {
+        if (!user_id) {
+            return this.getRandomRecommendations();
+        }
+        // 2. Nếu là user, kiểm tra xem có lịch sử xem không
+        const [historyCheck] = await pool.query<RowDataPacket[]>(
+            `SELECT 1 FROM UserViewHistory WHERE user_id = ? LIMIT 1`,
+            [user_id]
+        );
+
+        // 3. Quyết định
+        if (historyCheck.length > 0) {
+            // CÓ LỊCH SỬ: Chạy logic gợi ý theo lịch sử
+            return this.getRecommendationsFromHistory(user_id);
+        } else {
+            // KHÔNG CÓ LỊCH SỬ: Chạy logic ngẫu nhiên
+            return this.getRandomRecommendations();
+        }
+    }
+
+    getRandomRecommendations = async () => {
+        try {
+            const [products] = await pool.query(
+                `SELECT 
+                    products.id, products.name, products.description, base_price, shop_id, image_url, sold_count, categories.name as category_name
+                FROM 
+                    products 
+                JOIN 
+                    productimages on productimages.product_id = products.id
+                JOIN 
+                    categories on categories.id = products.category_id
+                GROUP BY 
+                    products.id
+                ORDER BY RAND() 
+                LIMIT 15`
+            );
+            return products;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    getRecommendationsFromHistory = async (user_id: number) => {
+        const [recentViewedIds] = await pool.query<RowDataPacket[]>(
+            `SELECT DISTINCT product_id 
+             FROM UserViewHistory 
+             WHERE user_id = ? 
+             ORDER BY viewed_at DESC 
+             LIMIT 5`,
+            [user_id]
+        );
+        const productIds = recentViewedIds.map(row => row.product_id);
+
+        // 2. Lấy danh mục của các sản phẩm đó
+        const [relatedCategoryIds] = await pool.query<RowDataPacket[]>(
+            `SELECT DISTINCT category_id 
+             FROM products 
+             WHERE id IN (?)`,
+            [productIds]
+        );
+        if (relatedCategoryIds.length === 0) {
+            // Nếu không tìm thấy danh mục (lỗi), trả về ngẫu nhiên
+            return this.getRandomRecommendations();
+        }
+        const categoryIds = relatedCategoryIds.map(row => row.category_id);
+
+        // 3. Lấy sản phẩm TỪ CÁC DANH MỤC ĐÓ
+        // (Và loại trừ sản phẩm đã xem)
+        const [recommendations] = await pool.query(
+            `SELECT * FROM products 
+             WHERE 
+                category_id IN (?) 
+             AND 
+                id NOT IN (?) 
+             ORDER BY 
+                RAND() 
+             LIMIT 15`,
+            [categoryIds, productIds]
+        );
+
+        return recommendations;
     }
 }
 

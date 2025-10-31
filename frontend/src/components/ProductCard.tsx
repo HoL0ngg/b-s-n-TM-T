@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { ProductType } from "../types/ProductType";
+import { FaStar } from "react-icons/fa";
 type ProductCardProps = {
     product: ProductType;
 };
@@ -14,7 +15,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div
             className="card shadow-sm"
             onClick={goToDetailProduct}
-            style={{ cursor: "pointer", height: "350px" }}
+            style={{ cursor: "pointer", height: "360px", width: '220px' }}
         >
             <img
                 src={product.image_url}
@@ -22,16 +23,25 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 className="card-img-top"
                 style={{ height: "200px" }}
             />
-            <div className="d-flex flex-column mt-2 gap-2 p-1">
-                <span className="product-name cart-title text-center fs-5">{product.name}</span>
-                <p className="card-text text-center fs-5 fw-bold">
-                    {product.base_price.toLocaleString()} VNĐ
-                </p>
+            <div className="d-flex flex-column mt-1 gap-1 p-1">
+                <span className="product-name cart-title text-start ms-1 fs-6 fw-bold">{product.name}</span>
+                <div className="text-muted ms-1 fw-semibold">
+                    {product.category_name}
+                </div>
+                <div className="card-text text-start ms-1 fs-5 fw-bold text-primary">
+                    {product.base_price.toLocaleString()}<small>đ</small>
+                </div>
                 {/* <button className="btn btn-outline-orange mt-auto fw-semibold">
           Add to Cart
         </button> */}
+                <div className="text-muted ms-1 d-flex justify-content-between align-items-center">
+                    <div>Đã bán: {product.sold_count}</div>
+                    <div className="d-flex align-items-center">
+                        <span>4.5</span>
+                        <FaStar className="text-primary ms-1" />
+                    </div>
+                </div>
             </div>
-            <div className="container text-muted">Đã bán: {product.sold_count}</div>
         </div>
     );
 };

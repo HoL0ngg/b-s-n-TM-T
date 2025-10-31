@@ -1,19 +1,26 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { ProductType } from "../types/ProductType";
-import { fecthProducts } from "../api/products";
+import { apiGetForYouRecommendations } from "../api/products";
+import ProductCard from "./ProductCard";
 
 export default function HomeProduct() {
     const menuList = ["Dành cho bạn", "Hàng mới về", "Hàng hót"];
     const [selectedList, setSelectedList] = useState(0);
     const [products, setProducts] = useState<ProductType[]>([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const loadProduct = async () => {
             try {
-                // const data = await fecthProducts();
+                setLoading(true);
+                const data = await apiGetForYouRecommendations();
+                console.log(data);
+                setProducts(data);
             } catch (err) {
                 console.log(err);
+            } finally {
+                setLoading(false);
             }
         }
 
@@ -26,7 +33,7 @@ export default function HomeProduct() {
         setSelectedList(id);
     }
     return (
-        <div>
+        <div className="container">
             <div className="fs-1 text-center text-primary mt-5 fw-bolder">
                 GỢI Ý HÔM NAY
             </div>
@@ -45,9 +52,26 @@ export default function HomeProduct() {
                     </div>
                 ))}
             </div>
-            <div>
-
+            <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4 mt-4">
+                {loading && (
+                    <div className="loader-overlay">
+                        <div className="spinner"></div>
+                    </div>
+                )}
+                {products.length > 0 ? (
+                    products.map((product) => (
+                        <div className="col" key={product.id}>
+                            <ProductCard product={product} />
+                        </div>
+                    ))
+                ) : (
+                    <div className="w-100">
+                        <p className="text-center fs-5">
+                            Không có sản phẩm
+                        </p>
+                    </div>
+                )}
             </div>
-        </div>
+        </div >
     )
 }

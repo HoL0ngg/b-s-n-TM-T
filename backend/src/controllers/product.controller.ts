@@ -6,12 +6,13 @@ class productController {
         try {
             const category_id = Number(req.query.category_id);
             if (!category_id) {
-                console.log("hahah");
                 return res.status(400).json({ message: "Missing or invalid category_id" });
             }
             const page = Number(req.query.page) || 1;
             const limit = Number(req.query.limit) || 12;
             const product = await productService.getProductOnCategoryIdService(category_id, page, limit);
+            console.log(product);
+
             res.status(200).json(product);
         } catch (err) {
             console.log(err);
@@ -22,6 +23,7 @@ class productController {
         try {
             const id = req.params.id;
             const user_id = (req as any).user?.id;
+
             const product = await productService.getProductOnIdService(Number(id));
 
             if (product && user_id) {
@@ -120,6 +122,21 @@ class productController {
         } catch (error) {
             console.log(error);
 
+        }
+    }
+
+    getRecommendedProduct = async (req: Request, res: Response) => {
+        try {
+            // Lấy userId (có thể là undefined nếu là khách)
+            const userId = (req as any).user?.id;
+
+            // Gọi service, service sẽ tự xử lý logic
+            const products = await productService.getForYouRecommendations(userId);
+
+            res.status(200).json(products);
+
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
         }
     }
 }
