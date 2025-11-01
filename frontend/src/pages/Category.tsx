@@ -200,23 +200,27 @@ const Category = () => {
           {/* Product list */}
           <div className="col-lg-9 col-md-8 col-12">
             <div className="row row-cols-1 row-cols-md-2 g-4">
-              <h2 className="mb-4 text-left">
-                {filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}
-              </h2>
+              <div className="d-flex justify-content-between w-100">
 
-              <div className="mb-3">
-                <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
-                <select
-                  name="sortBy"
-                  id="sortBy"
-                  className="custom-select"
-                  value={query.sort}
-                  onChange={(e) => handleSort(e.target.value)}
-                >
-                  <option value="default">Mặc định</option>
-                  <option value="priceDesc">Giá giảm dần</option>
-                  <option value="priceAsc">Giá tăng dần</option>
-                </select>
+                <h2 className="mb-4 text-left">
+                  {filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}
+                </h2>
+
+                <div className="mb-3">
+                  <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
+                  <select
+                    name="sortBy"
+                    id="sortBy"
+                    className="custom-select"
+                    style={{ width: '150px' }}
+                    value={query.sort}
+                    onChange={(e) => handleSort(e.target.value)}
+                  >
+                    <option value="default">Mặc định</option>
+                    <option value="priceDesc">Giá giảm dần</option>
+                    <option value="priceAsc">Giá tăng dần</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -228,10 +232,10 @@ const Category = () => {
             )}
 
             {/* Products */}
-            <div className="row row-cols-1 row-cols-md-4 g-4">
+            <div className="row row-cols-1 row-cols-md-4">
               {!loading && products.length > 0 ? (
                 products.map((product) => (
-                  <div className="col" key={product.id}>
+                  <div className="col d-flex justify-content-center my-2" key={product.id}>
                     <ProductCard product={product} />
                   </div>
                 ))
