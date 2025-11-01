@@ -4,13 +4,15 @@ import MapPicker from "./MapPicker";
 import { useAuth } from "../context/AuthContext";
 import { createAndLinkAddress } from "../api/user";
 import { isValidPhoneNumber, isLength } from "../utils/validator";
+import type { AddressType } from "../types/UserType";
 interface AddressModalProps {
     isShow: boolean;
     onClose: () => void;
+    address: AddressType | null;
     onSaveSuccess: () => void;
 }
 
-export default function AddressModal({ isShow, onClose, onSaveSuccess }: AddressModalProps) {
+export default function AddressModal({ isShow, onClose, address, onSaveSuccess }: AddressModalProps) {
     const { user } = useAuth();
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
@@ -45,7 +47,28 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
             setSelectedCityCode("");
             setStreet("");
         }
-    }, [isShow]);
+        if (address) {
+            const cityy = address.city;
+            const wardd = address.ward;
+            const sdt = address.phone_number_jdo;
+            const namee = address.user_name;
+            const streett = address.street;
+            setName(namee);
+            setPhone(sdt);
+            setStreet(streett);
+            // 2. Tìm CODE từ NAME
+            const selectedCity = city.find(c => c.name === cityy).code;
+            setSelectedCityCode(selectedCity);
+            fetch(`https://provinces.open-api.vn/api/v2/p/${selectedCity}?depth=2`)
+                .then(data => data.json())
+                .then(jsonData => {
+                    setWard(jsonData.wards);
+                    const selectedWard = jsonData.wards.find((w: any) => w.name === wardd);
+                    setSelectedWardCode(selectedWard);
+                });
+
+        }
+    }, [isShow, address]);
 
     const handleCityChange = async (event: any) => {
         const cityCode = event.target.value; // Lấy code của tỉnh vừa chọn

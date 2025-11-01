@@ -15,7 +15,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div
             className="card shadow-sm"
             onClick={goToDetailProduct}
-            style={{ cursor: "pointer", height: "360px", width: '220px' }}
+            style={{ cursor: "pointer", height: "340px", width: '220px' }}
         >
             <img
                 src={product.image_url}
@@ -23,17 +23,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 className="card-img-top"
                 style={{ height: "200px" }}
             />
-            <div className="d-flex flex-column mt-1 gap-1 p-1">
-                <span className="product-name cart-title text-start ms-1 fs-6 fw-bold">{product.name}</span>
-                <div className="text-muted ms-1 fw-semibold">
+            <div className="d-flex flex-column mt-1 p-1">
+                <span className="product-name cart-title text-start ms-1 fs fw-semibold">{product.name}</span>
+                <small className="text-muted ms-1">
                     {product.category_name}
-                </div>
+                </small>
                 <div className="card-text text-start ms-1 fs-5 fw-bold text-primary">
                     {product.base_price.toLocaleString()}<small>đ</small>
                 </div>
-                {/* <button className="btn btn-outline-orange mt-auto fw-semibold">
-          Add to Cart
-        </button> */}
                 <div className="text-muted ms-1 d-flex justify-content-between align-items-center">
                     <div>Đã bán: {product.sold_count}</div>
                     <div className="d-flex align-items-center">

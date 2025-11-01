@@ -171,7 +171,7 @@ export default function Cart() {
                                                                 ))
                                                             }
                                                         </div>
-                                                        <div className="text-muted" onClick={() => handleEditClick(item)}>
+                                                        <div className="text-muted pointer" onClick={() => handleEditClick(item)}>
                                                             Thay đổi
                                                         </div>
                                                     </div>)}
