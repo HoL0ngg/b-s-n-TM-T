@@ -63,8 +63,6 @@ export const fetchProductsInPriceOrder = async (category_id: number, page: numbe
 
 export const apiGetForYouRecommendations = async () => {
     const res = await axios.get(`${API_URl}/for-you`);
-    console.log(res.data);
-
     return res.data;
 }
 

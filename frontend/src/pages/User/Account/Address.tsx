@@ -44,7 +44,6 @@ export default function Address() {
                 <h5 className="mt-2 ms-2">Địa chỉ của tôi</h5>
                 <div className="btn btn-primary mb-3" onClick={() => setIsShow(true)}>+ Thêm địa chỉ mới</div>
             </div>
-            <p className="m-2 fs-2">Địa chỉ</p>
             {/* <div className="mb-4 ms-2">
 
                 <div className="d-flex justify-content-between mt-1">

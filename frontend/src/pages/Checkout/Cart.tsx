@@ -5,6 +5,7 @@ import type { CartItem } from "../../types/CartType";
 import { useNavigate } from "react-router-dom";
 import { TiDeleteOutline } from "react-icons/ti";
 import { BsCartXFill } from "react-icons/bs";
+import VariantEditModal from "../../components/VariantEditModal";
 
 export default function Cart() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -12,6 +13,18 @@ export default function Cart() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { cart, updateQuantity, deleteProductOnCart, deleteShopOnCart } = useCart();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+
+    const handleEditClick = (item: CartItem) => {
+        setEditingItem(item);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+    };
 
     const updateCartInDatabase = async (productId: number, newQuantity: number) => {
         updateQuantity(productId, newQuantity);
@@ -148,13 +161,21 @@ export default function Cart() {
                                             <div className="col-8 d-flex flex-column justify-content-between">
                                                 <div>
                                                     <div className="fw-bolder">{item.product_name}</div>
-                                                    {
-                                                        item.options?.map((opt) => (
-                                                            <div key={opt.attribute} className="text-muted small">
-                                                                {opt.attribute}: {opt.value}
-                                                            </div>
-                                                        ))
-                                                    }
+                                                    {item.options && item.options?.length > 0 && (<div className="d-flex gap-4">
+                                                        <div>
+                                                            {
+                                                                item.options?.map((opt) => (
+                                                                    <div key={opt.attribute} className="text-muted small">
+                                                                        {opt.attribute}: {opt.value}
+                                                                    </div>
+                                                                ))
+                                                            }
+                                                        </div>
+                                                        <div className="text-muted" onClick={() => handleEditClick(item)}>
+                                                            Thay đổi
+                                                        </div>
+                                                    </div>)}
+
                                                 </div>
                                                 <div><span className="fw-bolder">{item.product_price.toLocaleString()} </span>₫</div>
                                             </div>
@@ -186,6 +207,13 @@ export default function Cart() {
                 <div className="loader-overlay">
                     <div className="spinner"></div>
                 </div>
+            )}
+            {editingItem && (
+                <VariantEditModal
+                    show={isModalOpen}
+                    onClose={handleCloseModal}
+                    cartItem={editingItem}
+                />
             )}
         </>
     );

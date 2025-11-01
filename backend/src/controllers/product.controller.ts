@@ -132,8 +132,6 @@ class productController {
 
             // Gọi service, service sẽ tự xử lý logic
             const products = await productService.getForYouRecommendations(userId);
-            console.log(products);
-
 
             res.status(200).json(products);
 

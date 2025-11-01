@@ -259,7 +259,7 @@ class productService {
 
         // 2. Lấy danh mục của các sản phẩm đó
         const [relatedCategoryIds] = await pool.query<RowDataPacket[]>(
-            `SELECT DISTINCT category_id 
+            `SELECT DISTINCT generic_id 
              FROM products 
              WHERE id IN (?)`,
             [productIds]
@@ -268,21 +268,32 @@ class productService {
             // Nếu không tìm thấy danh mục (lỗi), trả về ngẫu nhiên
             return this.getRandomRecommendations();
         }
-        const categoryIds = relatedCategoryIds.map(row => row.category_id);
+
+        const categoryIds = relatedCategoryIds.map(row => row.generic_id);
 
         // 3. Lấy sản phẩm TỪ CÁC DANH MỤC ĐÓ
         // (Và loại trừ sản phẩm đã xem)
         const [recommendations] = await pool.query(
-            `SELECT * FROM products 
-             WHERE 
-                category_id IN (?) 
-             AND 
-                id NOT IN (?) 
+            `SELECT 
+                products.id, products.name, products.description, base_price, shop_id, image_url, sold_count, generic.name as category_name
+            FROM 
+                products 
+            JOIN 
+                productimages on productimages.product_id = products.id
+            JOIN 
+                generic on generic.id = products.generic_id
+            WHERE
+                products.generic_id IN (?) 
+            AND 
+                products.id NOT IN (?)
+            GROUP BY 
+                    products.id 
              ORDER BY 
                 RAND() 
              LIMIT 15`,
             [categoryIds, productIds]
         );
+
 
         return recommendations;
     }

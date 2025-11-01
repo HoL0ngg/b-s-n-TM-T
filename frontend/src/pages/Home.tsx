@@ -37,7 +37,7 @@ export default function Home() {
             <LazySection threshold={0.5}>
                 <CategorySelector categories={Categories} />
             </LazySection>
-            <LazySection threshold={0.5}>
+            <LazySection threshold={0.2}>
                 <HomeProduct />
             </LazySection>
         </>

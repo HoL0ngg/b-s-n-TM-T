@@ -36,7 +36,14 @@ export default function Navbar() {
             logout();
             navigate("/");
             setLoading(false);
-        }, 1000)
+        }, 800)
+    }
+
+    const handleNavigateInfo = () => {
+        navigate("/user/account/profile");
+    }
+    const handleNavigateOrder = () => {
+        navigate("/login");
     }
 
     return (
@@ -57,35 +64,35 @@ export default function Navbar() {
                         <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle align-middle" style={{ position: "absolute", right: "14px", top: "50%", translate: "0 -50%", color: 'white' }}></i>
 
                     </form>
-                    <ul className="navbar-nav gap-2">
+                    <ul className="navbar-nav gap-2 align-items-center">
                         <li>
                             <Link to="/shop" className="nav-link">
                                 <i className="fa-solid fa-shop text-primary fs-5"></i>
                             </Link>
                         </li>
-                        {user && (<li className="d-flex align-items-center">
-                            adu chafo {user.id}
-                        </li>)}
                         <li className="position-relative"
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}>
                             <Link to="/login" className="nav-link">
-                                <i className="fa-regular fa-user text-primary fs-5"></i>
+                                {!user ? (<i className="fa-regular fa-user text-primary fs-5"></i>) : (<div><img src={user.avatar_url} alt="" style={{ width: '40px', height: '40px' }} /></div>)}
+
                                 {/* <i className="fa-regular fa-user fa-lg text-primary nav-link fs-5" style={{ cursor: "pointer" }}></i> */}
                                 {isHovered && user && (
                                     <div
-                                        className="position-absolute bg-white shadow rounded"
+                                        className="position-absolute bg-white shadow rounded pointer"
                                         style={{
                                             top: "100%",
-                                            right: 0,
+                                            right: "0%",
                                             zIndex: 1000,
-                                            padding: "10px",
-                                            cursor: "pointer",
-                                            width: "100px"
+                                            width: "160px"
                                         }}
-                                        onClick={handleLogout}
+
                                     >
-                                        Đăng xuất
+                                        <div className="nav-info p-2 rounded" onClick={handleNavigateInfo}>Thông tin cá nhân</div>
+                                        <div className="nav-info p-2 rounded" onClick={handleNavigateOrder}>Đơn mua</div>
+                                        <div className="nav-info p-2 rounded" onClick={handleLogout}>
+                                            Đăng xuất
+                                        </div>
                                     </div>
                                 )}
                             </Link>
