@@ -72,7 +72,7 @@ export default function ProductInfo({ product, attributes }: ProductInfoProps) {
     }
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;
-    console.log(product.product_variants);
+    // console.log(product.product_variants);
 
 
     return (

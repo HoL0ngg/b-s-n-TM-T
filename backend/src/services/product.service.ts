@@ -291,6 +291,24 @@ class productService {
         const whereClause = `WHERE products.generic_id = ?`;
         return paginationProducts(whereClause, [subCategoryId], page, limit);
     };
+
+    getProductsByKeyWordService = async (keyword: string): Promise<Product[]> => {
+        const [rows] = await pool.query(`
+                SELECT 
+                    products.id, 
+                    products.name,                     
+                    products.base_price,                     
+                    productimages.image_url                   
+                FROM products 
+                LEFT JOIN productimages 
+                    ON productimages.product_id = products.id 
+                    AND productimages.isMain = 1
+                WHERE BINARY LOWER(products.name) LIKE LOWER(CONCAT('%', ? , '%'))
+                GROUP BY products.id
+                LIMIT 7
+            `, [keyword]);
+        return rows as Product[];
+    }
 }
 
 export default new productService();

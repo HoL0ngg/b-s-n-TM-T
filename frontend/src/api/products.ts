@@ -72,4 +72,9 @@ export const apiGetForYouRecommendations = async () => {
 export const fetchProductsBySubCategory = async (id: number, page: number = 1, limit: number = 12): Promise<{ data: ProductType[], totalPages: number }> => {
     const res = await axios.get(`${API_URl}/productSubCategory?subCategoryId=${id}&page=${page}&limit=${limit}`);
     return res.data;
-} 
+}
+
+export const fetchProductsByKeyWord = async (keyword: string): Promise<ProductType[]> => {
+    const res = await axios.get(`${API_URl}/product/search?keyword=${keyword}`);
+    return res.data;
+}

@@ -155,5 +155,16 @@ class productController {
         }
 
     }
+
+    getProductsByKeyWordController = async (req: Request, res: Response) => {
+        try {
+            const keyword = String(req.query.keyword);
+            const products = await productService.getProductsByKeyWordService(keyword);
+            return res.status(200).json(products);
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
 }
 export default new productController();

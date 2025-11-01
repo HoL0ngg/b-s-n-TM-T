@@ -353,6 +353,59 @@
   color: var(--bs-orange);
   transition: all ease 0.2s;
 }
+
+.search-dropdown {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  max-height: 350px;
+  overflow-y: auto;
+  top: 100%;
+  background-color: white;
+  z-index: 2;
+  position: absolute;
+}
+
+.search-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: 0.15s ease-in-out;
+}
+
+.search-item:not(:first-child) {
+  border-top: 1px solid #eee;
+}
+
+.search-item:hover {
+  background: #f5f7fa;
+}
+
+.search-thumb {
+  width: 45px;
+  height: 45px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #eee;
+}
+
+.search-name {
+  font-size: 14px;
+  color: #333;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Đổi lại icon cho đúng chiều */
 @media (min-width: 768px) {
   .myVerticalSwiper {

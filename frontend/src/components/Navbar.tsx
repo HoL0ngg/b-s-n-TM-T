@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { fetchProductsByKeyWord } from "../api/products";
+import debounce from "lodash.debounce";
+import type { ProductType } from "../types/ProductType";
 
 export default function Navbar() {
     const { user, logout } = useAuth();
@@ -10,6 +13,8 @@ export default function Navbar() {
     const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [keyword, setKeyWord] = useState<string>("");
+    const [products, setProducts] = useState<ProductType[]>([]);
 
     const totalItemCount = useMemo(() => {
         // 'cart' là mảng các shop [shop1, shop2, ...]
@@ -37,7 +42,29 @@ export default function Navbar() {
             navigate("/");
             setLoading(false);
         }, 1000)
+    };
+
+    const fetchProducts = async (val: string) => {
+        try {
+            const res = await fetchProductsByKeyWord(val);
+            setProducts(res);
+            // console.log(res);
+        } catch (error) {
+            console.log(error);
+        }
     }
+    const debouncedSearch = useMemo(
+        () => debounce((value: string) => fetchProducts(value), 300),
+        []
+    );
+
+    useEffect(() => {
+        if (keyword.trim() !== "") {
+            debouncedSearch(keyword);
+        } else {
+            setProducts([]);
+        }
+    }, [keyword, debouncedSearch]);
 
     return (
         <>
@@ -47,14 +74,37 @@ export default function Navbar() {
                         <img src={'/assets/avatar/logo.jpg'} alt="" style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
                     </Link>
 
-                    <form className="d-flex mx-auto" style={{ maxWidth: "600px", width: "100%", position: "relative", height: '46px' }}>
+                    <form onSubmit={(e) => e.preventDefault()} className="d-flex mx-auto" style={{ maxWidth: "600px", width: "100%", position: "relative", height: '46px' }}>
                         <input
-                            className="form-control me-2 shadow"
+                            className="form-control shadow"
                             placeholder="Tìm sản phẩm..."
                             aria-label="Search"
-                            style={{ borderRadius: '24px' }}
+                            // style={{ border: "none" }}
+                            // value={keyword}
+                            onChange={(e) => setKeyWord(e.target.value)}
                         />
                         <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle align-middle" style={{ position: "absolute", right: "14px", top: "50%", translate: "0 -50%", color: 'white' }}></i>
+                        <div
+                            className="search-dropdown bg-white w-100"
+                        >
+                            {products.length > 0 && (
+                                <ul className="search-list">
+                                    {products.map((pro) => (
+                                        <li
+                                            key={pro.id}
+                                            className="search-item"
+                                            onClick={() => {
+                                                navigate(`/product/${pro.id}`);
+                                                setKeyWord("");
+                                            }}
+                                        >
+                                            {pro.image_url && <img src={pro.image_url} alt="" className="search-thumb" />}
+                                            <span className="search-name">{pro.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
 
                     </form>
                     <ul className="navbar-nav gap-2">
