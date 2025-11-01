@@ -8,7 +8,7 @@ class categoryService {
     };
 
     getSubCategoryService = async (category_id: number): Promise<SubCategory[]> => {
-        const [rows] = await pool.query("SELECT name FROM generic WHERE category_id = ?", [category_id]);
+        const [rows] = await pool.query("SELECT id,name FROM generic WHERE category_id = ?", [category_id]);
         return rows as SubCategory[];
     }
 }
