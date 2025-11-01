@@ -351,6 +351,7 @@
 }
 .subCategoryText.active {
   color: var(--bs-orange);
+  transition: all ease 0.2s;
 }
 /* Đổi lại icon cho đúng chiều */
 @media (min-width: 768px) {

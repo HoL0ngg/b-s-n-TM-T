@@ -31,7 +31,7 @@ const Category = () => {
   //  Hàm fetch duy nhất
   const loadProducts = useCallback(async () => {
     try {
-      setLoading(true);
+      // setLoading(true);
       let res;
 
       if (query.subCategoryId !== 0) {
@@ -72,9 +72,13 @@ const Category = () => {
       setTotalPages(res.totalPages);
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
-    } finally {
-      setLoading(false);
     }
+    // finally {
+    //   setTimeout(() => {
+    //     setLoading(false);
+
+    //   }, 300);
+    // }
   }, [query]);
 
   //  Khi query thay đổi → tự load lại sản phẩm
@@ -158,7 +162,7 @@ const Category = () => {
               <ul className="list-unstyled">
                 <li
                   onClick={() => handleSelectedSubCategory(0, "all")}
-                  className={`pointer subCategoryText ${selectedSubCategory === "all" ? "active" : ""
+                  className={`pointer subCategoryText ${selectedSubCategory === "all" ? "active fw-bold fs-5" : ""
                     }`}
                 >
                   Tất cả
@@ -166,7 +170,7 @@ const Category = () => {
                 {subCategories.map((subCat) => (
                   <li
                     key={subCat.id}
-                    className={`pointer my-1 subCategoryText ${subCat.name === selectedSubCategory ? "active" : ""
+                    className={`pointer my-1 subCategoryText ${subCat.name === selectedSubCategory ? "active fw-bold fs-5" : ""
                       }`}
                     onClick={() =>
                       handleSelectedSubCategory(subCat.id, subCat.name)

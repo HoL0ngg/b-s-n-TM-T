@@ -61,7 +61,7 @@ export const fetchProductsInPriceOrder = async (category_id: number, page: numbe
     return res.data;
 }
 
-export const fetchProductsBySubCategory = async (id: number, page: number = 1, limit: number = 12): Promise<ProductType[]> => {
+export const fetchProductsBySubCategory = async (id: number, page: number = 1, limit: number = 12): Promise<{ data: ProductType[], totalPages: number }> => {
     const res = await axios.get(`${API_URl}/productSubCategory?subCategoryId=${id}&page=${page}&limit=${limit}`);
     return res.data;
 } 
