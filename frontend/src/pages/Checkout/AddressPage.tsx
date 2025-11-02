@@ -146,7 +146,7 @@ export const AddressPage = () => {
 
     return (
         <>
-            <AddressModal isShow={isShow} onClose={() => setIsShow(false)} onSaveSuccess={handleSaveSuccess} />
+            <AddressModal isShow={isShow} onClose={() => setIsShow(false)} onSaveSuccess={handleSaveSuccess} address={null} />
             <div className="container p-4">
                 <div className="row gx-5">
                     <div className="col-8">
