@@ -4,7 +4,7 @@ import CategorySwiper from "../components/CategorySwiper";
 import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 import type { ProductType } from "../types/ProductType";
 import { fetchCategories, fetchSubCategories } from "../api/categories";
-import { fecthProducts, fetchProductsBySubCategory, fetchProductsInPriceOrder } from "../api/products";
+import { fetchProducts, fetchProductsBySubCategory, fetchProductsInPriceOrder } from "../api/products";
 import { useEffect, useState, useCallback } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 
@@ -60,15 +60,18 @@ const Category = () => {
             query.sort
           );
         } else {
-          res = await fecthProducts(
+          res = await fetchProducts(
             query.categoryId,
             query.page,
             query.limit
           );
         }
       }
+      // console.log(res.brands);
+      console.log(res.products);
+      // console.log(res.totalPages);
 
-      setProducts(res.data);
+      setProducts(res.products);
       setTotalPages(res.totalPages);
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
@@ -194,7 +197,21 @@ const Category = () => {
                 className="form-control form-control-sm mt-2"
                 placeholder="Đến"
               />
+              <button className="btn-apply my-2 fw-semibold">Áp dụng</button>
             </div>
+            <div className="border-top p-3 m-2">
+              <h5>Thương hiệu</h5>
+              <div className="mb-1">
+                <input className="pointer" type="checkbox" name="ckb1" id="ckb1" />
+                <label className="mx-2" htmlFor="ckb1">CheckBox1</label>
+              </div>
+
+              <div>
+                <input className="pointer" type="checkbox" name="ckb2" id="ckb2" />
+                <label className="mx-2" htmlFor="ckb2">CheckBox1</label>
+              </div>
+            </div>
+
           </div>
 
           {/* Product list */}

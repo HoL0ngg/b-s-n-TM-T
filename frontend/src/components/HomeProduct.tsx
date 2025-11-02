@@ -15,7 +15,7 @@ export default function HomeProduct() {
             try {
                 setLoading(true);
                 const data = await apiGetForYouRecommendations();
-                console.log(data);
+                // console.log(data);
                 setProducts(data);
             } catch (err) {
                 console.log(err);

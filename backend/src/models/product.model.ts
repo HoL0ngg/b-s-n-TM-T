@@ -47,3 +47,12 @@ export interface AttributeOfProductVariants {
     attribute: string,
     values: string[],
 }
+export interface BrandOfProduct {
+    id: number;
+    name: string;
+}
+export interface ProductResponse {
+    products: Product[];
+    totalPages: number;
+    brands?: BrandOfProduct[];
+}

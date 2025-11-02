@@ -1,12 +1,12 @@
 import pool from "../config/db";
-import type { Product } from "../models/product.model";
+import type { Product, ProductResponse } from "../models/product.model";
 
 export const paginationProducts = async (whereClause: string,
     params: any[],
     page: number = 1,
     limit: number = 12,
     orderBy: string = ""
-): Promise<{ data: Product[]; totalPages: number }> => {
+): Promise<ProductResponse> => {
     const offset = (page - 1) * limit;
     const [countRows] = await pool.query(
         `SELECT COUNT(*) as total FROM products ${whereClause}`,
@@ -35,5 +35,5 @@ export const paginationProducts = async (whereClause: string,
         [...params, limit, offset]
     );
 
-    return { data: rows as Product[], totalPages };
+    return { products: rows as Product[], totalPages };
 }

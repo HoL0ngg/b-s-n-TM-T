@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct } from "../models/product.model";
 import { paginationProducts } from "../helpers/pagination.helper";
 class productService {
     getProductOnCategoryIdService = async (categoryId: number, page: number, limit: number) => {
@@ -8,7 +8,9 @@ class productService {
       WHERE products.generic_id IN (
         SELECT gen.id FROM generic gen WHERE gen.category_id = ?
       )`;
-        return paginationProducts(whereClause, [categoryId], page, limit);
+        const products = await paginationProducts(whereClause, [categoryId], page, limit);
+        const brands = await this.getBrandsOfProductByCategoryIdSerivice(categoryId);
+        return { ...products, brands }
     };
 
     getProductOnIdService = async (id: number): Promise<Product> => {
@@ -289,7 +291,9 @@ class productService {
 
     getProductsBySubCategoryService = async (subCategoryId: number, page: number = 1, limit: number = 10) => {
         const whereClause = `WHERE products.generic_id = ?`;
-        return paginationProducts(whereClause, [subCategoryId], page, limit);
+        const products = await paginationProducts(whereClause, [subCategoryId], page, limit);
+        const brands = await this.getBrandsOfProductByGenericIdSerivice(subCategoryId);
+        return { ...products, brands };
     };
 
     getProductsByKeyWordService = async (keyword: string): Promise<Product[]> => {
@@ -309,6 +313,27 @@ class productService {
             `, [keyword]);
         return rows as Product[];
     }
+    getBrandsOfProductByCategoryIdSerivice = async (category_id: number): Promise<BrandOfProduct[]> => {
+        const [rows] = await pool.query(`
+            SELECT DISTINCT b.id, b.name
+            FROM brands b
+            JOIN products p ON p.brand_id = b.id
+            JOIN generic g ON p.generic_id = g.id
+            WHERE g.category_id = ?
+        `, [category_id]);
+        return rows as unknown as BrandOfProduct[];
+    }
+    getBrandsOfProductByGenericIdSerivice = async (category_id: number): Promise<BrandOfProduct[]> => {
+        const [rows] = await pool.query(`
+            SELECT DISTINCT b.id, b.name
+            FROM brands b
+            JOIN products p ON p.brand_id = b.id
+            WHERE p.generic_id = ?
+        `, [category_id]);
+        return rows as unknown as BrandOfProduct[];
+
+    }
+
 }
 
 export default new productService();
