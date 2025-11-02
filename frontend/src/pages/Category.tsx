@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import CategorySwiper from "../components/CategorySwiper";
 import type { CategoryType, SubCategoryType } from "../types/CategoryType";
-import type { ProductType } from "../types/ProductType";
+import type { BrandOfProductType, ProductType } from "../types/ProductType";
 import { fetchCategories, fetchSubCategories } from "../api/categories";
 import { fetchProducts, fetchProductsBySubCategory, fetchProductsInPriceOrder } from "../api/products";
 import { useEffect, useState, useCallback } from "react";
@@ -18,6 +18,7 @@ const Category = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
+  const [brands, setBrands] = useState<BrandOfProductType[]>([])
 
   //  Gom toàn bộ điều kiện truy vấn vào 1 state duy nhất
   const [query, setQuery] = useState({
@@ -67,12 +68,10 @@ const Category = () => {
           );
         }
       }
-      // console.log(res.brands);
-      console.log(res.products);
-      // console.log(res.totalPages);
-
+      // console.log(res.products);
       setProducts(res.products);
       setTotalPages(res.totalPages);
+      setBrands(res.brands ?? []);
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
     }
@@ -87,7 +86,7 @@ const Category = () => {
   //  Khi query thay đổi → tự load lại sản phẩm
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+  }, [query]);
 
   //  Khi id danh mục cha thay đổi
   useEffect(() => {
@@ -152,6 +151,8 @@ const Category = () => {
     (cat) => cat.id === Number(id)
   );
 
+  const handleResetFilter = () => {
+  }
   return (
     <div className="container">
       <CategorySwiper categories={categories} />
@@ -201,15 +202,17 @@ const Category = () => {
             </div>
             <div className="border-top p-3 m-2">
               <h5>Thương hiệu</h5>
-              <div className="mb-1">
-                <input className="pointer" type="checkbox" name="ckb1" id="ckb1" />
-                <label className="mx-2" htmlFor="ckb1">CheckBox1</label>
-              </div>
-
               <div>
-                <input className="pointer" type="checkbox" name="ckb2" id="ckb2" />
-                <label className="mx-2" htmlFor="ckb2">CheckBox1</label>
+                {brands.map((b) => (
+                  <div className="mb-1" key={b.id}>
+                    <input className="pointer" type="checkbox" id={`brand-${b.id}`} />
+                    <label className="mx-2 pointer" htmlFor={`brand-${b.id}`}>{b.name}</label>
+                  </div>
+                ))}
               </div>
+            </div>
+            <div className="border-top p-3 m-2">
+              <button onClick={() => handleResetFilter()}>Đặt lại</button>
             </div>
 
           </div>
