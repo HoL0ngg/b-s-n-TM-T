@@ -156,10 +156,10 @@
 }
 
 /* Khi input được focus hoặc có giá trị */
-.floating-input input:focus + label,
-.floating-input input:not(:placeholder-shown) + label,
-.floating-input select:focus + label,
-.floating-input select:not([value=""]) + label {
+.floating-input input:focus+label,
+.floating-input input:not(:placeholder-shown)+label,
+.floating-input select:focus+label,
+.floating-input select:not([value=""])+label {
   top: 0;
   left: 10px;
   font-size: 12px;
@@ -260,6 +260,11 @@
   cursor: pointer;
 }
 
+.nav-info:hover {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
 .category-component.active {
   border-bottom: 2px solid var(--bs-orange);
   color: var(--bs-primary);
@@ -349,6 +354,7 @@
 .pagenum-nonactive:hover {
   color: #ff8c007c;
 }
+
 .subCategoryText.active {
   color: var(--bs-orange);
   transition: all ease 0.2s;

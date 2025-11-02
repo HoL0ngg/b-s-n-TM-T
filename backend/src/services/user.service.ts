@@ -1,3 +1,4 @@
+import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 
 import type { Address, User, UserProfile } from "../models/user.model";
@@ -103,8 +104,15 @@ class userService {
             const tmp = `UPDATE address_user set is_default = 0 WHERE phone_number = ?`;
             connection.query(tmp, [id]);
         }
+        const [countRows] = await pool.query<RowDataPacket[]>(
+            "SELECT COUNT(*) as count FROM address_user WHERE phone_number = ?",
+            [id]
+        );
+        let hihi = false;
+        if (countRows[0].count == 0) hihi = true;
+
         const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo, is_default) VALUES (?, ?, ?, ?, ?)';
-        await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, data.isDefault]);
+        await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, data.is_default || hihi]);
     }
 }
 

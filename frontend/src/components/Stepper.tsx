@@ -1,6 +1,3 @@
-// src/components/Stepper.tsx
-import React from 'react';
-
 interface StepperProps {
   steps: string[];
   currentStep: number;

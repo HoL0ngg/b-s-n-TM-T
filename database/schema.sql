@@ -102,6 +102,15 @@ CREATE TABLE ProductReviews (
     FOREIGN KEY (product_id) REFERENCES Products(id)
 );
 
+CREATE TABLE Promotions (
+    id int primary key AUTO_INCREMENT,
+    name varchar(255),
+    value decimal,
+    start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    end_date DATETIME,
+    is_active tinyInt
+);
+
 CREATE table Address(
     id int AUTO_INCREMENT primary key,
     city varchar(255),

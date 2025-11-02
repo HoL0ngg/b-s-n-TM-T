@@ -27,6 +27,7 @@ interface ICartContext {
     clearCart: () => void;
     deleteProductOnCart: (productId: number) => Promise<void>;
     deleteShopOnCart: (shopId: number) => Promise<void>;
+    updateCartItem: (oldVariantId: number, newVariantId: number, newQuantity: number) => void;
     isCartLoading: boolean; // Thêm state loading cho giỏ hàng
 }
 
@@ -204,6 +205,34 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
+    const updateCartItem = (oldVariantId: number, newVariantId: number, newQuantity: number) => {
+        // Nếu chỉ thay đổi số lượng
+        if (oldVariantId === newVariantId) {
+            updateQuantity(oldVariantId, newQuantity); // (Hàm bạn đã có)
+            return;
+        }
+
+        // Nếu thay đổi biến thể (Xóa cũ, Thêm mới)
+        // (Đây là cách làm đơn giản, không đảm bảo 100%
+        //  nếu 1 trong 2 API lỗi. Backend nên có 1 API 'replace' duy nhất)
+        const replace = async () => {
+            try {
+                // 1. Gọi API xóa item cũ
+                await deleteProduct(oldVariantId);
+                // 2. Gọi API thêm item mới
+                await addToCart(newVariantId, newQuantity);
+                // 3. Tải lại toàn bộ giỏ hàng
+                await loadCart();
+            } catch (error) {
+                console.error("Lỗi thay thế sản phẩm:", error);
+                alert("Đã có lỗi, giỏ hàng sẽ được tải lại.");
+                loadCart(); // Tải lại nếu có lỗi
+            }
+        };
+
+        replace();
+    };
+
     const deleteShopOnCart = async (shop_id: number) => {
         if (!user) {
             handleKeuDangNhap();
@@ -227,6 +256,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         deleteProductOnCart,
         deleteShopOnCart,
+        updateCartItem,
         isCartLoading,
     };
 
