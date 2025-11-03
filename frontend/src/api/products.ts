@@ -89,3 +89,8 @@ export const fetchProductsByKeyWord = async (keyword: string): Promise<ProductTy
     const res = await axios.get(`${API_URl}/product/search?keyword=${keyword}`);
     return res.data;
 }
+
+export const fetchTotalProductByShopId = async (shop_id: Number): Promise<number> => {
+    const res = await axios.get(`${API_URl}/getTotalProduct/${shop_id}`);
+    return res.data;
+}

@@ -94,11 +94,7 @@ const Shop = () => {
                             </div>
                             <div>
                                 <div className="fs-4 text-white">{shop?.name}</div>
-                                <div className="text-info">Online 1 phút trc</div>
                             </div>
-                        </div>
-                        <div>
-                            <div className="btn btn-primary w-100 mt-2">+ Theo dõi</div>
                         </div>
                     </div>
                     <div className="col-4 d-flex justify-content-around flex-column px-4">

@@ -4,12 +4,12 @@ import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
 import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetailsType, AttributeOfProductVariantsType } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
-import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants } from "../api/products";
+import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants, fetchTotalProductByShopId } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
 import { useNavigate } from "react-router-dom";
-// import { div } from "framer-motion/client";
+import { formatTimeAgo } from "../utils/helper";
 
 
 const ProductDetail = () => {
@@ -157,7 +157,7 @@ const ProductDetail = () => {
                 </div >
 
             </div>
-            <div className="container border mt-4 d-flex p-4 rounded shadow gap-4">
+            {/* <div className="container border mt-4 d-flex p-4 rounded shadow gap-4">
                 <div className="">
                     <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "100px", width: "100px" }} />
                 </div>
@@ -185,7 +185,7 @@ const ProductDetail = () => {
                         <div className="text-muted mt-2">Người theo dõi</div>
                     </div>
                 </div>
-            </div>
+            </div> */}
             <div className="row mt-4 p-3">
                 <div className="col-7">
                     <div className="fw-bold fs-4">Chi tiết sản phẩm</div>
@@ -207,19 +207,34 @@ const ProductDetail = () => {
                         )}
                 </div>
                 <div className="col-5">
-                    {/* <div className="container p-4 border rounded">
+                    <div className="p-4 border rounded">
                         <div className="d-flex align-items-center">
                             <div className="">
                                 <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "70px", width: "70px" }} />
                             </div>
                             <div className="ms-3">
                                 <div className="fs-4 fw-bolder text-primary">{shop?.name}</div>
-                                <div className="text-muted">Sao</div>
+                                <div className="btn custom-btn w-100 mt-1" onClick={handleClick}>Xem shop</div>
+                                {/* <div className="text-muted">Sao</div> */}
                             </div>
                         </div>
-                        <div className="btn custom-btn w-100 mt-3">Xem shop</div>
+                        <div className="row p-3 text-center">
+                            <div className="col-4">
+                                <div className="text-muted mt-2">Sản phẩm</div>
+                                <div className="text-primary fw-semibold mt-2">{shop?.totalProduct ? shop.totalProduct : 0}</div>
+                            </div>
+                            <div className="col-4 ps-4 border-start">
+                                <div className="text-muted">Đánh giá </div>
+                                <div className="text-primary fw-semibold mt-2">{shop?.avgRating ? Number(shop.avgRating).toFixed(2) : 0} ⭐</div>
+                            </div>
+                            <div className="col-4 ps-4 border-start">
+                                <div className="text-muted">Tham gia</div>
+                                <div className="text-primary fw-semibold mt-2">
+                                    {formatTimeAgo(shop?.created_at)}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="container p-2 border mt-4 rounded"></div> */}
                 </div>
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">

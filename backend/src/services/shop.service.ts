@@ -4,7 +4,26 @@ import type { Shop, ShopCategories } from "../models/shop.model";
 
 class shopService {
     getShopOnIdService = async (id: number): Promise<Shop> => {
-        const [row] = await pool.query("select * from shops where id = ?", [id]) as [Shop[], any];
+        const [row] = await pool.query(`
+               SELECT 
+                    shops.*,
+                    
+                    -- Truy vấn con 1: Đếm tổng số sản phẩm
+                    (SELECT COUNT(*) 
+                    FROM products 
+                    WHERE products.shop_id = shops.id) AS totalProduct,
+                    
+                    -- Truy vấn con 2: Tính rating trung bình của tất cả review
+                    (SELECT IFNULL(AVG(productreviews.rating), 0) 
+                    FROM productreviews
+                    JOIN products ON productreviews.product_id = products.id
+                    WHERE products.shop_id = shops.id) AS avgRating
+                    
+                FROM 
+                    shops
+                WHERE 
+                    shops.id = ?;`
+            , [id]) as [Shop[], any];
         return row[0] as Shop;
     }
 

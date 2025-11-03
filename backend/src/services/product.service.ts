@@ -2,6 +2,7 @@ import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct } from "../models/product.model";
 import { paginationProducts } from "../helpers/pagination.helper";
+
 class productService {
     getProductOnCategoryIdService = async (categoryId: number, page: number, limit: number) => {
         const whereClause = `
@@ -67,30 +68,35 @@ class productService {
         return rows;
     }
 
-    get5ProductOnShopIdService = async (id: Number): Promise<Product[]> => {
-        const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where shop_id = ? Group by id limit 5", [id]);
+    get5ProductOnShopIdService = async (shopId: Number): Promise<Product[]> => {
+        const [rows] = await pool.query(
+            `SELECT * FROM v_products_list WHERE shop_id = ? LIMIT 5`,
+            [shopId]
+        );
         return rows as Product[];
     }
 
     getProductOnShopIdService = async (shopId: number, sort: string, cate?: number) => {
         let orderBy = "id DESC";
-
+        // Giờ bạn có thể sort theo 'hot_score' hoặc 'avg_rating'
         if (sort === "popular") {
-            orderBy = "(sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC";
+            orderBy = "hot_score DESC";
         } else if (sort === "hot") {
             orderBy = "sold_count DESC";
         } else if (sort === "new") {
-            orderBy = "products.created_at DESC";
+            orderBy = "created_at DESC";
         }
-        let hihi = "";
-        const params = [shopId];
+
+        let whereClause = "WHERE shop_id = ?";
+        const params: (string | number)[] = [shopId];
+
         if (cate) {
-            hihi = "AND shop_cate_id = ?";
+            whereClause += " AND shop_cate_id = ?"; // (Lưu ý: View của bạn chưa có shop_cate_id)
             params.push(cate);
         }
 
         const [rows] = await pool.query(
-            `SELECT products.id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id LEFT JOIN productreviews on productreviews.product_id = products.id WHERE products.shop_id = ? ${hihi} Group by products.id ORDER BY ${orderBy}`,
+            `SELECT * FROM v_products_list ${whereClause} ORDER BY ${orderBy}`,
             params
         );
         return rows;
@@ -218,34 +224,15 @@ class productService {
 
         // 3. Quyết định
         if (historyCheck.length > 0) {
-            // CÓ LỊCH SỬ: Chạy logic gợi ý theo lịch sử
             return this.getRecommendationsFromHistory(user_id);
         } else {
-            // KHÔNG CÓ LỊCH SỬ: Chạy logic ngẫu nhiên
             return this.getRandomRecommendations();
         }
     }
 
     getRandomRecommendations = async () => {
-        try {
-            const [products] = await pool.query(
-                `SELECT 
-                    products.id, products.name, products.description, base_price, shop_id, image_url, sold_count, generic.name as category_name
-                FROM 
-                    products 
-                JOIN 
-                    productimages on productimages.product_id = products.id
-                JOIN 
-                    generic on generic.id = products.generic_id
-                GROUP BY 
-                    products.id
-                ORDER BY RAND() 
-                LIMIT 15`
-            );
-            return products;
-        } catch (err) {
-            console.log(err);
-        }
+        const [rows] = await pool.query(`SELECT * FROM v_products_list ORDER BY RAND() LIMIT 15`);
+        return rows;
     }
 
     getRecommendationsFromHistory = async (user_id: number) => {
@@ -276,27 +263,12 @@ class productService {
         // 3. Lấy sản phẩm TỪ CÁC DANH MỤC ĐÓ
         // (Và loại trừ sản phẩm đã xem)
         const [recommendations] = await pool.query(
-            `SELECT 
-                products.id, products.name, products.description, base_price, shop_id, image_url, sold_count, generic.name as category_name
-            FROM 
-                products 
-            JOIN 
-                productimages on productimages.product_id = products.id
-            JOIN 
-                generic on generic.id = products.generic_id
-            WHERE
-                products.generic_id IN (?) 
-            AND 
-                products.id NOT IN (?)
-            GROUP BY 
-                    products.id 
-             ORDER BY 
-                RAND() 
+            `SELECT * FROM v_products_list
+             WHERE generic_id IN (?) AND id NOT IN (?)
+             ORDER BY RAND() 
              LIMIT 15`,
             [categoryIds, productIds]
         );
-
-
         return recommendations;
     }
 
@@ -401,7 +373,7 @@ class productService {
                 products.id 
             ORDER BY 
                 (sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC
-            LIMIT 100 -- Lấy 100 sản phẩm mới nhất
+            LIMIT 20
         ) AS newest_products
         ORDER BY 
             RAND()

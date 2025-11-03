@@ -117,6 +117,7 @@ CREATE TABLE Promotions (
     is_active tinyInt
 );
 
+
 CREATE table Address(
     id int AUTO_INCREMENT primary key,
     city varchar(255),
@@ -158,11 +159,37 @@ CREATE TABLE UserViewHistory (
     
     FOREIGN KEY (user_id) REFERENCES Users(phone_number),
     FOREIGN KEY (product_id) REFERENCES products(id)
-    
-    -- Thêm index để tăng tốc độ truy vấn
-    -- INDEX idx_user_view (user_id),
-    -- INDEX idx_session_view (session_id)
 );
+
+CREATE VIEW v_products_list AS
+SELECT 
+    p.id, 
+    p.name, 
+    p.description, 
+    p.base_price, 
+    p.shop_id, 
+    p.generic_id,
+    p.created_at,
+    p.updated_at,
+    p.sold_count,
+    g.name AS category_name,
+    
+    (SELECT pi.image_url 
+     FROM productimages pi 
+     WHERE pi.product_id = p.id AND pi.isMain = 1 
+     LIMIT 1) AS image_url,
+     
+    (SELECT IFNULL(AVG(pr.rating), 0) 
+     FROM productreviews pr 
+     WHERE pr.product_id = p.id) AS avg_rating,
+     
+    (p.sold_count * 0.6 + IFNULL((SELECT AVG(pr.rating) FROM productreviews pr WHERE pr.product_id = p.id), 0) * 0.4) AS hot_score
+    
+FROM 
+    products p
+JOIN 
+    generic g ON g.id = p.generic_id;
+
 INSERT INTO categories
 VALUES (
         1,

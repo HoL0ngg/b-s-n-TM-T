@@ -34,7 +34,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 <div className="text-muted ms-1 d-flex justify-content-between align-items-center">
                     <div>Đã bán: {product.sold_count}</div>
                     <div className="d-flex align-items-center">
-                        <span>4.5</span>
+                        <span>{product?.avg_rating ? Number(product.avg_rating).toFixed(1) : 0}</span>
                         <FaStar className="text-primary ms-1" />
                     </div>
                 </div>

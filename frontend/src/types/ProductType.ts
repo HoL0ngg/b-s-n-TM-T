@@ -10,6 +10,7 @@ export interface ProductType {
     sold_count: number;
     product_variants: ProductVariantType[];
     images: string[];
+    avg_rating: number;
 }
 
 export interface ProductImageType {

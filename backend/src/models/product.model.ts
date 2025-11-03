@@ -10,6 +10,7 @@ export interface Product {
     category_name: string;
     shop_id: number;
     product_variants: ProductVariant[];
+    avg_rating: number
 }
 
 export interface VariantOption {
