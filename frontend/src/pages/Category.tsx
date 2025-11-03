@@ -206,7 +206,7 @@ const Category = () => {
                 {brands.map((b) => (
                   <div className="mb-1" key={b.id}>
                     <input className="pointer" type="checkbox" id={`brand-${b.id}`} />
-                    <label className="mx-2 pointer" htmlFor={`brand-${b.id}`}>{b.name}</label>
+                    <label className="mx-2 pointer user-select-none" htmlFor={`brand-${b.id}`}>{b.name}</label>
                   </div>
                 ))}
               </div>

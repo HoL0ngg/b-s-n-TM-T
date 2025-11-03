@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { ProductType } from "../types/ProductType";
-import { apiGetForYouRecommendations } from "../api/products";
+import { apiGetForYouRecommendations, apiGetHotRecommendations, apiGetNewRecommendations } from "../api/products";
 import ProductCard from "./ProductCard";
 
 export default function HomeProduct() {
@@ -11,20 +11,42 @@ export default function HomeProduct() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        let isActive = true;
         const loadProduct = async () => {
             try {
                 setLoading(true);
-                const data = await apiGetForYouRecommendations();
-                // console.log(data);
-                setProducts(data);
+                let data;
+                switch (selectedList) {
+                    case 0:
+                        data = await apiGetForYouRecommendations();
+                        break;
+                    case 1:
+                        data = await apiGetNewRecommendations();
+                        break;
+                    case 2:
+                        data = await apiGetHotRecommendations();
+                        break;
+                }
+                if (isActive) {
+                    setProducts(data);
+                }
             } catch (err) {
                 console.log(err);
             } finally {
-                setLoading(false);
+                if (isActive) {
+                    setLoading(false);
+                }
             }
+
         }
 
         loadProduct();
+
+        return () => {
+            // Khi 'selectedList' thay đổi, effect cũ sẽ bị hủy
+            // và hàm này chạy, tắt cờ 'isActive'
+            isActive = false;
+        }
     }, [selectedList])
 
     const handleChangeMenu = (id: number) => {

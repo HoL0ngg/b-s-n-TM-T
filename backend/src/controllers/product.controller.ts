@@ -162,6 +162,23 @@ class productController {
 
         }
     };
+    getNewProducts = async (req: Request, res: Response) => {
+        try {
+            const products = await productService.getNewProducts();
+            return res.status(200).json(products);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    getHotProducts = async (req: Request, res: Response) => {
+        try {
+            const products = await productService.getHotPorducts();
+            return res.status(200).json(products);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     // getBrandsOfProductByCategoryController = async (req: Request, res: Response) => {
     //     try {
     //         const category_id = Number(req.params.id);

@@ -15,5 +15,7 @@ ProductRouter.get("/productdetails/:id", productController.getProductDetailsByPr
 ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
 ProductRouter.get("/product/search", productController.getProductsByKeyWordController)
 ProductRouter.get("/product/:id", checkOptionalAuth, productController.getProductOnIdController);
-ProductRouter.get("/for-you/", checkOptionalAuth, productController.getRecommendedProduct);
+ProductRouter.get("/recommend/for-you", checkOptionalAuth, productController.getRecommendedProduct);
+ProductRouter.get("/recommend/new", productController.getNewProducts);
+ProductRouter.get("/recommend/hot", productController.getHotProducts);
 export default ProductRouter;

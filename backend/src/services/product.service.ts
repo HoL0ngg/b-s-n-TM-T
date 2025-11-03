@@ -345,6 +345,72 @@ class productService {
 
     }
 
+    getNewProducts = async () => {
+        const sql = `
+        SELECT * FROM (
+            SELECT 
+                products.id, 
+                products.name, 
+                products.description, 
+                products.base_price, 
+                products.shop_id, 
+                productimages.image_url, 
+                products.sold_count,
+                generic.name as category_name
+            FROM 
+                products 
+            JOIN 
+                productimages on productimages.product_id = products.id
+            JOIN 
+                generic on generic.id = products.generic_id
+            GROUP BY 
+                products.id 
+            ORDER BY 
+                products.updated_at DESC
+            LIMIT 100 -- Lấy 100 sản phẩm mới nhất
+        ) AS newest_products
+        ORDER BY 
+            RAND()
+        LIMIT 15;`;
+
+        const [rows] = await pool.query(sql);
+        return rows;
+    }
+
+    getHotPorducts = async () => {
+        const sql = `
+        SELECT * FROM (
+            SELECT 
+                products.id, 
+                products.name, 
+                products.description, 
+                products.base_price, 
+                products.shop_id, 
+                productimages.image_url, 
+                products.sold_count,
+                generic.name as category_name
+            FROM 
+                products 
+            JOIN 
+                productimages on productimages.product_id = products.id
+            JOIN 
+                generic on generic.id = products.generic_id
+            LEFT JOIN 
+                productreviews on productreviews.product_id = products.id
+            GROUP BY 
+                products.id 
+            ORDER BY 
+                (sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC
+            LIMIT 100 -- Lấy 100 sản phẩm mới nhất
+        ) AS newest_products
+        ORDER BY 
+            RAND()
+        LIMIT 15;`;
+
+        const [rows] = await pool.query(sql);
+        return rows;
+    }
+
 }
 
 export default new productService();
