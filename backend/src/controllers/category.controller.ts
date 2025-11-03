@@ -21,5 +21,6 @@ class categoryController {
 
         }
     }
+
 }
 export default new categoryController();

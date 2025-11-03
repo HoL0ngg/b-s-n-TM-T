@@ -402,7 +402,13 @@
   object-fit: cover;
   border: 1px solid #eee;
 }
-
+.btn-apply {
+  border: none;
+  background-color: #ee4d2d;
+  width: 100%;
+  color: white;
+  padding: 4px 0;
+}
 .search-name {
   font-size: 14px;
   color: #333;

@@ -60,3 +60,12 @@ export interface ProductVariantType {
     stock: number;        // 40
     options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
 }
+export interface ProductResponseType {
+    products: ProductType[];
+    totalPages: number;
+    brands?: BrandOfProductType[];
+}
+export interface BrandOfProductType {
+    id: number;
+    name: string;
+}

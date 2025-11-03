@@ -10,9 +10,8 @@ class productController {
             }
             const page = Number(req.query.page) || 1;
             const limit = Number(req.query.limit) || 12;
-            const product = await productService.getProductOnCategoryIdService(category_id, page, limit);
-
-            res.status(200).json(product);
+            const result = await productService.getProductOnCategoryIdService(category_id, page, limit);
+            res.status(200).json(result);
         } catch (err) {
             console.log(err);
         }
@@ -131,7 +130,7 @@ class productController {
 
             // Gọi service, service sẽ tự xử lý logic
             const products = await productService.getForYouRecommendations(userId);
-
+            // console.log(products);
             res.status(200).json(products);
 
         } catch (error: any) {
@@ -162,6 +161,24 @@ class productController {
             console.log(error);
 
         }
-    }
+    };
+    // getBrandsOfProductByCategoryController = async (req: Request, res: Response) => {
+    //     try {
+    //         const category_id = Number(req.params.id);
+    //         const brands = await productService.getBrandsOfProductByCategorySerivice(category_id);
+    //         return res.status(200).json(brands);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
+    // getBrandsOfProductByGenericController = async (req: Request, res: Response) => {
+    //     try {
+    //         const category_id = Number(req.params.id);
+    //         const brands = await productService.getBrandsOfProductByGenericSerivice(category_id);
+    //         return res.status(200).json(brands);
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // }
 }
 export default new productController();

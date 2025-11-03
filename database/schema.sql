@@ -46,6 +46,10 @@ CREATE table Generic(
     category_id int,
     FOREIGN KEY (category_id) REFERENCES Categories(id)
 );
+CREATE TABLE Brands (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL
+);
 CREATE TABLE Products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -58,9 +62,11 @@ CREATE TABLE Products (
     sold_count INT,
     shop_id INT,
     shop_cate_id INT,
+    brand_id INT,
     FOREIGN KEY (generic_id) REFERENCES Generic(id),
     FOREIGN KEY (shop_id) REFERENCES Shops(id),
-    FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id)
+    FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id),
+    FOREIGN KEY (brand_id) REFERENCES Brands(id)
 );
 CREATE TABLE ProductImages (
     image_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -225,7 +231,24 @@ VALUES (1, "Son", 1),
     (16, "Sữa rửa mặt", 6),
     (17, "Dầu gội đầu", 6),
     (18, "Vòng tay", 8);
-
+INSERT INTO brands (name) 
+VALUES
+    ('Maybelline'),
+    ('Adidas'),
+    ('Aristino'),
+    ('Romand'),
+    ('3CE'),
+    ('Coolmate'),
+    ('Casper'),
+    ('Murad'),
+    ('Simple'),
+    ('CLEAR MEN'),
+    ('Pond\'s'),
+    ('Pandora'),
+    ('OFÉLIA'),
+    ('L\'Oreal'),
+    ('Merzy'),
+    ('Cocoon');
 INSERT INTO users
     VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png"), 
     ("0987654333", "coolmate@gmail.com", "123456", "/assets/bear.png"),
@@ -321,6 +344,7 @@ VALUES (
         1,
         100,
         1,
+        1,
         1
     ), (
         2,
@@ -333,7 +357,8 @@ VALUES (
         8,
         20,
         1,
-        1
+        1,
+        2
     ), (
         3,
         "Áo Sơ Mi Nam Tay Dài Aristino OwenShop",
@@ -345,7 +370,8 @@ VALUES (
         7,
         22,
         1,
-        1
+        1,
+        3
     ), (
         4,
         "Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop",
@@ -357,7 +383,8 @@ VALUES (
         4,
         50,
         1,
-        1
+        1,
+        3
     ), (
         5,
         "[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g",
@@ -369,7 +396,8 @@ VALUES (
         1,
         10,
         1,
-        1
+        1,
+        4
     ), (
         6,
         "Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy Tint 5ml",
@@ -380,6 +408,7 @@ VALUES (
         218000,
         1,
         12,
+        1,
         1,
         1
     ), (
@@ -393,7 +422,8 @@ VALUES (
         1,
         2,
         1,
-        1
+        1,
+        5
     ), (
         8,
         "Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick 2g",
@@ -405,7 +435,8 @@ VALUES (
         1,
         42,
         1,
-        1
+        1,
+        4
     ), (
         9,
         "Áo Polo thể thao nam ProMax S1 Logo Coolmate",
@@ -417,7 +448,8 @@ VALUES (
         7,
         2192,
         2,
-        1
+        1,
+        6
     ), (
         10,
         "Áo Sơ Mi Dài Tay Essentials Cotton mềm mại thoáng mát Coolmate",
@@ -429,7 +461,8 @@ VALUES (
         7,
         395,
         2,
-        1
+        1,
+        6
     )
     , (
         11,
@@ -442,7 +475,8 @@ VALUES (
         4,
         519,
         2,
-        1
+        1,
+        6
     )
     , (
         12,
@@ -455,7 +489,8 @@ VALUES (
         9,
         372,
         3,
-        1
+        1,
+        7
     )
     , (
         13,
@@ -468,7 +503,8 @@ VALUES (
         9,
         409,
         3,
-        1
+        1,
+        7
     )
     , (
         14,
@@ -481,7 +517,8 @@ VALUES (
         10,
         2412,
         3,
-        1
+        1,
+        7
     )
     , (
         15,
@@ -494,7 +531,8 @@ VALUES (
         11,
         3813,
         3,
-        1
+        1,
+        7
     )
     , (
         16,
@@ -507,7 +545,8 @@ VALUES (
         12,
         9239,
         3,
-        1
+        1,
+        7
     )
     , (
         17,
@@ -520,7 +559,8 @@ VALUES (
         12,
         519,
         3,
-        1
+        1,
+        7
     )
     , (
         18,
@@ -533,7 +573,8 @@ VALUES (
         13,
         823,
         3,
-        1
+        1,
+        7
     )
     , (
         19,
@@ -546,7 +587,8 @@ VALUES (
         14,
         219,
         4,
-        1
+        1,
+        8
     )
     , (
         20,
@@ -559,7 +601,8 @@ VALUES (
         15,
         229,
         4,
-        1
+        1,
+        8
     )
     , (
         21,
@@ -572,7 +615,8 @@ VALUES (
         2,
         982,
         4,
-        1
+        1,
+        8
     )
     , (
         22,
@@ -585,7 +629,8 @@ VALUES (
         16,
         23123,
         5,
-        1
+        1,
+        9
     )
     , (
         23,
@@ -598,7 +643,8 @@ VALUES (
         17,
         519,
         5,
-        1
+        1,
+        10
     )
     , (
         24,
@@ -611,7 +657,8 @@ VALUES (
         16,
         519,
         5,
-        1
+        1,
+        11
     )
     , (
         25,
@@ -624,7 +671,8 @@ VALUES (
         18,
         519,
         6,
-        1
+        1,
+        12
     )
     , (
         26,
@@ -637,7 +685,8 @@ VALUES (
         18,
         519,
         6,
-        1
+        1,
+        12
     ),
     (
         27,
@@ -650,7 +699,8 @@ VALUES (
         1,
         2,
         1,
-        1
+        1,
+        13
     ),(
         28,
         "Son Kem Lì L'Oreal Nhẹ Môi, Lâu Trôi Infallible Matte Resistance",
@@ -662,7 +712,8 @@ VALUES (
         1,
         2,
         1,
-        1
+        1,
+        14
     ),(
         29,
         "Son Kem Lì, Mịn Mượt Nhẹ Môi L’Oreal Paris Chiffon Signature Matte Liquid Lipstick",
@@ -674,7 +725,8 @@ VALUES (
         1,
         2,
         1,
-        1
+        1,
+        14
     ),(
         30,
         "Son Kem Lì Merzy Bền Màu, Lâu Trôi Puffer Velvet Tint 3.7g",
@@ -686,7 +738,8 @@ VALUES (
         1,
         7,
         1,
-        1
+        1,
+        15
     ),(
         31,
         "Son Dưỡng Môi Cocoon Chiết Xuất Dầu Dừa Bến Tre Ben Tre Coconut Lip Balm",
@@ -698,7 +751,8 @@ VALUES (
         1,
         10,
         1,
-        1
+        1,
+        16
     ),(
         32,
         "Son Kem Merzy Siêu Lì, Lâu Trôi, Lên Màu Chuẩn Academia Mellow Tint 4g",
@@ -710,7 +764,8 @@ VALUES (
         1,
         17,
         1,
-        1
+        1,
+        15
     );
 INSERT INTO ProductImages
 VALUES  (1, "/assets/products/son1.jpg", 1, 1),
