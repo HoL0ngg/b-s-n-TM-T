@@ -55,7 +55,7 @@ export default function HomeProduct() {
         setSelectedList(id);
     }
     return (
-        <div className="container">
+        <div className="container mb-4">
             <div className="fs-1 text-center text-primary mt-5 fw-bolder">
                 GỢI Ý HÔM NAY
             </div>
