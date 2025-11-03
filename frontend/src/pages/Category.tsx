@@ -1,17 +1,17 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import CategorySwiper from "../components/CategorySwiper";
 import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 import type { BrandOfProductType, ProductType } from "../types/ProductType";
 import { fetchCategories, fetchSubCategories } from "../api/categories";
-import { fetchProducts, fetchProductsBySubCategory, fetchProductsInPriceOrder } from "../api/products";
+import { fetchProducts, fetchProducts2, fetchProductsBySubCategory, fetchProductsInPriceOrder } from "../api/products";
 import { useEffect, useState, useCallback } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 
 
 const Category = () => {
   const { id } = useParams<{ id: string }>();
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategoryType[]>([]);
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -19,6 +19,8 @@ const Category = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all");
   const [brands, setBrands] = useState<BrandOfProductType[]>([])
+  const [isUserAction, setIsUserAction] = useState(false);
+  const [priceRange, setPriceRange] = useState({ minPrice: "", maxPrice: "" });
 
   //  Gom toàn bộ điều kiện truy vấn vào 1 state duy nhất
   const [query, setQuery] = useState({
@@ -27,81 +29,130 @@ const Category = () => {
     page: 1,
     limit: 12,
     sort: "default",
+    minPrice: null as number | null,
+    maxPrice: null as number | null,
+    brand: [] as number[],
   });
 
   //  Hàm fetch duy nhất
+  // const loadProducts = useCallback(async () => {
+  //   try {
+  //     // setLoading(true);
+  //     let res;
+
+  //     if (query.subCategoryId !== 0) {
+  //       // Có danh mục con
+  //       if (query.sort !== "default") {
+  //         res = await fetchProductsInPriceOrder(
+  //           query.subCategoryId,
+  //           query.page,
+  //           query.limit,
+  //           query.sort
+  //         );
+  //       } else {
+  //         res = await fetchProductsBySubCategory(
+  //           query.subCategoryId,
+  //           query.page,
+  //           query.limit
+  //         );
+  //       }
+  //     } else {
+  //       // Không có danh mục con
+  //       if (query.sort !== "default") {
+  //         res = await fetchProductsInPriceOrder(
+  //           query.categoryId,
+  //           query.page,
+  //           query.limit,
+  //           query.sort
+  //         );
+  //       } else {
+  //         res = await fetchProducts(
+  //           query.categoryId,
+  //           query.page,
+  //           query.limit
+  //         );
+  //       }
+  //     }
+  //     // console.log(res.products);
+  //     setProducts(res.products);
+  //     setTotalPages(res.totalPages);
+  //     setBrands(res.brands ?? []);
+  //   } catch (err) {
+  //     console.error("Lỗi khi load sản phẩm:", err);
+  //   }
+  //   // finally {
+  //   //   setTimeout(() => {
+  //   //     setLoading(false);
+
+  //   //   }, 300);
+  //   // }
+  // }, [query]);
   const loadProducts = useCallback(async () => {
     try {
-      // setLoading(true);
-      let res;
+      // Gọi một hàm API duy nhất, truyền toàn bộ object query
+      const res = await fetchProducts2(query, Number(id));
 
-      if (query.subCategoryId !== 0) {
-        // Có danh mục con
-        if (query.sort !== "default") {
-          res = await fetchProductsInPriceOrder(
-            query.subCategoryId,
-            query.page,
-            query.limit,
-            query.sort
-          );
-        } else {
-          res = await fetchProductsBySubCategory(
-            query.subCategoryId,
-            query.page,
-            query.limit
-          );
-        }
-      } else {
-        // Không có danh mục con
-        if (query.sort !== "default") {
-          res = await fetchProductsInPriceOrder(
-            query.categoryId,
-            query.page,
-            query.limit,
-            query.sort
-          );
-        } else {
-          res = await fetchProducts(
-            query.categoryId,
-            query.page,
-            query.limit
-          );
-        }
-      }
-      // console.log(res.products);
+
+
       setProducts(res.products);
       setTotalPages(res.totalPages);
       setBrands(res.brands ?? []);
+
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
     }
-    // finally {
-    //   setTimeout(() => {
-    //     setLoading(false);
-
-    //   }, 300);
-    // }
-  }, [query]);
+  }, [query]); // Chỉ phụ thuộc vào `query`
 
   //  Khi query thay đổi → tự load lại sản phẩm
   useEffect(() => {
     loadProducts();
+  }, [loadProducts]);
+
+  //  Khi query thay đổi → update URL
+  useEffect(() => {
+    const params: any = {
+      page: query.page.toString(),
+      sort: query.sort,
+    };
+    if (query.subCategoryId !== 0) {
+      params.sub = query.subCategoryId.toString();
+    }
+    if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
+    if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
+    if (query.brand && query.brand.length > 0) {
+      params.brand = query.brand.join(',');
+    }
+    if (isUserAction) {
+      setSearchParams(params); //PUSH history
+      setIsUserAction(false);
+    } else {
+      setSearchParams(params, { replace: true }); //REPLACE khi auto sync
+    }
   }, [query]);
 
-  //  Khi id danh mục cha thay đổi
+
   useEffect(() => {
+    const page = Number(searchParams.get("page")) || 1;
+    const sort = searchParams.get("sort") || "default";
+    const sub = Number(searchParams.get("sub")) || 0;
+    const min = searchParams.get("minPrice") || "";
+    const max = searchParams.get("maxPrice") || "";
+    const brand = searchParams.get("brand")?.split(',').map(Number) || [];
     setQuery({
       categoryId: Number(id),
-      subCategoryId: 0,
-      page: 1,
+      subCategoryId: sub,
+      page,
       limit: 12,
-      sort: "default",
+      sort,
+      minPrice: min ? Number(min) : null,
+      maxPrice: max ? Number(max) : null,
+      brand,
     });
-    setSelectedSubCategory("all");
+
+    setSelectedSubCategory(sub === 0 ? "all" : String(sub));
     loadSubCategories();
     loadCategories();
-  }, [id]);
-
+  }, [id, searchParams]);
   const loadCategories = async () => {
     try {
       const data = await fetchCategories();
@@ -122,6 +173,7 @@ const Category = () => {
 
   //  Handler chọn danh mục con
   const handleSelectedSubCategory = (subCateId: number, name: string) => {
+    setIsUserAction(true)
     setSelectedSubCategory(name);
     setQuery((prev) => ({
       ...prev,
@@ -132,27 +184,83 @@ const Category = () => {
 
   //  Handler sắp xếp
   const handleSort = (val: string) => {
+    setIsUserAction(true);
     setQuery((prev) => ({
       ...prev,
       sort: val,
-      page: 1,
     }));
   };
 
   //  Handler chuyển trang
   const handlePageChange = (page: number) => {
+    setIsUserAction(true);
     setQuery((prev) => ({
       ...prev,
       page,
     }));
   };
+  const handleApplyBtn = () => {
+    console.log("hiihihi");
 
+    const min = priceRange.minPrice ? Number(priceRange.minPrice) : null;
+    const max = priceRange.maxPrice ? Number(priceRange.maxPrice) : null;
+    setQuery((prev) => ({
+      ...prev,
+      page: 1,
+      minPrice: min,
+      maxPrice: max,
+    }))
+  }
   const filteredNameOfCategory = categories.find(
     (cat) => cat.id === Number(id)
   );
+  const handleToggleBrand = (brandId: number) => {
+    setIsUserAction(true);
+
+    setQuery((prev) => {
+      const exists = prev.brand.includes(brandId);
+      const updated = exists
+        ? prev.brand.filter((b) => b !== brandId)
+        : [...prev.brand, brandId];
+
+      return {
+        ...prev,
+        brand: updated,
+        page: 1,
+      };
+    });
+  };
+
 
   const handleResetFilter = () => {
-  }
+    setIsUserAction(true);
+
+    setQuery((prev) => ({
+      ...prev,
+      minPrice: null,
+      maxPrice: null,
+      brand: [],   //  reset brand trong query
+      page: 1,
+    }));
+
+    const params = new URLSearchParams(searchParams);
+
+    //  Xoá param khoảng giá
+    params.delete("minPrice");
+    params.delete("maxPrice");
+
+    //  Xoá brand trên URL
+    params.delete("brand");
+
+    //  Reset về page 1
+    params.set("page", "1");
+
+    setSearchParams(params); // cập nhật URL
+
+    //  Reset input tạm
+    setPriceRange({ minPrice: "", maxPrice: "" });
+  };
+
   return (
     <div className="container">
       <CategorySwiper categories={categories} />
@@ -174,7 +282,7 @@ const Category = () => {
                 {subCategories.map((subCat) => (
                   <li
                     key={subCat.id}
-                    className={`pointer my-1 subCategoryText ${subCat.name === selectedSubCategory ? "active fw-bold fs-5" : ""
+                    className={`pointer my-1 subCategoryText ${subCat.id === query.subCategoryId ? "active fw-bold fs-5" : ""
                       }`}
                     onClick={() =>
                       handleSelectedSubCategory(subCat.id, subCat.name)
@@ -192,27 +300,40 @@ const Category = () => {
                 type="text"
                 className="form-control form-control-sm mt-2"
                 placeholder="Từ"
+                value={priceRange.minPrice}
+                onChange={(e) => setPriceRange((prev) => (
+                  { ...prev, minPrice: e.target.value }
+                ))}
               />
               <input
                 type="text"
                 className="form-control form-control-sm mt-2"
                 placeholder="Đến"
+                value={priceRange.maxPrice}
+                onChange={(e) => setPriceRange((prev) => (
+                  { ...prev, maxPrice: e.target.value }
+                ))}
               />
-              <button className="btn-apply my-2 fw-semibold">Áp dụng</button>
+              <button className="btn-apply my-2 fw-semibold" onClick={() => handleApplyBtn()}>Áp dụng</button>
             </div>
             <div className="border-top p-3 m-2">
               <h5>Thương hiệu</h5>
               <div>
                 {brands.map((b) => (
                   <div className="mb-1" key={b.id}>
-                    <input className="pointer" type="checkbox" id={`brand-${b.id}`} />
+                    <input
+                      className="pointer"
+                      type="checkbox" id={`brand-${b.id}`}
+                      onChange={() => handleToggleBrand(b.id)}
+                      checked={query.brand.includes(b.id)}
+                    />
                     <label className="mx-2 pointer" htmlFor={`brand-${b.id}`}>{b.name}</label>
                   </div>
                 ))}
               </div>
             </div>
             <div className="border-top p-3 m-2">
-              <button onClick={() => handleResetFilter()}>Đặt lại</button>
+              <button className="btn-apply fw-semibold" onClick={() => handleResetFilter()}>Đặt lại</button>
             </div>
 
           </div>

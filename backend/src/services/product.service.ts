@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct, ProductResponse } from "../models/product.model";
 import { paginationProducts } from "../helpers/pagination.helper";
 class productService {
     getProductOnCategoryIdService = async (categoryId: number, page: number, limit: number) => {
@@ -344,7 +344,9 @@ class productService {
         return rows as unknown as BrandOfProduct[];
 
     }
-
+    getProductsService = async (whereClause: string, params: any[], page: number = 1, limit: number = 12, orderBy: string = ""): Promise<ProductResponse> => {
+        return paginationProducts(whereClause, params, page, limit, orderBy);
+    }
 }
 
 export default new productService();
