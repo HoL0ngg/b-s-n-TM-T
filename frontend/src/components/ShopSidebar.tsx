@@ -1,8 +1,7 @@
 // src/components/ShopSidebar.tsx
-import React from 'react';
 import { NavLink } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
 interface ShopSidebarProps {
@@ -13,7 +12,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
   return (
     <div className={`shop-sidebar bg-white ${isOpen ? 'open' : 'closed'}`}>
       <nav className="nav nav-pills flex-column p-2 pt-4">
-        
+
         {/* Link Dashboard */}
         <li className="nav-item mb-1">
           <NavLink to="/seller" className="nav-link text-dark" end>
@@ -30,9 +29,9 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
         </li>
         {/* Menu xổ xuống cho Đơn hàng */}
         <li className="nav-item">
-          <a 
-            href="#submenu-orders" 
-            data-bs-toggle="collapse" 
+          <a
+            href="#submenu-orders"
+            data-bs-toggle="collapse"
             className="nav-link text-dark d-flex justify-content-between"
           >
             <div>
@@ -45,9 +44,9 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             <ul className="nav flex-column ms-4">
               <li>
                 {/* 1. Link "Tất cả" PHẢI CÓ 'end' */}
-                <NavLink 
-                  to="/seller/orders" 
-                  end 
+                <NavLink
+                  to="/seller/orders"
+                  end
                   className="nav-link text-dark small sidebar-link-text"
                 >
                   Tất cả
@@ -55,40 +54,40 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
               </li>
               <li>
                 {/* 2. Các link con phải có đường dẫn khác nhau */}
-                <NavLink 
-                  to="/seller/orders?status=pending" 
+                <NavLink
+                  to="/seller/orders?status=pending"
                   className="nav-link text-dark small sidebar-link-text"
                 >
                   Chờ xác nhận
                 </NavLink>
               </li>
               <li>
-                <NavLink 
-                  to="/seller/orders?status=packing" 
+                <NavLink
+                  to="/seller/orders?status=packing"
                   className="nav-link text-dark small sidebar-link-text"
                 >
                   Chờ đóng gói
                 </NavLink>
               </li>
               <li>
-                <NavLink 
-                  to="/seller/orders?status=shipping" 
+                <NavLink
+                  to="/seller/orders?status=shipping"
                   className="nav-link text-dark small sidebar-link-text"
                 >
                   Đang giao
                 </NavLink>
               </li>
               <li>
-                <NavLink 
-                  to="/seller/orders?status=delivered" 
+                <NavLink
+                  to="/seller/orders?status=delivered"
                   className="nav-link text-dark small sidebar-link-text"
                 >
                   Đã giao
                 </NavLink>
               </li>
-               <li>
-                <NavLink 
-                  to="/seller/orders?status=cancelled" 
+              <li>
+                <NavLink
+                  to="/seller/orders?status=cancelled"
                   className="nav-link text-dark small sidebar-link-text"
                 >
                   Đã hủy
@@ -103,7 +102,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             <span className="sidebar-link-text">Trả hàng / Hoàn tiền</span>
           </NavLink>
         </li>
-        
+
         {/* --- Nhóm Quản lý Sản phẩm --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
@@ -112,9 +111,9 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
         </li>
         <li className="nav-item">
           {/* 3. Link "Tất cả" này CŨNG PHẢI CÓ 'end' */}
-          <NavLink 
-            to="/seller/products" 
-            end 
+          <NavLink
+            to="/seller/products"
+            end
             className="nav-link text-dark"
           >
             <i className="bi bi-box-seam me-3 fs-5"></i>
@@ -129,14 +128,14 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
         </li>
 
         {/* --- (Các nhóm khác giữ nguyên) --- */}
-        
+
         {/* --- Nhóm Tài chính --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
             Tài chính
           </span>
         </li>
-         <li className="nav-item">
+        <li className="nav-item">
           <NavLink to="/seller/finance/revenue" className="nav-link text-dark">
             <i className="bi bi-cash-coin me-3 fs-5"></i>
             <span className="sidebar-link-text">Doanh thu</span>
@@ -156,9 +155,9 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           </span>
         </li>
         <li className="nav-item">
-          <a 
-            href="#submenu-shop" 
-            data-bs-toggle="collapse" 
+          <a
+            href="#submenu-shop"
+            data-bs-toggle="collapse"
             className="nav-link text-dark d-flex justify-content-between"
           >
             <div>

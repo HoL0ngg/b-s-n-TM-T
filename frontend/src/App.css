@@ -402,6 +402,7 @@
   object-fit: cover;
   border: 1px solid #eee;
 }
+
 .btn-apply {
   border: none;
   background-color: #ee4d2d;
@@ -409,6 +410,7 @@
   color: white;
   padding: 4px 0;
 }
+
 .search-name {
   font-size: 14px;
   color: #333;
@@ -416,6 +418,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.section-line {
+  flex-grow: 1;
+  height: 2px;
+  background-color: var(--bs-orange);
+  max-width: 220px;
+  min-width: 50px;
 }
 
 /* Đổi lại icon cho đúng chiều */
@@ -459,4 +469,63 @@
 .delete-all:hover {
   color: var(--bs-primary);
   transition: all 0.2s ease;
+}
+
+/* src/components/FeaturedShops.css */
+
+.featured-shops-swiper {
+  padding-bottom: 40px !important;
+  /* Thêm không gian cho dấu chấm (pagination) */
+}
+
+.shop-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.featured-shop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+}
+
+.featured-shop-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.shop-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  /* --- Làm cho logo tròn --- */
+  object-fit: cover;
+  /* Đảm bảo ảnh vừa vặn, không bị méo */
+  border: 1px solid #f0f0f0;
+}
+
+.shop-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  /* Cắt chữ nếu tên shop quá dài */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* Tùy chỉnh màu của nút Swiper (cho hợp với Bootstrap) */
+.featured-shops-swiper .swiper-button-next,
+.featured-shops-swiper .swiper-button-prev {
+  color: var(--bs-primary);
+  /* Dùng màu primary của Bootstrap */
+}
+
+/* Tùy chỉnh màu của dấu chấm (pagination) */
+.featured-shops-swiper .swiper-pagination-bullet-active {
+  background-color: var(--bs-primary);
 }

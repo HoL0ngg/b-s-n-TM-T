@@ -65,6 +65,10 @@ export default function Cart() {
         });
     };
 
+    const handleHihi = (product_id: number) => {
+        navigate(`/product/${product_id}`);
+    }
+
     const calculateTotal = () => {
         if (!cart || cart.length === 0) {
             return 0;
@@ -169,7 +173,7 @@ export default function Cart() {
                                                 </div>
                                                 <div className="col-7 d-flex flex-column justify-content-between">
                                                     <div>
-                                                        <div className="fw-bolder">{item.product_name}</div>
+                                                        <div className="fw-bolder pointer" onClick={() => handleHihi(item.product_id)}>{item.product_name}</div>
                                                         {item.options && item.options?.length > 0 && (<div className="d-flex gap-4">
                                                             <div>
                                                                 {

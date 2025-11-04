@@ -6,6 +6,7 @@ import { fetchCategories } from "../api/categories";
 import { useEffect, useState } from "react";
 import type { CategoryType } from "../types/CategoryType";
 import HomeProduct from "../components/HomeProduct";
+import HotShop from "../components/HotShop";
 
 export default function Home() {
     const [Categories, setCategories] = useState<CategoryType[]>([]);
@@ -36,6 +37,9 @@ export default function Home() {
             </LazySection>
             <LazySection threshold={0.5}>
                 <CategorySelector categories={Categories} />
+            </LazySection>
+            <LazySection threshold={0.2}>
+                <HotShop />
             </LazySection>
             <LazySection threshold={0.2}>
                 <HomeProduct />
