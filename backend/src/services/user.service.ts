@@ -1,3 +1,4 @@
+import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 
 import type { Address, User, UserProfile } from "../models/user.model";
@@ -10,6 +11,11 @@ class userService {
     getAddressByuserIdService = async (id: string): Promise<Address[]> => {
         const [rows] = await pool.query("select id, city, ward, street, home_number, is_default, user_name, phone_number_jdo from address Join address_user on address_id = id where phone_number = ? Group by id", [id]) as [Address[], any];
         return rows as Address[];
+    }
+
+    geDefaultAddressByuserIdService = async (id: string): Promise<Address> => {
+        const [rows] = await pool.query("select id, city, ward, street, home_number, is_default, user_name, phone_number_jdo from address Join address_user on address_id = id where phone_number = ? AND is_default = 1", [id]) as [Address[], any];
+        return rows[0] as Address;
     }
     getUserProfileService = async (id: string): Promise<UserProfile> => {
         const [row] = await pool.query(`SELECT username, gender, DATE_FORMAT(dob, '%Y-%m-%d') AS dob, updated_at FROM user_profile WHERE phone_number = ?`, [id]) as [UserProfile[], any];
@@ -77,6 +83,14 @@ class userService {
             }
         }
     }
+    ChangeAddressDefault = async (user_id: number, address_id: number) => {
+        const tmp = `UPDATE address_user set is_default = 0 WHERE phone_number = ?`;
+        await pool.query(tmp, [user_id]);
+        const hihi = `UPDATE address_user set is_default = 1 WHERE phone_number = ? AND address_id = ?`;
+        const [row] = await pool.query(hihi, [user_id, address_id]) as [any[], any];
+        return row.length > 0;
+
+    }
     createAddress = async (data: any, connection: any): Promise<number> => {
         const { city, ward, street } = data;
         const query = 'INSERT INTO Address (city, ward, street) VALUES (?, ?, ?)';
@@ -86,8 +100,19 @@ class userService {
         return result.insertId;
     }
     linkUser = async (id: string, newAddressId: number, data: any, connection: any) => {
-        const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo) VALUES (?, ?, ?, ?)';
-        await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo]);
+        if (data.isDefault) {
+            const tmp = `UPDATE address_user set is_default = 0 WHERE phone_number = ?`;
+            connection.query(tmp, [id]);
+        }
+        const [countRows] = await pool.query<RowDataPacket[]>(
+            "SELECT COUNT(*) as count FROM address_user WHERE phone_number = ?",
+            [id]
+        );
+        let hihi = false;
+        if (countRows[0].count == 0) hihi = true;
+
+        const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo, is_default) VALUES (?, ?, ?, ?, ?)';
+        await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, data.is_default || hihi]);
     }
 }
 

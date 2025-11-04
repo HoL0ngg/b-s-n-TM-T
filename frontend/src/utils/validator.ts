@@ -59,6 +59,8 @@ export const shortenAddress = (fullAddress: string): string => {
         "thành phố",
         "tp",
         "tỉnh",
+        "ward",
+        "province",
     ];
 
     const parts = fullAddress.split(",");

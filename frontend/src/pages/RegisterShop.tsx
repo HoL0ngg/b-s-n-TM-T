@@ -16,10 +16,10 @@ import AddressModal from '../components/AddressModel';
 import { createShopInfo } from '../api/shopinfo';
 
 const steps = [
-  'Thông tin Shop', 
-  'Cài đặt vận chuyển', 
-  'Thông tin thuế', 
-  'Thông tin định danh', 
+  'Thông tin Shop',
+  'Cài đặt vận chuyển',
+  'Thông tin thuế',
+  'Thông tin định danh',
   'Hoàn tất'
 ];
 

@@ -4,10 +4,13 @@ export interface ProductType {
     description: string;
     status: number;
     base_price: number;
-    category_id: number;
+    category_name: string;
+    shop_id: number;
     image_url: string;
     sold_count: number;
-    shop_cate_id: number;
+    product_variants: ProductVariantType[];
+    images: string[];
+    avg_rating: number;
 }
 
 export interface ProductImageType {
@@ -45,4 +48,25 @@ export interface ProductDetailsType {
 export interface AttributeOfProductVariantsType {
     attribute: string,
     values: string[],
+}
+
+interface VariantOption {
+    attribute: string; // "Màu sắc"
+    value: string;     // "Cam"
+}
+
+export interface ProductVariantType {
+    id: number;           // 1, 2, 3...
+    price: number;        // 223000
+    stock: number;        // 40
+    options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
+}
+export interface ProductResponseType {
+    products: ProductType[];
+    totalPages: number;
+    brands?: BrandOfProductType[];
+}
+export interface BrandOfProductType {
+    id: number;
+    name: string;
 }

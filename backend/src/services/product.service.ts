@@ -1,15 +1,57 @@
+import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants,BrandOfProduct,ProductVariant,VariantOption,ProductResponse } from "../models/product.model";
 import { ResultSetHeader } from 'mysql2';   
-class productService {
-    getProductOnCategoryIdService = async (Category_id: number): Promise<Product[]> => {
-        const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where category_id = ? Group by id", [Category_id]);
-        return rows as Product[];
-    };
+import { paginationProducts } from "../helpers/pagination.helper";
 
+class productService {
     getProductOnIdService = async (id: number): Promise<Product> => {
-        const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where products.id = ?", [id]) as [Product[], any];
-        return rows[0] as Product;
+        // --- TRUY VẤN 1: Lấy thông tin sản phẩm cốt lõi ---
+        const [productRows] = await pool.query<Product[] & RowDataPacket[]>(
+            `SELECT id, name, description, base_price, shop_id, sold_count 
+         FROM products 
+         WHERE id = ?`,
+            [id]
+        );
+        const product = productRows[0];
+
+        if (!product) {
+            throw new Error('Không tìm thấy sản phẩm');
+        }
+
+        const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
+            `SELECT id, price, stock, sku 
+         FROM productvariants 
+         WHERE product_id = ?`,
+            [id]
+        );
+
+        const [optionRows] = await pool.query<VariantOption[] & RowDataPacket[]>(
+            `SELECT
+            vov.variant_id,
+            pa.name AS attribute,
+            vov.value
+         FROM
+            variantoptionvalues vov
+         JOIN
+            product_attributes pa ON vov.attribute_id = pa.id
+         WHERE
+            vov.variant_id IN (
+                -- Lấy các variant_id từ truy vấn 3 (chỉ cho sản phẩm này)
+                SELECT id FROM productvariants WHERE product_id = ?
+            )`,
+            [id]
+        );
+
+        variantRows.forEach(variant => {
+            // Lọc ra các tùy chọn (từ Query 4) thuộc về biến thể này
+            variant.options = optionRows
+                .filter(opt => opt.variant_id === variant.id);
+        });
+        // Gán mảng các biến thể (đã có options) vào object product
+        product.product_variants = variantRows;
+
+        return product as Product;
     }
 
     getProductImgOnIdService = async (id: number): Promise<string[]> => {
@@ -17,30 +59,35 @@ class productService {
         return rows;
     }
 
-    get5ProductOnShopIdService = async (id: Number): Promise<Product[]> => {
-        const [rows] = await pool.query("SELECT id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id where shop_id = ? Group by id limit 5", [id]);
+    get5ProductOnShopIdService = async (shopId: Number): Promise<Product[]> => {
+        const [rows] = await pool.query(
+            `SELECT * FROM v_products_list WHERE shop_id = ? LIMIT 5`,
+            [shopId]
+        );
         return rows as Product[];
     }
 
     getProductOnShopIdService = async (shopId: number, sort: string, cate?: number) => {
         let orderBy = "id DESC";
-
+        // Giờ bạn có thể sort theo 'hot_score' hoặc 'avg_rating'
         if (sort === "popular") {
-            orderBy = "(sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC";
+            orderBy = "hot_score DESC";
         } else if (sort === "hot") {
             orderBy = "sold_count DESC";
         } else if (sort === "new") {
-            orderBy = "products.created_at DESC";
+            orderBy = "created_at DESC";
         }
-        let hihi = "";
-        const params = [shopId];
+
+        let whereClause = "WHERE shop_id = ?";
+        const params: (string | number)[] = [shopId];
+
         if (cate) {
-            hihi = "AND shop_cate_id = ?";
+            whereClause += " AND shop_cate_id = ?"; // (Lưu ý: View của bạn chưa có shop_cate_id)
             params.push(cate);
         }
 
         const [rows] = await pool.query(
-            `SELECT products.id, name, description, base_price, shop_id, image_url, sold_count FROM products JOIN productimages on productimages.product_id = products.id LEFT JOIN productreviews on productreviews.product_id = products.id WHERE products.shop_id = ? ${hihi} Group by products.id ORDER BY ${orderBy}`,
+            `SELECT * FROM v_products_list ${whereClause} ORDER BY ${orderBy}`,
             params
         );
         return rows;
@@ -106,7 +153,7 @@ class productService {
     }
 
     getProductDetailsByProductId = async (id: number) => {
-        const [row] = await pool.query("SELECT * FROM products JOIN product_detail ON products.id = product_detail.product_id WHERE products.id = ?", [id]);
+        const [row] = await pool.query("SELECT id,product_id,attribute,value FROM product_detail WHERE product_id = ?", [id]);
         return row as ProductDetails[];
     }
 
@@ -283,6 +330,182 @@ class productService {
         return (rows as any[]).length > 0;
     };
 
+
+    logView = async (userId: string | undefined, productId: number) => {
+        const sql = `
+            INSERT INTO UserViewHistory (user_id, product_id) 
+            VALUES (?, ?)`;
+        await pool.query(sql, [userId, productId]);
+    }
+
+    getForYouRecommendations = async (user_id: number | undefined) => {
+        if (!user_id) {
+            return this.getRandomRecommendations();
+        }
+        // 2. Nếu là user, kiểm tra xem có lịch sử xem không
+        const [historyCheck] = await pool.query<RowDataPacket[]>(
+            `SELECT 1 FROM UserViewHistory WHERE user_id = ? LIMIT 1`,
+            [user_id]
+        );
+
+        // 3. Quyết định
+        if (historyCheck.length > 0) {
+            return this.getRecommendationsFromHistory(user_id);
+        } else {
+            return this.getRandomRecommendations();
+        }
+    }
+
+    getRandomRecommendations = async () => {
+        const [rows] = await pool.query(`SELECT * FROM v_products_list ORDER BY RAND() LIMIT 15`);
+        return rows;
+    }
+
+    getRecommendationsFromHistory = async (user_id: number) => {
+        const [recentViewedIds] = await pool.query<RowDataPacket[]>(
+            `SELECT DISTINCT product_id 
+             FROM UserViewHistory 
+             WHERE user_id = ? 
+             ORDER BY viewed_at DESC 
+             LIMIT 5`,
+            [user_id]
+        );
+        const productIds = recentViewedIds.map(row => row.product_id);
+
+        // 2. Lấy danh mục của các sản phẩm đó
+        const [relatedCategoryIds] = await pool.query<RowDataPacket[]>(
+            `SELECT DISTINCT generic_id 
+             FROM products 
+             WHERE id IN (?)`,
+            [productIds]
+        );
+        if (relatedCategoryIds.length === 0) {
+            // Nếu không tìm thấy danh mục (lỗi), trả về ngẫu nhiên
+            return this.getRandomRecommendations();
+        }
+
+        const categoryIds = relatedCategoryIds.map(row => row.generic_id);
+
+        // 3. Lấy sản phẩm TỪ CÁC DANH MỤC ĐÓ
+        // (Và loại trừ sản phẩm đã xem)
+        const [recommendations] = await pool.query(
+            `SELECT * FROM v_products_list
+             WHERE generic_id IN (?) AND id NOT IN (?)
+             ORDER BY RAND() 
+             LIMIT 15`,
+            [categoryIds, productIds]
+        );
+        return recommendations;
+    }
+
+
+    getProductsByKeyWordService = async (keyword: string): Promise<Product[]> => {
+        const [rows] = await pool.query(`
+                SELECT 
+                    products.id, 
+                    products.name,                     
+                    products.base_price,                     
+                    productimages.image_url                   
+                FROM products 
+                LEFT JOIN productimages 
+                    ON productimages.product_id = products.id 
+                    AND productimages.isMain = 1
+                WHERE BINARY LOWER(products.name) LIKE LOWER(CONCAT('%', ? , '%'))
+                GROUP BY products.id
+                LIMIT 7
+            `, [keyword]);
+        return rows as Product[];
+    }
+    getBrandsOfProductByCategoryIdSerivice = async (category_id: number): Promise<BrandOfProduct[]> => {
+        const [rows] = await pool.query(`
+            SELECT DISTINCT b.id, b.name
+            FROM brands b
+            JOIN products p ON p.brand_id = b.id
+            JOIN generic g ON p.generic_id = g.id
+            WHERE g.category_id = ?
+        `, [category_id]);
+        return rows as unknown as BrandOfProduct[];
+    }
+    getBrandsOfProductByGenericIdSerivice = async (category_id: number): Promise<BrandOfProduct[]> => {
+        const [rows] = await pool.query(`
+            SELECT DISTINCT b.id, b.name
+            FROM brands b
+            JOIN products p ON p.brand_id = b.id
+            WHERE p.generic_id = ?
+        `, [category_id]);
+        return rows as unknown as BrandOfProduct[];
+
+    }
+
+    getNewProducts = async () => {
+        const sql = `
+        SELECT * FROM (
+            SELECT 
+                products.id, 
+                products.name, 
+                products.description, 
+                products.base_price, 
+                products.shop_id, 
+                productimages.image_url, 
+                products.sold_count,
+                generic.name as category_name
+            FROM 
+                products 
+            JOIN 
+                productimages on productimages.product_id = products.id
+            JOIN 
+                generic on generic.id = products.generic_id
+            GROUP BY 
+                products.id 
+            ORDER BY 
+                products.updated_at DESC
+            LIMIT 100 -- Lấy 100 sản phẩm mới nhất
+        ) AS newest_products
+        ORDER BY 
+            RAND()
+        LIMIT 15;`;
+
+        const [rows] = await pool.query(sql);
+        return rows;
+    }
+
+    getHotPorducts = async () => {
+        const sql = `
+        SELECT * FROM (
+            SELECT 
+                products.id, 
+                products.name, 
+                products.description, 
+                products.base_price, 
+                products.shop_id, 
+                productimages.image_url, 
+                products.sold_count,
+                generic.name as category_name
+            FROM 
+                products 
+            JOIN 
+                productimages on productimages.product_id = products.id
+            JOIN 
+                generic on generic.id = products.generic_id
+            LEFT JOIN 
+                productreviews on productreviews.product_id = products.id
+            GROUP BY 
+                products.id 
+            ORDER BY 
+                (sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC
+            LIMIT 20
+        ) AS newest_products
+        ORDER BY 
+            RAND()
+        LIMIT 15;`;
+
+        const [rows] = await pool.query(sql);
+        return rows;
+    }
+
+    getProductsService = async (whereClause: string, params: any[], page: number = 1, limit: number = 12, orderBy: string = ""): Promise<ProductResponse> => {
+        return paginationProducts(whereClause, params, page, limit, orderBy);
+    }
 }
 
 export default new productService();

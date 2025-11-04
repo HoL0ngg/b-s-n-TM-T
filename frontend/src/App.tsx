@@ -35,18 +35,18 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      
+
       <Routes>
-        
+
         {/* === 1. CÁC TRANG CÔNG KHAI (DÙNG MAIN LAYOUT) === */}
         {/* Tất cả các route bên trong này sẽ có Navbar/Footer chung */}
         <Route element={<MainLayout />}>
-          
+
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/category/:name" element={<Category />} />
+          <Route path="/category/:id" element={<Category />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />
 
@@ -72,11 +72,11 @@ function App() {
           </Route>
 
         </Route>
-        
+
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
         {/* Đã đổi path thành "/seller" để tránh xung đột với "/shop/:id" */}
         <Route path="/seller" element={<ShopLayout />}>
-          <Route index element={<Dashboard />} /> 
+          <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />

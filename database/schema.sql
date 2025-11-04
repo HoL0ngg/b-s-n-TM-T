@@ -46,6 +46,10 @@ CREATE table Generic(
     category_id int,
     FOREIGN KEY (category_id) REFERENCES Categories(id)
 );
+CREATE TABLE Brands (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL
+);
 CREATE TABLE Products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -54,13 +58,15 @@ CREATE TABLE Products (
     created_at DATE DEFAULT CURRENT_TIMESTAMP,
     updated_at DATE DEFAULT CURRENT_TIMESTAMP,
     base_price INT,
-    category_id INT,
+    generic_id INT,
     sold_count INT,
     shop_id INT,
     shop_cate_id INT,
-    FOREIGN KEY (category_id) REFERENCES Categories(id),
+    brand_id INT,
+    FOREIGN KEY (generic_id) REFERENCES Generic(id),
     FOREIGN KEY (shop_id) REFERENCES Shops(id),
-    FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id)
+    FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id),
+    FOREIGN KEY (brand_id) REFERENCES Brands(id)
 );
 CREATE TABLE ProductImages (
     image_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -102,6 +108,16 @@ CREATE TABLE ProductReviews (
     FOREIGN KEY (product_id) REFERENCES Products(id)
 );
 
+CREATE TABLE Promotions (
+    id int primary key AUTO_INCREMENT,
+    name varchar(255),
+    value decimal,
+    start_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    end_date DATETIME,
+    is_active tinyInt
+);
+
+
 CREATE table Address(
     id int AUTO_INCREMENT primary key,
     city varchar(255),
@@ -128,13 +144,52 @@ CREATE TABLE `product_detail` (
 );
 CREATE TABLE Cart(
     user_id VARCHAR(10),
-    product_id int,
+    product_variant_id int,
     quantity int,
     added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN key (user_id) REFERENCES Users(phone_number),
-    FOREIGN key (product_id) REFERENCES Products(id),
-    primary key (user_id, product_id)
+    FOREIGN key (product_variant_id) REFERENCES ProductVariants(id),
+    primary key (user_id, product_variant_id)
 );
+CREATE TABLE UserViewHistory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(10),
+    product_id INT NOT NULL,
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES Users(phone_number),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE VIEW v_products_list AS
+SELECT 
+    p.id, 
+    p.name, 
+    p.description, 
+    p.base_price, 
+    p.shop_id, 
+    p.generic_id,
+    p.created_at,
+    p.updated_at,
+    p.sold_count,
+    g.name AS category_name,
+    
+    (SELECT pi.image_url 
+     FROM productimages pi 
+     WHERE pi.product_id = p.id AND pi.isMain = 1 
+     LIMIT 1) AS image_url,
+     
+    (SELECT IFNULL(AVG(pr.rating), 0) 
+     FROM productreviews pr 
+     WHERE pr.product_id = p.id) AS avg_rating,
+     
+    (p.sold_count * 0.6 + IFNULL((SELECT AVG(pr.rating) FROM productreviews pr WHERE pr.product_id = p.id), 0) * 0.4) AS hot_score
+    
+FROM 
+    products p
+JOIN 
+    generic g ON g.id = p.generic_id;
+
 INSERT INTO categories
 VALUES (
         1,
@@ -171,19 +226,74 @@ VALUES (
         "Sức khỏe",
         "adudu",
         "/assets/categories/suckhoe.png"
+    ),
+    (
+        7,
+        "Đồ điện tử",
+        "adudu",
+        "/assets/categories/dodientu.png"
+    ),
+    (
+        8,
+        "Trang sức",
+        "adudu",
+        "/assets/categories/trangsuc.png"
     );
 INSERT INTO generic
-VALUES (1, "son", 1),
+VALUES (1, "Son", 1),
     (2, "Phấn phủ", 1),
-    (3, "kem nền", 1),
+    (3, "Kem nền", 1),
     (4, "Quần dài", 2),
     (5, "Quần short", 2),
     (6, "Quẩn thun", 2),
     (7, "Áo sơ mi", 3),
-    (8, "Giày đá banh", 4);
+    (8, "Giày đá banh", 4),
+    (9, "Tivi", 7),
+    (10, "Tủ lạnh", 7),
+    (11, "Máy lạnh", 7),
+    (12, "Máy giặt", 7),
+    (13, "Máy sấy", 7),
+    (14, "Gel trị mụn", 1),
+    (15, "Tẩy tế bào chết", 1),
+    (16, "Sữa rửa mặt", 6),
+    (17, "Dầu gội đầu", 6),
+    (18, "Vòng tay", 8);
+INSERT INTO brands (name) 
+VALUES
+    ('Maybelline'),
+    ('Adidas'),
+    ('Aristino'),
+    ('Romand'),
+    ('3CE'),
+    ('Coolmate'),
+    ('Casper'),
+    ('Murad'),
+    ('Simple'),
+    ('CLEAR MEN'),
+    ('Pond\'s'),
+    ('Pandora'),
+    ('OFÉLIA'),
+    ('L\'Oreal'),
+    ('Merzy'),
+    ('Cocoon');
 INSERT INTO users
-VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png"), ("0987654333", "hehe@gmail.com", "123456", "/assets/bear.png");
-INSERT INTO user_profile VALUES ("", "2005-08-25", 1, null, "0987654321"), ("", "2005-08-26", 1, null, "0987654333");
+    VALUES ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png"), 
+    ("0987654333", "coolmate@gmail.com", "123456", "/assets/bear.png"),
+    ("0987654222", "casper@gmail.com", "123456", "/assets/bear.png"),
+    ("0987654111", "murad@gmail.com", "123456", "/assets/bear.png"),
+    ("0987654000", "unilever@gmail.com", "123456", "/assets/bear.png"),
+    ("0987654444", "pandora@gmail.com", "123456", "/assets/bear.png"),
+    ("0987654555", "thewhoo@gmail.com", "123456", "/assets/bear.png");
+
+
+INSERT INTO user_profile 
+    VALUES ("", "2005-08-25", 1, null, "0987654321"), 
+        ("", "2005-08-26", 1, null, "0987654333"),
+        ("", "2005-08-26", 1, null, "0987654222"),
+        ("", "2005-08-26", 1, null, "0987654111"),
+        ("", "2005-08-26", 1, null, "0987654444"),
+        ("", "2005-08-26", 1, null, "0987654555"),
+        ("", "2005-08-26", 1, null, "0987654000");
 
 INSERT INTO shops
 VALUES (
@@ -194,7 +304,8 @@ VALUES (
         1,
         "2025-08-25",
         "0987654321"
-    ),(
+    )
+    ,(
         2,
         "Coolmate - Official Store",
         "/assets/shops/coolmate.webp",
@@ -202,9 +313,51 @@ VALUES (
         1,
         "2025-08-26",
         "0987654333"
+    )
+    ,(
+        3,
+        "Casper Official Store",
+        "/assets/shops/casper.webp",
+        "Shop chuyên về đồ điện tử",
+        1,
+        "2025-08-26",
+        "0987654222"
+    )
+    ,(
+        4,
+        "Murad Vietnam Official Store",
+        "/assets/shops/murad.webp",
+        "Shop chuyên về quần áo",
+        1,
+        "2025-08-26",
+        "0987654111"
+    )
+    ,(
+        5,
+        "Unilever Chăm Sóc Sắc Đẹp",
+        "/assets/shops/unilever.webp",
+        "",
+        1,
+        "2025-08-26",
+        "0987654000"
+    )
+    ,(
+        6,
+        "Pandora VN",
+        "/assets/shops/pandora.webp",
+        "",
+        1,
+        "2025-08-26",
+        "0987654444"
     );
 
-INSERT INTO shop_categories VALUES (1, 1, "Sản phẩm thu đông"), (2, 1, "Sản phẩm mùa hè"), (3, 2, "Sản phẩm mới");
+INSERT INTO shop_categories 
+    VALUES (1, 1, "Sản phẩm mới")
+    ,(2, 2, "Sản phẩm mùa hè")
+    ,(3, 3, "Sản phẩm mới")
+    ,(4, 4, "Sản phẩm mới")
+    ,(5, 5, "Sản phẩm mới")
+    ,(6, 6, "Sản phẩm mới");
 
 INSERT INTO products
 VALUES (
@@ -218,6 +371,7 @@ VALUES (
         1,
         100,
         1,
+        1,
         1
     ), (
         2,
@@ -227,8 +381,9 @@ VALUES (
         "2025-8-10",
         "2025-10-10",
         2128000,
-        4,
+        8,
         20,
+        1,
         1,
         2
     ), (
@@ -239,10 +394,11 @@ VALUES (
         "2025-02-10",
         "2025-10-10",
         1128000,
-        3,
+        7,
         22,
         1,
-        2
+        1,
+        3
     ), (
         4,
         "Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop",
@@ -251,10 +407,11 @@ VALUES (
         "2025-10-10",
         "2025-10-10",
         280000,
-        2,
+        4,
         50,
         1,
-        1
+        1,
+        3
     ), (
         5,
         "[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g",
@@ -266,7 +423,8 @@ VALUES (
         1,
         10,
         1,
-        1
+        1,
+        4
     ), (
         6,
         "Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy Tint 5ml",
@@ -277,6 +435,7 @@ VALUES (
         218000,
         1,
         12,
+        1,
         1,
         1
     ), (
@@ -290,7 +449,8 @@ VALUES (
         1,
         2,
         1,
-        1
+        1,
+        5
     ), (
         8,
         "Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick 2g",
@@ -302,7 +462,8 @@ VALUES (
         1,
         42,
         1,
-        1
+        1,
+        4
     ), (
         9,
         "Áo Polo thể thao nam ProMax S1 Logo Coolmate",
@@ -311,10 +472,11 @@ VALUES (
         "2025-01-10",
         "2025-10-10",
         219000,
-        3,
+        7,
         2192,
         2,
-        1
+        1,
+        6
     ), (
         10,
         "Áo Sơ Mi Dài Tay Essentials Cotton mềm mại thoáng mát Coolmate",
@@ -323,11 +485,13 @@ VALUES (
         "2025-01-10",
         "2025-10-10",
         271320,
-        3,
+        7,
         395,
         2,
-        1
-    ), (
+        1,
+        6
+    )
+    , (
         11,
         "Quần dài nam Kaki Excool co giãn đàn hồi Coolmate",
         "",
@@ -335,10 +499,300 @@ VALUES (
         "2025-01-10",
         "2025-10-10",
         389000,
-        2,
+        4,
         519,
         2,
-        1
+        1,
+        6
+    )
+    , (
+        12,
+        "[Công lắp 0Đ HCM/ HN] Smart Tivi Casper Ultra HD 4K 50inch / 55 inch - D50UGC620 / D50UGC620 - Chính hãng",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        8495000,
+        9,
+        372,
+        3,
+        1,
+        7
+    )
+    , (
+        13,
+        "[Công lắp 0Đ HCM/ HN] Google Tivi Casper 43 inch - Full HD - 43FGK610 - Chính hãng - Bảo hành 2 năm",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        4390000,
+        9,
+        409,
+        3,
+        1,
+        7
+    )
+    , (
+        14,
+        "Tủ lạnh 4 cánh Casper Inverter 430L RM-430PB - Ngăn đông mềm - Chính hãng - Bảo hành 2 năm",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        11115000,
+        10,
+        2412,
+        3,
+        1,
+        7
+    )
+    , (
+        15,
+        "Máy lạnh/ Điều hòa Casper Inverter ProAir 1 chiều 1HP GC-09IB36 - Bảo hành 3 năm",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        5995000,
+        11,
+        3813,
+        3,
+        1,
+        7
+    )
+    , (
+        16,
+        "Máy giặt cửa trên Casper 7.5KG EcoWash WT-75NG1 - Bảo hành 2 năm - Chính hãng",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        3690000,
+        12,
+        9239,
+        3,
+        1,
+        7
+    )
+    , (
+        17,
+        "Máy giặt sấy Casper Prime Wash & Dry Giặt 11.5KG, Sấy 8KG - WF-P115VGT11 - Bảo hành 2 năm",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        8695000,
+        12,
+        519,
+        3,
+        1,
+        7
+    )
+    , (
+        18,
+        "Máy sấy thông hơi Casper 7.2KG TD-72VWD - Chính hãng - Bảo hành 2 năm",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        5290000,
+        13,
+        823,
+        3,
+        1,
+        7
+    )
+    , (
+        19,
+        "Gel chấm mụn Murad Rapid Relief Acne Treatment 15ml",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        776000,
+        14,
+        219,
+        4,
+        1,
+        8
+    )
+    , (
+        20,
+        "Tẩy tế bào da chết dịu nhẹ Murad AHA/BHA Exfoliating Cleanser 148ml",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        118800,
+        15,
+        229,
+        4,
+        1,
+        8
+    )
+    , (
+        21,
+        "Tinh chất hỗ trợ làm mờ vết nám Murad Rapid Dark Spot Correcting Serum 30ml",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        2371650,
+        2,
+        982,
+        4,
+        1,
+        8
+    )
+    , (
+        22,
+        "[MỚI] Sữa Rửa Mặt Simple 240ml Purify+ Giảm Mụn Sau 7 Ngày, Repair+ Phục Hồi Da, Hydrate+ Giúp Da Trông Căng Mướt",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        222000,
+        16,
+        23123,
+        5,
+        1,
+        9
+    )
+    , (
+        23,
+        "Dầu Gội Đầu CLEAR MEN Perfume Đánh Bay Gàu Ngứa Và Lưu Hương Nước Hoa Đẳng Cấp 600G/840G",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        184000,
+        17,
+        519,
+        5,
+        1,
+        10
+    )
+    , (
+        24,
+        "Sữa rửa mặt sáng da sạch sâu Pond's Bright Miracle Niasorcinol 100G",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        78000,
+        16,
+        519,
+        5,
+        1,
+        11
+    )
+    , (
+        25,
+        "Vòng Tay Pandora Moments Bạc Dây Rắn Khóa Trái Tim 590719",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        2366000,
+        18,
+        519,
+        6,
+        1,
+        12
+    )
+    , (
+        26,
+        "Charm Pandora Mạ Vàng 14K Mặt Trời Ôm Mặt Trăng",
+        "",
+        1,
+        "2025-01-10",
+        "2025-10-10",
+        2790000,
+        18,
+        519,
+        6,
+        1,
+        12
+    ),
+    (
+        27,
+        "[SUGARPLUM BY OFÉLIA] Son Tint Lì Thuần Chay Siêu Nhẹ Môi OFÉLIA Sugarplum MistyNow Blurring Tint 3.8g",
+        "",
+        1,
+        "2025-10-07",
+        "2025-10-17",
+        169000,
+        1,
+        2,
+        1,
+        1,
+        13
+    ),(
+        28,
+        "Son Kem Lì L'Oreal Nhẹ Môi, Lâu Trôi Infallible Matte Resistance",
+        "",
+        1,
+        "2025-10-07",
+        "2025-10-17",
+        289000,
+        1,
+        2,
+        1,
+        1,
+        14
+    ),(
+        29,
+        "Son Kem Lì, Mịn Mượt Nhẹ Môi L’Oreal Paris Chiffon Signature Matte Liquid Lipstick",
+        "",
+        1,
+        "2025-10-07",
+        "2025-10-17",
+        259000,
+        1,
+        2,
+        1,
+        1,
+        14
+    ),(
+        30,
+        "Son Kem Lì Merzy Bền Màu, Lâu Trôi Puffer Velvet Tint 3.7g",
+        "",
+        1,
+        "2025-10-07",
+        "2025-10-17",
+        209000,
+        1,
+        7,
+        1,
+        1,
+        15
+    ),(
+        31,
+        "Son Dưỡng Môi Cocoon Chiết Xuất Dầu Dừa Bến Tre Ben Tre Coconut Lip Balm",
+        "",
+        1,
+        "2025-10-07",
+        "2025-10-17",
+        54000,
+        1,
+        10,
+        1,
+        1,
+        16
+    ),(
+        32,
+        "Son Kem Merzy Siêu Lì, Lâu Trôi, Lên Màu Chuẩn Academia Mellow Tint 4g",
+        "",
+        1,
+        "2025-10-07",
+        "2025-10-17",
+        144000,
+        1,
+        17,
+        1,
+        1,
+        15
     );
 INSERT INTO ProductImages
 VALUES  (1, "/assets/products/son1.jpg", 1, 1),
@@ -375,8 +829,102 @@ VALUES  (1, "/assets/products/son1.jpg", 1, 1),
         (32, "/assets/products/quan kaki1.3.webp", 11, 0),
         (33, "/assets/products/quan kaki1.4.webp", 11, 0),
         (34, "/assets/products/quan kaki1.5.webp", 11, 0),
-        (35, "/assets/products/quan kaki1.6.webp", 11, 0);
-
+        (35, "/assets/products/quan kaki1.6.webp", 11, 0),
+        (36, "/assets/products/tivi1.1.webp", 12, 1),
+        (37, "/assets/products/tivi1.2.webp", 12, 0),
+        (38, "/assets/products/tivi1.3.webp", 12, 0),
+        (39, "/assets/products/tivi1.4.webp", 12, 0),
+        (40, "/assets/products/tivi2.1.webp", 13, 1),
+        (41, "/assets/products/tivi2.2.webp", 13, 0),
+        (42, "/assets/products/tivi2.3.webp", 13, 0),
+        (43, "/assets/products/tivi2.4.webp", 13, 0),
+        (44, "/assets/products/tulanh1.1.webp", 14, 1),
+        (45, "/assets/products/tulanh1.2.webp", 14, 0),
+        (46, "/assets/products/tulanh1.3.webp", 14, 0),
+        (47, "/assets/products/tulanh1.4.webp", 14, 0),
+        (48, "/assets/products/tulanh1.5.webp", 14, 0),
+        (49, "/assets/products/tulanh1.6.webp", 14, 0),
+        (50, "/assets/products/maylanh1.1.webp", 15, 1),
+        (51, "/assets/products/maylanh1.2.webp", 15, 0),
+        (52, "/assets/products/maylanh1.3.webp", 15, 0),
+        (53, "/assets/products/maylanh1.4.webp", 15, 0),
+        (54, "/assets/products/maylanh1.5.webp", 15, 0),
+        (55, "/assets/products/maygiat1.1.webp", 16, 1),
+        (56, "/assets/products/maygiat1.2.webp", 16, 0),
+        (57, "/assets/products/maygiat1.3.webp", 16, 0),
+        (58, "/assets/products/maygiat1.4.webp", 16, 0),
+        (59, "/assets/products/maygiat1.5.webp", 16, 0),
+        (60, "/assets/products/maygiat2.1.webp", 17, 1),
+        (61, "/assets/products/maygiat2.2.webp", 17, 0),
+        (62, "/assets/products/maygiat2.3.webp", 17, 0),
+        (63, "/assets/products/maygiat2.4.webp", 17, 0),
+        (64, "/assets/products/maygiat2.5.webp", 17, 0),
+        (65, "/assets/products/maysay1.1.webp", 18, 1),
+        (66, "/assets/products/maysay1.2.webp", 18, 0),
+        (67, "/assets/products/maysay1.3.webp", 18, 0),
+        (68, "/assets/products/maysay1.4.webp", 18, 0),
+        (69, "/assets/products/maysay1.5.webp", 18, 0),
+        (70, "/assets/products/gelchammun1.1.webp", 19, 1),
+        (71, "/assets/products/gelchammun1.2.webp", 19, 0),
+        (72, "/assets/products/gelchammun1.3.webp", 19, 0),
+        (73, "/assets/products/gelchammun1.4.webp", 19, 0),
+        (74, "/assets/products/gelchammun1.5.webp", 19, 0),
+        (75, "/assets/products/gelchammun1.6.webp", 19, 0),
+        (76, "/assets/products/taytebaochet1.1.webp", 20, 1),
+        (77, "/assets/products/taytebaochet1.2.webp", 20, 0),
+        (78, "/assets/products/taytebaochet1.3.webp", 20, 0),
+        (79, "/assets/products/taytebaochet1.4.webp", 20, 0),
+        (80, "/assets/products/tinhchat1.1.webp", 21, 1),
+        (81, "/assets/products/tinhchat1.2.webp", 21, 0),
+        (82, "/assets/products/tinhchat1.3.webp", 21, 0),
+        (83, "/assets/products/tinhchat1.4.webp", 21, 0),
+        (84, "/assets/products/tinhchat1.5.webp", 21, 0),
+        (85, "/assets/products/suaruamat1.1.webp", 22, 1),
+        (86, "/assets/products/suaruamat1.2.webp", 22, 0),
+        (87, "/assets/products/suaruamat1.3.webp", 22, 0),
+        (88, "/assets/products/suaruamat1.4.webp", 22, 0),
+        (89, "/assets/products/suaruamat1.5.webp", 22, 0),
+        (90, "/assets/products/suaruamat1.6.webp", 22, 0),
+        (91, "/assets/products/daugoidau1.1.webp", 23, 1),
+        (92, "/assets/products/daugoidau1.2.webp", 23, 0),
+        (93, "/assets/products/daugoidau1.3.webp", 23, 0),
+        (94, "/assets/products/daugoidau1.4.webp", 23, 0),
+        (95, "/assets/products/daugoidau1.5.webp", 23, 0),
+        (96, "/assets/products/suaruamat2.1.webp", 24, 1),
+        (97, "/assets/products/suaruamat2.2.webp", 24, 0),
+        (98, "/assets/products/suaruamat2.3.webp", 24, 0),
+        (99, "/assets/products/suaruamat2.4.webp", 24, 0),
+        (100, "/assets/products/suaruamat2.5.webp", 24, 0),
+        (101, "/assets/products/vongtay1.1.webp", 25, 1),
+        (102, "/assets/products/vongtay1.2.webp", 25, 0),
+        (103, "/assets/products/vongtay1.3.webp", 25, 0),
+        (104, "/assets/products/charm1.1.webp", 26, 1),
+        (105, "/assets/products/charm1.2.webp", 26, 0),
+        (106, "/assets/products/charm1.3.webp", 26, 0),
+        (107, "/assets/products/charm1.4.webp", 26, 0),
+        (108, "/assets/products/son6.jpg", 27, 1),
+        (109, "/assets/products/son6.1.jpg", 27, 0),
+        (110, "/assets/products/son6.2.jpg", 27, 0),
+        (111, "/assets/products/son6.3.jpg", 27, 0),
+        (112, "/assets/products/son7.jpg", 28, 1),
+        (113, "/assets/products/son7.1.jpg", 28, 0),
+        (114, "/assets/products/son7.2.jpg", 28, 0),
+        (115, "/assets/products/son7.3.jpg", 28, 0),
+        (116, "/assets/products/son7.4.jpg", 28, 0),
+        (117, "/assets/products/son8.jpg", 29, 1),
+        (118, "/assets/products/son8.1.jpg", 29, 0),
+        (119, "/assets/products/son8.2.jpg", 29, 0),
+        (120, "/assets/products/son9.jpg", 30, 1),
+        (121, "/assets/products/son9.1.jpg", 30, 0),
+        (122, "/assets/products/son9.2.jpg", 30, 0),
+        (123, "/assets/products/son10.jpeg", 31, 1),
+        (124, "/assets/products/son10.1.jpg", 31, 0), 
+        (125, "/assets/products/son11.jpg", 32, 1), 
+        (126, "/assets/products/son11.1.jpg", 32, 0), 
+        (127, "/assets/products/son11.2.jpg", 32, 0), 
+        (128, "/assets/products/son11.3.jpg", 32, 0), 
+        (129, "/assets/products/son11.4.jpg", 32, 0);
+        
 INSERT INTO productreviews
 VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),
         (2, 3, "Tạm được đấy iem", "2025-10-20", "0987654321", 3),
@@ -414,7 +962,31 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`) VALU
 (15, 3, 1153000, 14, 'AST-DEN-L'),
 (16, 3, 1138000, 16, 'AST-XANH-S'),
 (17, 3, 1148000, 14, 'AST-XANH-M'),
-(18, 3, 1158000, 12, 'AST-XANH-L');
+(18, 3, 1158000, 12, 'AST-XANH-L'),
+(19, 4, 280000, 2, 'hjhj'),
+(20, 5, 199000, 10, 'hjhj'),
+(21, 6, 218000, 69, 'hjhj'),
+(22, 7, 369000, 2, 'hjhj'),
+(23, 8, 199000, 2, 'hjhj'),
+(24, 9, 219000, 2, 'hjhj'),
+(25, 10, 271320, 2, 'hjhj'),
+(26, 11, 389000, 1, 'hjhj'),
+(27, 12, 8495000, 1, 'hjhj'),
+(28, 13, 4390000, 1, 'hjhj'),
+(29, 14, 11115000, 1, 'hjhj'),
+(30, 15, 5995000, 1, 'hjhj'),
+(31, 16, 3690000, 1, 'hjhj'),
+(32, 17, 8695000, 1, 'hjhj'),
+(33, 18, 5290000, 1, 'hjhj'),
+(34, 19, 776000, 1, 'hjhj'),
+(35, 20, 118800, 1, 'hjhj'),
+(36, 21, 2371650, 1, 'hjhj'),
+(37, 22, 222000, 1, 'hjhj'),
+(38, 23, 184000, 1, 'hjhj'),
+(39, 24, 78000, 1, 'hjhj'),
+(40, 25, 2366000, 1, 'hjhj'),
+(41, 26, 2790000, 1, 'hjhj');
+
 INSERT INTO `product_attributes` (`id`, `name`) VALUES
 (1, 'Màu sắc'),
 (2, 'Kích thước'),

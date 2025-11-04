@@ -1,17 +1,40 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import type { CartItem } from "../../types/CartType";
 import { useNavigate } from "react-router-dom";
 import { TiDeleteOutline } from "react-icons/ti";
-import { FaRegCircle } from "react-icons/fa";
+import { BsCartXFill } from "react-icons/bs";
+import VariantEditModal from "../../components/VariantEditModal";
 
 export default function Cart() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { cart, updateQuantity } = useCart();
+    const { cart, updateQuantity, deleteProductOnCart, deleteShopOnCart } = useCart();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<CartItem | null>(null);
+
+    const allItems: CartItem[] = useMemo(() => {
+        return cart.flatMap(shop => shop.items);
+    }, [cart]);
+
+    const selectedItemDetails: CartItem[] = useMemo(() => {
+        return allItems.filter(item =>
+            selectedItems.includes(item.product_id)
+        );
+    }, [allItems, selectedItems]);
+
+    const handleEditClick = (item: CartItem) => {
+        setEditingItem(item);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+    };
 
     const updateCartInDatabase = async (productId: number, newQuantity: number) => {
         updateQuantity(productId, newQuantity);
@@ -46,9 +69,6 @@ export default function Cart() {
         if (!cart || cart.length === 0) {
             return 0;
         }
-
-        const allItems: CartItem[] = cart.flatMap(shop => shop.items);
-
         return allItems
             .filter(item => selectedItems.includes(item.product_id))
             .reduce((sum, item) => {
@@ -66,85 +86,174 @@ export default function Cart() {
         updateCartInDatabase(productId, currentQuantity - 1);
     };
 
+    const deleteProductByShopId = (shop_id: number) => {
+        deleteShopOnCart(shop_id);
+    }
+
     const handleCheckout = () => {
         setLoading(true);
+
+        const itemsToCheckout = allItems.filter(item =>
+            selectedItems.includes(item.product_id)
+        );
+        const total = calculateTotal(); // (Hàm của bạn)
+
+        sessionStorage.setItem('checkoutItems', JSON.stringify(itemsToCheckout));
+        sessionStorage.setItem('checkoutTotal', JSON.stringify(total));
+
+        // 3. Vẫn gửi qua 'state' như cũ để load nhanh
+        // navigate('/checkout', {
+        //     state: {
+        //         checkoutItems: itemsToCheckout,
+        //         total: total
+        //     }
+        // });
         setTimeout(() => {
-            navigate("/checkout/address");
-        }, 1000);
+            navigate("/checkout/address", {
+                state: {
+                    checkoutItems: itemsToCheckout,
+                    total: total
+                }
+            });
+        }, 800);
+    }
+
+    const handleDelete = (product_id: number) => {
+        deleteProductOnCart(product_id);
     }
 
     if (!user) return (<div>Đăng nhập đi b ei</div>)
     if (!cart) return (<div>Đang tải b ei</div>)
+    console.log(cart);
 
     return (
-        <>
-            <div className="container p-4">
-                {cart.map(shop => {
-                    const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
+        <div className="row">
+            <div className="col-8">
+                {cart.length == 0 ?
+                    (<div className="d-flex justify-content-center mt-4 flex-column align-items-center gap-4">
+                        <BsCartXFill className="fs-1 text-primary" />
+                        <div className="fs-3 text-primary fw-bolder">Mua hàng đi b ei</div>
+                    </div>)
+                    :
+                    (<div className="container p-4">
+                        {cart.map(shop => {
+                            const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
 
-                    return (
-                        <div key={shop.shop_id} className="mb-4">
-                            <div className="m-2 fs-4 d-flex align-items-center justify-content-between">
-                                <div>
-                                    <input
-                                        type="checkbox"
-                                        checked={allShopItemsSelected}
-                                        onChange={() => handleShopCheckboxChange(shop.items)}
-                                    />
-                                    <img className="m-2" src={shop.logo_url} style={{ height: '50px', width: '50px' }} /> {shop.shop_name}
-                                </div>
-                                <div className="text-muted pointer" style={{ fontSize: '0.8rem' }}>
-                                    XÓA TẤT CẢ
-                                </div>
-                            </div>
-                            <div className="container bg-light px-4 rounded border">
-                                {shop.items.map(item => (
-                                    <div key={item.product_id} className="row mb-4 border-top pt-4">
-                                        <div className="col-2">
+                            return (
+                                <div key={shop.shop_id} className="mb-4">
+                                    <div className="m-2 fs-4 d-flex align-items-center justify-content-between">
+                                        <div>
                                             <input
+                                                id={`shop${shop.shop_id}`}
                                                 type="checkbox"
-                                                checked={selectedItems.includes(item.product_id)}
-                                                onChange={() => handleCheckboxChange(item.product_id)}
+                                                checked={allShopItemsSelected}
+                                                onChange={() => handleShopCheckboxChange(shop.items)}
                                             />
-                                            <img src={item.product_url} className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
+                                            <img className="m-2" src={shop.logo_url} style={{ height: '50px', width: '50px' }} />
+                                            <label htmlFor={`shop${shop.shop_id}`} className="user-select-none">{shop.shop_name}</label>
                                         </div>
-                                        <div className="col-8 d-flex flex-column justify-content-between">
-                                            <div>
-                                                <div className="fw-bolder">{item.product_name}</div>
-                                                <div>Ghi các biến thể ở đây</div>
-                                                <div>Ghi các biến thể ở đây</div>
-                                            </div>
-                                            <div><span className="fw-bolder">{item.product_price.toLocaleString()} </span>₫</div>
-                                        </div>
-                                        <div className="col-2 text-end d-flex flex-column justify-content-between">
-                                            <div className="d-flex justify-content-end">
-                                                <div className="pointer"><TiDeleteOutline className="fs-3 text-muted" /></div>
-                                            </div>
-                                            <div className="mt-2 d-flex align-items-center gap-3 justify-content-end">
-                                                <div className="d-flex my-1 border rounded-pill">
-                                                    <div className="border-end px-2 py-1 pointer" onClick={() => handleDecrease(item.product_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
-                                                    <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
-                                                    <div className="border-start px-2 py-1 pointer" onClick={() => handleIncrease(item.product_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
-                                                </div>
-                                                {/* <div className="text-muted">{product.sold_count} Sản phẩm có sẵn</div> */}
-                                            </div>
+                                        <div className="pointer delete-all" style={{ fontSize: '0.8rem' }} onClick={() => deleteProductByShopId(shop.shop_id)}>
+                                            XÓA TẤT CẢ
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
-                <h4 className="text-end">Tổng cộng: {calculateTotal().toLocaleString()}₫</h4>
-                <div className="d-flex justify-content-end">
-                    <button className="btn btn-success" onClick={handleCheckout}>{loading ? "Đang tải..." : "Thanh toán"}</button>
+                                    <div className="container bg-white px-4 rounded border">
+                                        {shop.items.map((item, ind) => (
+                                            <div key={item.product_id} className={`row mb-4 ${ind > 0 ? 'border-top' : ''} border-primary border-2 pt-4`} >
+                                                <div className="col-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedItems.includes(item.product_id)}
+                                                        onChange={() => handleCheckboxChange(item.product_id)}
+                                                    />
+                                                    <img src={item.product_url} className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
+                                                </div>
+                                                <div className="col-7 d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div className="fw-bolder">{item.product_name}</div>
+                                                        {item.options && item.options?.length > 0 && (<div className="d-flex gap-4">
+                                                            <div>
+                                                                {
+                                                                    item.options?.map((opt) => (
+                                                                        <div key={opt.attribute} className="text-muted small">
+                                                                            {opt.attribute}: {opt.value}
+                                                                        </div>
+                                                                    ))
+                                                                }
+                                                            </div>
+                                                            <div className="text-primary fw-semibold pointer" onClick={() => handleEditClick(item)}>
+                                                                Thay đổi
+                                                            </div>
+                                                        </div>)}
+                                                    </div>
+                                                    <div className="d-flex align-items-center gap-4">
+                                                        <div className="fw-semibold">{item.product_price.toLocaleString()} đ</div>
+                                                        <div className="d-flex my-1 border rounded-pill">
+                                                            <div className="px-2 py-1 pointer" onClick={() => handleDecrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
+                                                            <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
+                                                            <div className="px-2 py-1 pointer" onClick={() => handleIncrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-plus"></i></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-2 text-end d-flex flex-column justify-content-between">
+                                                    <div className="d-flex justify-content-end">
+                                                        <div className="pointer"><TiDeleteOutline className="fs-3 delete-all" onClick={() => handleDelete(item.product_variant_id)} /></div>
+                                                    </div>
+                                                    <div className="p-2 text-primary fw-bolder">{(item.product_price * item.quantity).toLocaleString()}đ</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>)}
+            </div>
+            <div className="col-4">
+                <div className="container p-4 border rounded shadow-sm mt-4" style={{
+                    position: 'sticky',
+                    top: '40px' // <-- Sửa số này cho phù hợp với chiều cao Navbar
+                }}>
+                    <div className="fs-4 border-bottom border-2 text-primary fw-semibold">Chi tiết đơn hàng</div>
+                    <div className="d-flex flex-column">
+                        {selectedItemDetails.map((item, ind) => {
+                            return (
+                                <div className={`d-flex justify-content-between gap-2 p-2 ${ind > 0 ? 'border-top' : ''}`}>
+                                    <div>
+                                        <span className="fw-semibold">[x{item.quantity}]</span> {item.product_name}
+                                    </div>
+                                    <div className="text-primary fw-bold">
+                                        {(item.quantity * item.product_price).toLocaleString()}₫
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <div className="d-flex justify-content-between m-2 bg-light border rounded p-3 text-primary fw-bold">
+                        <div>Tổng cộng ({selectedItems.length} sản phẩm):</div>
+                        <div>{calculateTotal().toLocaleString()}₫</div>
+                    </div>
+                    <div className="btn btn-primary rounded-pill w-100 p-2 mt-2" onClick={handleCheckout}>
+                        {loading ? "Đang tải..." : "Thanh toán"}
+                    </div>
                 </div>
             </div>
-            {loading && (
-                <div className="loader-overlay">
-                    <div className="spinner"></div>
-                </div>
-            )}
-        </>
+
+            {
+                loading && (
+                    <div className="loader-overlay">
+                        <div className="spinner"></div>
+                    </div>
+                )
+            }
+            {
+                editingItem && (
+                    <VariantEditModal
+                        show={isModalOpen}
+                        onClose={handleCloseModal}
+                        cartItem={editingItem}
+                    />
+                )
+            }
+        </div >
     );
 }

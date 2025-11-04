@@ -1,10 +1,10 @@
 import { Router } from "express";
 import productController from "../controllers/product.controller";
+import { checkOptionalAuth } from "../middleware/auth.middleware";
 
 const ProductRouter = Router();
 
-ProductRouter.get("/", productController.getProductOnCategoryIdController);
-ProductRouter.get("/:id", productController.getProductOnIdController);
+ProductRouter.get("/category/:id", productController.getProductsController);
 ProductRouter.get("/images/:id", productController.getProductImgOnIdController);
 ProductRouter.get("/shops/:id", productController.getProductOnShopIdController);
 ProductRouter.get("/reviews/:id", productController.getReviewByProductIdController);
@@ -19,4 +19,9 @@ ProductRouter.delete("/:id", productController.deleteProductController);
 // GET by ID phải để cuối cùng để tránh conflict
 ProductRouter.get("/:id", productController.getProductOnIdController);
 
+ProductRouter.get("/product/search", productController.getProductsByKeyWordController)
+ProductRouter.get("/product/:id", checkOptionalAuth, productController.getProductOnIdController);
+ProductRouter.get("/recommend/for-you", checkOptionalAuth, productController.getRecommendedProduct);
+ProductRouter.get("/recommend/new", productController.getNewProducts);
+ProductRouter.get("/recommend/hot", productController.getHotProducts);
 export default ProductRouter;

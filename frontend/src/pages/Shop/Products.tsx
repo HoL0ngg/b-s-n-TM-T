@@ -106,8 +106,6 @@ export default function ShopProductsManager() {
       name: '',
       description: '',
       base_price: 0,
-      category_id: 0,
-      shop_cate_id: 0,
       image_url: '',
       status: 1,
     });
@@ -583,7 +581,7 @@ export default function ShopProductsManager() {
                     </div>
                   </div>
 
-                  <div className="row">
+                  {/* <div className="row">
                     <div className="col-md-6 mb-3">
                       <label className="form-label" style={{fontWeight: '600', fontSize: '13px', color: '#333', marginBottom: '8px'}}>
                         Danh mục shop
@@ -621,7 +619,7 @@ export default function ShopProductsManager() {
                         <option value="4">Danh mục 4</option>
                       </select>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="mb-3">
                     <label className="form-label" style={{fontWeight: '600', fontSize: '13px', color: '#333', marginBottom: '8px'}}>

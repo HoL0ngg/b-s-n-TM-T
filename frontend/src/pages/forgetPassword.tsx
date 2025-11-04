@@ -79,6 +79,8 @@ export default function ForgetPassword() {
                 navigator("/login");
             } catch (err: any) {
                 alert(err.response?.data?.message || "Login thất bại");
+            } finally {
+                setLoading(false);
             }
         }
 

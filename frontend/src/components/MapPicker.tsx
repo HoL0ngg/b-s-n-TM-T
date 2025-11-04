@@ -47,11 +47,8 @@ function LocationMarker({ setPosition, setAddress, isMapClickRef }: LocationMark
             const data = await response.json();
 
             if (data && data.display_name) {
-                // *** BẬT CỜ LÊN TRƯỚC KHI SET ADDRESS ***
                 isMapClickRef.current = true;
 
-                // Dòng này sẽ kích hoạt useEffect ở cha,
-                // nhưng cờ đã được bật
                 setAddress(data.display_name);
             }
 
@@ -83,11 +80,13 @@ function LocationMarker({ setPosition, setAddress, isMapClickRef }: LocationMark
 // --- Props MapPicker ---
 interface MapPickerProps {
     address: string; // Nhận địa chỉ từ cha
+    city?: string;
+    ward?: string;
     setAddress: (address: string) => void; // Nhận hàm cập nhật từ cha
 }
 
 // --- Component 3: Component Cha ---
-export default function MapPicker({ address, setAddress }: MapPickerProps) {
+export default function MapPicker({ address, city, ward, setAddress }: MapPickerProps) {
     const [position, setPosition] = useState<[number, number]>([
         10.760000, 106.681980,
     ]);
@@ -96,8 +95,16 @@ export default function MapPicker({ address, setAddress }: MapPickerProps) {
 
     const searchGeocode = async (addressToSearch: string) => {
         if (addressToSearch.trim() === "") return;
+
+        const fullQuery = [
+            address,
+            ward,
+            city
+        ]
+            .filter(Boolean)
+            .join(", ");
         try {
-            const query = encodeURIComponent(addressToSearch);
+            const query = encodeURIComponent(fullQuery);
             const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
             const response = await fetch(url);
             const data = await response.json();
@@ -127,7 +134,7 @@ export default function MapPicker({ address, setAddress }: MapPickerProps) {
             if (address.trim() !== "") {
                 searchGeocode(address);
             }
-        }, 1500); // Đợi 1.5s sau khi user ngừng gõ
+        }, 1000); // Đợi 1s sau khi user ngừng gõ
 
         // Cleanup khi component unmount
         return () => {
@@ -135,7 +142,7 @@ export default function MapPicker({ address, setAddress }: MapPickerProps) {
                 clearTimeout(debounceTimeout.current);
             }
         };
-    }, [address]); // <-- Chỉ chạy lại khi 'address' prop thay đổi
+    }, [address, city, ward]); // <-- Chỉ chạy lại khi 'address' prop thay đổi
 
     return (
         <div>

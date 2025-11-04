@@ -5,6 +5,8 @@ export interface ShopType {
     description: String;
     status: Number;
     created_at: Date;
+    totalProduct: number;
+    avgRating: number;
 }
 
 export interface ShopCateType {

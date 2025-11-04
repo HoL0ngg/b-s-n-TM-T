@@ -5,6 +5,8 @@ export interface Shop {
     description: String;
     status: Number;
     created_at: String;
+    totalProduct: number;
+    avgRating: number;
 }
 
 export interface ShopCategories {

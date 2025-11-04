@@ -13,6 +13,11 @@ export const fetchAddressByUserId = async (id: string): Promise<AddressType[]> =
     return res.data;
 }
 
+export const fetchDefaultAddressByUserId = async (id: string): Promise<AddressType> => {
+    const res = await axios.get(`${API_URL}/${id}/address/default`);
+    return res.data;
+}
+
 export const fetchUserProfile = async (id: string): Promise<UserProfileType> => {
     const res = await axios.get(`${API_URL}/${id}/profile`);
     return res.data;
@@ -21,6 +26,12 @@ export const fetchUserProfile = async (id: string): Promise<UserProfileType> => 
 export const updateProfile = async (hihi: any) => {
     const res = await axios.put(`${API_URL}/${hihi.id}/profile`, hihi);
     // console.log(res);
+    return res.data;
+}
+
+export const changeDefaultAddress = async (address_id: number) => {
+    const res = await axios.put(`${API_URL}/${address_id}/address/change-default`);
+    console.log(res);
     return res.data;
 }
 

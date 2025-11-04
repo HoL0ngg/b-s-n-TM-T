@@ -14,6 +14,12 @@ class userController {
         res.status(200).json(data);
     }
 
+    getDefaultAddressByuserIdController = async (req: Request, res: Response) => {
+        const id = req.params.id;
+        const data = await userService.geDefaultAddressByuserIdService(id);
+        res.status(200).json(data);
+    }
+
     getUserProfileController = async (req: Request, res: Response) => {
         const id = req.params.id;
         const data = await userService.getUserProfileService(id);
@@ -37,9 +43,21 @@ class userController {
             if (error.statusCode === 403) {
                 return res.status(403).json({ message: error.message });
             }
-
             // Lỗi chung của server
             console.error(error);
+            res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
+    }
+
+    postChangeAddressDefault = async (req: Request, res: Response) => {
+        const user_id = (req as any).user.id;
+        const address_id = req.params.id;
+
+        try {
+            const data = await userService.ChangeAddressDefault(user_id, Number(address_id));
+            res.status(200).json({ success: data });
+        } catch (err) {
+            console.error(err);
             res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
         }
     }

@@ -4,13 +4,15 @@ import MapPicker from "./MapPicker";
 import { useAuth } from "../context/AuthContext";
 import { createAndLinkAddress } from "../api/user";
 import { isValidPhoneNumber, isLength } from "../utils/validator";
+import type { AddressType } from "../types/UserType";
 interface AddressModalProps {
     isShow: boolean;
     onClose: () => void;
+    address: AddressType | null;
     onSaveSuccess: () => void;
 }
 
-export default function AddressModal({ isShow, onClose, onSaveSuccess }: AddressModalProps) {
+export default function AddressModal({ isShow, onClose, address, onSaveSuccess }: AddressModalProps) {
     const { user } = useAuth();
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
@@ -21,6 +23,7 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
     const [selectedCityCode, setSelectedCityCode] = useState("");
     const [selectedWardCode, setSelectedWardCode] = useState("");
     const [street, setStreet] = useState("");
+    const [isDefault, setIsDefault] = useState(false);
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
@@ -44,7 +47,28 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
             setSelectedCityCode("");
             setStreet("");
         }
-    }, [isShow]);
+        if (address) {
+            const cityy = address.city;
+            const wardd = address.ward;
+            const sdt = address.phone_number_jdo;
+            const namee = address.user_name;
+            const streett = address.street;
+            setName(namee);
+            setPhone(sdt);
+            setStreet(streett);
+            // 2. Tìm CODE từ NAME
+            const selectedCity = city.find(c => c.name === cityy).code;
+            setSelectedCityCode(selectedCity);
+            fetch(`https://provinces.open-api.vn/api/v2/p/${selectedCity}?depth=2`)
+                .then(data => data.json())
+                .then(jsonData => {
+                    setWard(jsonData.wards);
+                    const selectedWard = jsonData.wards.find((w: any) => w.name === wardd);
+                    setSelectedWardCode(selectedWard);
+                });
+
+        }
+    }, [isShow, address]);
 
     const handleCityChange = async (event: any) => {
         const cityCode = event.target.value; // Lấy code của tỉnh vừa chọn
@@ -106,7 +130,8 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                 phone_number_jdo: phone,
                 city: selectedCityName,
                 ward: selectedWardName,
-                street: street
+                street: street,
+                isDefault: isDefault
             };
 
             console.log(newData);
@@ -219,11 +244,13 @@ export default function AddressModal({ isShow, onClose, onSaveSuccess }: Address
                         <div className="mb-3">
                             <MapPicker
                                 address={street}
+                                city={selectedCityName}   // <-- Prop mới
+                                ward={selectedWardName}    // <-- Prop mới
                                 setAddress={setStreet}
                             />
                         </div>
                         <div className="form-check">
-                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" />
+                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" onChange={() => setIsDefault(!isDefault)} />
                             <label className="form-check-label user-select-none" htmlFor="flexCheckChecked">
                                 Đặt làm địa chỉ mặc định
                             </label>

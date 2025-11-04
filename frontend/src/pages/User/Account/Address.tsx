@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AddressModal from "../../../components/AddressModel";
 import type { AddressType } from "../../../types/UserType";
-import { fetchAddressByUserId } from "../../../api/user";
+import { changeDefaultAddress, fetchAddressByUserId } from "../../../api/user";
 import { MdOutlineAddHomeWork } from "react-icons/md";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -9,6 +9,7 @@ export default function Address() {
     const { user } = useAuth();
     const [isShow, setIsShow] = useState(false);
     const [addresses, setAddress] = useState<AddressType[]>([]);
+    const [editingAddress, setEditingAddress] = useState<AddressType | null>(null);
     const loadAddress = async () => {
         if (user)
             try {
@@ -26,16 +27,36 @@ export default function Address() {
     const handleSaveSuccess = () => {
         setIsShow(false);     // Đóng modal
         loadAddress(); // Tải lại danh sách (để reload)
+        setEditingAddress(null);
     };
+
+    const handleDefault = async (id: number) => {
+        try {
+            await changeDefaultAddress(id);
+        } catch (err) {
+            console.log(err);
+        }
+        loadAddress();
+    }
+
+    const handleCloseModal = () => {
+        setIsShow(false);
+        setEditingAddress(null);
+    };
+
+    const handleOpenEditModal = (addressToEdit: AddressType) => {
+        setEditingAddress(addressToEdit); // Lưu lại địa chỉ đang sửa
+        setIsShow(true);
+    };
+
     if (!user) return (<div>Đang tải b ei</div>);
     return (
         <div>
-            <AddressModal isShow={isShow} onClose={() => setIsShow(false)} onSaveSuccess={handleSaveSuccess} />
+            <AddressModal isShow={isShow} onClose={handleCloseModal} onSaveSuccess={handleSaveSuccess} address={editingAddress} />
             <div className="d-flex justify-content-between text-center border-bottom border-2">
                 <h5 className="mt-2 ms-2">Địa chỉ của tôi</h5>
                 <div className="btn btn-primary mb-3" onClick={() => setIsShow(true)}>+ Thêm địa chỉ mới</div>
             </div>
-            <p className="m-2 fs-2">Địa chỉ</p>
             {/* <div className="mb-4 ms-2">
 
                 <div className="d-flex justify-content-between mt-1">
@@ -56,7 +77,7 @@ export default function Address() {
                             <span className="ms-2 text-muted fs-5 ms-2">{address.phone_number_jdo}</span>
                         </div>
                         <div>
-                            <a href="#" className="text-decoration-none p-2">Cập nhật</a>
+                            <div className="text-decoration-none p-2 border rounded pointer" onClick={() => handleOpenEditModal(address)}>Cập nhật</div>
                         </div>
                     </div>
                     <div className="d-flex justify-content-between mt-1">
@@ -65,7 +86,7 @@ export default function Address() {
                             <div className="ms-4 text-muted">{address.ward}, {address.city}</div>
                         </div>
                         <div>
-                            {!address.is_default ? (<div className="border p-2 fs-6 cursor-pointer" style={{ cursor: "pointer" }}>Thiệt lập mặc định</div>) : (<div className="text-primary fw-bolder">Mặc định r b ei</div>)}
+                            {!address.is_default ? (<div className="border p-2 fs-6 cursor-pointer" onClick={() => handleDefault(address.id)} style={{ cursor: "pointer" }}>Thiệt lập mặc định</div>) : (<div className="text-primary fw-bolder">Mặc định r b ei</div>)}
                         </div>
                     </div>
                 </div>

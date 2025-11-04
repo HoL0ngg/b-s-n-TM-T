@@ -11,6 +11,8 @@ import {
     getCartByUserId,
     addToCart,
     updateProductQuantity,
+    deleteProduct,
+    deleteProductByShopId
     // clearCartApi, // (Giả sử bạn có hàm này)
 } from '../api/cart';
 import type { CartItem, CartType } from '../types/CartType';
@@ -23,6 +25,9 @@ interface ICartContext {
     AddToCart: (productId: number, quantity: number) => Promise<void>;
     updateQuantity: (productId: number, newQuantity: number) => void;
     clearCart: () => void;
+    deleteProductOnCart: (productId: number) => Promise<void>;
+    deleteShopOnCart: (shopId: number) => Promise<void>;
+    updateCartItem: (oldVariantId: number, newVariantId: number, newQuantity: number) => void;
     isCartLoading: boolean; // Thêm state loading cho giỏ hàng
 }
 
@@ -34,14 +39,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [isCartLoading, setIsCartLoading] = useState(false);
     const debounceTimers = useRef<{ [key: string]: number }>({});
 
-    const handleSuccess = () => {
+    const handleSuccess = (text: string) => {
         Swal.fire({
             title: "Thành công!",
-            text: "Thêm sản phẩm vào giỏ hàng thành công 🎉",
+            text: `${text} 🎉`,
             icon: "success",
-            // confirmButtonText: "OK"
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: "#d4edda",
         });
     };
+
 
     const handleKeuDangNhap = () => {
         Swal.fire({
@@ -52,13 +63,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
     };
 
+    const handleFail = () => {
+        Swal.fire({
+            title: "Thông báo!",
+            text: "Có lỗi xảy ra",
+            icon: "warning",
+            confirmButtonText: "OK"
+        });
+    }
+
     const loadCart = async () => {
         if (!user) return;
         setIsCartLoading(true);
 
         try {
             const flatItems: CartItem[] = await getCartByUserId();
-            console.log(flatItems);
 
             //DÙNG REDUCE ĐỂ GOM NHÓM DỮ LIỆU LẠI
             const groupedData = flatItems.reduce((acc, item) => {
@@ -116,13 +135,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
             // 1. Gọi API (dùng UPSERT - INSERT ON DUPLICATE)
             await addToCart(productId, quantity);
-            handleSuccess();
+            handleSuccess("Thêm sản phẩm vào giỏ hàng thành công");
             // 2. Tải lại toàn bộ giỏ hàng để đồng bộ
             // (Cách này đảm bảo UI luôn đúng 100% với CSDL)
             await loadCart();
         } catch (error) {
             console.error('Lỗi khi thêm vào giỏ:', error);
-            // alert('Thêm sản phẩm thất bại');
+            handleFail();
         }
     };
 
@@ -133,7 +152,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return currentCart.map((shop) => ({
                 ...shop,
                 items: shop.items.map((item) =>
-                    item.product_id === productId
+                    item.product_variant_id === productId
                         ? { ...item, quantity: finalQuantity }
                         : item
                 ),
@@ -158,7 +177,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                     alert('Cập nhật thất bại, đang đồng bộ lại...');
                     loadCart();
                 });
-        }, 1500); // Đợi 1.5 giây
+        }, 1000); // Đợi 1 giây
     };
 
     /**
@@ -172,6 +191,62 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         // }
     };
 
+    const deleteProductOnCart = async (product_id: number) => {
+        if (!user) {
+            handleKeuDangNhap();
+            return;
+        }
+        try {
+            await deleteProduct(product_id);
+            handleSuccess("Xóa sản phẩm thành công");
+            await loadCart();
+        } catch (err) {
+            console.log("lỗi khi xóa sản phẩm");
+        }
+    }
+
+    const updateCartItem = (oldVariantId: number, newVariantId: number, newQuantity: number) => {
+        // Nếu chỉ thay đổi số lượng
+        if (oldVariantId === newVariantId) {
+            updateQuantity(oldVariantId, newQuantity); // (Hàm bạn đã có)
+            return;
+        }
+
+        // Nếu thay đổi biến thể (Xóa cũ, Thêm mới)
+        // (Đây là cách làm đơn giản, không đảm bảo 100%
+        //  nếu 1 trong 2 API lỗi. Backend nên có 1 API 'replace' duy nhất)
+        const replace = async () => {
+            try {
+                // 1. Gọi API xóa item cũ
+                await deleteProduct(oldVariantId);
+                // 2. Gọi API thêm item mới
+                await addToCart(newVariantId, newQuantity);
+                // 3. Tải lại toàn bộ giỏ hàng
+                await loadCart();
+            } catch (error) {
+                console.error("Lỗi thay thế sản phẩm:", error);
+                alert("Đã có lỗi, giỏ hàng sẽ được tải lại.");
+                loadCart(); // Tải lại nếu có lỗi
+            }
+        };
+
+        replace();
+    };
+
+    const deleteShopOnCart = async (shop_id: number) => {
+        if (!user) {
+            handleKeuDangNhap();
+            return;
+        }
+        try {
+            await deleteProductByShopId(shop_id);
+            handleSuccess("Xóa thành công");
+            await loadCart();
+        } catch (err) {
+            console.log("lỗi khi xóa sản phẩm");
+        }
+    }
+
     // Giá trị cung cấp cho các component con
     const value = {
         cart,
@@ -179,16 +254,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         AddToCart,
         updateQuantity,
         clearCart,
+        deleteProductOnCart,
+        deleteShopOnCart,
+        updateCartItem,
         isCartLoading,
     };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
-// --- 6. TẠO HOOK TÙY CHỈNH ---
-/**
- * Hook tùy chỉnh để sử dụng CartContext
- */
 export const useCart = () => {
     const context = useContext(CartContext);
     if (context === null) {
