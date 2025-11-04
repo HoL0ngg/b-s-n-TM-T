@@ -11,7 +11,7 @@ import Step1ShopInfo from '../components/ShopSteps/Step1ShopInfo';
 import Step2Shipping from '../components/ShopSteps/Step2Shipping';
 import Step3TaxInfo from '../components/ShopSteps/Step3TaxInfo';
 import Step4Identity from '../components/ShopSteps/Step4Identity';
-import AddressModal from '../components/AddressModel';
+import ShopAddressModal from '../components/ShopAddressModal';
 
 import { createShopInfo } from '../api/shopinfo';
 
@@ -79,9 +79,13 @@ const RegisterShop = () => {
     }
   }, [auth.user]);
 
-  const handleAddressSaveSuccess = () => {
+  // Hàm xử lý khi user chọn địa chỉ từ modal
+  const handleAddressSelect = (selectedAddress: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      address: selectedAddress 
+    }));
     setIsModalOpen(false);
-    loadAddresses();
   };
 
   // Validation cho Step 1
@@ -190,7 +194,6 @@ const RegisterShop = () => {
   };
 
   const nextStep = () => {
-    // Kiểm tra validation cho từng step
     let isValid = true;
     
     switch (currentStep) {
@@ -212,9 +215,8 @@ const RegisterShop = () => {
 
     if (isValid && currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
-      setErrors({}); // Clear errors khi chuyển step
+      setErrors({});
     } else if (!isValid) {
-      // Scroll to top để user thấy error messages
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -222,7 +224,7 @@ const RegisterShop = () => {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      setErrors({}); // Clear errors khi quay lại
+      setErrors({});
     }
   };
 
@@ -232,7 +234,6 @@ const RegisterShop = () => {
       return;
     }
 
-    // Validate lại tất cả các bước trước khi submit
     const isStep1Valid = validateStep1();
     const isStep2Valid = validateStep2();
     const isStep3Valid = validateStep3();
@@ -240,7 +241,7 @@ const RegisterShop = () => {
 
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid) {
       alert("Vui lòng kiểm tra lại thông tin các bước trước đó!");
-      setCurrentStep(1); // Quay về step đầu tiên
+      setCurrentStep(1);
       return;
     }
 
@@ -248,7 +249,6 @@ const RegisterShop = () => {
       const response = await createShopInfo(formData);
       alert("Đăng ký shop thành công!");
       navigate('/seller');
-
     } catch (error: any) {
       console.error("Lỗi khi đăng ký shop:", error);
       alert(error.response?.data?.message || "Đăng ký thất bại");
@@ -312,10 +312,10 @@ const RegisterShop = () => {
 
   return (
     <div className="container my-5">
-      <AddressModal 
+      <ShopAddressModal 
         isShow={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onSaveSuccess={handleAddressSaveSuccess} 
+        onAddressSelect={handleAddressSelect}
       />
 
       <div className="card shadow-sm" style={{ maxWidth: '900px', margin: '0 auto' }}>
