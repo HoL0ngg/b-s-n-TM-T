@@ -1,15 +1,16 @@
 import { useCart } from "../context/CartContext";
 // Giả sử ProductType của bạn có chứa 'product_variants'
 import type { ProductType, AttributeOfProductVariantsType, ProductVariantType } from "../types/ProductType";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { FaRegHeart } from "react-icons/fa";
 
 interface ProductInfoProps {
     product: ProductType,
     attributes: AttributeOfProductVariantsType[],
+    onVariantImageChange: (imageUrl: string) => void;
 }
 
-export default function ProductInfo({ product, attributes }: ProductInfoProps) {
+export default function ProductInfo({ product, attributes, onVariantImageChange }: ProductInfoProps) {
     const { AddToCart } = useCart();
     const [count, setCount] = useState(1);
     const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string }>({});
@@ -30,6 +31,16 @@ export default function ProductInfo({ product, attributes }: ProductInfoProps) {
             )
         );
     }, [selectedAttributes, product.product_variants, attributes]); // Tính toán lại khi 1 trong 3 thay đổi
+
+    useEffect(() => {
+        if (currentVariant && currentVariant.image_url) {
+            // NẾU: tìm thấy biến thể VÀ có ảnh riêng
+            // HÃY: Báo cho cha biết URL ảnh mới
+            onVariantImageChange(currentVariant.image_url);
+        }
+        // (Không cần 'else', vì cha sẽ tự xử lý việc quay về ảnh chính)
+
+    }, [currentVariant, onVariantImageChange]);
 
     const increment = () => {
         // --- SỬA LẠI: Kiểm tra tồn kho của biến thể ---

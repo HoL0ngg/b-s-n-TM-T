@@ -27,7 +27,7 @@ export const paginationProducts = async (whereClause: string,
       FROM products 
       LEFT JOIN productimages 
           ON productimages.product_id = products.id 
-          AND productimages.isMain = 1
+          AND productimages.is_main = 1
       ${whereClause}
       GROUP BY products.id
       ${orderBy}

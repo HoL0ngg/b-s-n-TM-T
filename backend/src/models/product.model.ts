@@ -1,5 +1,3 @@
-import { User } from "./user.model";
-
 export interface Product {
     id: string;
     name: string;
@@ -11,6 +9,12 @@ export interface Product {
     shop_id: number;
     product_variants: ProductVariant[];
     avg_rating: number
+}
+
+export interface ProductImage {
+    image_id: number;
+    image_url: string;
+    is_main: boolean; // (Hoặc 0 | 1)
 }
 
 export interface VariantOption {
@@ -25,6 +29,7 @@ export interface ProductVariant {
     price: number;        // 223000
     stock: number;        // 40
     options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
+    image_url: string;
 }
 
 export interface ProductReview {
