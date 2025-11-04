@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
@@ -17,7 +17,7 @@ const ProductDetail = () => {
     const [product, setProduct] = useState<ProductType>();
     const { id } = useParams<{ id: string | undefined }>();
     const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
-    const [selectedImage, setSelectedImage] = useState<ProductImageType>();
+    const [selectedImage, setSelectedImage] = useState<string>();
     const [shop, setShop] = useState<ShopType>();
     const [rating, setRating] = useState<number>(0);
     const [ratingSummary, setRatingSummary] = useState<ProductReviewSummaryType>({
@@ -76,7 +76,7 @@ const ProductDetail = () => {
                 const data = await fecthProductImg(id);
                 setImages(data);
                 if (data.length > 0) {
-                    setSelectedImage(data[0]);
+                    setSelectedImage(data[0].image_url);
                 }
             } catch (err) {
                 console.error("Failed to fetch product images:", err);
@@ -86,7 +86,16 @@ const ProductDetail = () => {
         loadProductDetails();
         loadProductAndShop();
         loadProductImg();
+        setSelectedImage(mainProductImage);
     }, [id]);
+
+    const mainProductImage = useMemo(() => {
+        if (!product || !product.images || product.images.length === 0) {
+            return null; // Trả về null nếu chưa có
+        }
+        const mainImg = product.images.find(img => img.is_main === 1);
+        return mainImg || product.images[0].image_url;
+    }, [product]);
 
     const reloadReview = async (hihi: number) => {
         if (!product?.id) return;
@@ -127,18 +136,28 @@ const ProductDetail = () => {
         reloadReview(id);
     }
 
+    const handleVariantImageChange = useCallback((newImageUrl: string) => {
+        if (newImageUrl) {
+            setSelectedImage(newImageUrl);
+        }
+    }, []);
+
+    const handleThumbnailSelect = useCallback((image: string) => {
+        setSelectedImage(image);
+    }, []);
+
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
     return (
         <div className="container mt-5">
             <div className="container">
                 <div className="row">
                     <div className="col-12 col-md-1">
-                        <ImageSlider images={images} onSelect={setSelectedImage} selectedImageId={selectedImage} />
+                        <ImageSlider images={images} onSelect={handleThumbnailSelect} selectedImageUrl={selectedImage ? selectedImage : ""} />
                     </div>
                     <div className="col-12 col-md-6 d-flex align-items-center justify-content-center">
                         {selectedImage ? (
                             <img
-                                src={selectedImage.image_url}
+                                src={selectedImage}
                                 alt="Selected"
                                 // className="rounded"
                                 style={{ width: "550px", height: "550px", objectFit: "cover", borderRadius: "10px" }}
@@ -151,7 +170,7 @@ const ProductDetail = () => {
                         {!product ? (
                             <p>Đang tải sản phẩm...</p>
                         ) : (
-                            <ProductInfo product={product} attributes={attributeOfProductVariants} />
+                            <ProductInfo product={product} attributes={attributeOfProductVariants} onVariantImageChange={handleVariantImageChange} />
                         )}
                     </div>
                 </div >

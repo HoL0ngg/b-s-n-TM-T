@@ -37,7 +37,7 @@ class CartService {
             s.name as shop_name,
             s.logo_url,
             (SELECT pi.image_url FROM productimages pi 
-             WHERE pi.product_id = p.id And ismain = 1) AS product_url
+             WHERE pi.product_id = p.id And is_main = 1) AS product_url
         FROM 
             cart ci
         JOIN 

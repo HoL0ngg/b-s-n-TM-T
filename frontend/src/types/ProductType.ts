@@ -9,7 +9,7 @@ export interface ProductType {
     image_url: string;
     sold_count: number;
     product_variants: ProductVariantType[];
-    images: string[];
+    images: ProductImage[];
     avg_rating: number;
 }
 
@@ -60,6 +60,7 @@ export interface ProductVariantType {
     price: number;        // 223000
     stock: number;        // 40
     options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
+    image_url: string;
 }
 export interface ProductResponseType {
     products: ProductType[];

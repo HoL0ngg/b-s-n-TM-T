@@ -1,3 +1,7 @@
+drop database basan;
+CREATE database basan;
+use basan;
+
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
@@ -193,14 +197,14 @@ CREATE TABLE `productimages` (
   `image_id` int(11) NOT NULL,
   `image_url` varchar(500) NOT NULL,
   `product_id` int(11) NOT NULL,
-  `isMain` tinyint(1) DEFAULT 0
+  `is_main` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productimages`
 --
 
-INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `isMain`) VALUES
+INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `is_main`) VALUES
 (1, '/assets/products/son1.jpg', 1, 1),
 (2, '/assets/products/giay1.webp', 2, 1),
 (3, '/assets/products/ao1.webp', 3, 1),
@@ -427,55 +431,56 @@ CREATE TABLE `productvariants` (
   `product_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `stock` int(11) DEFAULT 0,
-  `sku` varchar(100) DEFAULT NULL
+  `sku` varchar(100) DEFAULT NULL,
+  `image_url` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productvariants`
 --
 
-INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`) VALUES
-(1, 1, 228000, 50, 'MBL-DO-4ML'),
-(2, 1, 233000, 60, 'MBL-HONG-4ML'),
-(3, 1, 223000, 40, 'MBL-CAM-4ML'),
-(4, 2, 2128000, 10, 'ADID-XANH-38'),
-(5, 2, 2138000, 8, 'ADID-XANH-39'),
-(6, 2, 2148000, 6, 'ADID-XANH-40'),
-(7, 2, 2148000, 12, 'ADID-HONG-38'),
-(8, 2, 2158000, 9, 'ADID-HONG-39'),
-(9, 2, 2168000, 7, 'ADID-HONG-40'),
-(10, 3, 1128000, 19, 'AST-TRANG-S'),
-(11, 3, 1138000, 18, 'AST-TRANG-M'),
-(12, 3, 1148000, 15, 'AST-TRANG-L'),
-(13, 3, 1133000, 22, 'AST-DEN-S'),
-(14, 3, 1143000, 19, 'AST-DEN-M'),
-(15, 3, 1153000, 14, 'AST-DEN-L'),
-(16, 3, 1138000, 16, 'AST-XANH-S'),
-(17, 3, 1148000, 14, 'AST-XANH-M'),
-(18, 3, 1158000, 12, 'AST-XANH-L'),
-(19, 4, 280000, 2, 'hjhj'),
-(20, 5, 199000, 10, 'hjhj'),
-(21, 6, 218000, 69, 'hjhj'),
-(22, 7, 369000, 2, 'hjhj'),
-(23, 8, 199000, 2, 'hjhj'),
-(24, 9, 219000, 2, 'hjhj'),
-(25, 10, 271320, 2, 'hjhj'),
-(26, 11, 389000, 1, 'hjhj'),
-(27, 12, 8495000, 1, 'hjhj'),
-(28, 13, 4390000, 1, 'hjhj'),
-(29, 14, 11115000, 1, 'hjhj'),
-(30, 15, 5995000, 1, 'hjhj'),
-(31, 16, 3690000, 1, 'hjhj'),
-(32, 17, 8695000, 1, 'hjhj'),
-(33, 18, 5290000, 1, 'hjhj'),
-(34, 19, 776000, 1, 'hjhj'),
-(35, 20, 118800, 1, 'hjhj'),
-(36, 21, 2371650, 1, 'hjhj'),
-(37, 22, 222000, 1, 'hjhj'),
-(38, 23, 184000, 1, 'hjhj'),
-(39, 24, 78000, 1, 'hjhj'),
-(40, 25, 2366000, 1, 'hjhj'),
-(41, 26, 2790000, 1, 'hjhj');
+INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `image_url`) VALUES
+(1, 1, 228000, 50, 'MBL-DO-4ML', "assets/products/son1.3.jpg"),
+(2, 1, 233000, 60, 'MBL-HONG-4ML', ""),
+(3, 1, 223000, 40, 'MBL-CAM-4ML', ""),
+(4, 2, 2128000, 10, 'ADID-XANH-38', ""),
+(5, 2, 2138000, 8, 'ADID-XANH-39', ""),
+(6, 2, 2148000, 6, 'ADID-XANH-40', ""),
+(7, 2, 2148000, 12, 'ADID-HONG-38', ""),
+(8, 2, 2158000, 9, 'ADID-HONG-39', ""),
+(9, 2, 2168000, 7, 'ADID-HONG-40', ""),
+(10, 3, 1128000, 19, 'AST-TRANG-S', ""),
+(11, 3, 1138000, 18, 'AST-TRANG-M', ""),
+(12, 3, 1148000, 15, 'AST-TRANG-L', ""),
+(13, 3, 1133000, 22, 'AST-DEN-S', ""),
+(14, 3, 1143000, 19, 'AST-DEN-M', ""),
+(15, 3, 1153000, 14, 'AST-DEN-L', ""),
+(16, 3, 1138000, 16, 'AST-XANH-S', ""),
+(17, 3, 1148000, 14, 'AST-XANH-M', ""),
+(18, 3, 1158000, 12, 'AST-XANH-L', ""),
+(19, 4, 280000, 2, 'hjhj', ""),
+(20, 5, 199000, 10, 'hjhj', ""),
+(21, 6, 218000, 69, 'hjhj', ""),
+(22, 7, 369000, 2, 'hjhj', ""),
+(23, 8, 199000, 2, 'hjhj', ""),
+(24, 9, 219000, 2, 'hjhj', ""),
+(25, 10, 271320, 2, 'hjhj', ""),
+(26, 11, 389000, 1, 'hjhj', ""),
+(27, 12, 8495000, 1, 'hjhj', ""),
+(28, 13, 4390000, 1, 'hjhj', ""),
+(29, 14, 11115000, 1, 'hjhj', ""),
+(30, 15, 5995000, 1, 'hjhj', ""),
+(31, 16, 3690000, 1, 'hjhj', ""),
+(32, 17, 8695000, 1, 'hjhj', ""),
+(33, 18, 5290000, 1, 'hjhj', ""),
+(34, 19, 776000, 1, 'hjhj', ""),
+(35, 20, 118800, 1, 'hjhj', ""),
+(36, 21, 2371650, 1, 'hjhj', ""),
+(37, 22, 222000, 1, 'hjhj', ""),
+(38, 23, 184000, 1, 'hjhj', ""),
+(39, 24, 78000, 1, 'hjhj', ""),
+(40, 25, 2366000, 1, 'hjhj', ""),
+(41, 26, 2790000, 1, 'hjhj', "");
 
 -- --------------------------------------------------------
 
@@ -795,7 +800,7 @@ CREATE TABLE `v_products_list` (
 --
 DROP TABLE IF EXISTS `v_products_list`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`isMain` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
 
 --
 -- Chỉ mục cho các bảng đã đổ
