@@ -9,6 +9,7 @@ import type { CartItem, CartType } from "../../types/CartType";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaRegCircle } from "react-icons/fa";
 import { FaAngleDown } from "react-icons/fa6";
+import { FaMoneyBillWave } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
 import { createVietQROrder } from "../../api/cart";
@@ -26,6 +27,8 @@ export const AddressPage = () => {
     const [hoveredId, setHoveredId] = useState<number | null>(null);
     const [qrImage, setQrImage] = useState("");
     const [orderId, setOrderId] = useState("");
+    const [selectedMethod, setSelectedMethod] = useState<string>('cod');
+    const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
 
     let [show, setShow] = useState(false);
     useEffect(() => {
@@ -151,56 +154,55 @@ export const AddressPage = () => {
                 <div className="row gx-5">
                     <div className="col-8">
                         <div className="container p-4">
-                            {groupedCart.map((shopGroup) => (
-                                <div key={shopGroup.shop_id} className="shop-container mb-4">
-                                    <div className="shop-header d-flex align-items-center mb-2">
-                                        <img src={shopGroup.logo_url} alt={shopGroup.shop_name} style={{ height: '30px', margin: '0 10px' }} />
-                                        <h5 className="mb-0">{shopGroup.shop_name}</h5>
-                                    </div>
+                            {groupedCart.map((shopGroup) => {
+                                const subTotal = shopGroup.items.reduce((sum, item) => {
+                                    return sum + (item.product_price * item.quantity);
+                                }, 0);
+                                return (
+                                    <div key={shopGroup.shop_id} className="shop-container mb-4">
+                                        <div className="shop-header d-flex align-items-center mb-2">
+                                            <img src={shopGroup.logo_url} alt={shopGroup.shop_name} style={{ height: '30px', margin: '0 10px' }} />
+                                            <h5 className="mb-0">{shopGroup.shop_name}</h5>
+                                        </div>
 
-                                    {/* --- PHẦN DANH SÁCH SẢN PHẨM CỦA SHOP --- */}
-                                    <div className="items-list border rounded">
+                                        {/* --- PHẦN DANH SÁCH SẢN PHẨM CỦA SHOP --- */}
+                                        <div className="items-list border rounded">
 
-                                        {/* 2. Vòng lặp TRONG: Lặp qua từng SẢN PHẨM của shop đó */}
-                                        {shopGroup.items.map((item) => (
+                                            {/* 2. Vòng lặp TRONG: Lặp qua từng SẢN PHẨM của shop đó */}
+                                            {shopGroup.items.map((item) => (
 
-                                            <div key={item.product_variant_id} className="cart-item d-flex mb-3 p-3">
-                                                <img src={item.product_url} alt={item.product_name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                                                <div key={item.product_variant_id} className="cart-item d-flex mb-3 p-3">
+                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
 
-                                                <div className="item-details ms-3 d-flex flex-column justify-content-between">
-                                                    <div className="fw-bold mb-1">{item.product_name}</div>
-                                                    {/* Hiển thị các thuộc tính (options) */}
-                                                    <div className="item-options text-muted small">
-                                                        {item.options?.map(opt => (
-                                                            <div key={opt.attribute}>
-                                                                {opt.attribute}: {opt.value}
-                                                            </div>
-                                                        ))}
+                                                    <div className="item-details ms-3 d-flex flex-column justify-content-between">
+                                                        <div className="fw-bold mb-1">{item.product_name}</div>
+                                                        {/* Hiển thị các thuộc tính (options) */}
+                                                        <div className="item-options text-muted small">
+                                                            {item.options?.map(opt => (
+                                                                <div key={opt.attribute}>
+                                                                    {opt.attribute}: {opt.value}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div>Số lượng: {item.quantity}</div>
+                                                        <div className="text-danger fw-bold">{item.product_price.toLocaleString()}đ</div>
                                                     </div>
-                                                    <div>Số lượng: {item.quantity}</div>
-                                                    <div className="text-danger fw-bold">{item.product_price.toLocaleString()}đ</div>
                                                 </div>
-
-                                            </div>
-                                        ))}
-                                        <div className="bg-light border border-top p-2 d-flex justify-content-end gap-4">
-                                            <div>
-                                                <div>Tiền ship: </div>
-                                                <div>Tổng tiền: </div>
-                                            </div>
-                                            <div className="text-end">
-                                                <div>20.000đ</div>
-                                                <div>231.000đ</div>
+                                            ))}
+                                            <div className="bg-light border border-top p-2 d-flex justify-content-end gap-4">
+                                                <div>
+                                                    <div>Tiền ship: </div>
+                                                    <div>Tổng tiền: </div>
+                                                </div>
+                                                <div className="text-end">
+                                                    <div>20.000đ</div>
+                                                    <div>{subTotal.toLocaleString()}đ</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div>Tiền ship: 30k</div>
-                                        <div>Thành tiền: {total}đ</div>
-                                    </div>
-                                </div>
-
-                            ))}
+                                )
+                            })}
                         </div>
                     </div>
                     <div className="col-4">
@@ -271,30 +273,80 @@ export const AddressPage = () => {
                         </div>
                         <div className="ms-2 fs-4 mt-4 mb-2">Chọn phương thức thanh toán</div>
                         <div className="bg-light border rounded p-2">
-                            <div className="d-flex align-items-center gap-3 p-2">
+                            {/* <div
+                                className="d-flex align-items-center gap-3 p-2 pointer"
+                                // 3. Cập nhật state khi click/hover
+                                onClick={() => setSelectedMethod('mastercard')}
+                                onMouseEnter={() => setHoveredMethod('mastercard')}
+                                onMouseLeave={() => setHoveredMethod(null)}
+                            > */}
+                            {/* 4. Logic hiển thị icon
+                                {(selectedMethod === 'mastercard' || hoveredMethod === 'mastercard') ? (
+                                    <GrRadialSelected className="text-primary ms-4" />
+                                ) : (
+                                    <FaRegCircle className="text-primary ms-4" />
+                                )}
                                 <div>
-                                    <FaCcMastercard className="ms-4 fs-3" />
+                                    <FaCcMastercard className="ms-1 fs-3" />
                                 </div>
                                 <div>
-                                    <div className="fw-bolder">L0ngkute (0937211264)</div>
+                                    <div>L0ngkute</div>
+                                </div>
+                            </div> */}
+                            <div className="d-flex align-items-center gap-3 p-2 pointer"
+                                onClick={() => setSelectedMethod('cod')}
+                                onMouseEnter={() => setHoveredMethod('cod')}
+                                onMouseLeave={() => setHoveredMethod(null)}>
+                                {(selectedMethod === 'cod' || hoveredMethod === 'cod') ? (
+                                    <GrRadialSelected className="text-primary ms-4" />
+                                ) : (
+                                    <FaRegCircle className="text-primary ms-4" />
+                                )}
+                                <div>
+                                    <FaMoneyBillWave className="ms-1 fs-3" style={{ color: '#98cb75' }} />
+                                </div>
+                                <div>
+                                    Chọn thanh toán khi nhận hàng đê
                                 </div>
                             </div>
-                            <div className="d-flex align-items-center gap-3 border-top p-2">
+                            <div
+                                className="d-flex align-items-center gap-3 border-top p-2 pointer"
+                                onClick={() => setSelectedMethod('momo')}
+                                onMouseEnter={() => setHoveredMethod('momo')}
+                                onMouseLeave={() => setHoveredMethod(null)}
+                            >
+                                {(selectedMethod === 'momo' || hoveredMethod === 'momo') ? (
+                                    <GrRadialSelected className="text-primary ms-4" />
+                                ) : (
+                                    <FaRegCircle className="text-primary ms-4" />
+                                )}
                                 <div>
-                                    <img src="/assets/momo.png" alt="" style={{ height: '30px', width: '30px' }} className="ms-4" />
+                                    <img src="/assets/momo.png" alt="MoMo" style={{ height: '30px', width: '30px' }} className="ms-1" />
                                 </div>
                                 <div>
                                     Chọn mono đê
                                 </div>
                             </div>
-                            <div className="d-flex align-items-center gap-3 border-top p-2">
+
+                            <div
+                                className="d-flex align-items-center gap-3 border-top p-2 pointer"
+                                onClick={() => setSelectedMethod('vnpay')}
+                                onMouseEnter={() => setHoveredMethod('vnpay')}
+                                onMouseLeave={() => setHoveredMethod(null)}
+                            >
+                                {(selectedMethod === 'vnpay' || hoveredMethod === 'vnpay') ? (
+                                    <GrRadialSelected className="text-primary ms-4" />
+                                ) : (
+                                    <FaRegCircle className="text-primary ms-4" />
+                                )}
                                 <div>
-                                    <img src="/assets/vnpay.svg" alt="" style={{ height: '30px', width: '30px' }} className="ms-4" />
+                                    <img src="/assets/vnpay.svg" alt="VNPay" style={{ height: '30px', width: '30px' }} className="ms-1" />
                                 </div>
                                 <div>
                                     Chọn vnpay đê
                                 </div>
                             </div>
+
                         </div>
                         <div className="btn btn-primary w-100 mt-4 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
                     </div>

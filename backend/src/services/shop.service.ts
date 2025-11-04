@@ -31,6 +31,30 @@ class shopService {
         const [row] = await pool.query("select id, name from shop_categories where shop_id = ?", [id]) as [ShopCategories[], any];
         return row as ShopCategories[];
     }
+
+    getHotShops = async () => {
+        const [row] = await pool.query(`
+               SELECT 
+                    shops.*,
+                    
+                    -- Truy vấn con 1: Đếm tổng số sản phẩm
+                    (SELECT COUNT(*) 
+                    FROM products 
+                    WHERE products.shop_id = shops.id) AS totalProduct,
+                    
+                    -- Truy vấn con 2: Tính rating trung bình của tất cả review
+                    (SELECT IFNULL(AVG(productreviews.rating), 0) 
+                    FROM productreviews
+                    JOIN products ON productreviews.product_id = products.id
+                    WHERE products.shop_id = shops.id) AS avgRating
+                    
+                FROM 
+                    shops
+                ORDER BY
+                    RAND()`
+        ) as [Shop[], any];
+        return row as Shop[];
+    }
 }
 
 export default new shopService();

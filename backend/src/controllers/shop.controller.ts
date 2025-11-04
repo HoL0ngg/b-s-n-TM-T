@@ -13,6 +13,15 @@ class shopController {
         const data = await shopService.getShopOnIdService(Number(id));
         res.status(200).json(data);
     }
+
+    getHotShops = async (req: Request, res: Response) => {
+        try {
+            const data = await shopService.getHotShops();
+            res.status(200).json(data);
+        } catch (err) {
+            res.status(501).json({ success: false });
+        }
+    }
 }
 
 export default new shopController();
