@@ -1,19 +1,9 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct, ProductResponse } from "../models/product.model";
 import { paginationProducts } from "../helpers/pagination.helper";
 
 class productService {
-    getProductOnCategoryIdService = async (categoryId: number, page: number, limit: number) => {
-        const whereClause = `
-      WHERE products.generic_id IN (
-        SELECT gen.id FROM generic gen WHERE gen.category_id = ?
-      )`;
-        const products = await paginationProducts(whereClause, [categoryId], page, limit);
-        const brands = await this.getBrandsOfProductByCategoryIdSerivice(categoryId);
-        return { ...products, brands }
-    };
-
     getProductOnIdService = async (id: number): Promise<Product> => {
         // --- TRUY VẤN 1: Lấy thông tin sản phẩm cốt lõi ---
         const [productRows] = await pool.query<Product[] & RowDataPacket[]>(
@@ -184,27 +174,6 @@ class productService {
         return result as AttributeOfProductVariants[];
     }
 
-    getProductsInPriceOrderService = async (categoryId: number, page: number, limit: number, typeOfSort: string) => {
-        const whereClause = `
-      WHERE products.generic_id IN (
-        SELECT gen.id FROM generic gen WHERE gen.category_id = ?
-      )`;
-
-        let orderBy = "";
-        switch (typeOfSort) {
-            case "priceDesc":
-                orderBy = "ORDER BY products.base_price DESC";
-                break;
-            case "priceAsc":
-                orderBy = "ORDER BY products.base_price ASC";
-                break;
-        }
-        return paginationProducts(whereClause, [categoryId], page, limit, orderBy);
-
-        // const [rows] = await pool.query(queryStr, [category_id, limit, offset]);
-        // return { data: rows as Product[], totalPages }
-    }
-
     logView = async (userId: string | undefined, productId: number) => {
         const sql = `
             INSERT INTO UserViewHistory (user_id, product_id) 
@@ -272,12 +241,6 @@ class productService {
         return recommendations;
     }
 
-    getProductsBySubCategoryService = async (subCategoryId: number, page: number = 1, limit: number = 10) => {
-        const whereClause = `WHERE products.generic_id = ?`;
-        const products = await paginationProducts(whereClause, [subCategoryId], page, limit);
-        const brands = await this.getBrandsOfProductByGenericIdSerivice(subCategoryId);
-        return { ...products, brands };
-    };
 
     getProductsByKeyWordService = async (keyword: string): Promise<Product[]> => {
         const [rows] = await pool.query(`
@@ -383,6 +346,9 @@ class productService {
         return rows;
     }
 
+    getProductsService = async (whereClause: string, params: any[], page: number = 1, limit: number = 12, orderBy: string = ""): Promise<ProductResponse> => {
+        return paginationProducts(whereClause, params, page, limit, orderBy);
+    }
 }
 
 export default new productService();

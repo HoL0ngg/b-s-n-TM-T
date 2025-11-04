@@ -2,20 +2,6 @@ import { Request, Response } from "express"
 import productService from "../services/product.service";
 
 class productController {
-    getProductOnCategoryIdController = async (req: Request, res: Response) => {
-        try {
-            const category_id = Number(req.query.category_id);
-            if (!category_id) {
-                return res.status(400).json({ message: "Missing or invalid category_id" });
-            }
-            const page = Number(req.query.page) || 1;
-            const limit = Number(req.query.limit) || 12;
-            const result = await productService.getProductOnCategoryIdService(category_id, page, limit);
-            res.status(200).json(result);
-        } catch (err) {
-            console.log(err);
-        }
-    }
 
     getProductOnIdController = async (req: Request, res: Response) => {
         try {
@@ -109,19 +95,7 @@ class productController {
 
         }
     }
-    getProductsInPriceOrderController = async (req: Request, res: Response) => {
-        try {
-            const category_id = Number(req.query.category_id);
-            const page = Number(req.query.page) || 1;
-            const limit = Number(req.query.limit) || 12;
-            const typeOfSort = String(req.query.sort);
-            const products = await productService.getProductsInPriceOrderService(category_id, page, limit, typeOfSort);
-            return res.status(200).json(products);
-        } catch (error) {
-            console.log(error);
 
-        }
-    }
 
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
@@ -136,20 +110,6 @@ class productController {
         } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
-    }
-
-    getProductsBySubCategoryController = async (req: Request, res: Response) => {
-        try {
-            const subCategoryId = Number(req.query.subCategoryId);
-            const page = Number(req.query.page) || 1;
-            const limit = Number(req.query.limit) || 12;
-            const products = await productService.getProductsBySubCategoryService(subCategoryId, page, limit);
-            return res.status(200).json(products);
-        } catch (error) {
-            console.log(error);
-
-        }
-
     }
 
     getProductsByKeyWordController = async (req: Request, res: Response) => {
@@ -178,24 +138,106 @@ class productController {
             console.log(err);
         }
     }
+    getProductsController = async (req: Request, res: Response) => {
+        try {
+            // 1. Lấy tham số
+            const {
+                page = 1,
+                limit = 12,
+                sort = "default",
+                subCategoryId, // Lấy từ query
+                minPrice,
+                maxPrice,
+                brand,
+            } = req.query;
 
-    // getBrandsOfProductByCategoryController = async (req: Request, res: Response) => {
-    //     try {
-    //         const category_id = Number(req.params.id);
-    //         const brands = await productService.getBrandsOfProductByCategorySerivice(category_id);
-    //         return res.status(200).json(brands);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-    // getBrandsOfProductByGenericController = async (req: Request, res: Response) => {
-    //     try {
-    //         const category_id = Number(req.params.id);
-    //         const brands = await productService.getBrandsOfProductByGenericSerivice(category_id);
-    //         return res.status(200).json(brands);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
+            const categoryId = Number(req.params.id); // Lấy từ param
+            // console.log(categoryId);
+
+
+            // 2. Xây dựng 'whereClause' và 'params'
+            let whereClause = "WHERE 1=1";
+            const params: any[] = [];
+
+            // --- PHẦN LOGIC QUAN TRỌNG ---
+            // Ưu tiên filter theo subCategoryId (chính là generic_id)
+            if (subCategoryId && Number(subCategoryId) !== 0) {
+                whereClause += " AND products.generic_id = ?";
+                params.push(Number(subCategoryId));
+            }
+            // Nếu không, mới filter theo categoryId (cha của generic_id)
+            else if (categoryId) {
+                whereClause +=
+                    " AND products.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                params.push(categoryId);
+            }
+            // --- HẾT PHẦN LOGIC QUAN TRỌNG ---
+
+            // Thêm filter Khoảng giá
+            if (minPrice) {
+                whereClause += " AND products.base_price >= ?";
+                params.push(minPrice);
+            }
+            if (maxPrice) {
+                whereClause += " AND products.base_price <= ?";
+                params.push(maxPrice);
+            }
+
+            // Thêm filter Brand
+            if (brand && typeof brand === "string" && brand.length > 0) {
+                const brandIds = brand.split(",").map(Number).filter(Boolean);
+                if (brandIds.length > 0) {
+                    const placeholders = brandIds.map(() => "?").join(",");
+                    whereClause += ` AND products.brand_id IN (${placeholders})`;
+                    params.push(...brandIds);
+                }
+            }
+
+            // 3. Xây dựng 'orderBy'
+            let orderBy = "";
+            switch (sort) {
+                case "priceAsc": // Cập nhật để khớp với front-end
+                    orderBy = "ORDER BY products.base_price ASC";
+                    break;
+                case "priceDesc": // Cập nhật để khớp với front-end
+                    orderBy = "ORDER BY products.base_price DESC";
+                    break;
+                default:
+                    orderBy = "";
+                    break;
+            }
+
+            // 4. Gọi Service
+            const productsPromise = productService.getProductsService(
+                whereClause,
+                params,
+                Number(page),
+                Number(limit),
+                orderBy
+            );
+            let brandsPromise;
+            if (subCategoryId && Number(subCategoryId) !== 0) {
+                brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
+            } else if (categoryId) {
+                brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
+            }
+            const [productResult, brandsResult] = await Promise.all([
+                productsPromise,
+                brandsPromise,
+            ]);
+            res.status(200).json({
+                products: productResult.products,
+                totalPages: productResult.totalPages,
+                brands: brandsResult,
+            });
+
+        } catch (error) {
+            console.error("Lỗi tại getProductsController:", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ nội bộ",
+                error: error instanceof Error ? error.message : "Lỗi không xác định",
+            });
+        }
+    };
 }
 export default new productController();
