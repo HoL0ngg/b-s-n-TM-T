@@ -1,8 +1,8 @@
 export interface ShopType {
-    id: Number;
-    name: String;
-    logo_url: String;
-    description: String;
+    id: number;
+    name: string;
+    logo_url: string;
+    description: string;
     status: Number;
     created_at: Date;
     totalProduct: number;
@@ -11,5 +11,5 @@ export interface ShopType {
 
 export interface ShopCateType {
     id: Number;
-    name: String;
+    name: string;
 }

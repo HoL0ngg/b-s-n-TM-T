@@ -56,8 +56,12 @@ export default function HomeProduct() {
     }
     return (
         <div className="container mb-4">
-            <div className="fs-1 text-center text-primary mt-5 fw-bolder">
-                GỢI Ý HÔM NAY
+            <div className="d-flex align-items-center justify-content-center mt-5 gap-4">
+                <div className="section-line" ></div>
+                <div className="fs-1 text-center text-primary fw-bolder">
+                    GỢI Ý HÔM NAY
+                </div>
+                <div className="section-line" ></div>
             </div>
             <div className="d-flex justify-content-center gap-4">
                 {menuList.map((item, ind) => (
@@ -74,7 +78,7 @@ export default function HomeProduct() {
                     </div>
                 ))}
             </div>
-            <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4 mt-4">
+            <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4 mt-2">
                 {loading && (
                     <div className="loader-overlay">
                         <div className="spinner"></div>

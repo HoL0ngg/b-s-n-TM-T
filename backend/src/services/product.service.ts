@@ -61,7 +61,7 @@ class productService {
 
     get5ProductOnShopIdService = async (shopId: Number): Promise<Product[]> => {
         const [rows] = await pool.query(
-            `SELECT * FROM v_products_list WHERE shop_id = ? LIMIT 5`,
+            `SELECT * FROM v_products_list WHERE shop_id = ? ORDER BY RAND() LIMIT 5`,
             [shopId]
         );
         return rows as Product[];
