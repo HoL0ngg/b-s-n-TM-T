@@ -15,9 +15,9 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<UserType>(null);
+    const [user, setUser] = useState<UserType | null>(null);
     const [loading, setLoading] = useState(true);
-    const [userProfile, setUserProfile] = useState<UserProfileType>(null);
+    const [userProfile, setUserProfile] = useState<UserProfileType | null>(null);
 
     // Khi app load: nếu có token, set header và fetch profile
     useEffect(() => {

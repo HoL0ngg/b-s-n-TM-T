@@ -57,3 +57,57 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
     const res = await axios.get(`${API_URl}/attributeofproductvariants/${id}`);
     return res.data;
 }
+
+const getAuthHeaders = () => {
+  return {
+    headers: {
+      'Authorization': axios.defaults.headers.common['Authorization'] || ''
+    }
+  };
+};
+
+// Create a new product (for shop owner)
+export const createProduct = async (shopId: number, productData: any) => {
+  try {
+    const response = await axios.post(
+      API_URl,
+      { 
+        ...productData, 
+        shop_id: shopId 
+      },
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error creating product:', error);
+    throw error;
+  }
+};
+
+// Update an existing product (for shop owner)
+export const updateProduct = async (productId: number, productData: any) => {
+  try {
+    const response = await axios.put(
+      `${API_URl}/${productId}`,
+      productData,
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    throw error;
+  }
+};
+
+// Delete a product (for shop owner)
+export const deleteProduct = async (productId: number) => {
+  try {
+    await axios.delete(
+      `${API_URl}/${productId}`,
+      getAuthHeaders()
+    );
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    throw error;
+  }
+};

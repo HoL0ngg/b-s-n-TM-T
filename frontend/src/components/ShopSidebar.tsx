@@ -172,8 +172,8 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/seller/settings/categories" className="nav-link text-dark small sidebar-link-text">
-                  Danh mục Shop
+                <NavLink to="/seller/settings/view" className="nav-link text-dark small sidebar-link-text">
+                  Giao diện người xem
                 </NavLink>
               </li>
             </ul>

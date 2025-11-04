@@ -12,4 +12,11 @@ ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByPr
 ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
 ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
 
+ProductRouter.post("/", productController.createProductController);
+ProductRouter.put("/:id", productController.updateProductController);
+ProductRouter.delete("/:id", productController.deleteProductController);
+
+// GET by ID phải để cuối cùng để tránh conflict
+ProductRouter.get("/:id", productController.getProductOnIdController);
+
 export default ProductRouter;

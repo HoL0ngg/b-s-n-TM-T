@@ -5,9 +5,9 @@ export interface ProductType {
     status: number;
     base_price: number;
     category_id: number;
-    shop_id: number;
     image_url: string;
     sold_count: number;
+    shop_cate_id: number;
 }
 
 export interface ProductImageType {
