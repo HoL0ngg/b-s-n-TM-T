@@ -1,6 +1,7 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, ProductVariant, VariantOption, BrandOfProduct, ProductResponse } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants,BrandOfProduct,ProductVariant,VariantOption,ProductResponse } from "../models/product.model";
+import { ResultSetHeader } from 'mysql2';   
 import { paginationProducts } from "../helpers/pagination.helper";
 
 class productService {
@@ -173,6 +174,162 @@ class productService {
         }));
         return result as AttributeOfProductVariants[];
     }
+        createProductService = async (productData: any) => {
+        const { shop_id, name, description, base_price, category_id, shop_cate_id, image_url, status } = productData;
+        
+        const connection = await pool.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+            
+            // Insert product
+            const [result] = await connection.query<ResultSetHeader>(
+                `INSERT INTO products (shop_id, name, description, base_price, category_id, shop_cate_id, status, created_at, updated_at) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+                [shop_id, name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1]
+            );
+            
+            const productId = result.insertId;
+            
+            // Insert default image if provided
+            if (image_url) {
+                await connection.query(
+                    `INSERT INTO productimages (product_id, image_url, is_primary, created_at) 
+                     VALUES (?, ?, 1, NOW())`,
+                    [productId, image_url]
+                );
+            }
+            
+            await connection.commit();
+            
+            // Return created product
+            const [product] = await pool.query(
+                `SELECT p.*, pi.image_url 
+                 FROM products p 
+                 LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_primary = 1 
+                 WHERE p.id = ?`,
+                [productId]
+            ) as [Product[], any];
+            
+            return product[0];
+            
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    };
+
+    // UPDATE product
+    updateProductService = async (productId: number, productData: any) => {
+        const { name, description, base_price, category_id, shop_cate_id, image_url, status } = productData;
+        
+        const connection = await pool.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+            
+            // Update product
+            await connection.query(
+                `UPDATE products 
+                 SET name = ?, description = ?, base_price = ?, category_id = ?, shop_cate_id = ?, status = ?, updated_at = NOW() 
+                 WHERE id = ?`,
+                [name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1, productId]
+            );
+            
+            // Update image if provided
+            if (image_url) {
+                // Check if image exists
+                const [existingImages] = await connection.query(
+                    'SELECT image_id FROM productimages WHERE product_id = ? AND is_primary = 1',
+                    [productId]
+                );
+                
+                if ((existingImages as any[]).length > 0) {
+                    // Update existing image
+                    await connection.query(
+                        'UPDATE productimages SET image_url = ? WHERE product_id = ? AND is_primary = 1',
+                        [image_url, productId]
+                    );
+                } else {
+                    // Insert new image
+                    await connection.query(
+                        'INSERT INTO productimages (product_id, image_url, is_primary, created_at) VALUES (?, ?, 1, NOW())',
+                        [productId, image_url]
+                    );
+                }
+            }
+            
+            await connection.commit();
+            
+            // Return updated product
+            const [product] = await pool.query(
+                `SELECT p.*, pi.image_url 
+                 FROM products p 
+                 LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_primary = 1 
+                 WHERE p.id = ?`,
+                [productId]
+            ) as [Product[], any];
+            
+            return product[0];
+            
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    };
+
+    // DELETE product
+    deleteProductService = async (productId: number) => {
+        const connection = await pool.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+            
+            // Delete product images first (foreign key constraint)
+            await connection.query('DELETE FROM productimages WHERE product_id = ?', [productId]);
+            
+            // Delete product reviews
+            await connection.query('DELETE FROM productreviews WHERE product_id = ?', [productId]);
+            
+            // Delete product variants and related data if exists
+            await connection.query('DELETE FROM variantoptionvalues WHERE variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)', [productId]);
+            await connection.query('DELETE FROM productvariants WHERE product_id = ?', [productId]);
+            
+            // Delete product details
+            await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
+            
+            // Finally delete the product
+            await connection.query('DELETE FROM products WHERE id = ?', [productId]);
+            
+            await connection.commit();
+            
+            return { success: true, message: 'Product deleted successfully' };
+            
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    };
+
+    // Verify shop ownership (for authorization)
+    verifyShopOwnershipService = async (productId: number, userId: string) => {
+        const [rows] = await pool.query(
+            `SELECT p.id, p.shop_id, s.owner_id 
+             FROM products p 
+             JOIN shops s ON p.shop_id = s.id 
+             WHERE p.id = ? AND s.owner_id = ?`,
+            [productId, userId]
+        );
+        
+        return (rows as any[]).length > 0;
+    };
+
 
     logView = async (userId: string | undefined, productId: number) => {
         const sql = `

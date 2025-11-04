@@ -11,6 +11,14 @@ ProductRouter.get("/reviews/:id", productController.getReviewByProductIdControll
 ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByProductIdController);
 ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
 ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
+
+ProductRouter.post("/", productController.createProductController);
+ProductRouter.put("/:id", productController.updateProductController);
+ProductRouter.delete("/:id", productController.deleteProductController);
+
+// GET by ID phải để cuối cùng để tránh conflict
+ProductRouter.get("/:id", productController.getProductOnIdController);
+
 ProductRouter.get("/product/search", productController.getProductsByKeyWordController)
 ProductRouter.get("/product/:id", checkOptionalAuth, productController.getProductOnIdController);
 ProductRouter.get("/recommend/for-you", checkOptionalAuth, productController.getRecommendedProduct);

@@ -2,9 +2,14 @@
   "dependencies": {
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
     "leaflet": "^1.9.4",
+    "lodash.debounce": "^4.0.8",
     "react-leaflet": "^5.0.0",
     "swiper": "^12.0.2"
+  },
+  "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9"
   }
 }

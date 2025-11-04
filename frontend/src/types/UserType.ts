@@ -2,6 +2,7 @@ export type UserType = {
     id: number;
     email: string;
     avatar_url: string;
+    role: 'buyer' | 'seller';
 } | null;
 
 export interface AddressType {

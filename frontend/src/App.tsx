@@ -28,7 +28,9 @@ import { AddressPage } from "./pages/Checkout/AddressPage";
 import Dashboard from "./pages/Shop/Dashboard";
 import Orders from "./pages/Shop/Orders";
 import RegisterShop from './pages/RegisterShop';
-
+import View from "./pages/Shop/View";
+import ProfileShop from "./pages/Shop/Profile";
+import ShopProducts from "./pages/Shop/Products";
 function App() {
   return (
     <BrowserRouter>
@@ -76,7 +78,9 @@ function App() {
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
-          {/* <Route path="products" element={<ShopProducts />} /> */}
+          <Route path="settings/view" element={<View />} />
+          <Route path="settings/profile" element={<ProfileShop />} />
+          <Route path="products" element={<ShopProducts />} />
         </Route>
 
         {/* Thêm route 404 (Not Found) nếu cần */}
