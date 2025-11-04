@@ -178,8 +178,11 @@ const Category = () => {
     setQuery((prev) => ({
       ...prev,
       subCategoryId: subCateId,
+      brand: [],
       page: 1,
+      sort: "default",
     }));
+    handleResetFilter();
   };
 
   //  Handler sắp xếp
@@ -200,10 +203,14 @@ const Category = () => {
     }));
   };
   const handleApplyBtn = () => {
-    console.log("hiihihi");
-
     const min = priceRange.minPrice ? Number(priceRange.minPrice) : null;
     const max = priceRange.maxPrice ? Number(priceRange.maxPrice) : null;
+    if ((min != null && min < 0) || (max != null && max < 0)) {
+      alert("Giá phải là số lớn hơn 0 !");
+    }
+    if (min != null && max != null && min > max) {
+      alert("Khoảng giá bạn vừa nhập không hợp lệ!");
+    }
     setQuery((prev) => ({
       ...prev,
       page: 1,
