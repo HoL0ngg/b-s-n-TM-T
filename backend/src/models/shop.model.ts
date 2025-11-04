@@ -1,3 +1,6 @@
+import db from '../config/db';  
+import { RowDataPacket } from 'mysql2/promise'; 
+
 export interface Shop {
     id: Number;
     name: String;
@@ -13,3 +16,16 @@ export interface ShopCategories {
     id: Number;
     name: String;
 }
+
+export const findShopIdByOwner = async (ownerPhone: string): Promise<number | null> => {
+    const [rows] = await db.query<RowDataPacket[]>(
+        `SELECT id FROM shops WHERE owner_id = ?`, 
+        [ownerPhone]
+    );
+
+    if (rows.length > 0) {
+        return rows[0].id; 
+    }
+
+    return null;
+};

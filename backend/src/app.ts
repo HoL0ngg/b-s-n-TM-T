@@ -9,7 +9,7 @@ import ProductRouter from "./routes/product.route";
 import ShopRouter from "./routes/shop.route";
 import UserRouter from "./routes/user.route";
 import CartRouter from "./routes/cart.route";
-import shopInfoRoutes from './routes/shop.info.route';
+import orderRoutes from "./routes/order.route";
 
 const app = express();
 app.use(bodyParser.json());
@@ -28,7 +28,7 @@ app.use("/api/products", ProductRouter);
 app.use("/api/shops", ShopRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
-app.use('/api/shop_info', shopInfoRoutes);
+app.use("/api", orderRoutes);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");
