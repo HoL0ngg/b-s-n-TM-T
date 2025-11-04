@@ -5,8 +5,6 @@ import { checkOptionalAuth } from "../middleware/auth.middleware";
 const ProductRouter = Router();
 
 ProductRouter.get("/category/:id", productController.getProductsController);
-ProductRouter.get("/productSubCategory", productController.getProductsBySubCategoryController);
-ProductRouter.get("/sortproducts", productController.getProductsInPriceOrderController);
 ProductRouter.get("/images/:id", productController.getProductImgOnIdController);
 ProductRouter.get("/shops/:id", productController.getProductOnShopIdController);
 ProductRouter.get("/reviews/:id", productController.getReviewByProductIdController);

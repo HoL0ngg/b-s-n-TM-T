@@ -4,7 +4,7 @@ import CategorySwiper from "../components/CategorySwiper";
 import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 import type { BrandOfProductType, ProductType } from "../types/ProductType";
 import { fetchCategories, fetchSubCategories } from "../api/categories";
-import { fetchProducts, fetchProducts2, fetchProductsBySubCategory, fetchProductsInPriceOrder } from "../api/products";
+import { fetchProducts } from "../api/products";
 import { useEffect, useState, useCallback } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 
@@ -90,7 +90,7 @@ const Category = () => {
   const loadProducts = useCallback(async () => {
     try {
       // Gọi một hàm API duy nhất, truyền toàn bộ object query
-      const res = await fetchProducts2(query, Number(id));
+      const res = await fetchProducts(query, Number(id));
 
 
 

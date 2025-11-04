@@ -3,11 +3,6 @@ import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsTy
 
 const API_URl = "http://localhost:5000/api/products";
 
-export const fetchProducts = async (category_id: number, page: number = 1, limit: number = 12): Promise<ProductResponseType> => {
-    const res = await axios.get(`${API_URl}?category_id=${category_id}&page=${page}&limit=${limit}`);
-    return res.data;
-}
-
 export const fecthProductsByID = async (id: string): Promise<ProductType> => {
     const res = await axios.get(`${API_URl}/product/${id}`);
     // console.log(res.data);
@@ -56,20 +51,10 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
     const res = await axios.get(`${API_URl}/attributeofproductvariants/${id}`);
     return res.data;
 }
-export const fetchProductsInPriceOrder = async (category_id: number, page: number = 1, limit: number = 12, sort: string = "default"): Promise<ProductResponseType> => {
-    const res = await axios.get(`${API_URl}/sortproducts?category_id=${category_id}&page=${page}&limit=${limit}&sort=${sort}`);
-    return res.data
-}
 
 export const apiGetForYouRecommendations = async () => {
     const res = await axios.get(`${API_URl}/for-you`);
     // console.log(res.data);
-    return res.data;
-}
-
-
-export const fetchProductsBySubCategory = async (id: number, page: number = 1, limit: number = 12): Promise<ProductResponseType> => {
-    const res = await axios.get(`${API_URl}/productSubCategory?subCategoryId=${id}&page=${page}&limit=${limit}`);
     return res.data;
 }
 
@@ -78,7 +63,7 @@ export const fetchProductsByKeyWord = async (keyword: string): Promise<ProductTy
     return res.data;
 }
 
-export const fetchProducts2 = async (query: any, category_id: number) => {
+export const fetchProducts = async (query: any, category_id: number) => {
     const params = new URLSearchParams();
 
     params.append("page", query.page);

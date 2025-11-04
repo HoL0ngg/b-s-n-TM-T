@@ -2,20 +2,6 @@ import { Request, Response } from "express"
 import productService from "../services/product.service";
 
 class productController {
-    getProductOnCategoryIdController = async (req: Request, res: Response) => {
-        try {
-            const category_id = Number(req.query.category_id);
-            if (!category_id) {
-                return res.status(400).json({ message: "Missing or invalid category_id" });
-            }
-            const page = Number(req.query.page) || 1;
-            const limit = Number(req.query.limit) || 12;
-            const result = await productService.getProductOnCategoryIdService(category_id, page, limit);
-            res.status(200).json(result);
-        } catch (err) {
-            console.log(err);
-        }
-    }
 
     getProductOnIdController = async (req: Request, res: Response) => {
         try {
@@ -109,19 +95,7 @@ class productController {
 
         }
     }
-    getProductsInPriceOrderController = async (req: Request, res: Response) => {
-        try {
-            const category_id = Number(req.query.category_id);
-            const page = Number(req.query.page) || 1;
-            const limit = Number(req.query.limit) || 12;
-            const typeOfSort = String(req.query.sort);
-            const products = await productService.getProductsInPriceOrderService(category_id, page, limit, typeOfSort);
-            return res.status(200).json(products);
-        } catch (error) {
-            console.log(error);
 
-        }
-    }
 
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
@@ -138,20 +112,6 @@ class productController {
         }
     }
 
-    getProductsBySubCategoryController = async (req: Request, res: Response) => {
-        try {
-            const subCategoryId = Number(req.query.subCategoryId);
-            const page = Number(req.query.page) || 1;
-            const limit = Number(req.query.limit) || 12;
-            const products = await productService.getProductsBySubCategoryService(subCategoryId, page, limit);
-            return res.status(200).json(products);
-        } catch (error) {
-            console.log(error);
-
-        }
-
-    }
-
     getProductsByKeyWordController = async (req: Request, res: Response) => {
         try {
             const keyword = String(req.query.keyword);
@@ -162,24 +122,7 @@ class productController {
 
         }
     };
-    // getBrandsOfProductByCategoryController = async (req: Request, res: Response) => {
-    //     try {
-    //         const category_id = Number(req.params.id);
-    //         const brands = await productService.getBrandsOfProductByCategorySerivice(category_id);
-    //         return res.status(200).json(brands);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
-    // getBrandsOfProductByGenericController = async (req: Request, res: Response) => {
-    //     try {
-    //         const category_id = Number(req.params.id);
-    //         const brands = await productService.getBrandsOfProductByGenericSerivice(category_id);
-    //         return res.status(200).json(brands);
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // }
+
     getProductsController = async (req: Request, res: Response) => {
         try {
             // 1. Lấy tham số
@@ -250,16 +193,28 @@ class productController {
             }
 
             // 4. Gọi Service
-            const result = await productService.getProductsService(
+            const productsPromise = productService.getProductsService(
                 whereClause,
                 params,
                 Number(page),
                 Number(limit),
                 orderBy
             );
-
-            // 5. Trả về kết quả
-            res.status(200).json(result);
+            let brandsPromise;
+            if (subCategoryId && Number(subCategoryId) !== 0) {
+                brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
+            } else if (categoryId) {
+                brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
+            }
+            const [productResult, brandsResult] = await Promise.all([
+                productsPromise,
+                brandsPromise,
+            ]);
+            res.status(200).json({
+                products: productResult.products,
+                totalPages: productResult.totalPages,
+                brands: brandsResult,
+            });
 
         } catch (error) {
             console.error("Lỗi tại getProductsController:", error);
