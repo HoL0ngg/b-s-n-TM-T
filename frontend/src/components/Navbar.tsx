@@ -195,17 +195,6 @@ export default function Navbar() {
 
                     {/* 🧭 Menu bên phải */}
                     <ul className="navbar-nav gap-2 align-items-center">
-                        {/* Nút vào Shop */}
-                        <li className="d-flex align-items-center">
-                            <Link
-                                to="/shop"
-                                className="nav-link d-flex align-items-center"
-                                title="Xem Shop"
-                            >
-                                <i className="fa-solid fa-shop text-primary fs-5"></i>
-                            </Link>
-                        </li>
-
                         {/* Kênh người bán */}
                         {user && (
                             <li className="d-flex align-items-center">
