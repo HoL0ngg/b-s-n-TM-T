@@ -121,7 +121,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           </NavLink>
         </li>
         <li className="nav-item">
-          <NavLink to="/seller/productses" className="nav-link text-dark">
+           <NavLink to="/seller/products" className="nav-link text-dark">
             <i className="bi bi-plus-square me-3 fs-5"></i>
             <span className="sidebar-link-text">Loại sản phẩm</span>
           </NavLink>
