@@ -10,6 +10,7 @@ import ShopRouter from "./routes/shop.route";
 import UserRouter from "./routes/user.route";
 import CartRouter from "./routes/cart.route";
 import shopInfoRoutes from './routes/shop.info.route';
+import shopCategoryRoutes from "./routes/shopCategory.route";
 
 const app = express();
 app.use(bodyParser.json());
@@ -22,13 +23,15 @@ app.use(cors({
 
 app.use("/api/chat", chatRoutes);
 app.use("/api/mail", mailRoutes);
-app.use("/api/jwt", authRoutes);
+// app.use("/api/jwt", authRoutes); // <-- XÓA DÒNG NÀY (Đã sửa ở frontend)
 app.use("/api/categories", CategoryRouter);
 app.use("/api/products", ProductRouter);
 app.use("/api/shops", ShopRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
 app.use('/api/shop_info', shopInfoRoutes);
+app.use("/api/auth", authRoutes); 
+app.use("/api/shop-categories", shopCategoryRoutes);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");

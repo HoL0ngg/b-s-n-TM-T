@@ -3,6 +3,9 @@ import productService from "../services/product.service";
 
 class productController {
 
+    // =================================================================
+    // CÁC HÀM GET (CÔNG KHAI) - KHÔNG THAY ĐỔI
+    // =================================================================
     getProductOnIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
@@ -17,13 +20,13 @@ class productController {
             res.status(200).json(product);
         } catch (err) {
             console.log(err);
+            res.status(404).json({ message: "Không tìm thấy sản phẩm" });
         }
     }
 
     getProductImgOnIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
-            // const product = await productService.getProductOnIdService(Number(id));
             const images = await productService.getProductImgOnIdService(Number(id));
             res.status(200).json(images);
         } catch (err) {
@@ -47,14 +50,18 @@ class productController {
                     data = await productService.get5ProductOnShopIdService(Number(id));
                     break;
                 default:
+                    // Trả về mảng rỗng nếu 'type' không hợp lệ thay vì lỗi
+                    data = [];
                     break;
             }
             res.status(200).json(data);
         } catch (err) {
             console.log(err);
+            res.status(500).json({ message: "Lỗi máy chủ" });
         }
     }
 
+    // ... (Các hàm getReview... getProductDetails... getAttribute... giữ nguyên) ...
     getReviewByProductIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
@@ -95,18 +102,37 @@ class productController {
 
         }
     }
-     createProductController = async (req: Request, res: Response) => {
+    
+    // =================================================================
+    // CÁC HÀM CRUD (BẢO MẬT) - ĐÃ SỬA LỖI
+    // =================================================================
+
+    createProductController = async (req: Request, res: Response) => {
         try {
+            // 1. Lấy shop_id TỪ MIDDLEWARE (AN TOÀN), không tin req.body
+            const shopId = (req as any).shop?.id;
+            if (!shopId) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Không tìm thấy thông tin shop. Bạn có quyền tạo sản phẩm không?' 
+                });
+            }
+
+            // 2. Lấy data từ body
             const productData = req.body;
             
-            // Validate required fields
-            if (!productData.shop_id || !productData.name || !productData.base_price) {
+            // 3. Ghi đè shop_id từ middleware vào productData
+            productData.shop_id = shopId;
+
+            // 4. Validate (bỏ check shop_id vì đã lấy từ middleware)
+            if (!productData.name || !productData.base_price) {
                 return res.status(400).json({ 
                     success: false, 
-                    message: 'Missing required fields: shop_id, name, base_price' 
+                    message: 'Missing required fields: name, base_price' 
                 });
             }
             
+            // 5. Gọi service (file service của bạn đã đúng, không cần sửa)
             const product = await productService.createProductService(productData);
             
             res.status(201).json({ 
@@ -129,27 +155,31 @@ class productController {
         try {
             const productId = Number(req.params.id);
             const productData = req.body;
+
+            // 1. Lấy shop_id và user_id (SĐT) TỪ MIDDLEWARE
+            const shopId = (req as any).shop?.id; // ID (number) của shop
+            const userId = (req as any).user?.id; // SĐT (string) của user
             
-            // Validate product ID
             if (!productId || isNaN(productId)) {
-                return res.status(400).json({ 
+                return res.status(400).json({ success: false, message: 'Invalid product ID' });
+            }
+            if (!shopId || !userId) {
+                return res.status(403).json({ success: false, message: 'Forbidden' });
+            }
+
+            // 2. Xác thực chủ sở hữu
+            const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
+            if (!hasPermission) {
+                return res.status(403).json({ 
                     success: false, 
-                    message: 'Invalid product ID' 
+                    message: 'Bạn không có quyền cập nhật sản phẩm này' 
                 });
             }
             
-            // Optional: Verify shop ownership (if you have auth middleware)
-            // const userId = (req as any).user?.id;
-            // if (userId) {
-            //     const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
-            //     if (!hasPermission) {
-            //         return res.status(403).json({ 
-            //             success: false, 
-            //             message: 'You do not have permission to update this product' 
-            //         });
-            //     }
-            // }
+            // 3. Ghi đè shop_id (để đảm bảo an toàn, dù service ko dùng)
+            productData.shop_id = shopId;
             
+            // 4. Gọi service (file service của bạn đã đúng, không cần sửa)
             const product = await productService.updateProductService(productId, productData);
             
             res.status(200).json({ 
@@ -171,27 +201,27 @@ class productController {
     deleteProductController = async (req: Request, res: Response) => {
         try {
             const productId = Number(req.params.id);
+
+            // 1. Lấy user_id (SĐT) TỪ MIDDLEWARE
+            const userId = (req as any).user?.id;
             
-            // Validate product ID
             if (!productId || isNaN(productId)) {
-                return res.status(400).json({ 
+                return res.status(400).json({ success: false, message: 'Invalid product ID' });
+            }
+            if (!userId) {
+                return res.status(403).json({ success: false, message: 'Forbidden' });
+            }
+
+            // 2. Xác thực chủ sở hữu
+            const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
+            if (!hasPermission) {
+                return res.status(403).json({ 
                     success: false, 
-                    message: 'Invalid product ID' 
+                    message: 'Bạn không có quyền xóa sản phẩm này' 
                 });
             }
             
-            // Optional: Verify shop ownership (if you have auth middleware)
-            // const userId = (req as any).user?.id;
-            // if (userId) {
-            //     const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
-            //     if (!hasPermission) {
-            //         return res.status(403).json({ 
-            //             success: false, 
-            //             message: 'You do not have permission to delete this product' 
-            //         });
-            //     }
-            // }
-            
+            // 3. Gọi service
             await productService.deleteProductService(productId);
             
             res.status(200).json({ 
@@ -208,18 +238,12 @@ class productController {
         }
     };
 
-
-
+    // ... (Các hàm getRecommendedProduct, getProductsByKeyWordController... giữ nguyên) ...
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
-            // Lấy userId (có thể là undefined nếu là khách)
             const userId = (req as any).user?.id;
-
-            // Gọi service, service sẽ tự xử lý logic
             const products = await productService.getForYouRecommendations(userId);
-            // console.log(products);
             res.status(200).json(products);
-
         } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
@@ -232,7 +256,6 @@ class productController {
             return res.status(200).json(products);
         } catch (error) {
             console.log(error);
-
         }
     };
     getNewProducts = async (req: Request, res: Response) => {
@@ -253,40 +276,25 @@ class productController {
     }
     getProductsController = async (req: Request, res: Response) => {
         try {
-            // 1. Lấy tham số
             const {
-                page = 1,
-                limit = 12,
-                sort = "default",
-                subCategoryId, // Lấy từ query
-                minPrice,
-                maxPrice,
-                brand,
+                page = 1, limit = 12, sort = "default",
+                subCategoryId, minPrice, maxPrice, brand,
             } = req.query;
+            const categoryId = Number(req.params.id); 
 
-            const categoryId = Number(req.params.id); // Lấy từ param
-            // console.log(categoryId);
-
-
-            // 2. Xây dựng 'whereClause' và 'params'
             let whereClause = "WHERE 1=1";
             const params: any[] = [];
 
-            // --- PHẦN LOGIC QUAN TRỌNG ---
-            // Ưu tiên filter theo subCategoryId (chính là generic_id)
             if (subCategoryId && Number(subCategoryId) !== 0) {
                 whereClause += " AND products.generic_id = ?";
                 params.push(Number(subCategoryId));
             }
-            // Nếu không, mới filter theo categoryId (cha của generic_id)
             else if (categoryId) {
                 whereClause +=
                     " AND products.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
                 params.push(categoryId);
             }
-            // --- HẾT PHẦN LOGIC QUAN TRỌNG ---
 
-            // Thêm filter Khoảng giá
             if (minPrice) {
                 whereClause += " AND products.base_price >= ?";
                 params.push(minPrice);
@@ -296,7 +304,6 @@ class productController {
                 params.push(maxPrice);
             }
 
-            // Thêm filter Brand
             if (brand && typeof brand === "string" && brand.length > 0) {
                 const brandIds = brand.split(",").map(Number).filter(Boolean);
                 if (brandIds.length > 0) {
@@ -306,13 +313,12 @@ class productController {
                 }
             }
 
-            // 3. Xây dựng 'orderBy'
             let orderBy = "";
             switch (sort) {
-                case "priceAsc": // Cập nhật để khớp với front-end
+                case "priceAsc": 
                     orderBy = "ORDER BY products.base_price ASC";
                     break;
-                case "priceDesc": // Cập nhật để khớp với front-end
+                case "priceDesc": 
                     orderBy = "ORDER BY products.base_price DESC";
                     break;
                 default:
@@ -320,13 +326,8 @@ class productController {
                     break;
             }
 
-            // 4. Gọi Service
             const productsPromise = productService.getProductsService(
-                whereClause,
-                params,
-                Number(page),
-                Number(limit),
-                orderBy
+                whereClause, params, Number(page), Number(limit), orderBy
             );
             let brandsPromise;
             if (subCategoryId && Number(subCategoryId) !== 0) {

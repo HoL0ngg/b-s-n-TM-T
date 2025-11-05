@@ -774,33 +774,34 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc đóng vai cho view `v_products_list`
--- (See below for the actual view)
---
-CREATE TABLE `v_products_list` (
-`id` int(11)
-,`name` varchar(255)
-,`description` varchar(1000)
-,`base_price` int(11)
-,`shop_id` int(11)
-,`generic_id` int(11)
-,`created_at` date
-,`updated_at` date
-,`sold_count` int(11)
-,`category_name` varchar(255)
-,`image_url` varchar(500)
-,`avg_rating` decimal(14,4)
-,`hot_score` decimal(17,5)
-);
-
 -- --------------------------------------------------------
 
 --
--- Cấu trúc cho view `v_products_list`
+-- -----------------------------------------------------
 --
-DROP TABLE IF EXISTS `v_products_list`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
+-- Cấu trúc cho view `v_products_list`
+-- (Phiên bản cập nhật, dùng LEFT JOIN và IFNULL, đã thêm shop_cate_id và status)
+--
+DROP VIEW IF EXISTS `v_products_list`;
+CREATE VIEW `v_products_list` AS 
+SELECT 
+    `p`.`id` AS `id`, 
+    `p`.`name` AS `name`, 
+    `p`.`description` AS `description`, 
+    `p`.`base_price` AS `base_price`, 
+    `p`.`shop_id` AS `shop_id`, 
+    `p`.`generic_id` AS `generic_id`, 
+    `p`.`created_at` AS `created_at`, 
+    `p`.`updated_at` AS `updated_at`, 
+    IFNULL(`p`.`sold_count`, 0) AS `sold_count`,
+    `p`.`status` AS `status`,
+    `p`.`shop_cate_id` AS `shop_cate_id`, 
+    IFNULL(`g`.`name`, 'Chưa phân loại') AS `category_name`, 
+    (SELECT `pi`.`image_url` FROM `productimages` `pi` WHERE `pi`.`product_id` = `p`.`id` AND `pi`.`is_main` = 1 LIMIT 1) AS `image_url`, 
+    (SELECT IFNULL(AVG(`pr`.`rating`),0) FROM `productreviews` `pr` WHERE `pr`.`product_id` = `p`.`id`) AS `avg_rating`, 
+    (IFNULL(`p`.`sold_count`, 0) * 0.6 + IFNULL((SELECT AVG(`pr`.`rating`) FROM `productreviews` `pr` WHERE `pr`.`product_id` = `p`.`id`),0) * 0.4) AS `hot_score` 
+FROM (`products` `p` LEFT JOIN `generic` `g` ON `g`.`id` = `p`.`generic_id`);
+--
 
 --
 -- Chỉ mục cho các bảng đã đổ

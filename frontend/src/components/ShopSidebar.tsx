@@ -1,4 +1,3 @@
-// src/components/ShopSidebar.tsx
 import { NavLink } from 'react-router-dom';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -117,15 +116,21 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             className="nav-link text-dark"
           >
             <i className="bi bi-box-seam me-3 fs-5"></i>
-            <span className="sidebar-link-text">Tất cả Sản phẩm</span>
+            {/* Sửa lại text "Sản phẩm" -> "sản phẩm" cho nhất quán */}
+            <span className="sidebar-link-text">Tất cả sản phẩm</span>
           </NavLink>
         </li>
+        
+        {/* ===== BẮT ĐẦU SỬA LỖI ===== */}
         <li className="nav-item">
-          <NavLink to="/seller/productses" className="nav-link text-dark">
+          {/* Sửa 'to' từ "/seller/productses" -> "/seller/categories" */}
+          <NavLink to="/seller/categories" className="nav-link text-dark">
             <i className="bi bi-plus-square me-3 fs-5"></i>
             <span className="sidebar-link-text">Loại sản phẩm</span>
           </NavLink>
         </li>
+        {/* ===== KẾT THÚC SỬA LỖI ===== */}
+
 
         {/* --- (Các nhóm khác giữ nguyên) --- */}
 

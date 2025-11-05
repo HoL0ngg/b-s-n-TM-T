@@ -9,8 +9,9 @@ export interface ProductType {
     image_url: string;
     sold_count: number;
     product_variants: ProductVariantType[];
-    images: ProductImage[];
+    images: ProductImageType[]; 
     avg_rating: number;
+    shop_cate_id?: number | null; // <--- TRƯỜNG MỚI ĐỂ QUẢN LÝ LOẠI SP
 }
 
 export interface ProductImageType {

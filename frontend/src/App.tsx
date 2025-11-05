@@ -1,4 +1,3 @@
-// src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthRedirectRoute from "./components/AuthRedirectRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -31,6 +30,11 @@ import RegisterShop from './pages/RegisterShop';
 import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
+
+// ===== IMPORT MỚI (CHỈ THÊM DÒNG NÀY) =====
+import ShopCategoriesManager from "./pages/Shop/ShopCategories"; 
+// ============================================
+
 function App() {
   return (
     <BrowserRouter>
@@ -39,9 +43,8 @@ function App() {
       <Routes>
 
         {/* === 1. CÁC TRANG CÔNG KHAI (DÙNG MAIN LAYOUT) === */}
-        {/* Tất cả các route bên trong này sẽ có Navbar/Footer chung */}
+        {/* (Toàn bộ phần này giữ nguyên, không thay đổi) */}
         <Route element={<MainLayout />}>
-
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
@@ -49,11 +52,7 @@ function App() {
           <Route path="/category/:id" element={<Category />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />
-
-          {/* Trang xem shop CÔNG KHAI (của khách) */}
           <Route path="/shop/:id" element={<Shop />} />
-
-          {/* Path của user (dùng UserLayout lồng bên trong MainLayout) */}
           <Route path="/user" element={<UserLayout />}>
             <Route path="account">
               <Route index element={<Navigate to="profile" replace />} />
@@ -63,24 +62,26 @@ function App() {
             </Route>
             <Route path="purchase" element={<Purchase />} />
           </Route>
-
-          {/* Path của checkout (dùng CheckoutLayout lồng bên trong MainLayout) */}
           <Route element={<CheckoutLayout />}>
             <Route path="/cart" element={<Cart />}></Route>
             <Route path="/checkout/address" element={<AddressPage />} />
             {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
           </Route>
-
         </Route>
 
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
-        {/* Đã đổi path thành "/seller" để tránh xung đột với "/shop/:id" */}
+        {/* (Path chính là "/seller") */}
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
           <Route path="products" element={<ShopProducts />} />
+          
+          {/* ===== ROUTE MỚI (CHỈ THÊM DÒNG NÀY) ===== */}
+          <Route path="categories" element={<ShopCategoriesManager />} />
+          {/* ======================================= */}
+
         </Route>
 
         {/* Thêm route 404 (Not Found) nếu cần */}
