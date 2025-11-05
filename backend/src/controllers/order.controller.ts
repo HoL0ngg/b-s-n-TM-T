@@ -4,9 +4,9 @@ import * as OrderService from '../services/order.service';
 export const getShopOrdersController = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.userId;
+        const { status } = req.query;
 
-        const orders = await OrderService.getOrdersForShop(userId);
-
+        const orders = await OrderService.getOrdersForShop(userId, status as string | undefined);
         res.status(200).json(orders);
     } catch (error: any) {
         res.status(400).json({ message: error.message || 'Lỗi khi lấy đơn hàng của Shop.' });
@@ -33,4 +33,29 @@ export const updateShopOrderStatusController = async (req: Request, res: Respons
     } catch (error: any) {
         res.status(400).json({ message: error.message || 'Lỗi khi cập nhật trạng thái.' });
     }
+};
+
+export const getShopOrderDetailController = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.userId;
+        const orderId = parseInt(req.params.orderId);
+
+        if (isNaN(orderId)) {
+            return res.status(400).json({ message: 'OrderId phải là một con số.' });
+        }
+
+        const orderDetails = await OrderService.getOrderDetailForShop(userId, orderId);
+        res.status(200).json(orderDetails);
+    } catch (error: any) {
+        res.status(400).json({ message: error.message || 'Lỗi khi lấy chi tiết đơn hàng.' });
+    }
+};
+
+/**
+ * [Shop] Lấy danh sách đơn hàng trả (Placeholder)
+ * Xử lý yêu cầu GET /api/shop/orders/returns
+ */
+export const getShopReturnsController = async (req: Request, res: Response) => {
+    // Tạm thời trả về mảng rỗng
+    res.status(200).json([]);
 };

@@ -11,6 +11,8 @@ export interface IOrder {
     total_amount: number;
     status: OrderStatus;
     payment_method: string;
+    shipping_fee: number;
+    payment_status: string;
 }
 
 /**

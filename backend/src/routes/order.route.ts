@@ -1,36 +1,28 @@
 import { Router } from 'express';
 import {
     getShopOrdersController,
-    updateShopOrderStatusController
+    updateShopOrderStatusController,
+    getShopOrderDetailController,
+    getShopReturnsController
 } from '../controllers/order.controller';
-
-// 1. Import middleware 'verifyToken' (chúng ta không cần 'authorizeAdmin' nữa)
-// (Chúng ta đổi tên 'verifyToken' thành 'authenticateToken' cho rõ nghĩa)
 import { verifyToken as authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
-
-// 2. Áp dụng middleware xác thực cho TẤT CẢ các route bên dưới.
-// Bất kỳ ai gọi API trong file này đều phải đăng nhập.
 router.use(authenticateToken);
 
 /* ========================================
  * == CÁC ROUTE CHO CHỦ SHOP (VENDOR) ==
  * ======================================== */
 
-/**
- * @route   GET /api/shop/orders
- * @desc    [Shop] Lấy đơn hàng của Shop mình
- * @access  Private (Cần đăng nhập)
- */
+// 2. ROUTE CỤ THỂ (returns) PHẢI NẰM TRƯỚC
+router.get('/shop/orders/returns', getShopReturnsController);
+
+// Route cho danh sách chung
 router.get('/shop/orders', getShopOrdersController);
 
-/**
- * @route   PUT /api/shop/orders/:orderId/status
- * @desc    [Shop] Cập nhật trạng thái 1 đơn hàng của Shop mình
- * @access  Private (Cần đăng nhập)
- */
+// Route cho cập nhật status
 router.put('/shop/orders/:orderId/status', updateShopOrderStatusController);
 
-// 3. Xuất Router
+// 3. ROUTE ĐỘNG (với :orderId) PHẢI NẰM CUỐI CÙNG
+router.get('/shop/orders/:orderId', getShopOrderDetailController);
 export default router;

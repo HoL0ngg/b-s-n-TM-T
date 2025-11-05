@@ -47,7 +47,11 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
                 <NavLink
                   to="/seller/orders"
                   end
-                  className="nav-link text-dark small sidebar-link-text"
+                  className={({ isActive }) =>
+                      isActive
+                        ? "nav-link small sidebar-link-text active"
+                        : "nav-link text-dark small sidebar-link-text"
+                    }
                 >
                   Tất cả
                 </NavLink>
@@ -56,23 +60,35 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
                 {/* 2. Các link con phải có đường dẫn khác nhau */}
                 <NavLink
                   to="/seller/orders?status=pending"
-                  className="nav-link text-dark small sidebar-link-text"
+                  className={({ isActive }) =>
+                      isActive
+                        ? "nav-link small sidebar-link-text active"
+                        : "nav-link text-dark small sidebar-link-text"
+                    }
                 >
                   Chờ xác nhận
                 </NavLink>
               </li>
               <li>
                 <NavLink
-                  to="/seller/orders?status=packing"
-                  className="nav-link text-dark small sidebar-link-text"
+                  to="/seller/orders?status=processing"
+                  className={({ isActive }) =>
+                      isActive
+                        ? "nav-link small sidebar-link-text active"
+                        : "nav-link text-dark small sidebar-link-text"
+                    }
                 >
                   Chờ đóng gói
                 </NavLink>
               </li>
               <li>
                 <NavLink
-                  to="/seller/orders?status=shipping"
-                  className="nav-link text-dark small sidebar-link-text"
+                  to="/seller/orders?status=shipped"
+                  className={({ isActive }) =>
+                      isActive
+                        ? "nav-link small sidebar-link-text active"
+                        : "nav-link text-dark small sidebar-link-text"
+                    }
                 >
                   Đang giao
                 </NavLink>
@@ -80,7 +96,11 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
               <li>
                 <NavLink
                   to="/seller/orders?status=delivered"
-                  className="nav-link text-dark small sidebar-link-text"
+                  className={({ isActive }) =>
+                      isActive
+                        ? "nav-link small sidebar-link-text active"
+                        : "nav-link text-dark small sidebar-link-text"
+                    }
                 >
                   Đã giao
                 </NavLink>
@@ -88,7 +108,11 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
               <li>
                 <NavLink
                   to="/seller/orders?status=cancelled"
-                  className="nav-link text-dark small sidebar-link-text"
+                  className={({ isActive }) =>
+                      isActive
+                        ? "nav-link small sidebar-link-text active"
+                        : "nav-link text-dark small sidebar-link-text"
+                    }
                 >
                   Đã hủy
                 </NavLink>
