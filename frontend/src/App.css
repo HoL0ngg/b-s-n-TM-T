@@ -156,10 +156,10 @@
 }
 
 /* Khi input được focus hoặc có giá trị */
-.floating-input input:focus+label,
-.floating-input input:not(:placeholder-shown)+label,
-.floating-input select:focus+label,
-.floating-input select:not([value=""])+label {
+.floating-input input:focus + label,
+.floating-input input:not(:placeholder-shown) + label,
+.floating-input select:focus + label,
+.floating-input select:not([value=""]) + label {
   top: 0;
   left: 10px;
   font-size: 12px;
@@ -370,6 +370,7 @@
   background-color: white;
   z-index: 2;
   position: absolute;
+  width: 100px;
 }
 
 .search-list {
@@ -410,7 +411,13 @@
   color: white;
   padding: 4px 0;
 }
-
+.search-info {
+  overflow-x: hidden;
+  /* white-space: nowrap;
+  overflow: hidden;
+  flex: 1;
+  text-overflow: ellipsis; */
+}
 .search-name {
   font-size: 14px;
   color: #333;
@@ -418,6 +425,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.search-price {
+  color: var(--bs-orange);
 }
 
 .section-line {
