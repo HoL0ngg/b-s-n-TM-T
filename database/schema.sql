@@ -3,11 +3,10 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 04, 2025 lúc 09:43 AM
+-- Thời gian đã tạo: Th10 05, 2025 lúc 05:59 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Phiên bản PHP: 8.0.30
 
-<<<<<<< Updated upstream
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -21,6 +20,8 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `basan`
 --
+CREATE DATABASE IF NOT EXISTS `basan` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `basan`;
 
 -- --------------------------------------------------------
 
@@ -28,13 +29,15 @@ SET time_zone = "+00:00";
 -- Cấu trúc bảng cho bảng `address`
 --
 
-CREATE TABLE `address` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `address`;
+CREATE TABLE IF NOT EXISTS `address` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `city` varchar(255) DEFAULT NULL,
   `ward` varchar(255) DEFAULT NULL,
   `street` varchar(255) DEFAULT NULL,
-  `home_number` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `home_number` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `address`
@@ -42,8 +45,7 @@ CREATE TABLE `address` (
 
 INSERT INTO `address` (`id`, `city`, `ward`, `street`, `home_number`) VALUES
 (1, 'TP. Hồ Chí Minh', 'Phường Chợ Quán', 'An Dương Vương', '273'),
-(2, 'TP. Hồ Chí Minh', 'Phường Chợ Quán', 'An Dương Vương', '275'),
-(10, 'Thành phố Hà Nội', 'Phường Ba Đình', 'D5 HCM ádádsssss', NULL);
+(2, 'TP. Hồ Chí Minh', 'Phường Chợ Quán', 'An Dương Vương', '275');
 
 -- --------------------------------------------------------
 
@@ -51,12 +53,15 @@ INSERT INTO `address` (`id`, `city`, `ward`, `street`, `home_number`) VALUES
 -- Cấu trúc bảng cho bảng `address_user`
 --
 
-CREATE TABLE `address_user` (
+DROP TABLE IF EXISTS `address_user`;
+CREATE TABLE IF NOT EXISTS `address_user` (
   `address_id` int(11) DEFAULT NULL,
   `phone_number` varchar(10) DEFAULT NULL,
   `is_default` tinyint(1) DEFAULT NULL,
   `user_name` varchar(255) DEFAULT NULL,
-  `phone_number_jdo` varchar(10) DEFAULT NULL
+  `phone_number_jdo` varchar(10) DEFAULT NULL,
+  KEY `address_id` (`address_id`),
+  KEY `phone_number` (`phone_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -65,8 +70,7 @@ CREATE TABLE `address_user` (
 
 INSERT INTO `address_user` (`address_id`, `phone_number`, `is_default`, `user_name`, `phone_number_jdo`) VALUES
 (1, '0987654321', 1, 'L0ngkute', '0937211264'),
-(2, '0987654321', 0, '0 phải L0ngg', '0937211265'),
-(10, '0338740832', 1, 'Kim Long', '0338740832');
+(2, '0987654321', 0, '0 phải L0ngg', '0937211265');
 
 -- --------------------------------------------------------
 
@@ -74,10 +78,12 @@ INSERT INTO `address_user` (`address_id`, `phone_number`, `is_default`, `user_na
 -- Cấu trúc bảng cho bảng `brands`
 --
 
-CREATE TABLE `brands` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `brands`;
+CREATE TABLE IF NOT EXISTS `brands` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `brands`
@@ -107,19 +113,15 @@ INSERT INTO `brands` (`id`, `name`) VALUES
 -- Cấu trúc bảng cho bảng `cart`
 --
 
-CREATE TABLE `cart` (
+DROP TABLE IF EXISTS `cart`;
+CREATE TABLE IF NOT EXISTS `cart` (
   `user_id` varchar(10) NOT NULL,
   `product_variant_id` int(11) NOT NULL,
   `quantity` int(11) DEFAULT NULL,
-  `added_at` datetime DEFAULT current_timestamp()
+  `added_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`,`product_variant_id`),
+  KEY `product_variant_id` (`product_variant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `cart`
---
-
-INSERT INTO `cart` (`user_id`, `product_variant_id`, `quantity`, `added_at`) VALUES
-('0338740832', 19, 1, '2025-11-04 15:12:23');
 
 -- --------------------------------------------------------
 
@@ -127,12 +129,14 @@ INSERT INTO `cart` (`user_id`, `product_variant_id`, `quantity`, `added_at`) VAL
 -- Cấu trúc bảng cho bảng `categories`
 --
 
-CREATE TABLE `categories` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `categories`;
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
-  `img_url` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `img_url` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `categories`
@@ -154,11 +158,14 @@ INSERT INTO `categories` (`id`, `name`, `description`, `img_url`) VALUES
 -- Cấu trúc bảng cho bảng `generic`
 --
 
-CREATE TABLE `generic` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `generic`;
+CREATE TABLE IF NOT EXISTS `generic` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
-  `category_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `category_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `category_id` (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `generic`
@@ -187,260 +194,82 @@ INSERT INTO `generic` (`id`, `name`, `category_id`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `orders`
+--
+
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE IF NOT EXISTS `orders` (
+  `order_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(10) NOT NULL,
+  `address_id` int(11) DEFAULT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  `shipping_fee` decimal(10,2) DEFAULT 0.00,
+  `status` varchar(50) NOT NULL DEFAULT 'Pending',
+  `payment_method` varchar(50) NOT NULL,
+  `payment_status` varchar(50) DEFAULT 'Unpaid',
+  `order_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `notes` text DEFAULT NULL,
+  PRIMARY KEY (`order_id`),
+  KEY `user_id` (`user_id`),
+  KEY `address_id` (`address_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `orders`
+--
+
+INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`) VALUES
+(1, '0987654333', 1, 736000.00, 0.00, 'Shipped', 'COD', 'Unpaid', '2025-11-05 20:16:05', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `order_items`
+--
+
+DROP TABLE IF EXISTS `order_items`;
+CREATE TABLE IF NOT EXISTS `order_items` (
+  `item_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `variant_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price_at_purchase` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`item_id`),
+  KEY `order_id` (`order_id`),
+  KEY `product_id` (`product_id`),
+  KEY `variant_id` (`variant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `order_items`
+--
+
+INSERT INTO `order_items` (`item_id`, `order_id`, `product_id`, `variant_id`, `product_name`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
+(1, 1, 1, 1, 'Son Kem Bóng Maybelline', 2, 228000.00, 456000.00),
+(2, 1, 4, 19, 'Quần Tây Nam Owen', 1, 280000.00, 280000.00);
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `productimages`
 --
 
-CREATE TABLE `productimages` (
-  `image_id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `productimages`;
+CREATE TABLE IF NOT EXISTS `productimages` (
+  `image_id` int(11) NOT NULL AUTO_INCREMENT,
   `image_url` varchar(500) NOT NULL,
   `product_id` int(11) NOT NULL,
-  `isMain` tinyint(1) DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `isMain` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`image_id`),
+  KEY `product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productimages`
 --
-=======
-CREATE DATABASE basan;
-use basan;
-CREATE TABLE users (
-    phone_number VARCHAR(10) PRIMARY KEY,
-    email VARCHAR(255),
-    password VARCHAR(255),
-    avatar_url VARCHAR(255)
-    role VARCHAR(50) NOT NULL DEFAULT 'user'
-);
-CREATE TABLE user_profile(
-    username VARCHAR (255),
-    dob DATETIME,
-    gender TINYINT(1),
-    updated_at DATETIME,
-    phone_number VARCHAR(10) PRIMARY KEY,
-    FOREIGN key (phone_number) REFERENCES users(phone_number)
-);
-CREATE TABLE Shops(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    logo_url VARCHAR(255),
-    description VARCHAR(255),
-    status INT,
-    CREATEd_at DATE DEFAULT CURRENT_TIMESTAMP,
-    owner_id VARCHAR(10),
-    FOREIGN KEY (owner_id) REFERENCES Users(phone_number)
-);
-CREATE TABLE Categories(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    description VARCHAR(255),
-    img_url VARCHAR(255)
-);
-
-CREATE TABLE shop_categories(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    shop_id INT,
-    name VARCHAR(255),
-    FOREIGN KEY (shop_id) REFERENCES shops(id)
-);
-
-CREATE TABLE Generic(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    category_id INT,
-    FOREIGN KEY (category_id) REFERENCES Categories(id)
-);
-CREATE TABLE Products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description VARCHAR(1000),
-    status INT DEFAULT 1,
-    CREATEd_at DATE DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATE DEFAULT CURRENT_TIMESTAMP,
-    base_price INT,
-    category_id INT,
-    sold_count INT,
-    shop_id INT,
-    shop_cate_id INT,
-    FOREIGN KEY (category_id) REFERENCES Categories(id),
-    FOREIGN KEY (shop_id) REFERENCES Shops(id),
-    FOREIGN KEY (shop_cate_id) REFERENCES shop_categories(id)
-);
-CREATE TABLE ProductImages (
-    image_id INT AUTO_INCREMENT PRIMARY KEY,
-    image_url VARCHAR(500) NOT NULL,
-    product_id INT NOT NULL,
-    isMain BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (product_id) REFERENCES Products(id)
-);
-CREATE TABLE ProductVariants (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT NOT NULL,
-    price INT NOT NULL,
-    stock INT DEFAULT 0,
-    sku VARCHAR(100),
-    FOREIGN KEY (product_id) REFERENCES Products(id)
-);
-CREATE TABLE Product_Attributes(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-CREATE TABLE VariantOptionValues(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    variant_id INT NOT NULL,
-    attribute_id INT NOT NULL,
-    value VARCHAR(255),
-    FOREIGN KEY (variant_id) REFERENCES ProductVariants(id),
-    FOREIGN KEY (attribute_id) REFERENCES Product_Attributes(id)
-);
-CREATE TABLE ProductReviews (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    rating INT CHECK (
-        rating BETWEEN 1 AND 5
-    ),
-    comment VARCHAR(1000),
-    CREATEd_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    user_id VARCHAR(10) NOT NULL,
-    product_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(phone_number),
-    FOREIGN KEY (product_id) REFERENCES Products(id)
-);
-
-CREATE TABLE Address(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    city VARCHAR(255),
-    ward VARCHAR(255),
-    street VARCHAR(255),
-    home_number VARCHAR(255)
-);
-
-CREATE TABLE Address_User(
-    address_id INT,
-    phone_number VARCHAR(10),
-    is_default TINYINT(1),
-    user_name VARCHAR(255),
-    phone_number_jdo VARCHAR(10),
-    FOREIGN key (address_id) REFERENCES Address(id),
-    FOREIGN key (phone_number) REFERENCES Users(phone_number)
-);
-CREATE TABLE `product_detail` (
-  `id` INT(11) AUTO_INCREMENT PRIMARY KEY NOT NULL,
-  `product_id` INT(11) NOT NULL,
-  `attribute` VARCHAR(100) NOT NULL,
-  `value` VARCHAR(100) NOT NULL,
-  FOREIGN KEY (product_id) REFERENCES products(id)
-);
-CREATE TABLE Cart(
-    user_id VARCHAR(10),
-    product_variant_id INT,
-    quantity INT,
-    added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN key (user_id) REFERENCES Users(phone_number),
-    FOREIGN key (product_variant_id) REFERENCES ProductVariants(id),
-    PRIMARY KEY (user_id, product_variant_id)
-);
-CREATE TABLE orders(
-    order_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(10) NOT NULL,
-    address_id INT,
-    total_amount DECIMAL(10, 2) NOT NULL,   
-    shipping_fee DECIMAL(10, 2) DEFAULT 0.00,
-    status VARCHAR(50) NOT NULL DEFAULT 'Pending',
-    payment_method VARCHAR(50) NOT NULL,
-    payment_status VARCHAR(50) DEFAULT 'Unpaid',
-    order_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    notes TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(phone_number),
-    FOREIGN KEY (address_id) REFERENCES address_user(address_id)
-);
-CREATE TABLE order_items(
-    item_id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT NOT NULL,
-    product_id INT NOT NULL,
-    variant_id INT,
-    product_name VARCHAR(255) NOT NULL,
-    quantity INT NOT NULL,
-    price_at_purchase DECIMAL(10, 2) NOT NULL,
-    subtotal DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (variant_id) REFERENCES productvariants(variant_id)
-);
-
-INSERT INTO categories
-VALUES (
-        1,
-        "Mỹ phẩm",
-        "Danh mục Mỹ phẩm bao gồm các sản phẩm chăm sóc da, trang điểm và làm đẹp dành cho mọi lứa tuổi. Tất cả sản phẩm đều được chọn lọc kỹ lưỡng, đảm bảo chất lượng, an toàn cho người dùng và giúp bạn tỏa sáng tự nhiên mỗi ngày.",
-        "/assets/categories/my pham.jpg"
-    ),
-    (
-        2,
-        "Quần",
-        "Danh mục Quần mang đến nhiều kiểu dáng hiện đại và thoải mái như quần jeans, quần tây, quần kaki, legging và jogger. Chất liệu đa dạng, form dáng chuẩn, phù hợp cho cả đi làm, đi học và dạo phố, giúp bạn tự tin thể hiện phong cách riêng.",
-        "/assets/categories/quan.jpg"
-    ),
-    (
-        3,
-        "Áo",
-        "Danh mục Áo gồm nhiều lựa chọn thời trang như áo thun, áo sơ mi, áo khoác, áo len và áo polo. Các sản phẩm được thiết kế tinh tế, chất liệu thoáng mát, dễ phối đồ và phù hợp cho mọi hoàn cảnh — từ công sở đến đi chơi.",
-        "/assets/categories/ao.jpg"
-    ),
-    (
-        4,
-        "Giày",
-        "Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.",
-        "/assets/categories/giay.webp"
-    ),
-    (
-        5,
-        "Laptop",
-        "Adudu",
-        "/assets/categories/laptop.jpg"
-    ),
-    (
-        6,
-        "Sức khỏe",
-        "adudu",
-        "/assets/categories/suckhoe.png"
-    );
-INSERT INTO generic
-VALUES (1, "son", 1),
-    (2, "Phấn phủ", 1),
-    (3, "kem nền", 1),
-    (4, "Quần dài", 2),
-    (5, "Quần short", 2),
-    (6, "Quẩn thun", 2),
-    (7, "Áo sơ mi", 3),
-    (8, "Giày đá banh", 4);
-
-INSERT INTO users (phone_number, email, password, avatar_url, role)
-VALUES 
-    ("0987654321", "hihi@gmail.com", "123456", "/assets/panda.png", "admin"),
-    ("0987654333", "hehe@gmail.com", "123456", "/assets/bear.png", "user"); 
-
-INSERT INTO user_profile (username, dob, gender, updated_at, phone_number) 
-VALUES 
-    ("", "2005-08-25", 1, NULL, "0987654321"), 
-    ("", "2005-08-26", 1, NULL, "0987654333");
-
-INSERT INTO shops
-VALUES (
-        1,
-        "Thế giới skin food",
-        "/assets/shops/thegioiskinfood.png",
-        "Shop chuyên về mỹ phẩm",
-        1,
-        "2025-08-25",
-        "0987654321"
-    ),(
-        2,
-        "Coolmate - Official Store",
-        "/assets/shops/coolmate.webp",
-        "Shop chuyên về quần áo",
-        1,
-        "2025-08-26",
-        "0987654333"
-    );
->>>>>>> Stashed changes
 
 INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `isMain`) VALUES
 (1, '/assets/products/son1.jpg', 1, 1),
@@ -573,21 +402,24 @@ INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `isMain`) VA
 (128, '/assets/products/son11.3.jpg', 32, 0),
 (129, '/assets/products/son11.4.jpg', 32, 0);
 
-<<<<<<< Updated upstream
 -- --------------------------------------------------------
 
 --
 -- Cấu trúc bảng cho bảng `productreviews`
 --
 
-CREATE TABLE `productreviews` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `productreviews`;
+CREATE TABLE IF NOT EXISTS `productreviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `rating` int(11) DEFAULT NULL CHECK (`rating` between 1 and 5),
   `comment` varchar(1000) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `user_id` varchar(10) NOT NULL,
-  `product_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `product_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productreviews`
@@ -606,8 +438,9 @@ INSERT INTO `productreviews` (`id`, `rating`, `comment`, `created_at`, `user_id`
 -- Cấu trúc bảng cho bảng `products`
 --
 
-CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `products`;
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `description` varchar(1000) DEFAULT NULL,
   `status` int(11) DEFAULT 1,
@@ -618,8 +451,13 @@ CREATE TABLE `products` (
   `sold_count` int(11) DEFAULT NULL,
   `shop_id` int(11) DEFAULT NULL,
   `shop_cate_id` int(11) DEFAULT NULL,
-  `brand_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `brand_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `generic_id` (`generic_id`),
+  KEY `shop_id` (`shop_id`),
+  KEY `shop_cate_id` (`shop_cate_id`),
+  KEY `brand_id` (`brand_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `products`
@@ -665,196 +503,20 @@ INSERT INTO `products` (`id`, `name`, `description`, `status`, `created_at`, `up
 -- Cấu trúc bảng cho bảng `productvariants`
 --
 
-CREATE TABLE `productvariants` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `productvariants`;
+CREATE TABLE IF NOT EXISTS `productvariants` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `product_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `stock` int(11) DEFAULT 0,
-  `sku` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `sku` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productvariants`
 --
-=======
-INSERT INTO products
-VALUES (
-        1,
-        "Son Kem Bóng Maybelline Bền Màu, Nhẹ Môi New York Superstay Vinyl Ink 4.2ml",
-        "Son Kem Bóng Bền Màu, Nhẹ Môi Maybelline New York Superstay Vinyl Ink 4.2ml là son kem lì đến từ thương hiệu Maybelline chứa công thức đột phá mới với công nghệ “khóa” màu thách thức lem trôi, nhẹ mướt, để lại lớp bóng nhẹ tinh tế, cho đôi môi căng tràn sức sống. Son bóng lên màu chuẩn, nhưng vẫn duy trì độ ẩm và giữ được sự mềm mịn cho môi.",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        228000,
-        1,
-        100,
-        1,
-        1
-    ), (
-        2,
-        "Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni",
-        "Giày đá banh, mang vô đá như Messi",
-        1,
-        "2025-8-10",
-        "2025-10-10",
-        2128000,
-        4,
-        20,
-        1,
-        2
-    ), (
-        3,
-        "Áo Sơ Mi Nam Tay Dài Aristino OwenShop",
-        "Áo sơ mi trắng",
-        1,
-        "2025-02-10",
-        "2025-10-10",
-        1128000,
-        3,
-        22,
-        1,
-        2
-    ), (
-        4,
-        "Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop",
-        "Quần tây đen",
-        1,
-        "2025-10-10",
-        "2025-10-10",
-        280000,
-        2,
-        50,
-        1,
-        1
-    ), (
-        5,
-        "[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g",
-        "Son Dưỡng Thuần Chay Romand Glasting Melting Balm là son thỏi màu có dưỡng đến từ thương hiệu Romand với tinh chất dầu thực vật thuần chay cùng chất son siêu nhẹ môi có độ dưỡng cao, giúp dưỡng ẩm cho đôi môi mềm mại, căng mọng tự nhiên trong thời gian dài.",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        199000,
-        1,
-        10,
-        1,
-        1
-    ), (
-        6,
-        "Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy TINT 5ml",
-        "Son Kem Lì Bông Bền Màu Maybelline Superstay Teddy TINT là son kem lì nằm trong bộ sưu tập gấu hồng Teddy đáng yêu của thương hiệu Maybelline với công nghệ bồng bềnh Teddy Fluff siêu mềm mịn cho môi. Cùng với bảng màu son ngọt ngào có thể tô mờ hoặc tô đậm trên môi mang đến hiệu ứng mờ lì, căng mịn, cho môi sắc sảo.",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        218000,
-        1,
-        12,
-        1,
-        1
-    ), (
-        7,
-        "Son Thỏi 3CE Mịn Lì, Mềm Môi Cashmere Hug Lipstick 3.5g",
-        "Son Thỏi Mịn Lì, Mềm Môi 3CE Cashmere Hug Lipstick là son thỏi đến từ thương hiệu 3CE. Chất son matte mịn mờ, lướt nhẹ trên môi, mang lại cảm giác thoải mái, nhẹ môi suốt cả ngày. Màu lên chuẩn ngay từ lần quẹt đầu tiên. Thiết kế vỏ son nhám, có vân sọc cầm chắc tay, độc đáo, sang trọng.",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        369000,
-        1,
-        2,
-        1,
-        1
-    ), (
-        8,
-        "Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer TINTed Stick 2g",
-        "Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer TINTed Stick là son thỏi đến từ thương hiệu Romand. Chất son trong trẻo, lớp bóng mỏng và độ sáng trong mang đến cho bạn môi căng mịn như miếng thạch. Có độ lên màu ngay từ lần chạm đầu tiên và giữ màu lâu. Thành phần chiết xuất thiên nhiên có độ dưỡng ẩm sâu, mang đến môi căng mịn, mà không gây dính môi.",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        199000,
-        1,
-        42,
-        1,
-        1
-    ), (
-        9,
-        "Áo Polo thể thao nam ProMax S1 Logo Coolmate",
-        "",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        219000,
-        3,
-        2192,
-        2,
-        1
-    ), (
-        10,
-        "Áo Sơ Mi Dài Tay Essentials Cotton mềm mại thoáng mát Coolmate",
-        "",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        271320,
-        3,
-        395,
-        2,
-        1
-    ), (
-        11,
-        "Quần dài nam Kaki Excool co giãn đàn hồi Coolmate",
-        "",
-        1,
-        "2025-01-10",
-        "2025-10-10",
-        389000,
-        2,
-        519,
-        2,
-        1
-    );
-INSERT INTO ProductImages
-VALUES  (1, "/assets/products/son1.jpg", 1, 1),
-        (2, "/assets/products/giay1.webp", 2, 1), 
-        (3, "/assets/products/ao1.webp", 3, 1), 
-        (4, "/assets/products/quan1.webp", 4, 1),
-        (5, "/assets/products/son1.1.jpg", 1, 0),
-        (6, "/assets/products/son1.2.jpg", 1, 0),
-        (7, "/assets/products/son1.3.jpg", 1, 0),
-        (8, "/assets/products/son2.jpg", 5, 1),
-        (9, "/assets/products/son2.1.jpg", 5, 0),
-        (10, "/assets/products/son3.jpg", 6, 1),
-        (11, "/assets/products/son3.1.jpg", 6, 0),
-        (12, "/assets/products/son3.2.jpg", 6, 0),
-        (13, "/assets/products/son3.3.jpg", 6, 0),
-        (14, "/assets/products/son3.4.jpg", 6, 0),
-        (15, "/assets/products/son4.jpg", 7, 1),
-        (16, "/assets/products/son4.1.jpeg", 7, 0),
-        (17, "/assets/products/son4.2.jpeg", 7, 0),
-        (18, "/assets/products/son5.jpg", 8, 1),
-        (19, "/assets/products/son5.1.jpg", 8, 0),
-        (20, "/assets/products/ao polo 1.webp", 9, 1),
-        (21, "/assets/products/ao polo1.1.webp", 9, 0),
-        (22, "/assets/products/ao polo1.2.webp", 9, 0),
-        (23, "/assets/products/ao polo1.3", 9, 0),
-        (24, "/assets/products/ao polo1.4.webp", 9, 0),
-        (25, "/assets/products/ao somi 1.webp", 10, 1),
-        (26, "/assets/products/ao somi1.1.webp", 10, 0),
-        (27, "/assets/products/ao somi1.2.webp", 10, 0),
-        (28, "/assets/products/ao somi1.3.webp", 10, 0),
-        (29, "/assets/products/quan kaki 1.webp", 11, 1),
-        (30, "/assets/products/quan kaki1.1.webp", 11, 0),
-        (31, "/assets/products/quan kaki1.2.webp", 11, 0),
-        (32, "/assets/products/quan kaki1.3.webp", 11, 0),
-        (33, "/assets/products/quan kaki1.4.webp", 11, 0),
-        (34, "/assets/products/quan kaki1.5.webp", 11, 0),
-        (35, "/assets/products/quan kaki1.6.webp", 11, 0);
-
-INSERT INTO productreviews
-VALUES  (1, 4, "Dùng cũn ngon đấy iem", "2025-10-20", "0987654321", 1),
-        (2, 3, "Tạm được đấy iem", "2025-10-20", "0987654321", 3),
-        (3, 5, "SIUUUUUUUUUU", "2025-10-20", "0987654321", 2),
-        (4, 5, "MU 2 - 1 Liver", "2025-10-20", "0987654321", 2),
-        (5, 4, "Hơi chật đấy iem", "2025-10-20", "0987654321", 3);
->>>>>>> Stashed changes
 
 INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`) VALUES
 (1, 1, 228000, 50, 'MBL-DO-4ML'),
@@ -905,10 +567,12 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`) VALU
 -- Cấu trúc bảng cho bảng `product_attributes`
 --
 
-CREATE TABLE `product_attributes` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `product_attributes`;
+CREATE TABLE IF NOT EXISTS `product_attributes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `product_attributes`
@@ -926,12 +590,15 @@ INSERT INTO `product_attributes` (`id`, `name`) VALUES
 -- Cấu trúc bảng cho bảng `product_detail`
 --
 
-CREATE TABLE `product_detail` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `product_detail`;
+CREATE TABLE IF NOT EXISTS `product_detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `product_id` int(11) NOT NULL,
   `attribute` varchar(100) NOT NULL,
-  `value` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `value` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `product_detail`
@@ -953,13 +620,15 @@ INSERT INTO `product_detail` (`id`, `product_id`, `attribute`, `value`) VALUES
 -- Cấu trúc bảng cho bảng `promotions`
 --
 
-CREATE TABLE `promotions` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `promotions`;
+CREATE TABLE IF NOT EXISTS `promotions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `value` decimal(10,0) DEFAULT NULL,
   `start_date` datetime DEFAULT current_timestamp(),
   `end_date` datetime DEFAULT NULL,
-  `is_active` tinyint(4) DEFAULT NULL
+  `is_active` tinyint(4) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -968,22 +637,25 @@ CREATE TABLE `promotions` (
 -- Cấu trúc bảng cho bảng `shops`
 --
 
-CREATE TABLE `shops` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `shops`;
+CREATE TABLE IF NOT EXISTS `shops` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `logo_url` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `created_at` date DEFAULT current_timestamp(),
-  `owner_id` varchar(10) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `owner_id` varchar(10) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `owner_id` (`owner_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `shops`
 --
 
 INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created_at`, `owner_id`) VALUES
-(1, 'Thế giới skin food', '/assets/shops/thegioiskinfood.png', 'Shop chuyên về mỹ phẩm', 1, '2025-08-25', '0987654321'),
+(1, 'Thế giới skin food', '/assets/shops/thegioiskinfood.png', 'Shop chuyên về mỹ phẩm', 1, '2025-08-25', '0772152991'),
 (2, 'Coolmate - Official Store', '/assets/shops/coolmate.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654333'),
 (3, 'Casper Official Store', '/assets/shops/casper.webp', 'Shop chuyên về đồ điện tử', 1, '2025-08-26', '0987654222'),
 (4, 'Murad Vietnam Official Store', '/assets/shops/murad.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654111'),
@@ -996,11 +668,14 @@ INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created
 -- Cấu trúc bảng cho bảng `shop_categories`
 --
 
-CREATE TABLE `shop_categories` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `shop_categories`;
+CREATE TABLE IF NOT EXISTS `shop_categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `shop_id` int(11) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `shop_id` (`shop_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `shop_categories`
@@ -1017,60 +692,32 @@ INSERT INTO `shop_categories` (`id`, `shop_id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `shop_info`
---
-
-CREATE TABLE `shop_info` (
-  `id` int(11) NOT NULL,
-  `user_id` varchar(10) NOT NULL,
-  `shop_name` varchar(255) NOT NULL,
-  `address` text NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(20) NOT NULL,
-  `shipping_methods` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `business_type` varchar(50) DEFAULT 'personal',
-  `invoice_email` varchar(255) DEFAULT NULL,
-  `tax_code` varchar(20) DEFAULT NULL,
-  `identity_type` varchar(50) DEFAULT 'cccd',
-  `identity_number` varchar(20) NOT NULL,
-  `identity_full_name` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `shop_info`
---
-
-INSERT INTO `shop_info` (`id`, `user_id`, `shop_name`, `address`, `email`, `phone`, `shipping_methods`, `business_type`, `invoice_email`, `tax_code`, `identity_type`, `identity_number`, `identity_full_name`, `created_at`, `updated_at`) VALUES
-(2, '0338740832', 'HoaBan', '155 Gia Sư Kim Tân, ấp Bình Tả 2, Phường Ba Đình, Thành phố Hà Nội', 'n.kimlong205@gmail.com', '0338740832', '[\"SPX\"]', 'personal', 'n.kimlong205@gmail.com', '080205013802', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-04 07:41:24', '2025-11-04 07:41:24');
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc bảng cho bảng `users`
 --
 
-CREATE TABLE `users` (
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE IF NOT EXISTS `users` (
   `phone_number` varchar(10) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
-  `avatar_url` varchar(255) DEFAULT NULL
+  `avatar_url` varchar(255) DEFAULT NULL,
+  `role` varchar(50) NOT NULL DEFAULT 'user',
+  PRIMARY KEY (`phone_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`) VALUES
-('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png'),
-('0987654000', 'unilever@gmail.com', '123456', '/assets/bear.png'),
-('0987654111', 'murad@gmail.com', '123456', '/assets/bear.png'),
-('0987654222', 'casper@gmail.com', '123456', '/assets/bear.png'),
-('0987654321', 'hihi@gmail.com', '123456', '/assets/panda.png'),
-('0987654333', 'coolmate@gmail.com', '123456', '/assets/bear.png'),
-('0987654444', 'pandora@gmail.com', '123456', '/assets/bear.png'),
-('0987654555', 'thewhoo@gmail.com', '123456', '/assets/bear.png');
+INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `role`) VALUES
+('0772152991', 'dtnchau.sgu@gmail.com', '$2b$10$HsTp5uLFodwI8/ZeSHdabOuT1m8Fi3ozmvuNCQUiyKNxEJTy2wcr2', '/assets/avatar/lion.png', 'user'),
+('0987654000', 'unilever@gmail.com', '123456', '/assets/bear.png', 'user'),
+('0987654111', 'murad@gmail.com', '123456', '/assets/bear.png', 'user'),
+('0987654222', 'casper@gmail.com', '123456', '/assets/bear.png', 'user'),
+('0987654321', 'hihi@gmail.com', '123456', '/assets/panda.png', 'user'),
+('0987654333', 'coolmate@gmail.com', '123456', '/assets/bear.png', 'user'),
+('0987654444', 'pandora@gmail.com', '123456', '/assets/bear.png', 'user'),
+('0987654555', 'thewhoo@gmail.com', '123456', '/assets/bear.png', 'user');
 
 -- --------------------------------------------------------
 
@@ -1078,32 +725,24 @@ INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`) VALUES
 -- Cấu trúc bảng cho bảng `userviewhistory`
 --
 
-CREATE TABLE `userviewhistory` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `userviewhistory`;
+CREATE TABLE IF NOT EXISTS `userviewhistory` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(10) DEFAULT NULL,
   `product_id` int(11) NOT NULL,
-  `viewed_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `viewed_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `product_id` (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `userviewhistory`
 --
 
 INSERT INTO `userviewhistory` (`id`, `user_id`, `product_id`, `viewed_at`) VALUES
-(1, '0338740832', 22, '2025-11-04 07:26:41'),
-(2, '0338740832', 22, '2025-11-04 07:26:41'),
-(3, '0338740832', 13, '2025-11-04 07:26:50'),
-(4, '0338740832', 13, '2025-11-04 07:26:50'),
-(5, '0338740832', 1, '2025-11-04 07:26:56'),
-(6, '0338740832', 1, '2025-11-04 07:26:56'),
-(7, '0338740832', 5, '2025-11-04 07:27:00'),
-(8, '0338740832', 5, '2025-11-04 07:27:00'),
-(9, '0338740832', 28, '2025-11-04 08:12:05'),
-(10, '0338740832', 28, '2025-11-04 08:12:05'),
-(11, '0338740832', 28, '2025-11-04 08:12:20'),
-(12, '0338740832', 28, '2025-11-04 08:12:20'),
-(13, '0338740832', 4, '2025-11-04 08:12:22'),
-(14, '0338740832', 4, '2025-11-04 08:12:22');
+(1, '0772152991', 24, '2025-11-04 09:52:31'),
+(2, '0772152991', 24, '2025-11-04 09:52:31');
 
 -- --------------------------------------------------------
 
@@ -1111,12 +750,14 @@ INSERT INTO `userviewhistory` (`id`, `user_id`, `product_id`, `viewed_at`) VALUE
 -- Cấu trúc bảng cho bảng `user_profile`
 --
 
-CREATE TABLE `user_profile` (
+DROP TABLE IF EXISTS `user_profile`;
+CREATE TABLE IF NOT EXISTS `user_profile` (
   `username` varchar(255) DEFAULT NULL,
   `dob` datetime DEFAULT NULL,
   `gender` tinyint(1) DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
-  `phone_number` varchar(10) NOT NULL
+  `phone_number` varchar(10) NOT NULL,
+  PRIMARY KEY (`phone_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -1124,7 +765,7 @@ CREATE TABLE `user_profile` (
 --
 
 INSERT INTO `user_profile` (`username`, `dob`, `gender`, `updated_at`, `phone_number`) VALUES
-('Nguyễn Kim Long', '2005-04-21 00:00:00', 1, '2025-11-04 14:16:30', '0338740832'),
+('', '0000-00-00 00:00:00', 10, '0000-00-00 00:00:00', '0772152991'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654000'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654111'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654222'),
@@ -1139,12 +780,16 @@ INSERT INTO `user_profile` (`username`, `dob`, `gender`, `updated_at`, `phone_nu
 -- Cấu trúc bảng cho bảng `variantoptionvalues`
 --
 
-CREATE TABLE `variantoptionvalues` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `variantoptionvalues`;
+CREATE TABLE IF NOT EXISTS `variantoptionvalues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `variant_id` int(11) NOT NULL,
   `attribute_id` int(11) NOT NULL,
-  `value` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `value` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `variant_id` (`variant_id`),
+  KEY `attribute_id` (`attribute_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `variantoptionvalues`
@@ -1194,7 +839,8 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- Cấu trúc đóng vai cho view `v_products_list`
 -- (See below for the actual view)
 --
-CREATE TABLE `v_products_list` (
+DROP VIEW IF EXISTS `v_products_list`;
+CREATE TABLE IF NOT EXISTS `v_products_list` (
 `id` int(11)
 ,`name` varchar(255)
 ,`description` varchar(1000)
@@ -1217,250 +863,8 @@ CREATE TABLE `v_products_list` (
 --
 DROP TABLE IF EXISTS `v_products_list`;
 
+DROP VIEW IF EXISTS `v_products_list`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`isMain` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
-
---
--- Chỉ mục cho các bảng đã đổ
---
-
---
--- Chỉ mục cho bảng `address`
---
-ALTER TABLE `address`
-  ADD PRIMARY KEY (`id`);
-
---
--- Chỉ mục cho bảng `address_user`
---
-ALTER TABLE `address_user`
-  ADD KEY `address_id` (`address_id`),
-  ADD KEY `phone_number` (`phone_number`);
-
---
--- Chỉ mục cho bảng `brands`
---
-ALTER TABLE `brands`
-  ADD PRIMARY KEY (`id`);
-
---
--- Chỉ mục cho bảng `cart`
---
-ALTER TABLE `cart`
-  ADD PRIMARY KEY (`user_id`,`product_variant_id`),
-  ADD KEY `product_variant_id` (`product_variant_id`);
-
---
--- Chỉ mục cho bảng `categories`
---
-ALTER TABLE `categories`
-  ADD PRIMARY KEY (`id`);
-
---
--- Chỉ mục cho bảng `generic`
---
-ALTER TABLE `generic`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `category_id` (`category_id`);
-
---
--- Chỉ mục cho bảng `productimages`
---
-ALTER TABLE `productimages`
-  ADD PRIMARY KEY (`image_id`),
-  ADD KEY `product_id` (`product_id`);
-
---
--- Chỉ mục cho bảng `productreviews`
---
-ALTER TABLE `productreviews`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `product_id` (`product_id`);
-
---
--- Chỉ mục cho bảng `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `generic_id` (`generic_id`),
-  ADD KEY `shop_id` (`shop_id`),
-  ADD KEY `shop_cate_id` (`shop_cate_id`),
-  ADD KEY `brand_id` (`brand_id`);
-
---
--- Chỉ mục cho bảng `productvariants`
---
-ALTER TABLE `productvariants`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `product_id` (`product_id`);
-
---
--- Chỉ mục cho bảng `product_attributes`
---
-ALTER TABLE `product_attributes`
-  ADD PRIMARY KEY (`id`);
-
---
--- Chỉ mục cho bảng `product_detail`
---
-ALTER TABLE `product_detail`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `product_id` (`product_id`);
-
---
--- Chỉ mục cho bảng `promotions`
---
-ALTER TABLE `promotions`
-  ADD PRIMARY KEY (`id`);
-
---
--- Chỉ mục cho bảng `shops`
---
-ALTER TABLE `shops`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `owner_id` (`owner_id`);
-
---
--- Chỉ mục cho bảng `shop_categories`
---
-ALTER TABLE `shop_categories`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `shop_id` (`shop_id`);
-
---
--- Chỉ mục cho bảng `shop_info`
---
-ALTER TABLE `shop_info`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_shop_user` (`user_id`);
-
---
--- Chỉ mục cho bảng `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`phone_number`);
-
---
--- Chỉ mục cho bảng `userviewhistory`
---
-ALTER TABLE `userviewhistory`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `product_id` (`product_id`);
-
---
--- Chỉ mục cho bảng `user_profile`
---
-ALTER TABLE `user_profile`
-  ADD PRIMARY KEY (`phone_number`);
-
---
--- Chỉ mục cho bảng `variantoptionvalues`
---
-ALTER TABLE `variantoptionvalues`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `variant_id` (`variant_id`),
-  ADD KEY `attribute_id` (`attribute_id`);
-
---
--- AUTO_INCREMENT cho các bảng đã đổ
---
-
---
--- AUTO_INCREMENT cho bảng `address`
---
-ALTER TABLE `address`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT cho bảng `brands`
---
-ALTER TABLE `brands`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
-
---
--- AUTO_INCREMENT cho bảng `categories`
---
-ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT cho bảng `generic`
---
-ALTER TABLE `generic`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
-
---
--- AUTO_INCREMENT cho bảng `productimages`
---
-ALTER TABLE `productimages`
-  MODIFY `image_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
-
---
--- AUTO_INCREMENT cho bảng `productreviews`
---
-ALTER TABLE `productreviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT cho bảng `products`
---
-ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
-
---
--- AUTO_INCREMENT cho bảng `productvariants`
---
-ALTER TABLE `productvariants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
-
---
--- AUTO_INCREMENT cho bảng `product_attributes`
---
-ALTER TABLE `product_attributes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT cho bảng `product_detail`
---
-ALTER TABLE `product_detail`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT cho bảng `promotions`
---
-ALTER TABLE `promotions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT cho bảng `shops`
---
-ALTER TABLE `shops`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT cho bảng `shop_categories`
---
-ALTER TABLE `shop_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
---
--- AUTO_INCREMENT cho bảng `shop_info`
---
-ALTER TABLE `shop_info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT cho bảng `userviewhistory`
---
-ALTER TABLE `userviewhistory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
-
---
--- AUTO_INCREMENT cho bảng `variantoptionvalues`
---
-ALTER TABLE `variantoptionvalues`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -1485,6 +889,21 @@ ALTER TABLE `cart`
 --
 ALTER TABLE `generic`
   ADD CONSTRAINT `generic_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+--
+-- Các ràng buộc cho bảng `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`),
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`);
+
+--
+-- Các ràng buộc cho bảng `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  ADD CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`);
 
 --
 -- Các ràng buộc cho bảng `productimages`
@@ -1531,12 +950,6 @@ ALTER TABLE `shops`
 --
 ALTER TABLE `shop_categories`
   ADD CONSTRAINT `shop_categories_ibfk_1` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`);
-
---
--- Các ràng buộc cho bảng `shop_info`
---
-ALTER TABLE `shop_info`
-  ADD CONSTRAINT `fk_shop_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `userviewhistory`
