@@ -55,7 +55,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
                 >
                   Tất cả
                 </NavLink>
-              </li>
+              </li> 
               <li>
                 {/* 2. Các link con phải có đường dẫn khác nhau */}
                 <NavLink
