@@ -21,7 +21,7 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const response = await fetch('https://provinces.open-api.vn/api/v2/p/');
+                const response = await fetch('http://provinces.open-api.vn/api/v2/p/');
                 const data = await response.json();
                 setCity(data);
             } catch (error) {
@@ -53,9 +53,9 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
             setSelectedCityName(selectedCity.name);
             setSelectedWardName('');
             setSelectedWardCode('');
-            
+
             try {
-                const response = await fetch(`https://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
+                const response = await fetch(`http://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
                 const data = await response.json();
                 setWard(data.wards);
             } catch (error) {
@@ -75,7 +75,7 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!selectedCityName || !selectedWardName || !street) {
             alert("Vui lòng nhập đầy đủ thông tin địa chỉ");
             return;
@@ -111,8 +111,8 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
                     {/* Hộp modal */}
                     <motion.div
                         className="position-fixed top-50 start-50 translate-middle bg-white rounded-4 shadow-lg p-4"
-                        style={{ 
-                            width: "550px", 
+                        style={{
+                            width: "550px",
                             zIndex: 1050,
                             maxHeight: "90vh",
                             overflowY: "auto"
@@ -123,14 +123,14 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
                         transition={{ duration: 0.25 }}
                     >
                         <h5 className="mb-4 text-center fw-bold">Chọn địa chỉ Shop</h5>
-                        
+
                         <form onSubmit={handleSubmit}>
                             <div className="row">
                                 <div className="col-6">
                                     <div className="floating-input mb-4">
-                                        <select 
-                                            className="form-select p-2" 
-                                            onChange={handleCityChange} 
+                                        <select
+                                            className="form-select p-2"
+                                            onChange={handleCityChange}
                                             value={selectedCityCode}
                                             required
                                         >
@@ -146,9 +146,9 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
                                 </div>
                                 <div className="col-6">
                                     <div className="floating-input mb-4">
-                                        <select 
-                                            className="form-select p-2" 
-                                            onChange={handleChangeWard} 
+                                        <select
+                                            className="form-select p-2"
+                                            onChange={handleChangeWard}
                                             value={selectedWardCode}
                                             disabled={!selectedCityCode}
                                             required
@@ -197,15 +197,15 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
                             </div>
 
                             <div className="d-flex justify-content-end gap-2">
-                                <button 
-                                    type="button" 
-                                    className="btn btn-secondary" 
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
                                     onClick={onClose}
                                 >
                                     Hủy
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn btn-primary"
                                 >
                                     Xác nhận
