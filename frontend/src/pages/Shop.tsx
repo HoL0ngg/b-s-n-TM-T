@@ -36,11 +36,9 @@ const Shop = () => {
                 setShop(data);
                 try {
                     const hihi = await fetch5ProductByShopId(Number(data.id));
-                    const hehe = await fetchProductsByShopId(Number(data.id), curState, curShopCate);
                     const listCate = await fetchCateByShopId(Number(data.id));
                     setShopCateList(listCate);
                     setSuggestedProducts(hihi);
-                    setProductList(hehe);
                 } catch (err) {
                     console.log(err);
                 }
@@ -49,6 +47,23 @@ const Shop = () => {
             }
         }
         loadShopAndProduct();
+    }, [id]);
+
+    useEffect(() => {
+        if (!id) return;
+
+        const loadProducts = async () => {
+            try {
+                // API này sẽ nhận 'shopId' và 'cate' (giống hệt
+                // hàm 'getProductOnShopIdService' bạn đã viết)
+                const hehe = await fetchProductsByShopId(Number(id), curState, curShopCate);
+                setProductList(hehe);
+            } catch (err) {
+                console.error("Lỗi tải sản phẩm:", err);
+            }
+        };
+
+        loadProducts();
     }, [id, curState, curShopCate]);
 
     const handleChangeState = (id: number) => {

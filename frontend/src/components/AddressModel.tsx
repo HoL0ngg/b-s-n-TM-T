@@ -27,7 +27,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const response = await fetch('https://provinces.open-api.vn/api/v2/p/');
+                const response = await fetch('http://provinces.open-api.vn/api/v2/p/');
                 const data = await response.json();
                 setCity(data); // Lưu danh sách tỉnh/thành
             } catch (error) {
@@ -59,7 +59,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
             // 2. Tìm CODE từ NAME
             const selectedCity = city.find(c => c.name === cityy).code;
             setSelectedCityCode(selectedCity);
-            fetch(`https://provinces.open-api.vn/api/v2/p/${selectedCity}?depth=2`)
+            fetch(`http://provinces.open-api.vn/api/v2/p/${selectedCity}?depth=2`)
                 .then(data => data.json())
                 .then(jsonData => {
                     setWard(jsonData.wards);
@@ -81,7 +81,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
             setSelectedWardCode('');
             try {
                 // Gọi API để lấy phường/xã
-                const response = await fetch(`https://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
+                const response = await fetch(`http://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
                 const data = await response.json();
 
                 setWard(data.wards);
