@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType, UpdatePromoItemDto, PromotionType, PromotionItem } from "../types/ProductType";
 
 const API_URl = "http://localhost:5000/api/products";
 
@@ -26,7 +26,7 @@ export const fetchProductsByShopId = async (id: number, state: number, cate: num
     // console.log(sort);
 
     const res = await axios.get(`${API_URl}/shops/${id}?type=all&sortBy=${sort}&bst=${cate}`);
-    // console.log(res.data);
+    console.log(res.data);
     return res.data;
 }
 
@@ -53,57 +53,57 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
 }
 
 const getAuthHeaders = () => {
-  return {
-    headers: {
-      'Authorization': axios.defaults.headers.common['Authorization'] || ''
-    }
-  };
+    return {
+        headers: {
+            'Authorization': axios.defaults.headers.common['Authorization'] || ''
+        }
+    };
 };
 
 // Create a new product (for shop owner)
 export const createProduct = async (shopId: number, productData: any) => {
-  try {
-    const response = await axios.post(
-      API_URl,
-      { 
-        ...productData, 
-        shop_id: shopId 
-      },
-      getAuthHeaders()
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error creating product:', error);
-    throw error;
-  }
+    try {
+        const response = await axios.post(
+            API_URl,
+            {
+                ...productData,
+                shop_id: shopId
+            },
+            getAuthHeaders()
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error creating product:', error);
+        throw error;
+    }
 };
 
 // Update an existing product (for shop owner)
 export const updateProduct = async (productId: number, productData: any) => {
-  try {
-    const response = await axios.put(
-      `${API_URl}/${productId}`,
-      productData,
-      getAuthHeaders()
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error updating product:', error);
-    throw error;
-  }
+    try {
+        const response = await axios.put(
+            `${API_URl}/${productId}`,
+            productData,
+            getAuthHeaders()
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error updating product:', error);
+        throw error;
+    }
 };
 
 // Delete a product (for shop owner)
 export const deleteProduct = async (productId: number) => {
-  try {
-    await axios.delete(
-      `${API_URl}/${productId}`,
-      getAuthHeaders()
-    );
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    throw error;
-  }
+    try {
+        await axios.delete(
+            `${API_URl}/${productId}`,
+            getAuthHeaders()
+        );
+    } catch (error) {
+        console.error('Error deleting product:', error);
+        throw error;
+    }
 };
 export const apiGetForYouRecommendations = async () => {
     const res = await axios.get(`${API_URl}/recommend/for-you`);
@@ -158,5 +158,28 @@ export const fetchProducts = async (query: any, category_id: number) => {
     // 5. Gọi API
     // `params.toString()` sẽ tạo ra: "page=1&limit=12&categoryId=5&sort=price-asc&..."
     const res = await axios.get(`${API_URl}/category/${category_id}?${params.toString()}`);
+    console.log(res.data);
+
     return res.data;
 }
+
+export const apiGetShopPromotions = async (): Promise<PromotionType[]> => {
+    // Frontend gọi: GET /api/promotions
+    const res = await axios.get(`${API_URl}/promotions`);
+    return res.data;
+};
+
+export const apiGetPromotionDetails = async (promotionId: number): Promise<PromotionItem[]> => {
+    // Frontend gọi: GET /api/promotions/123/items
+    const res = await axios.get(`${API_URl}/promotions/${promotionId}/items`);
+    return res.data;
+};
+
+export const apiSavePromotionDetails = async (
+    promotionId: number,
+    items: UpdatePromoItemDto[]
+) => {
+    // Frontend gọi: PATCH /api/promotions/123/items
+    const res = await axios.patch(`/promotions/${promotionId}/items`, items);
+    return res.data;
+};

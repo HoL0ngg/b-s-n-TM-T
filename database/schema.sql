@@ -440,7 +440,7 @@ CREATE TABLE `productvariants` (
 --
 
 INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `image_url`) VALUES
-(1, 1, 228000, 50, 'MBL-DO-4ML', "assets/products/son1.3.jpg"),
+(1, 1, 228000, 50, 'MBL-DO-4ML', "/assets/products/son1.3.jpg"),
 (2, 1, 233000, 60, 'MBL-HONG-4ML', ""),
 (3, 1, 223000, 40, 'MBL-CAM-4ML', ""),
 (4, 2, 2128000, 10, 'ADID-XANH-38', ""),
@@ -533,21 +533,6 @@ INSERT INTO `product_detail` (`id`, `product_id`, `attribute`, `value`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `promotions`
---
-
-CREATE TABLE `promotions` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `value` decimal(10,0) DEFAULT NULL,
-  `start_date` datetime DEFAULT current_timestamp(),
-  `end_date` datetime DEFAULT NULL,
-  `is_active` tinyint(4) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc bảng cho bảng `shops`
 --
 
@@ -573,6 +558,30 @@ INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created
 (5, 'Unilever Chăm Sóc Sắc Đẹp', '/assets/shops/unilever.webp', '', 1, '2025-08-26', '0987654000'),
 (6, 'Pandora VN', '/assets/shops/pandora.webp', '', 1, '2025-08-26', '0987654444');
 
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `promotions`
+--
+
+CREATE TABLE `promotions` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `start_date` datetime DEFAULT current_timestamp(),
+  `end_date` datetime DEFAULT NULL,
+  `is_active` tinyint(4) DEFAULT 1,
+  `shop_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO promotions values (1, "Giảm giá black friday", "2025-05-11", "2025-11-11", 1, 1);
+
+CREATE TABLE `promotion_items` (
+  promotion_id int,
+  product_variant_id int,
+  discount_value int
+);
+
+INSERT INTO promotion_items values (1, 1, 20), (1, 2, 10), (1, 3, 50), (1, 20, 12), (1, 21, 10), (1, 22, 20), (1, 23, 22);
 -- --------------------------------------------------------
 
 --
@@ -647,13 +656,13 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`) VALUES
 ('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png'),
-('0987654000', 'unilever@gmail.com', '123456', '/assets/bear.png'),
-('0987654111', 'murad@gmail.com', '123456', '/assets/bear.png'),
-('0987654222', 'casper@gmail.com', '123456', '/assets/bear.png'),
-('0987654321', 'hihi@gmail.com', '123456', '/assets/panda.png'),
-('0987654333', 'coolmate@gmail.com', '123456', '/assets/bear.png'),
-('0987654444', 'pandora@gmail.com', '123456', '/assets/bear.png'),
-('0987654555', 'thewhoo@gmail.com', '123456', '/assets/bear.png');
+('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png');
 
 -- --------------------------------------------------------
 
@@ -774,33 +783,73 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc đóng vai cho view `v_products_list`
--- (See below for the actual view)
---
-CREATE TABLE `v_products_list` (
-`id` int(11)
-,`name` varchar(255)
-,`description` varchar(1000)
-,`base_price` int(11)
-,`shop_id` int(11)
-,`generic_id` int(11)
-,`created_at` date
-,`updated_at` date
-,`sold_count` int(11)
-,`category_name` varchar(255)
-,`image_url` varchar(500)
-,`avg_rating` decimal(14,4)
-,`hot_score` decimal(17,5)
-);
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc cho view `v_products_list`
 --
-DROP TABLE IF EXISTS `v_products_list`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
+CREATE VIEW v_products_list AS
+SELECT 
+    -- 1. Thông tin cơ bản từ bảng 'products'
+    p.id, 
+    p.name, 
+    p.description, 
+    p.shop_id, 
+    p.generic_id, -- (ID danh mục con)
+    p.created_at,
+    p.updated_at,
+    p.sold_count,
+    
+    -- 2. Tên danh mục (từ bảng 'generic')
+    g.name AS category_name,
+    
+    -- 3. Giá gốc (từ 'products.base_price', mà bạn đã đồng bộ)
+    p.base_price,
+    
+    -- 4. Ảnh chính (isMain = 1)
+    (SELECT pi.image_url 
+     FROM productimages pi 
+     WHERE pi.product_id = p.id AND pi.is_main = 1 
+     LIMIT 1) AS image_url,
+     
+    -- 5. Đánh giá trung bình (tính từ 'productreviews')
+    (SELECT IFNULL(AVG(pr.rating), 0) 
+     FROM productreviews pr 
+     WHERE pr.product_id = p.id) AS avg_rating,
+     
+    -- 6. Điểm "Hot" (tính theo công thức của bạn)
+    (
+        p.sold_count * 0.6 + 
+        (SELECT IFNULL(AVG(pr.rating), 0) FROM productreviews pr WHERE pr.product_id = p.id) * 0.4
+    ) AS hot_score,
+
+    -- 7. Giá Sale (tính giá thấp nhất CÓ KHUYẾN MÃI)
+    (
+        SELECT ROUND(MIN(pv.price * (1 - (pi.discount_value / 100))))
+        FROM productvariants pv
+        JOIN promotion_items pi ON pv.id = pi.product_variant_id
+        JOIN promotions promo ON pi.promotion_id = promo.id
+        WHERE 
+            pv.product_id = p.id
+            AND promo.is_active = 1
+            AND NOW() BETWEEN promo.start_date AND promo.end_date
+    ) AS sale_price,
+    
+    -- 8. % Giảm giá (lấy % cao nhất đang được áp dụng)
+    (
+        SELECT MAX(pi.discount_value) 
+        FROM productvariants pv
+        JOIN promotion_items pi ON pv.id = pi.product_variant_id
+        JOIN promotions promo ON pi.promotion_id = promo.id
+        WHERE 
+            pv.product_id = p.id
+            AND promo.is_active = 1
+            AND NOW() BETWEEN promo.start_date AND promo.end_date
+    ) AS discount_percentage
+    
+FROM 
+    products p
+-- JOIN bảng danh mục
+JOIN 
+    generic g ON g.id = p.generic_id;
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -894,7 +943,12 @@ ALTER TABLE `product_detail`
 -- Chỉ mục cho bảng `promotions`
 --
 ALTER TABLE `promotions`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_shops`(`shop_id`);
+
+ALTER TABLE `promotion_items`
+  ADD KEY `fk_promotion`(`promotion_id`),
+  ADD KEY `FK_productvariants`(`product_variant_id`);
 
 --
 -- Chỉ mục cho bảng `shops`

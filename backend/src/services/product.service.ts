@@ -19,10 +19,40 @@ class productService {
             throw new Error('Không tìm thấy sản phẩm');
         }
 
+        const sql_variants = `
+                SELECT 
+                    pv.id, 
+                    pv.price AS original_price,
+                    pv.stock, 
+                    pv.sku, 
+                    pv.image_url,
+                    
+                    -- Lấy % giảm giá (nếu có)
+                    pi.discount_value AS discount_percentage,
+                    
+                    -- Tính giá sale (nếu có)
+                    (CASE
+                        WHEN pi.discount_value IS NOT NULL 
+                        THEN (pv.price * (1 - (pi.discount_value / 100)))
+                        ELSE NULL 
+                    END) AS sale_price
+                    
+                FROM 
+                    productvariants pv
+                
+                -- Dùng LEFT JOIN để vẫn lấy được biến thể dù không có KM
+                LEFT JOIN 
+                    promotion_items pi ON pv.id = pi.product_variant_id
+                LEFT JOIN 
+                    promotions promo ON pi.promotion_id = promo.id
+                                    AND promo.is_active = 1
+                                    AND NOW() BETWEEN promo.start_date AND promo.end_date
+                                    
+                WHERE 
+                    pv.product_id = ?;
+            `;
         const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
-            `SELECT id, price, stock, sku, image_url
-            FROM productvariants 
-            WHERE product_id = ?`,
+            sql_variants,
             [id]
         );
 
@@ -505,6 +535,69 @@ class productService {
 
     getProductsService = async (whereClause: string, params: any[], page: number = 1, limit: number = 12, orderBy: string = ""): Promise<ProductResponse> => {
         return paginationProducts(whereClause, params, page, limit, orderBy);
+    }
+
+    getPromotionsByShopId = async (shopId: number) => {
+        const [rows] = await pool.query(
+            "SELECT * FROM promotions WHERE shop_id = ? ORDER BY start_date DESC",
+            [shopId]
+        );
+        return rows; // Trả về mảng Promotion[]
+    }
+
+    async getItemsByPromotionId(promotionId: number) {
+        // Câu lệnh này JOIN để lấy đủ thông tin cho interface 'PromotionItem'
+        const sql = `
+        SELECT
+            pi.promotion_id,
+            pi.product_variant_id,
+            pi.discount_value,
+            
+            pv.price AS original_price,
+            pv.stock,
+            
+            p.name AS product_name,
+            
+            (SELECT img.image_url FROM productimages img 
+             WHERE img.product_id = p.id AND img.is_main = 1 LIMIT 1) AS product_image
+            
+        FROM 
+            promotion_items pi
+        JOIN 
+            productvariants pv ON pi.product_variant_id = pv.id
+        JOIN 
+            products p ON pv.product_id = p.id
+        WHERE 
+            pi.promotion_id = ?;
+    `;
+        const [rows] = await pool.query(sql, [promotionId]);
+        return rows; // Trả về mảng PromotionItem[]
+    }
+
+    async updateProductBasePrice(productId: number) {
+        try {
+            // --- BƯỚC 1: Tìm giá (price) thấp nhất ---
+            // (Chúng ta dùng IFNULL để xử lý cả sale_price nếu bạn có)
+            const [rows] = await pool.query<RowDataPacket[]>(
+                `SELECT MIN(price) as min_price 
+             FROM productvariants 
+             WHERE product_id = ?`,
+                [productId]
+            );
+
+            const min_price = rows[0].min_price || 0;
+
+            // --- BƯỚC 2: Cập nhật giá này vào bảng 'products' cha ---
+            await pool.query(
+                "UPDATE products SET base_price = ? WHERE id = ?",
+                [min_price, productId]
+            );
+
+            console.log(`Đã cập nhật base_price cho product ${productId} thành ${min_price}`);
+
+        } catch (error) {
+            console.error("Lỗi khi đồng bộ base_price:", error);
+        }
     }
 }
 

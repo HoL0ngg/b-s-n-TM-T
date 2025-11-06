@@ -31,6 +31,7 @@ import RegisterShop from './pages/RegisterShop';
 import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
+import Promotion from "./pages/Shop/Promotion";
 function App() {
   return (
     <BrowserRouter>
@@ -81,6 +82,7 @@ function App() {
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
           <Route path="products" element={<ShopProducts />} />
+          <Route path="promotion" element={<Promotion />} />
         </Route>
 
         {/* Thêm route 404 (Not Found) nếu cần */}

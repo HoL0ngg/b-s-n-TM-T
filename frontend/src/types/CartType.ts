@@ -10,6 +10,10 @@ export interface CartItem {
     logo_url: string;
 
     options?: IVariantOption[];
+
+    original_price: number;
+    sale_price: number | null;
+    discount_percentage: number | null;
 }
 
 interface IVariantOption {

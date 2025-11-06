@@ -9,8 +9,11 @@ export interface ProductType {
     image_url: string;
     sold_count: number;
     product_variants: ProductVariantType[];
-    images: ProductImage[];
+    images: ProductImageType[];
     avg_rating: number;
+    original_price: number;
+    sale_price: number | null;
+    discount_percentage: number | null;
 }
 
 export interface ProductImageType {
@@ -57,10 +60,13 @@ interface VariantOption {
 
 export interface ProductVariantType {
     id: number;           // 1, 2, 3...
-    price: number;        // 223000
     stock: number;        // 40
     options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
     image_url: string;
+
+    original_price: number;
+    sale_price: number | null;
+    discount_percentage: number | null;
 }
 export interface ProductResponseType {
     products: ProductType[];
@@ -70,4 +76,31 @@ export interface ProductResponseType {
 export interface BrandOfProductType {
     id: number;
     name: string;
+}
+
+export interface PromotionType {
+    id: number;
+    shop_id: number;
+    name: string;
+    start_date: string; // Dùng 'string' vì JSON trả về từ API (ISO 8601)
+    end_date: string;   // Dùng 'string'
+    is_active: boolean;
+}
+
+export interface UpdatePromoItemDto {
+    product_variant_id: number;
+    discount_value: number; // Đây là %
+}
+
+export interface PromotionItem {
+    // --- Từ bảng 'promotion_items' ---
+    promotion_id: number;
+    product_variant_id: number;
+    discount_value: number;
+
+    // --- Lấy từ JOIN (để hiển thị UI) ---
+    product_name: string;
+    product_image: string; // URL ảnh
+    original_price: number; // Giá gốc của biến thể
+    stock: number; // Tồn kho hiện tại
 }

@@ -76,7 +76,7 @@ export default function Cart() {
         return allItems
             .filter(item => selectedItems.includes(item.product_id))
             .reduce((sum, item) => {
-                const price = item.product_price || 0;
+                const price = item.sale_price || item.original_price || 0;
                 const quantity = item.quantity || 0;
                 return sum + (price * quantity);
             }, 0);
@@ -190,7 +190,7 @@ export default function Cart() {
                                                         </div>)}
                                                     </div>
                                                     <div className="d-flex align-items-center gap-4">
-                                                        <div className="fw-semibold">{item.product_price.toLocaleString()} đ</div>
+                                                        <div>{item.discount_percentage && item.sale_price ? (<span><span className="text-primary fs-5 fw-semibold">{Number(item.sale_price).toLocaleString('vi-VN')}đ</span><small className="ms-2 text-muted text-decoration-line-through">{item.original_price.toLocaleString('vi-VN')}đ</small></span>) : (<span className="fw-semibold fs-5 text-primary">{item.original_price.toLocaleString('vi-VN')}đ</span>)}</div>
                                                         <div className="d-flex my-1 border rounded-pill">
                                                             <div className="px-2 py-1 pointer" onClick={() => handleDecrease(item.product_variant_id, item.quantity)}><i className="fa-solid fa-minus"></i></div>
                                                             <input type="text" className="text-center text-primary" value={item.quantity} readOnly style={{ outline: "none", width: "50px", border: "none" }} />
@@ -202,7 +202,7 @@ export default function Cart() {
                                                     <div className="d-flex justify-content-end">
                                                         <div className="pointer"><TiDeleteOutline className="fs-3 delete-all" onClick={() => handleDelete(item.product_variant_id)} /></div>
                                                     </div>
-                                                    <div className="p-2 text-primary fw-bolder">{(item.product_price * item.quantity).toLocaleString()}đ</div>
+                                                    <div className="p-2 text-primary fw-bold fs-5">{Number(item.sale_price ? item.sale_price * item.quantity : item.original_price * item.quantity).toLocaleString('vi-VN')}đ</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -226,7 +226,7 @@ export default function Cart() {
                                         <span className="fw-semibold">[x{item.quantity}]</span> {item.product_name}
                                     </div>
                                     <div className="text-primary fw-bold">
-                                        {(item.quantity * item.product_price).toLocaleString()}₫
+                                        {Number(item.sale_price ? item.sale_price * item.quantity : item.original_price * item.quantity).toLocaleString('vi-VN')}₫
                                     </div>
                                 </div>
                             )
@@ -234,7 +234,7 @@ export default function Cart() {
                     </div>
                     <div className="d-flex justify-content-between m-2 bg-light border rounded p-3 text-primary fw-bold">
                         <div>Tổng cộng ({selectedItems.length} sản phẩm):</div>
-                        <div>{calculateTotal().toLocaleString()}₫</div>
+                        <div>{calculateTotal().toLocaleString('vi-VN')}₫</div>
                     </div>
                     <div className="btn btn-primary rounded-pill w-100 p-2 mt-2" onClick={handleCheckout}>
                         {loading ? "Đang tải..." : "Thanh toán"}

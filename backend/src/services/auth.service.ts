@@ -55,7 +55,6 @@ export async function register(phone_number: string, email: string, password: st
     const randomIndex = Math.floor(Math.random() * defaultAvatars.length);
     const randomAvatarFile = defaultAvatars[randomIndex];
     const defaultAvatarUrl = AVATAR_BASE_URL + randomAvatarFile;
-    console.log(defaultAvatarUrl);
 
 
     const [rows] = await pool.query(

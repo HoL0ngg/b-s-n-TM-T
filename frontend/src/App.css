@@ -156,10 +156,10 @@
 }
 
 /* Khi input được focus hoặc có giá trị */
-.floating-input input:focus + label,
-.floating-input input:not(:placeholder-shown) + label,
-.floating-input select:focus + label,
-.floating-input select:not([value=""]) + label {
+.floating-input input:focus+label,
+.floating-input input:not(:placeholder-shown)+label,
+.floating-input select:focus+label,
+.floating-input select:not([value=""])+label {
   top: 0;
   left: 10px;
   font-size: 12px;
@@ -411,6 +411,7 @@
   color: white;
   padding: 4px 0;
 }
+
 .search-info {
   overflow-x: hidden;
   /* white-space: nowrap;
@@ -418,6 +419,7 @@
   flex: 1;
   text-overflow: ellipsis; */
 }
+
 .search-name {
   font-size: 14px;
   color: #333;
@@ -539,4 +541,9 @@
 /* Tùy chỉnh màu của dấu chấm (pagination) */
 .featured-shops-swiper .swiper-pagination-bullet-active {
   background-color: var(--bs-primary);
+}
+
+.discount-hihi {
+  background-color: rgba(255, 87, 34, 0.8);
+  color: white;
 }

@@ -8,7 +8,11 @@ export interface Product {
     category_name: string;
     shop_id: number;
     product_variants: ProductVariant[];
-    avg_rating: number
+    avg_rating: number;
+
+    original_price: number;
+    sale_price: number | null;
+    discount_percentage: number | null;
 }
 
 export interface ProductImage {
@@ -26,10 +30,13 @@ export interface VariantOption {
 // 2. Kiểu cho một Biến thể
 export interface ProductVariant {
     id: number;           // 1, 2, 3...
-    price: number;        // 223000
     stock: number;        // 40
     options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
     image_url: string;
+
+    original_price: number; // <-- Đổi 'price' thành 'original_price'
+    sale_price: number | null; // <-- Thêm giá sale (có thể null)
+    discount_percentage: number | null; // <-- Thêm % (có thể null)
 }
 
 export interface ProductReview {

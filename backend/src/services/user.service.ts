@@ -22,8 +22,6 @@ class userService {
         return row[0] as UserProfile;
     }
     updateProfileService = async (id: string, data: any) => {
-        console.log(data);
-
         const { name, gender, birthday } = data;
         const [updateResult] = await pool.query(
             `UPDATE user_profile 

@@ -49,8 +49,6 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
             >
                 {images.map((img) => {
                     const isActive = img.image_url === selectedImageUrl;
-                    console.log(img.image_url, selectedImageUrl);
-
                     return (
                         <SwiperSlide key={img.image_id} className="text-center">
                             <div

@@ -1,6 +1,6 @@
 import { useCart } from "../context/CartContext";
 // Giả sử ProductType của bạn có chứa 'product_variants'
-import type { ProductType, AttributeOfProductVariantsType, ProductVariantType } from "../types/ProductType";
+import type { ProductType, AttributeOfProductVariantsType } from "../types/ProductType";
 import { useState, useMemo, useEffect } from "react";
 import { FaRegHeart } from "react-icons/fa";
 
@@ -83,7 +83,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
     }
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;
-    // console.log(product.product_variants);
+    console.log(product.product_variants);
 
 
     return (
@@ -93,13 +93,17 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
             </div>
 
             {/* --- SỬA LẠI: Hiển thị giá động --- */}
-            <div className="priceOfProduct fw-semibold fs-4 custom-text-orange">
+            <div className="priceOfProduct ">
                 <span>
                     {/* Nếu tìm thấy biến thể thì hiển thị giá của nó, nếu không thì hiển thị giá gốc */}
                     {currentVariant
-                        ? currentVariant.price.toLocaleString()
-                        : product.base_price.toLocaleString()}
-                    đ
+                        ? (
+                            <div>
+                                {currentVariant.sale_price && currentVariant.discount_percentage ? (<span><span className="fw-semibold fs-3 text-primary">{Number(currentVariant.sale_price).toLocaleString('vi-VN')}đ</span>
+                                    <small className="text-muted text text-decoration-line-through ms-2">{product.base_price.toLocaleString('vi-VN')}đ</small>
+                                    <span className="ms-2 p-2 discount-hihi rounded">-{currentVariant.discount_percentage}%</span></span>) : (<span className="fw-semibold fs-3 text-primary"> {currentVariant.original_price.toLocaleString('vi-VN')}đ</span>)}
+                            </div>)
+                        : (<span className="fw-semibold fs-3 text-primary">{product.base_price.toLocaleString('vi-VN')}đ</span>)}
                 </span>
             </div>
 
@@ -140,18 +144,14 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
 
             <div className="d-flex gap-4 align-items-center">
                 <button
-                    className="custom-button-addtocart rounded-pill"
+                    className="custom-button-addtocart rounded-pill w-50"
                     onClick={handleAddCart}
                 >
                     Thêm vào giỏ hàng
                 </button>
-                <button className="custom-button-buynow rounded-pill">
+                <button className="custom-button-buynow rounded-pill w-50">
                     Mua ngay
                 </button>
-                <button className="custom-button-heart rounded-circle p-3">
-                    <FaRegHeart />
-                </button>
-
             </div>
         </div >
     )

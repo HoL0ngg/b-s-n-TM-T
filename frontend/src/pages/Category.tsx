@@ -89,6 +89,7 @@ const Category = () => {
   // }, [query]);
   const loadProducts = useCallback(async () => {
     try {
+      setLoading(true);
       // Gọi một hàm API duy nhất, truyền toàn bộ object query
       const res = await fetchProducts(query, Number(id));
 
@@ -100,6 +101,8 @@ const Category = () => {
 
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
+    } finally {
+      setLoading(false);
     }
   }, [query]); // Chỉ phụ thuộc vào `query`
 
