@@ -22,4 +22,5 @@ export type UserProfileType = {
     gender: number;
     updated_at: string;
     phone_number: string;
+    avatar_url: string;
 } | null;

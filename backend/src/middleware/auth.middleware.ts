@@ -13,12 +13,10 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
     if (!token) return res.status(401).json({ message: "Thiếu token" });
 
     try {
-        // 1. Xác thực token
         const userPayload = jwt.verify(token, SECRET_KEY) as { id: string; shop_id?: number;[key: string]: any };
         (req as any).user = userPayload; // Gán payload vào req.user
         const phone = userPayload.id; // Đây là 'phone_number' (user_id)
 
-        // 2. Lấy User Profile (Code cũ của bạn)
         const [profileRows] = await pool.query(
             `SELECT username, gender, DATE_FORMAT(dob, '%Y-%m-%d') AS dob, updated_at FROM user_profile WHERE phone_number = ?`,
             [phone]
@@ -30,7 +28,6 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
             (req as any).userProfile = null;
         }
 
-        // --- 3. THÊM MỚI: Lấy Shop ID ---
         const [shopRows] = await pool.query<RowDataPacket[]>(
             `SELECT id FROM shops WHERE owner_id = ?`,
             [phone]
