@@ -1,0 +1,51 @@
+/* Màu nền chung cho vùng nội dung */
+body {
+  background-color: #f0f2f5;
+}
+
+/* --- Sidebar Styles --- */
+
+.sidebar-expanded {
+  width: 250px;
+  min-height: 100vh;
+  transition: width 0.3s ease;
+}
+
+.sidebar-collapsed {
+  width: 80px; /* Chiều rộng khi thu nhỏ */
+  min-height: 100vh;
+  transition: width 0.3s ease;
+}
+
+/* Tùy chỉnh nav-link của Bootstrap cho sidebar tối */
+.sidebar .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.sidebar .nav-link:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+  color: white;
+  background-color: #0d6efd; /* Màu primary của Bootstrap */
+}
+
+/* Căn giữa icon khi thu nhỏ */
+.sidebar-collapsed .nav-link {
+  justify-content: center;
+}
+
+.sidebar-collapsed .nav-link .menu-icon {
+  margin-right: 0;
+  font-size: 1.5rem; /* Icon to hơn một chút */
+}
+.sidebar-expanded .nav-link .menu-icon {
+  margin-right: 0.75rem;
+  font-size: 1.2rem;
+}

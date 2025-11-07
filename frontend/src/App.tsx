@@ -32,6 +32,15 @@ import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
 import Promotion from "./pages/Shop/Promotion";
+// --Các trang cho AdminLayout --
+import AdminProtectedRoute from "./components/Admin/AdminProtectedRoute";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminShopManagement from "./pages/Admin/AdminShopManagement";
+import AdminUserManagement from "./pages/Admin/AdminUserManagement";
+import AdminProductApproval from "./pages/Admin/AdminProductApproval";
+import AdminPayouts from "./pages/Admin/AdminPayouts";
+import AdminShopDetail from "./pages/Admin/AdminShopDetail";
 function App() {
   return (
     <BrowserRouter>
@@ -88,6 +97,22 @@ function App() {
         {/* Thêm route 404 (Not Found) nếu cần */}
         {/* <Route path="*" element={<NotFoundPage />} /> */}
 
+
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminLayout />
+            </AdminProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="shops" element={<AdminShopManagement />} />
+          <Route path="users" element={<AdminUserManagement />} />
+          <Route path="products" element={<AdminProductApproval />} />
+          <Route path="payouts" element={<AdminPayouts />} />
+          <Route path="shops/:id" element={<AdminShopDetail />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
