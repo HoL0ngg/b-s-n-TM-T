@@ -948,7 +948,8 @@ ALTER TABLE `promotions`
 
 ALTER TABLE `promotion_items`
   ADD KEY `fk_promotion`(`promotion_id`),
-  ADD KEY `FK_productvariants`(`product_variant_id`);
+  ADD KEY `FK_productvariants`(`product_variant_id`),
+  ADD PRIMARY KEY (`promotion_id`, `product_variant_id`);
 
 --
 -- Chỉ mục cho bảng `shops`

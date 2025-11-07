@@ -67,7 +67,11 @@ export interface ProductVariantType {
     original_price: number;
     sale_price: number | null;
     discount_percentage: number | null;
+
+    product_name?: string;    // Tên sản phẩm cha
+    options_string?: string;  // Chuỗi các tùy chọn (ví dụ: "Màu: Đỏ, Size: M")
 }
+
 export interface ProductResponseType {
     products: ProductType[];
     totalPages: number;
@@ -103,4 +107,6 @@ export interface PromotionItem {
     product_image: string; // URL ảnh
     original_price: number; // Giá gốc của biến thể
     stock: number; // Tồn kho hiện tại
+
+    options_string?: string;
 }

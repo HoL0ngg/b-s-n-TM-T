@@ -1,8 +1,9 @@
 // src/pages/Shop/PromotionManagementPage.tsx
 import { useState, useEffect } from 'react';
-import type { PromotionItem, PromotionType } from '../../types/ProductType';
-import { apiGetPromotionDetails, apiGetShopPromotions, apiSavePromotionDetails } from '../../api/products';
+import type { ProductVariantType, PromotionItem, PromotionType } from '../../types/ProductType';
+import { apiDeletePromotionItem, apiGetPromotionDetails, apiGetShopPromotions, apiSavePromotionDetails } from '../../api/products';
 import DateRangeDisplay from '../../components/DateRangeDisplay';
+import ProductPickerModal from '../../components/ProductPickerModel';
 
 export default function Promotion() {
 
@@ -39,12 +40,14 @@ export default function Promotion() {
 
     // --- HÀM XỬ LÝ ---
 
-    // Hàm này được gọi khi user thay đổi ô input (ví dụ: gõ 10%)
-    const handleItemChange = (variantId: number, field: 'type' | 'value', value: string) => {
+    const handleDiscountChange = (variantId: number, newValueString: string) => {
+        // 1. Chuyển chuỗi thành số (tránh lỗi NaN nếu chuỗi rỗng)
+        const newValue = newValueString === '' ? 0 : Number(newValueString);
         setPromoItems(currentItems =>
             currentItems.map(item =>
                 item.product_variant_id === variantId
-                    ? { ...item, [field]: value }
+                    // 2. Cập nhật đúng trường 'discount_value'
+                    ? { ...item, discount_value: newValue }
                     : item
             )
         );
@@ -58,31 +61,50 @@ export default function Promotion() {
             // Gửi toàn bộ danh sách 'promoItems' mới lên backend
             await apiSavePromotionDetails(selectedPromo.id, promoItems);
             alert("Đã lưu thay đổi!");
+            setSelectedPromo(null);
         } catch (error) {
             alert("Lỗi! Không thể lưu.");
         }
     };
 
+    const handleDeleteItem = async (variantId: number) => {
+        if (!selectedPromo || !window.confirm("Bạn chắc chắn muốn xóa?")) return;
+        console.log(variantId);
+
+
+        try {
+            // Gọi API xóa ngay lập tức
+            await apiDeletePromotionItem(selectedPromo.id, variantId);
+
+            // Cập nhật UI (xóa khỏi state promoItems)
+            setPromoItems(current => current.filter(item => item.product_variant_id !== variantId));
+
+        } catch (error) {
+            alert("Lỗi khi xóa sản phẩm.");
+        }
+    };
+
     // Hàm này được gọi khi Modal 'ProductPicker' trả về sản phẩm
-    // const handleAddProducts = (selectedVariants: ProductVariantType[]) => {
-    //     const newItems: PromotionItem[] = selectedVariants.map(variant => ({
-    //         promotion_id: selectedPromo!.id,
-    //         product_variant_id: variant.id,
-    //         discount_value: 10, // Mặc định 10%
-    //         // (Bạn cũng cần JOIN để lấy tên/ảnh sản phẩm)
-    //         // product_name: variant.name,
-    //         product_image: variant.image_url,
-    //     }));
+    const handleAddProducts = (selectedVariants: ProductVariantType[]) => {
+        const newItems: PromotionItem[] = selectedVariants.map(variant => ({
+            promotion_id: selectedPromo!.id,
+            product_variant_id: variant.id,
+            discount_value: 10, // Mặc định 10%
+            // (Bạn cũng cần JOIN để lấy tên/ảnh sản phẩm)
+            original_price: variant.original_price,
+            stock: variant.stock,
+            product_name: variant.product_name || '',
+            product_image: variant.image_url,
+        }));
 
-    //     // Thêm vào state (loại bỏ trùng lặp nếu có)
-    //     setPromoItems(current => [...current, ...newItems.filter(
-    //         newItem => !current.some(c => c.product_variant_id === newItem.product_variant_id)
-    //     )]);
+        // Thêm vào state (loại bỏ trùng lặp nếu có)
+        setPromoItems(current => [...current, ...newItems.filter(
+            newItem => !current.some(c => c.product_variant_id === newItem.product_variant_id)
+        )]);
 
-    //     setIsProductPickerOpen(false);
-    // };
+        setIsProductPickerOpen(false);
+    };
 
-    // --- GIAO DIỆN JSX ---
     return (
         <div className="container-fluid mt-4">
             <div className="row">
@@ -141,17 +163,21 @@ export default function Promotion() {
                                         <tbody>
                                             {promoItems.map(item => (
                                                 <tr key={item.product_variant_id}>
-                                                    <td>{item.product_name}</td>
+                                                    <td>{item.product_name}
+                                                        <small className='ms-4'>{item.options_string}</small>
+                                                    </td>
                                                     <td>
                                                         <input
                                                             type="number"
-                                                            className="form-control form-control-sm w-50"
+                                                            className="form-control form-control-sm w-100"
                                                             value={item.discount_value}
-                                                            onChange={(e) => handleItemChange(item.product_variant_id, 'value', e.target.value)}
+                                                            onChange={(e) => handleDiscountChange(item.product_variant_id, e.target.value)}
+                                                            min={0}
+                                                            max={100} // Giới hạn từ 0% đến 100
                                                         />
                                                     </td>
                                                     <td>
-                                                        <button className="btn btn-danger btn-sm">X</button>
+                                                        <button className="btn btn-danger btn-sm" onClick={() => handleDeleteItem(item.product_variant_id)}>X</button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -159,14 +185,12 @@ export default function Promotion() {
                                     </table>
                                 )}
                             </div>
-                            {/*
-                            <ProductPickerModal 
+                            <ProductPickerModal
                                 show={isProductPickerOpen}
                                 onHide={() => setIsProductPickerOpen(false)}
                                 shopId={selectedPromo.shop_id}
                                 onSave={handleAddProducts}
                             />
-*/}
                             <div className="card-footer text-end">
                                 <button className="btn btn-success" onClick={handleSaveChanges}>
                                     Lưu thay đổi

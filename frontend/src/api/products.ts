@@ -180,6 +180,15 @@ export const apiSavePromotionDetails = async (
     items: UpdatePromoItemDto[]
 ) => {
     // Frontend gọi: PATCH /api/promotions/123/items
-    const res = await axios.patch(`/promotions/${promotionId}/items`, items);
+    const res = await axios.patch(`${API_URl}/promotions/${promotionId}/items`, items);
     return res.data;
+};
+
+export const apiUpdatePromotionItem = async (promoId: number, variantId: number, discountValue: number) => {
+    return axios.patch(`${API_URl}/promotions/${promoId}/items/${variantId}`, { discount_value: discountValue });
+};
+
+// Xóa 1 item
+export const apiDeletePromotionItem = async (promoId: number, variantId: number) => {
+    return axios.delete(`${API_URl}/promotions/${promoId}/items/${variantId}`);
 };

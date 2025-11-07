@@ -27,5 +27,8 @@ ProductRouter.get("/recommend/hot", productController.getHotProducts);
 
 ProductRouter.get('/promotions', verifyToken, productController.getShopPromotions);
 ProductRouter.get('/promotions/:id/items', verifyToken, productController.getPromotionDetails);
+ProductRouter.patch('/promotions/:id/items/:variantid', verifyToken, productController.updatePromotionItem);
+ProductRouter.patch('/promotions/:id/items', verifyToken, productController.savePromotionItems);
+ProductRouter.delete('/promotions/:promoId/items/:variantId', productController.deletePromotionItem);
 
 export default ProductRouter;

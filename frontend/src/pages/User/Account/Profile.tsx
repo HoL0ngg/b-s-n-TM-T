@@ -131,28 +131,6 @@ export default function Profile() {
         setSelectedFile(file); // Chỉ lưu file, không tạo preview
     };
 
-    const handleChangeAvatar = () => {
-        if (!selectedFile) return;
-
-        const formData = new FormData();
-        formData.append('avatar', selectedFile);
-
-        try {
-            // await apiUpdateUserAvatar(formData);
-            alert("Cập nhật avatar thành công!");
-            setSelectedFile(null); // Xóa file đã chọn
-
-            // --- MẤU CHỐT LÀ Ở ĐÂY ---
-            // Tải lại thông tin user. 'user.avatar_url' sẽ đổi.
-            // React re-render, và thẻ <img> sẽ hiển thị ảnh mới.
-            // reloadUserProfile();
-
-        } catch (error) {
-            console.error("Lỗi upload avatar:", error);
-            alert("Upload thất bại.");
-        }
-    }
-
     if (!user || !userProfile) {
         return <div>Đang tải thông tin...</div>;
     }

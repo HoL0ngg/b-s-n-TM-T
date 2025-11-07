@@ -69,3 +69,8 @@ export interface ProductResponse {
     totalPages: number;
     brands?: BrandOfProduct[];
 }
+
+export interface UpdatePromoItemDto {
+    product_variant_id: number;
+    discount_value: number;
+}

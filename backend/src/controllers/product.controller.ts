@@ -382,6 +382,57 @@ class productController {
             res.status(500).json({ message: "Lỗi máy chủ" });
         }
     }
+
+    updatePromotionItem = async (req: Request, res: Response) => {
+        try {
+            const shopId = (req as any).user.shop_id;
+            const promoId = Number(req.params.promoId);
+            const variantId = Number(req.params.variantId);
+            const { discount_value } = req.body; // Chỉ nhận giá trị cần sửa
+
+            await productService.updateItem(shopId, promoId, variantId, discount_value);
+            res.json({ message: "Đã cập nhật sản phẩm" });
+        } catch (error: any) {
+            // (Xử lý lỗi giống các hàm trên)
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    deletePromotionItem = async (req: Request, res: Response) => {
+        try {
+            const promoId = Number(req.params.promoId);
+            const variantId = Number(req.params.variantId);
+
+            await productService.deleteItem(promoId, variantId);
+
+            res.status(200).json({ message: "Đã xóa sản phẩm khỏi sự kiện" });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+            console.log(error);
+
+        }
+    }
+
+    savePromotionItems = async (req: Request, res: Response) => {
+        try {
+            const promotionId = Number(req.params.id);
+            const items = req.body; // Mảng UpdatePromoItemDto[]
+
+            if (!promotionId || !Array.isArray(items)) {
+                return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
+            }
+
+            await productService.syncPromotionItems(promotionId, items);
+
+            res.json({ message: "Cập nhật sản phẩm khuyến mãi thành công" });
+        } catch (error: any) {
+            console.error("Lỗi savePromotionItems:", error);
+            if (error.message === 'FORBIDDEN') {
+                return res.status(403).json({ message: "Bạn không có quyền sửa khuyến mãi này" });
+            }
+            res.status(500).json({ message: "Lỗi server khi lưu khuyến mãi" });
+        }
+    }
 }
 
 export default new productController();
