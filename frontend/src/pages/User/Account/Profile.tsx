@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { updateProfile } from "../../../api/user";
 
 export default function Profile() {
     const { user, userProfile, setUserProfile } = useAuth();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     const [name, setName] = useState('');
     const [birthday, setBirthday] = useState('');
@@ -11,6 +15,7 @@ export default function Profile() {
 
     const [isEditable, setIsEditable] = useState(false);
     const [daysRemaining, setDaysRemaining] = useState(0);
+
 
     useEffect(() => {
         if (userProfile) {
@@ -41,6 +46,31 @@ export default function Profile() {
         }
     }, [userProfile]);
 
+    useEffect(() => {
+        // Nếu không có file nào (ví dụ: khi nhấn "Hủy"),
+        // thì xóa ảnh preview
+        if (!selectedFile) {
+            setPreview(null);
+            return;
+        }
+
+        // Tạo một URL tạm thời (blob URL) cho file ảnh
+        const objectUrl = URL.createObjectURL(selectedFile);
+
+        // Gán URL này vào state 'preview'
+        setPreview(objectUrl);
+
+        // Dọn dẹp: Hủy object URL khi component bị unmount
+        // (để tránh rò rỉ bộ nhớ)
+        return () => URL.revokeObjectURL(objectUrl);
+
+    }, [selectedFile]);
+
+    const avatarSrc = preview || (user?.avatar_url
+        ? `${API_BASE_URL}${user?.avatar_url}` // <-- Mấu chốt là đây
+        : "/assets/panda.png");
+    console.log(`${user?.avatar_url}`);
+
     // 4. HÀM SUBMIT
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,21 +84,29 @@ export default function Profile() {
             return;
         }
 
-        const updatedProfileData = {
-            id: user.id,
-            name: name,
-            gender: gender,
-            birthday: birthday,
-        };
+        const formData = new FormData();
+
+        // --- 2. GẮN DỮ LIỆU CHỮ ---
+        formData.append('name', name);
+        formData.append('gender', gender.toString());
+        formData.append('birthday', birthday);
+
+        // --- 3. GẮN DỮ LIỆU FILE (NẾU CÓ) ---
+        if (selectedFile) {
+            formData.append('avatar', selectedFile); // 'avatar' phải khớp key của multer
+        }
 
         try {
-            const response = await updateProfile(updatedProfileData);
+            // --- 4. GỌI API (với FormData) ---
+            const response = await updateProfile(formData);
 
-            const newProfile = response.user;
-            console.log(newProfile);
+            const newProfile = response.user; // (Backend trả về)
+            console.log(response);
 
 
-            setUserProfile(newProfile); // 👈 TỐI ƯU QUAN TRỌNG
+            setUserProfile(newProfile); // Cập nhật Context
+            setSelectedFile(null); // Reset file
+
             alert('Cập nhật thành công!');
 
         } catch (error) {
@@ -76,6 +114,44 @@ export default function Profile() {
             alert("Cập nhật thất bại");
         }
     };
+
+    const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) {
+            setSelectedFile(null);
+            return;
+        }
+        const file = e.target.files[0];
+
+        const allowedTypes = ['image/jpeg', 'image/png'];
+        if (!allowedTypes.includes(file.type)) {
+            alert("Chỉ chấp nhận file .jpeg hoặc .png!");
+            return;
+        }
+
+        setSelectedFile(file); // Chỉ lưu file, không tạo preview
+    };
+
+    const handleChangeAvatar = () => {
+        if (!selectedFile) return;
+
+        const formData = new FormData();
+        formData.append('avatar', selectedFile);
+
+        try {
+            // await apiUpdateUserAvatar(formData);
+            alert("Cập nhật avatar thành công!");
+            setSelectedFile(null); // Xóa file đã chọn
+
+            // --- MẤU CHỐT LÀ Ở ĐÂY ---
+            // Tải lại thông tin user. 'user.avatar_url' sẽ đổi.
+            // React re-render, và thẻ <img> sẽ hiển thị ảnh mới.
+            // reloadUserProfile();
+
+        } catch (error) {
+            console.error("Lỗi upload avatar:", error);
+            alert("Upload thất bại.");
+        }
+    }
 
     if (!user || !userProfile) {
         return <div>Đang tải thông tin...</div>;
@@ -214,14 +290,21 @@ export default function Profile() {
                 </section>
                 <section className="col-md-3 border-start">
                     <div className="container">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileSelected}
+                            accept="image/png, image/jpeg"
+                            style={{ display: 'none' }}
+                        />
                         <div className="text-center">
                             <img
-                                src={user.avatar_url}
+                                src={avatarSrc}
                                 alt="User Avatar"
                                 className="rounded-circle mb-2"
                                 style={{ height: '150px', width: '150px' }}
                             />
-                            <div className="mb-0 btn btn-primary">Chọn ảnh</div>
+                            <div className="mb-0 btn btn-primary" onClick={() => fileInputRef.current?.click()}>Chọn ảnh</div>
                             <br />
                             <small className="text-muted">Dung lượng file tối đa 1MB</small>
                             <br />
