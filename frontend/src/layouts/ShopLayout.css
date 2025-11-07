@@ -92,7 +92,11 @@
 .shop-sidebar .nav-link.active i {
   color: white !important;
 }
-
+.shop-sidebar .collapse .nav-link:not(.active) {
+    background-color: transparent !important;
+    color: #212529 !important; /* Màu đen của Bootstrap */
+    font-weight: 400; /* Trọng lượng font bình thường */
+}
 /* Đổi màu nền khi di chuột (hover) qua link CHƯA active */
 .shop-sidebar .nav-link:not(.active):hover {
   background-color: #fff0e6; /* Màu cam rất nhạt */

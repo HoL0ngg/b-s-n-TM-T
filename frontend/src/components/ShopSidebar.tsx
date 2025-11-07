@@ -40,7 +40,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             </div>
             {isOpen && <i className="bi bi-chevron-down small"></i>}
           </a>
-          <div className="collapse" id="submenu-orders">
+          <div className="collapse show" id="submenu-orders">
             <ul className="nav flex-column ms-4">
               <li>
                 {/* 1. Link "Tất cả" PHẢI CÓ 'end' */}
@@ -53,7 +53,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
                         : "nav-link text-dark small sidebar-link-text"
                     }
                 >
-                  Tất cả
+                  Tất cả  2222
                 </NavLink>
               </li> 
               <li>
@@ -130,7 +130,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
         {/* --- Nhóm Quản lý Sản phẩm --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
-            Quản lý Sản phẩm
+            Quản lý Sản phẩm aaa
           </span>
         </li>
         <li className="nav-item">
@@ -141,7 +141,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             className="nav-link text-dark"
           >
             <i className="bi bi-box-seam me-3 fs-5"></i>
-            <span className="sidebar-link-text">Tất cả Sản phẩm</span>
+            <span className="sidebar-link-text">Tất cả Sản  phẩm</span>
           </NavLink>
         </li>
         <li className="nav-item">
