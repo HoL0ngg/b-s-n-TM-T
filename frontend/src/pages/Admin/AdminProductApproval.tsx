@@ -22,7 +22,7 @@ interface Product {
 }
 
 const mockProductsData: Product[] = [
-    { id: 'P2001', name: 'Áo thun nam Cotton', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Áo', shopName: 'Shop Cây Cảnh Mini', category: 'Thời trang', price: 250000, status: 'pending' },
+    { id: '3', name: 'Áo thun nam Cotton', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Áo', shopName: 'Shop Cây Cảnh Mini', category: 'Thời trang', price: 250000, status: 'pending' },
     { id: 'P2002', name: 'Bonsai mini để bàn', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Cây', shopName: 'Shop Cây Cảnh Mini', category: 'Nhà cửa', price: 550000, status: 'approved' },
     { id: 'P2003', name: 'Ấm trà gốm Bát Tràng', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Gốm', shopName: 'Gốm Sứ Bát Tràng', category: 'Nhà cửa', price: 1200000, status: 'approved' },
     { id: 'P2004', name: 'Quần short Kaki', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Quần', shopName: 'Thời Trang Trẻ Em', category: 'Thời trang', price: 180000, status: 'pending' },
