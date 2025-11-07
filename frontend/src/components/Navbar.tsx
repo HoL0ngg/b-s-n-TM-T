@@ -39,7 +39,7 @@ export default function Navbar() {
         }, 0);
     }, [cart]);
 
-    // ✅ Kiểm tra user có shop không
+    //  Kiểm tra user có shop không
     useEffect(() => {
         const checkUserShop = async () => {
             if (user && user.id) {
@@ -89,7 +89,7 @@ export default function Navbar() {
         }
     };
 
-    // ✅ Hàm fetch và debounce tìm kiếm
+    //  Hàm fetch và debounce tìm kiếm
     const fetchProducts = async (val: string) => {
         try {
             const res = await fetchProductsByKeyWord(val);
@@ -182,7 +182,10 @@ export default function Navbar() {
                                                     }}
                                                 />
                                             )}
-                                            <span className="search-name">{pro.name}</span>
+                                            <div className="search-info">
+                                                <div className="search-name">{pro.name}</div>
+                                                <div className="search-price">{pro.base_price.toLocaleString()}</div>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -192,17 +195,6 @@ export default function Navbar() {
 
                     {/* 🧭 Menu bên phải */}
                     <ul className="navbar-nav gap-2 align-items-center">
-                        {/* Nút vào Shop */}
-                        <li className="d-flex align-items-center">
-                            <Link
-                                to="/shop"
-                                className="nav-link d-flex align-items-center"
-                                title="Xem Shop"
-                            >
-                                <i className="fa-solid fa-shop text-primary fs-5"></i>
-                            </Link>
-                        </li>
-
                         {/* Kênh người bán */}
                         {user && (
                             <li className="d-flex align-items-center">

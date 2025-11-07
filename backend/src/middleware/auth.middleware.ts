@@ -61,7 +61,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { ENV } from "../config/env";
-// Bỏ import pool vì chúng ta không query CSDL ở đây nữa
+import pool from "../config/db";
+import { RowDataPacket } from "mysql2";
 
 const SECRET_KEY = ENV.JWT_SECRET;
 
@@ -81,9 +82,9 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
     if (!token) return res.status(401).json({ message: "Thiếu token" });
 
     try {
-        // 1. Giải mã token
-        const userPayload = jwt.verify(token, SECRET_KEY) as { id: string; [key: string]: any };
-        const phone = userPayload.id;
+        const userPayload = jwt.verify(token, SECRET_KEY) as { id: string; shop_id?: number;[key: string]: any };
+        (req as any).user = userPayload; // Gán payload vào req.user
+        const phone = userPayload.id; // Đây là 'phone_number' (user_id)
 
         // 2. [SỬA] Gắn đối tượng AuthUser (sạch) vào req.user
         const user: AuthUser = {
@@ -94,7 +95,29 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
 
         // 3. [LOẠI BỎ] Đã bỏ truy vấn đến user_profile để tăng tốc middleware
 
-        next();
+        // next();
+        // if (Array.isArray(profileRows) && profileRows.length > 0) {
+        //     (req as any).userProfile = profileRows[0];
+        // } else {
+        //     (req as any).userProfile = null;
+        // }
+
+        const [shopRows] = await pool.query<RowDataPacket[]>(
+            `SELECT id FROM shops WHERE owner_id = ?`,
+            [phone]
+        );
+
+        // --- 4. THÊM MỚI: Gán 'shop_id' vào 'req.user' ---
+        if (Array.isArray(shopRows) && shopRows.length > 0) {
+            // Nếu tìm thấy shop, gán shop_id vào
+            (req as any).user.shop_id = shopRows[0].id;
+        } else {
+            // Nếu user này không có shop (chỉ là người mua), gán là null
+            (req as any).user.shop_id = null;
+        }
+
+        next(); // Cho đi tiếp
+
     } catch (err) {
         return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }

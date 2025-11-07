@@ -95,29 +95,29 @@ class productController {
 
         }
     }
-     createProductController = async (req: Request, res: Response) => {
+    createProductController = async (req: Request, res: Response) => {
         try {
             const productData = req.body;
-            
+
             // Validate required fields
             if (!productData.shop_id || !productData.name || !productData.base_price) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Missing required fields: shop_id, name, base_price' 
+                return res.status(400).json({
+                    success: false,
+                    message: 'Missing required fields: shop_id, name, base_price'
                 });
             }
-            
+
             const product = await productService.createProductService(productData);
-            
-            res.status(201).json({ 
-                success: true, 
+
+            res.status(201).json({
+                success: true,
                 message: 'Product created successfully',
-                data: product 
+                data: product
             });
         } catch (error) {
             console.error('Error creating product:', error);
-            res.status(500).json({ 
-                success: false, 
+            res.status(500).json({
+                success: false,
                 message: 'Internal server error',
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
@@ -129,15 +129,15 @@ class productController {
         try {
             const productId = Number(req.params.id);
             const productData = req.body;
-            
+
             // Validate product ID
             if (!productId || isNaN(productId)) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Invalid product ID' 
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid product ID'
                 });
             }
-            
+
             // Optional: Verify shop ownership (if you have auth middleware)
             // const userId = (req as any).user?.id;
             // if (userId) {
@@ -149,18 +149,18 @@ class productController {
             //         });
             //     }
             // }
-            
+
             const product = await productService.updateProductService(productId, productData);
-            
-            res.status(200).json({ 
-                success: true, 
+
+            res.status(200).json({
+                success: true,
                 message: 'Product updated successfully',
-                data: product 
+                data: product
             });
         } catch (error) {
             console.error('Error updating product:', error);
-            res.status(500).json({ 
-                success: false, 
+            res.status(500).json({
+                success: false,
                 message: 'Internal server error',
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
@@ -171,15 +171,15 @@ class productController {
     deleteProductController = async (req: Request, res: Response) => {
         try {
             const productId = Number(req.params.id);
-            
+
             // Validate product ID
             if (!productId || isNaN(productId)) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Invalid product ID' 
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid product ID'
                 });
             }
-            
+
             // Optional: Verify shop ownership (if you have auth middleware)
             // const userId = (req as any).user?.id;
             // if (userId) {
@@ -191,17 +191,17 @@ class productController {
             //         });
             //     }
             // }
-            
+
             await productService.deleteProductService(productId);
-            
-            res.status(200).json({ 
-                success: true, 
-                message: 'Product deleted successfully' 
+
+            res.status(200).json({
+                success: true,
+                message: 'Product deleted successfully'
             });
         } catch (error) {
             console.error('Error deleting product:', error);
-            res.status(500).json({ 
-                success: false, 
+            res.status(500).json({
+                success: false,
                 message: 'Internal server error',
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
@@ -281,7 +281,7 @@ class productController {
             // Nếu không, mới filter theo categoryId (cha của generic_id)
             else if (categoryId) {
                 whereClause +=
-                    " AND products.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                    " AND generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
                 params.push(categoryId);
             }
             // --- HẾT PHẦN LOGIC QUAN TRỌNG ---
@@ -352,5 +352,87 @@ class productController {
             });
         }
     };
+
+    getShopPromotions = async (req: Request, res: Response) => {
+        try {
+            const shopId = (req as any).user.shop_id; // Lấy từ middleware
+
+            const promotions = await productService.getPromotionsByShopId(shopId);
+
+            res.status(200).json(promotions);
+        } catch (error) {
+            res.status(500).json({ message: "Lỗi máy chủ" });
+        }
+    }
+
+    getPromotionDetails = async (req: Request, res: Response) => {
+        try {
+            const shopId = (req as any).user.shop_id;
+            const promotionId = Number(req.params.id);
+
+            const items = await productService.getItemsByPromotionId(promotionId);
+
+            res.status(200).json(items);
+        } catch (error: any) {
+            if (error.message === 'FORBIDDEN') {
+                return res.status(403).json({ message: "Không có quyền xem sự kiện này" });
+            }
+            console.log(error);
+
+            res.status(500).json({ message: "Lỗi máy chủ" });
+        }
+    }
+
+    updatePromotionItem = async (req: Request, res: Response) => {
+        try {
+            const shopId = (req as any).user.shop_id;
+            const promoId = Number(req.params.promoId);
+            const variantId = Number(req.params.variantId);
+            const { discount_value } = req.body; // Chỉ nhận giá trị cần sửa
+
+            await productService.updateItem(shopId, promoId, variantId, discount_value);
+            res.json({ message: "Đã cập nhật sản phẩm" });
+        } catch (error: any) {
+            // (Xử lý lỗi giống các hàm trên)
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    deletePromotionItem = async (req: Request, res: Response) => {
+        try {
+            const promoId = Number(req.params.promoId);
+            const variantId = Number(req.params.variantId);
+
+            await productService.deleteItem(promoId, variantId);
+
+            res.status(200).json({ message: "Đã xóa sản phẩm khỏi sự kiện" });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+            console.log(error);
+
+        }
+    }
+
+    savePromotionItems = async (req: Request, res: Response) => {
+        try {
+            const promotionId = Number(req.params.id);
+            const items = req.body; // Mảng UpdatePromoItemDto[]
+
+            if (!promotionId || !Array.isArray(items)) {
+                return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
+            }
+
+            await productService.syncPromotionItems(promotionId, items);
+
+            res.json({ message: "Cập nhật sản phẩm khuyến mãi thành công" });
+        } catch (error: any) {
+            console.error("Lỗi savePromotionItems:", error);
+            if (error.message === 'FORBIDDEN') {
+                return res.status(403).json({ message: "Bạn không có quyền sửa khuyến mãi này" });
+            }
+            res.status(500).json({ message: "Lỗi server khi lưu khuyến mãi" });
+        }
+    }
 }
+
 export default new productController();

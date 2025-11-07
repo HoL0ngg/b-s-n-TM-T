@@ -26,7 +26,6 @@ export async function changePasswordController(req: Request, res: Response) {
         const { email, password } = req.body;
 
         const hihi = await changePassword(email, password);
-        console.log(hihi);
 
         if (hihi.success)
             res.json({ message: "Đổi mật khẩu thành công" });

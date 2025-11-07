@@ -17,3 +17,8 @@ export const apiGetFeaturedShops = async (): Promise<ShopType[]> => {
     const res = await axios.get(`${API_URL}/hot`);
     return res.data;
 }
+
+export const apiGetVariantsForShop = async (id: number) => {
+    const res = await axios.get(`${API_URL}/variants/${id}`);
+    return res.data;
+}

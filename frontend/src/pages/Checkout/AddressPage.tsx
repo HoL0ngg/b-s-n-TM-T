@@ -185,7 +185,7 @@ export const AddressPage = () => {
                                                             ))}
                                                         </div>
                                                         <div>Số lượng: {item.quantity}</div>
-                                                        <div className="text-danger fw-bold">{item.product_price.toLocaleString()}đ</div>
+                                                        <div className="text-danger fw-bold">{Number(item.sale_price ? item.sale_price : item.original_price).toLocaleString('vi-VN')}đ</div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -196,7 +196,7 @@ export const AddressPage = () => {
                                                 </div>
                                                 <div className="text-end">
                                                     <div>20.000đ</div>
-                                                    <div>{subTotal.toLocaleString()}đ</div>
+                                                    <div>{subTotal.toLocaleString('vi-VN')}đ</div>
                                                 </div>
                                             </div>
                                         </div>

@@ -30,6 +30,19 @@ import Orders from "./pages/Shop/Orders";
 import RegisterShop from './pages/RegisterShop';
 import OrderDetail from "./pages/Shop/OrderDetail";
 
+import View from "./pages/Shop/View";
+import ProfileShop from "./pages/Shop/Profile";
+import ShopProducts from "./pages/Shop/Products";
+import Promotion from "./pages/Shop/Promotion";
+// --Các trang cho AdminLayout --
+import AdminProtectedRoute from "./components/Admin/AdminProtectedRoute";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminShopManagement from "./pages/Admin/AdminShopManagement";
+import AdminUserManagement from "./pages/Admin/AdminUserManagement";
+import AdminProductApproval from "./pages/Admin/AdminProductApproval";
+import AdminPayouts from "./pages/Admin/AdminPayouts";
+import AdminShopDetail from "./pages/Admin/AdminShopDetail";
 function App() {
   return (
     <BrowserRouter>
@@ -83,11 +96,31 @@ function App() {
           <Route path="orders/:id" element={<OrderDetail />} />
           <Route path="orders" element={<Orders />} />
           {/* <Route path="products" element={<ShopProducts />} /> */}
+          <Route path="settings/view" element={<View />} />
+          <Route path="settings/profile" element={<ProfileShop />} />
+          <Route path="products" element={<ShopProducts />} />
+          <Route path="promotion" element={<Promotion />} />
         </Route>
 
         {/* Thêm route 404 (Not Found) nếu cần */}
         {/* <Route path="*" element={<NotFoundPage />} /> */}
 
+
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminLayout />
+            </AdminProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="shops" element={<AdminShopManagement />} />
+          <Route path="users" element={<AdminUserManagement />} />
+          <Route path="products" element={<AdminProductApproval />} />
+          <Route path="payouts" element={<AdminPayouts />} />
+          <Route path="shops/:id" element={<AdminShopDetail />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

@@ -13,10 +13,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
     return (
         <div
-            className="card shadow-sm"
+            className="card shadow-sm position-relative"
             onClick={goToDetailProduct}
             style={{ cursor: "pointer", height: "340px", width: '220px' }}
         >
+            {product.discount_percentage && (<div className="position-absolute top-0 start-0 m-1 p-2 rounded discount-hihi">
+                -{product.discount_percentage}%
+            </div>)}
             <img
                 src={product.image_url}
                 alt={product.name}
@@ -28,8 +31,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 <small className="text-muted ms-1">
                     {product.category_name}
                 </small>
-                <div className="card-text text-start ms-1 fs-5 fw-bold text-primary">
-                    {product.base_price.toLocaleString()}<small>đ</small>
+                <div className="card-text text-start ms-1 fs-5">
+                    {product.sale_price ?
+                        (<div>
+                            <span className="fw-bold text-primary">{Number(product.sale_price).toLocaleString('vi-VN')}<small>đ</small></span>
+                            <small className="ms-2 text-muted text-decoration-line-through">{product.base_price.toLocaleString('vi-VN')}đ</small>
+                        </div>) :
+                        (<span className="fw-bold text-primary">{product.base_price.toLocaleString('vi-VN')}<small>đ</small></span>)}
+
                 </div>
                 <div className="text-muted ms-1 d-flex justify-content-between align-items-center">
                     <div>Đã bán: {product.sold_count}</div>
@@ -39,7 +48,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 export default ProductCard;

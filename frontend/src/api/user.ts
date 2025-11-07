@@ -24,7 +24,7 @@ export const fetchUserProfile = async (id: string): Promise<UserProfileType> => 
 }
 
 export const updateProfile = async (hihi: any) => {
-    const res = await axios.put(`${API_URL}/${hihi.id}/profile`, hihi);
+    const res = await axios.patch(`${API_URL}/profile`, hihi);
     // console.log(res);
     return res.data;
 }

@@ -1,7 +1,7 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants,BrandOfProduct,ProductVariant,VariantOption,ProductResponse } from "../models/product.model";
-import { ResultSetHeader } from 'mysql2';   
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, BrandOfProduct, ProductVariant, VariantOption, ProductResponse, ProductImage, UpdatePromoItemDto } from "../models/product.model";
+import { ResultSetHeader } from 'mysql2';
 import { paginationProducts } from "../helpers/pagination.helper";
 
 class productService {
@@ -19,10 +19,40 @@ class productService {
             throw new Error('Không tìm thấy sản phẩm');
         }
 
+        const sql_variants = `
+                SELECT 
+                    pv.id, 
+                    pv.price AS original_price,
+                    pv.stock, 
+                    pv.sku, 
+                    pv.image_url,
+                    
+                    -- Lấy % giảm giá (nếu có)
+                    pi.discount_value AS discount_percentage,
+                    
+                    -- Tính giá sale (nếu có)
+                    (CASE
+                        WHEN pi.discount_value IS NOT NULL 
+                        THEN (pv.price * (1 - (pi.discount_value / 100)))
+                        ELSE NULL 
+                    END) AS sale_price
+                    
+                FROM 
+                    productvariants pv
+                
+                -- Dùng LEFT JOIN để vẫn lấy được biến thể dù không có KM
+                LEFT JOIN 
+                    promotion_items pi ON pv.id = pi.product_variant_id
+                LEFT JOIN 
+                    promotions promo ON pi.promotion_id = promo.id
+                                    AND promo.is_active = 1
+                                    AND NOW() BETWEEN promo.start_date AND promo.end_date
+                                    
+                WHERE 
+                    pv.product_id = ?;
+            `;
         const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
-            `SELECT id, price, stock, sku 
-         FROM productvariants 
-         WHERE product_id = ?`,
+            sql_variants,
             [id]
         );
 
@@ -54,8 +84,8 @@ class productService {
         return product as Product;
     }
 
-    getProductImgOnIdService = async (id: number): Promise<string[]> => {
-        const [rows] = await pool.query("SELECT image_id, image_url FROM productimages where product_id = ?", [id]) as unknown as [string[], any];
+    getProductImgOnIdService = async (id: number): Promise<ProductImage[]> => {
+        const [rows] = await pool.query("SELECT image_id, image_url, is_main FROM productimages where product_id = ?", [id]) as unknown as [ProductImage[], any];
         return rows;
     }
 
@@ -174,23 +204,23 @@ class productService {
         }));
         return result as AttributeOfProductVariants[];
     }
-        createProductService = async (productData: any) => {
+    createProductService = async (productData: any) => {
         const { shop_id, name, description, base_price, category_id, shop_cate_id, image_url, status } = productData;
-        
+
         const connection = await pool.getConnection();
-        
+
         try {
             await connection.beginTransaction();
-            
+
             // Insert product
             const [result] = await connection.query<ResultSetHeader>(
                 `INSERT INTO products (shop_id, name, description, base_price, category_id, shop_cate_id, status, created_at, updated_at) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
                 [shop_id, name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1]
             );
-            
+
             const productId = result.insertId;
-            
+
             // Insert default image if provided
             if (image_url) {
                 await connection.query(
@@ -199,9 +229,9 @@ class productService {
                     [productId, image_url]
                 );
             }
-            
+
             await connection.commit();
-            
+
             // Return created product
             const [product] = await pool.query(
                 `SELECT p.*, pi.image_url 
@@ -210,9 +240,9 @@ class productService {
                  WHERE p.id = ?`,
                 [productId]
             ) as [Product[], any];
-            
+
             return product[0];
-            
+
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -224,12 +254,12 @@ class productService {
     // UPDATE product
     updateProductService = async (productId: number, productData: any) => {
         const { name, description, base_price, category_id, shop_cate_id, image_url, status } = productData;
-        
+
         const connection = await pool.getConnection();
-        
+
         try {
             await connection.beginTransaction();
-            
+
             // Update product
             await connection.query(
                 `UPDATE products 
@@ -237,7 +267,7 @@ class productService {
                  WHERE id = ?`,
                 [name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1, productId]
             );
-            
+
             // Update image if provided
             if (image_url) {
                 // Check if image exists
@@ -245,7 +275,7 @@ class productService {
                     'SELECT image_id FROM productimages WHERE product_id = ? AND is_primary = 1',
                     [productId]
                 );
-                
+
                 if ((existingImages as any[]).length > 0) {
                     // Update existing image
                     await connection.query(
@@ -260,9 +290,9 @@ class productService {
                     );
                 }
             }
-            
+
             await connection.commit();
-            
+
             // Return updated product
             const [product] = await pool.query(
                 `SELECT p.*, pi.image_url 
@@ -271,9 +301,9 @@ class productService {
                  WHERE p.id = ?`,
                 [productId]
             ) as [Product[], any];
-            
+
             return product[0];
-            
+
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -285,30 +315,30 @@ class productService {
     // DELETE product
     deleteProductService = async (productId: number) => {
         const connection = await pool.getConnection();
-        
+
         try {
             await connection.beginTransaction();
-            
+
             // Delete product images first (foreign key constraint)
             await connection.query('DELETE FROM productimages WHERE product_id = ?', [productId]);
-            
+
             // Delete product reviews
             await connection.query('DELETE FROM productreviews WHERE product_id = ?', [productId]);
-            
+
             // Delete product variants and related data if exists
             await connection.query('DELETE FROM variantoptionvalues WHERE variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)', [productId]);
             await connection.query('DELETE FROM productvariants WHERE product_id = ?', [productId]);
-            
+
             // Delete product details
             await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
-            
+
             // Finally delete the product
             await connection.query('DELETE FROM products WHERE id = ?', [productId]);
-            
+
             await connection.commit();
-            
+
             return { success: true, message: 'Product deleted successfully' };
-            
+
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -326,7 +356,7 @@ class productService {
              WHERE p.id = ? AND s.owner_id = ?`,
             [productId, userId]
         );
-        
+
         return (rows as any[]).length > 0;
     };
 
@@ -409,7 +439,7 @@ class productService {
                 FROM products 
                 LEFT JOIN productimages 
                     ON productimages.product_id = products.id 
-                    AND productimages.isMain = 1
+                    AND productimages.is_main = 1
                 WHERE BINARY LOWER(products.name) LIKE LOWER(CONCAT('%', ? , '%'))
                 GROUP BY products.id
                 LIMIT 7
@@ -505,6 +535,151 @@ class productService {
 
     getProductsService = async (whereClause: string, params: any[], page: number = 1, limit: number = 12, orderBy: string = ""): Promise<ProductResponse> => {
         return paginationProducts(whereClause, params, page, limit, orderBy);
+    }
+
+    getPromotionsByShopId = async (shopId: number) => {
+        const [rows] = await pool.query(
+            "SELECT * FROM promotions WHERE shop_id = ? ORDER BY start_date DESC",
+            [shopId]
+        );
+        return rows; // Trả về mảng Promotion[]
+    }
+
+    getItemsByPromotionId = async (promotionId: number) => {
+        const sql = `
+            SELECT
+                pi.promotion_id,
+                pi.product_variant_id,
+                pi.discount_value,
+                
+                pv.price AS original_price,
+                pv.stock,
+                
+                p.name AS product_name,
+                
+                (SELECT img.image_url FROM productimages img 
+                WHERE img.product_id = p.id AND img.is_main = 1 LIMIT 1) AS product_image,
+
+                (SELECT GROUP_CONCAT(CONCAT(pa.name, ': ', vov.value) SEPARATOR ', ')
+                FROM variantoptionvalues vov
+                JOIN product_attributes pa ON vov.attribute_id = pa.id
+                WHERE vov.variant_id = pv.id
+                ) AS options_string
+                -- -----------------------------------
+                
+            FROM 
+                promotion_items pi
+            JOIN 
+                productvariants pv ON pi.product_variant_id = pv.id
+            JOIN 
+                products p ON pv.product_id = p.id
+            WHERE 
+                pi.promotion_id = ?;
+        `;
+        const [rows] = await pool.query(sql, [promotionId]);
+        return rows;
+    }
+
+    updateProductBasePrice = async (productId: number) => {
+        try {
+            // --- BƯỚC 1: Tìm giá (price) thấp nhất ---
+            // (Chúng ta dùng IFNULL để xử lý cả sale_price nếu bạn có)
+            const [rows] = await pool.query<RowDataPacket[]>(
+                `SELECT MIN(price) as min_price 
+             FROM productvariants 
+             WHERE product_id = ?`,
+                [productId]
+            );
+
+            const min_price = rows[0].min_price || 0;
+
+            // --- BƯỚC 2: Cập nhật giá này vào bảng 'products' cha ---
+            await pool.query(
+                "UPDATE products SET base_price = ? WHERE id = ?",
+                [min_price, productId]
+            );
+
+            console.log(`Đã cập nhật base_price cho product ${productId} thành ${min_price}`);
+
+        } catch (error) {
+            console.error("Lỗi khi đồng bộ base_price:", error);
+        }
+    }
+
+    findById = async (promotionId: number) => {
+        const [rows] = await pool.query<RowDataPacket[]>(
+            "SELECT * FROM promotions WHERE id = ?",
+            [promotionId]
+        );
+        return rows[0];
+    }
+
+    updateItem = async (shopId: number, promoId: number, variantId: number, discountValue: number) => {
+        await pool.query(
+            "UPDATE promotion_items SET discount_value = ? WHERE promotion_id = ? AND product_variant_id = ?",
+            [discountValue, promoId, variantId]
+        );
+    }
+
+    deleteItem = async (promoId: number, variantId: number) => {
+        await pool.query(
+            "DELETE FROM promotion_items WHERE promotion_id = ? AND product_variant_id = ?",
+            [promoId, variantId]
+        );
+    }
+
+    syncPromotionItems = async (promotionId: number, items: UpdatePromoItemDto[]) => {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // --- BƯỚC 1: XÓA các item không còn trong danh sách mới ---
+            const newVariantIds = items.map(i => i.product_variant_id);
+            console.log(promotionId);
+
+
+            if (newVariantIds.length > 0) {
+                // Nếu danh sách mới có item, giữ lại chúng, xóa những cái khác
+                await connection.query(
+                    `DELETE FROM promotion_items 
+                     WHERE promotion_id = ? AND product_variant_id NOT IN (?)`,
+                    [promotionId, newVariantIds]
+                );
+            } else {
+                // Nếu danh sách mới rỗng, xóa HẾT item của khuyến mãi này
+                await connection.query(
+                    "DELETE FROM promotion_items WHERE promotion_id = ?",
+                    [promotionId]
+                );
+            }
+
+            // --- BƯỚC 2: UPSERT (Thêm mới hoặc Cập nhật) các item trong danh sách ---
+            if (items.length > 0) {
+                // Chuẩn bị dữ liệu cho bulk INSERT: [[promoId, variantId1, 10%], [promoId, variantId2, 15%]]
+                const insertValues = items.map(item => [
+                    promotionId,
+                    item.product_variant_id,
+                    item.discount_value
+                ]);
+
+                const sqlUpsert = `
+                    INSERT INTO promotion_items (promotion_id, product_variant_id, discount_value)
+                    VALUES ?
+                    ON DUPLICATE KEY UPDATE
+                        discount_value = VALUES(discount_value)
+                `;
+
+                await connection.query(sqlUpsert, [insertValues]);
+            }
+
+            await connection.commit();
+
+        } catch (error) {
+            await connection.rollback(); // Hoàn tác nếu có lỗi
+            throw error;
+        } finally {
+            connection.release(); // Trả kết nối về pool
+        }
     }
 }
 

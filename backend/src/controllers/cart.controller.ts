@@ -27,7 +27,6 @@ class CartController {
 
     getCartByIdController = async (req: Request, res: Response) => {
         try {
-            console.log((req as any).user.id);
             const user_id = (req as any).user.id;
             const data = await cartService.getCartByIdService(user_id);
 

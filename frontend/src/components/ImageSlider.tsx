@@ -8,11 +8,11 @@ import type { ProductImageType } from "../types/ProductType";
 
 type ImageSliderProps = {
     images: ProductImageType[];
-    onSelect: (img: ProductImageType) => void;
-    selectedImageId?: ProductImageType;
+    onSelect: (img: string) => void;
+    selectedImageUrl: string;
 }
 
-const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedImageId }) => {
+const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedImageUrl }) => {
     return (
         <div className="custom-slider-wrapper">
 
@@ -48,12 +48,12 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, onSelect, selectedIma
                 }}
             >
                 {images.map((img) => {
-                    const isActive = img.image_id === selectedImageId?.image_id;
+                    const isActive = img.image_url === selectedImageUrl;
                     return (
                         <SwiperSlide key={img.image_id} className="text-center">
                             <div
                                 className="col p-2 img-hover-zoom"
-                                onClick={() => onSelect(img)}
+                                onClick={() => onSelect(img.image_url)}
                             >
                                 <img
                                     src={img.image_url}

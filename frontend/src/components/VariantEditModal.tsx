@@ -148,7 +148,7 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                                 <div className="mt-3">
                                     <div>Giá:
                                         <span className="fw-bold text-danger ms-2">
-                                            {currentVariant ? currentVariant.price.toLocaleString() : '...'}đ
+                                            {currentVariant ? currentVariant.price.toLocaleString('vi-VN') : '...'}đ
                                         </span>
                                     </div>
                                     <div>Tồn kho: {currentVariant ? currentVariant.stock : '...'}

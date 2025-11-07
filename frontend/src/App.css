@@ -370,6 +370,7 @@
   background-color: white;
   z-index: 2;
   position: absolute;
+  width: 100px;
 }
 
 .search-list {
@@ -411,6 +412,14 @@
   padding: 4px 0;
 }
 
+.search-info {
+  overflow-x: hidden;
+  /* white-space: nowrap;
+  overflow: hidden;
+  flex: 1;
+  text-overflow: ellipsis; */
+}
+
 .search-name {
   font-size: 14px;
   color: #333;
@@ -418,6 +427,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.search-price {
+  color: var(--bs-orange);
 }
 
 .section-line {
@@ -528,4 +541,9 @@
 /* Tùy chỉnh màu của dấu chấm (pagination) */
 .featured-shops-swiper .swiper-pagination-bullet-active {
   background-color: var(--bs-primary);
+}
+
+.discount-hihi {
+  background-color: rgba(255, 87, 34, 0.8);
+  color: white;
 }

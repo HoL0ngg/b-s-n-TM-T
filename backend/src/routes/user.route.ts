@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { verifyToken } from "../middleware/auth.middleware";
 import userController from "../controllers/user.controller";
+import { uploadAvatar } from "../config/multer";
 
 const UserRouter = Router();
 
@@ -10,6 +11,7 @@ UserRouter.get("/:id/address/default", userController.getDefaultAddressByuserIdC
 UserRouter.post("/:id/address", userController.postAddressUserController)
 UserRouter.put("/:id/address/change-default", verifyToken, userController.postChangeAddressDefault)
 UserRouter.get("/:id/profile", userController.getUserProfileController);
-UserRouter.put("/:id/profile", verifyToken, userController.updateProfileController);
+UserRouter.patch("/profile", verifyToken, uploadAvatar.single('avatar'), userController.updateProfileController);
+// UserRouter.patch('/avatar', verifyToken, uploadAvatar.single('avatar'), userController.updateAvatar);
 
 export default UserRouter;

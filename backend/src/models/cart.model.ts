@@ -11,8 +11,12 @@ export interface CartItem extends RowDataPacket {
     quantity: number;
     product_price: number;
     product_name: string;
-    // ... (shop_id, shop_name, product_url, v.v...)
+
     options?: IVariantOption[]; // <-- Sẽ được thêm vào
+
+    original_price: number; // Giá gốc (pv.price)
+    sale_price: number | null; // Giá đã giảm (nếu có)
+    discount_percentage: number | null; // % giảm (nếu có)
 }
 
 // Kiểu dữ liệu trả về từ Query 2

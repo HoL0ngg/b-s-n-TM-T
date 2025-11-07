@@ -10,10 +10,13 @@ import ShopRouter from "./routes/shop.route";
 import UserRouter from "./routes/user.route";
 import CartRouter from "./routes/cart.route";
 import orderRoutes from "./routes/order.route";
+import shopInfoRoutes from './routes/shop.info.route';
+import path from "path";
 
 const app = express();
 app.use(bodyParser.json());
 
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],

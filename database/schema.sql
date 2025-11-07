@@ -1,3 +1,7 @@
+drop database basan;
+CREATE database basan;
+use basan;
+
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
@@ -271,7 +275,7 @@ CREATE TABLE IF NOT EXISTS `productimages` (
 -- Đang đổ dữ liệu cho bảng `productimages`
 --
 
-INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `isMain`) VALUES
+INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `is_main`) VALUES
 (1, '/assets/products/son1.jpg', 1, 1),
 (2, '/assets/products/giay1.webp', 2, 1),
 (3, '/assets/products/ao1.webp', 3, 1),
@@ -512,54 +516,55 @@ CREATE TABLE IF NOT EXISTS `productvariants` (
   `sku` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `image_url` varchar(200) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productvariants`
 --
 
-INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`) VALUES
-(1, 1, 228000, 50, 'MBL-DO-4ML'),
-(2, 1, 233000, 60, 'MBL-HONG-4ML'),
-(3, 1, 223000, 40, 'MBL-CAM-4ML'),
-(4, 2, 2128000, 10, 'ADID-XANH-38'),
-(5, 2, 2138000, 8, 'ADID-XANH-39'),
-(6, 2, 2148000, 6, 'ADID-XANH-40'),
-(7, 2, 2148000, 12, 'ADID-HONG-38'),
-(8, 2, 2158000, 9, 'ADID-HONG-39'),
-(9, 2, 2168000, 7, 'ADID-HONG-40'),
-(10, 3, 1128000, 19, 'AST-TRANG-S'),
-(11, 3, 1138000, 18, 'AST-TRANG-M'),
-(12, 3, 1148000, 15, 'AST-TRANG-L'),
-(13, 3, 1133000, 22, 'AST-DEN-S'),
-(14, 3, 1143000, 19, 'AST-DEN-M'),
-(15, 3, 1153000, 14, 'AST-DEN-L'),
-(16, 3, 1138000, 16, 'AST-XANH-S'),
-(17, 3, 1148000, 14, 'AST-XANH-M'),
-(18, 3, 1158000, 12, 'AST-XANH-L'),
-(19, 4, 280000, 2, 'hjhj'),
-(20, 5, 199000, 10, 'hjhj'),
-(21, 6, 218000, 69, 'hjhj'),
-(22, 7, 369000, 2, 'hjhj'),
-(23, 8, 199000, 2, 'hjhj'),
-(24, 9, 219000, 2, 'hjhj'),
-(25, 10, 271320, 2, 'hjhj'),
-(26, 11, 389000, 1, 'hjhj'),
-(27, 12, 8495000, 1, 'hjhj'),
-(28, 13, 4390000, 1, 'hjhj'),
-(29, 14, 11115000, 1, 'hjhj'),
-(30, 15, 5995000, 1, 'hjhj'),
-(31, 16, 3690000, 1, 'hjhj'),
-(32, 17, 8695000, 1, 'hjhj'),
-(33, 18, 5290000, 1, 'hjhj'),
-(34, 19, 776000, 1, 'hjhj'),
-(35, 20, 118800, 1, 'hjhj'),
-(36, 21, 2371650, 1, 'hjhj'),
-(37, 22, 222000, 1, 'hjhj'),
-(38, 23, 184000, 1, 'hjhj'),
-(39, 24, 78000, 1, 'hjhj'),
-(40, 25, 2366000, 1, 'hjhj'),
-(41, 26, 2790000, 1, 'hjhj');
+INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `image_url`) VALUES
+(1, 1, 228000, 50, 'MBL-DO-4ML', "/assets/products/son1.3.jpg"),
+(2, 1, 233000, 60, 'MBL-HONG-4ML', ""),
+(3, 1, 223000, 40, 'MBL-CAM-4ML', ""),
+(4, 2, 2128000, 10, 'ADID-XANH-38', ""),
+(5, 2, 2138000, 8, 'ADID-XANH-39', ""),
+(6, 2, 2148000, 6, 'ADID-XANH-40', ""),
+(7, 2, 2148000, 12, 'ADID-HONG-38', ""),
+(8, 2, 2158000, 9, 'ADID-HONG-39', ""),
+(9, 2, 2168000, 7, 'ADID-HONG-40', ""),
+(10, 3, 1128000, 19, 'AST-TRANG-S', ""),
+(11, 3, 1138000, 18, 'AST-TRANG-M', ""),
+(12, 3, 1148000, 15, 'AST-TRANG-L', ""),
+(13, 3, 1133000, 22, 'AST-DEN-S', ""),
+(14, 3, 1143000, 19, 'AST-DEN-M', ""),
+(15, 3, 1153000, 14, 'AST-DEN-L', ""),
+(16, 3, 1138000, 16, 'AST-XANH-S', ""),
+(17, 3, 1148000, 14, 'AST-XANH-M', ""),
+(18, 3, 1158000, 12, 'AST-XANH-L', ""),
+(19, 4, 280000, 2, 'hjhj', ""),
+(20, 5, 199000, 10, 'hjhj', ""),
+(21, 6, 218000, 69, 'hjhj', ""),
+(22, 7, 369000, 2, 'hjhj', ""),
+(23, 8, 199000, 2, 'hjhj', ""),
+(24, 9, 219000, 2, 'hjhj', ""),
+(25, 10, 271320, 2, 'hjhj', ""),
+(26, 11, 389000, 1, 'hjhj', ""),
+(27, 12, 8495000, 1, 'hjhj', ""),
+(28, 13, 4390000, 1, 'hjhj', ""),
+(29, 14, 11115000, 1, 'hjhj', ""),
+(30, 15, 5995000, 1, 'hjhj', ""),
+(31, 16, 3690000, 1, 'hjhj', ""),
+(32, 17, 8695000, 1, 'hjhj', ""),
+(33, 18, 5290000, 1, 'hjhj', ""),
+(34, 19, 776000, 1, 'hjhj', ""),
+(35, 20, 118800, 1, 'hjhj', ""),
+(36, 21, 2371650, 1, 'hjhj', ""),
+(37, 22, 222000, 1, 'hjhj', ""),
+(38, 23, 184000, 1, 'hjhj', ""),
+(39, 24, 78000, 1, 'hjhj', ""),
+(40, 25, 2366000, 1, 'hjhj', ""),
+(41, 26, 2790000, 1, 'hjhj', "");
 
 -- --------------------------------------------------------
 
@@ -662,6 +667,30 @@ INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created
 (5, 'Unilever Chăm Sóc Sắc Đẹp', '/assets/shops/unilever.webp', '', 1, '2025-08-26', '0987654000'),
 (6, 'Pandora VN', '/assets/shops/pandora.webp', '', 1, '2025-08-26', '0987654444');
 
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `promotions`
+--
+
+CREATE TABLE `promotions` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `start_date` datetime DEFAULT current_timestamp(),
+  `end_date` datetime DEFAULT NULL,
+  `is_active` tinyint(4) DEFAULT 1,
+  `shop_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO promotions values (1, "Giảm giá black friday", "2025-05-11", "2025-11-11", 1, 1);
+
+CREATE TABLE `promotion_items` (
+  promotion_id int,
+  product_variant_id int,
+  discount_value int
+);
+
+INSERT INTO promotion_items values (1, 1, 20), (1, 2, 10), (1, 3, 50), (1, 20, 12), (1, 21, 10), (1, 22, 20), (1, 23, 22);
 -- --------------------------------------------------------
 
 --
@@ -861,10 +890,324 @@ CREATE TABLE IF NOT EXISTS `v_products_list` (
 --
 -- Cấu trúc cho view `v_products_list`
 --
-DROP TABLE IF EXISTS `v_products_list`;
 
 DROP VIEW IF EXISTS `v_products_list`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`isMain` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
+
+--
+CREATE VIEW v_products_list AS
+SELECT 
+    -- 1. Thông tin cơ bản từ bảng 'products'
+    p.id, 
+    p.name, 
+    p.description, 
+    p.shop_id, 
+    p.generic_id, -- (ID danh mục con)
+    p.created_at,
+    p.updated_at,
+    p.sold_count,
+    
+    -- 2. Tên danh mục (từ bảng 'generic')
+    g.name AS category_name,
+    
+    -- 3. Giá gốc (từ 'products.base_price', mà bạn đã đồng bộ)
+    p.base_price,
+    
+    -- 4. Ảnh chính (isMain = 1)
+    (SELECT pi.image_url 
+     FROM productimages pi 
+     WHERE pi.product_id = p.id AND pi.is_main = 1 
+     LIMIT 1) AS image_url,
+     
+    -- 5. Đánh giá trung bình (tính từ 'productreviews')
+    (SELECT IFNULL(AVG(pr.rating), 0) 
+     FROM productreviews pr 
+     WHERE pr.product_id = p.id) AS avg_rating,
+     
+    -- 6. Điểm "Hot" (tính theo công thức của bạn)
+    (
+        p.sold_count * 0.6 + 
+        (SELECT IFNULL(AVG(pr.rating), 0) FROM productreviews pr WHERE pr.product_id = p.id) * 0.4
+    ) AS hot_score,
+
+    -- 7. Giá Sale (tính giá thấp nhất CÓ KHUYẾN MÃI)
+    (
+        SELECT ROUND(MIN(pv.price * (1 - (pi.discount_value / 100))))
+        FROM productvariants pv
+        JOIN promotion_items pi ON pv.id = pi.product_variant_id
+        JOIN promotions promo ON pi.promotion_id = promo.id
+        WHERE 
+            pv.product_id = p.id
+            AND promo.is_active = 1
+            AND NOW() BETWEEN promo.start_date AND promo.end_date
+    ) AS sale_price,
+    
+    -- 8. % Giảm giá (lấy % cao nhất đang được áp dụng)
+    (
+        SELECT MAX(pi.discount_value) 
+        FROM productvariants pv
+        JOIN promotion_items pi ON pv.id = pi.product_variant_id
+        JOIN promotions promo ON pi.promotion_id = promo.id
+        WHERE 
+            pv.product_id = p.id
+            AND promo.is_active = 1
+            AND NOW() BETWEEN promo.start_date AND promo.end_date
+    ) AS discount_percentage
+    
+FROM 
+    products p
+-- JOIN bảng danh mục
+JOIN 
+    generic g ON g.id = p.generic_id;
+
+--
+-- Chỉ mục cho các bảng đã đổ
+--
+
+--
+-- Chỉ mục cho bảng `address`
+--
+ALTER TABLE `address`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Chỉ mục cho bảng `address_user`
+--
+ALTER TABLE `address_user`
+  ADD KEY `address_id` (`address_id`),
+  ADD KEY `phone_number` (`phone_number`);
+
+--
+-- Chỉ mục cho bảng `brands`
+--
+ALTER TABLE `brands`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Chỉ mục cho bảng `cart`
+--
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`user_id`,`product_variant_id`),
+  ADD KEY `product_variant_id` (`product_variant_id`);
+
+--
+-- Chỉ mục cho bảng `categories`
+--
+ALTER TABLE `categories`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Chỉ mục cho bảng `generic`
+--
+ALTER TABLE `generic`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `category_id` (`category_id`);
+
+--
+-- Chỉ mục cho bảng `productimages`
+--
+ALTER TABLE `productimages`
+  ADD PRIMARY KEY (`image_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Chỉ mục cho bảng `productreviews`
+--
+ALTER TABLE `productreviews`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Chỉ mục cho bảng `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `generic_id` (`generic_id`),
+  ADD KEY `shop_id` (`shop_id`),
+  ADD KEY `shop_cate_id` (`shop_cate_id`),
+  ADD KEY `brand_id` (`brand_id`);
+
+--
+-- Chỉ mục cho bảng `productvariants`
+--
+ALTER TABLE `productvariants`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Chỉ mục cho bảng `product_attributes`
+--
+ALTER TABLE `product_attributes`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Chỉ mục cho bảng `product_detail`
+--
+ALTER TABLE `product_detail`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Chỉ mục cho bảng `promotions`
+--
+ALTER TABLE `promotions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_shops`(`shop_id`);
+
+ALTER TABLE `promotion_items`
+  ADD KEY `fk_promotion`(`promotion_id`),
+  ADD KEY `FK_productvariants`(`product_variant_id`),
+  ADD PRIMARY KEY (`promotion_id`, `product_variant_id`);
+
+--
+-- Chỉ mục cho bảng `shops`
+--
+ALTER TABLE `shops`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `owner_id` (`owner_id`);
+
+--
+-- Chỉ mục cho bảng `shop_categories`
+--
+ALTER TABLE `shop_categories`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `shop_id` (`shop_id`);
+
+--
+-- Chỉ mục cho bảng `shop_info`
+--
+ALTER TABLE `shop_info`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_shop_user` (`user_id`);
+
+--
+-- Chỉ mục cho bảng `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`phone_number`);
+
+--
+-- Chỉ mục cho bảng `userviewhistory`
+--
+ALTER TABLE `userviewhistory`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Chỉ mục cho bảng `user_profile`
+--
+ALTER TABLE `user_profile`
+  ADD PRIMARY KEY (`phone_number`);
+
+--
+-- Chỉ mục cho bảng `variantoptionvalues`
+--
+ALTER TABLE `variantoptionvalues`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `variant_id` (`variant_id`),
+  ADD KEY `attribute_id` (`attribute_id`);
+
+--
+-- AUTO_INCREMENT cho các bảng đã đổ
+--
+
+--
+-- AUTO_INCREMENT cho bảng `address`
+--
+ALTER TABLE `address`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT cho bảng `brands`
+--
+ALTER TABLE `brands`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT cho bảng `categories`
+--
+ALTER TABLE `categories`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT cho bảng `generic`
+--
+ALTER TABLE `generic`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT cho bảng `productimages`
+--
+ALTER TABLE `productimages`
+  MODIFY `image_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=130;
+
+--
+-- AUTO_INCREMENT cho bảng `productreviews`
+--
+ALTER TABLE `productreviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT cho bảng `products`
+--
+ALTER TABLE `products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT cho bảng `productvariants`
+--
+ALTER TABLE `productvariants`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+
+--
+-- AUTO_INCREMENT cho bảng `product_attributes`
+--
+ALTER TABLE `product_attributes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT cho bảng `product_detail`
+--
+ALTER TABLE `product_detail`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT cho bảng `promotions`
+--
+ALTER TABLE `promotions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT cho bảng `shops`
+--
+ALTER TABLE `shops`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT cho bảng `shop_categories`
+--
+ALTER TABLE `shop_categories`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT cho bảng `shop_info`
+--
+ALTER TABLE `shop_info`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT cho bảng `userviewhistory`
+--
+ALTER TABLE `userviewhistory`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT cho bảng `variantoptionvalues`
+--
+ALTER TABLE `variantoptionvalues`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- Các ràng buộc cho các bảng đã đổ

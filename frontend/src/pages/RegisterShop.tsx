@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { fetchAddressByUserId } from '../api/user'; 
-import type { AddressType } from '../types/UserType'; 
+import { fetchAddressByUserId } from '../api/user';
+import type { AddressType } from '../types/UserType';
 
-import './RegisterShop.css'; 
+import './RegisterShop.css';
 
 import Stepper from '../components/Stepper';
 import Step1ShopInfo from '../components/ShopSteps/Step1ShopInfo';
@@ -31,7 +31,7 @@ const RegisterShop = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
-  const auth = useAuth(); 
+  const auth = useAuth();
 
   const [formData, setFormData] = useState({
     shopName: '',
@@ -48,18 +48,18 @@ const RegisterShop = () => {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const loadAddresses = async () => {
     if (auth.user) {
       try {
         const data = await fetchAddressByUserId(auth.user.id.toString());
-        
+
         if (data && data.length > 0) {
           const defaultAddress = data.find(addr => addr.is_default === 1);
           const addressToSet = defaultAddress || data[0];
-          setFormData(prev => ({ 
-            ...prev, 
-            address: formatAddress(addressToSet) 
+          setFormData(prev => ({
+            ...prev,
+            address: formatAddress(addressToSet)
           }));
         }
       } catch (error) {
@@ -81,9 +81,9 @@ const RegisterShop = () => {
 
   // Hàm xử lý khi user chọn địa chỉ từ modal
   const handleAddressSelect = (selectedAddress: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      address: selectedAddress 
+    setFormData(prev => ({
+      ...prev,
+      address: selectedAddress
     }));
     setIsModalOpen(false);
   };
@@ -91,7 +91,7 @@ const RegisterShop = () => {
   // Validation cho Step 1
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.shopName.trim()) {
       newErrors.shopName = 'Vui lòng nhập tên shop';
     } else if (formData.shopName.length < 3) {
@@ -125,7 +125,7 @@ const RegisterShop = () => {
   // Validation cho Step 2
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.shippingMethods || formData.shippingMethods.length === 0) {
       newErrors.shippingMethods = 'Vui lòng chọn ít nhất một phương thức vận chuyển';
     }
@@ -137,7 +137,7 @@ const RegisterShop = () => {
   // Validation cho Step 3
   const validateStep3 = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (formData.businessType === 'business') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!formData.invoiceEmail.trim()) {
@@ -161,7 +161,7 @@ const RegisterShop = () => {
   // Validation cho Step 4
   const validateStep4 = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.identityFullName.trim()) {
       newErrors.identityFullName = 'Vui lòng nhập họ và tên';
     } else if (formData.identityFullName.length < 3) {
@@ -195,7 +195,7 @@ const RegisterShop = () => {
 
   const nextStep = () => {
     let isValid = true;
-    
+
     switch (currentStep) {
       case 1:
         isValid = validateStep1();
@@ -260,8 +260,8 @@ const RegisterShop = () => {
       case 1:
         return (
           <>
-            <Step1ShopInfo 
-              formData={formData} 
+            <Step1ShopInfo
+              formData={formData}
               setFormData={setFormData}
               onEditAddress={() => setIsModalOpen(true)}
             />
@@ -274,8 +274,8 @@ const RegisterShop = () => {
       case 2:
         return (
           <>
-            <Step2Shipping 
-              formData={formData} 
+            <Step2Shipping
+              formData={formData}
               setFormData={setFormData}
             />
             {errors.shippingMethods && <div className="text-danger small mt-2">{errors.shippingMethods}</div>}
@@ -284,8 +284,8 @@ const RegisterShop = () => {
       case 3:
         return (
           <>
-            <Step3TaxInfo 
-              formData={formData} 
+            <Step3TaxInfo
+              formData={formData}
               setFormData={setFormData}
             />
             {errors.invoiceEmail && <div className="text-danger small mt-2">{errors.invoiceEmail}</div>}
@@ -295,8 +295,8 @@ const RegisterShop = () => {
       case 4:
         return (
           <>
-            <Step4Identity 
-              formData={formData} 
+            <Step4Identity
+              formData={formData}
               setFormData={setFormData}
             />
             {errors.identityFullName && <div className="text-danger small mt-2">{errors.identityFullName}</div>}
@@ -312,16 +312,16 @@ const RegisterShop = () => {
 
   return (
     <div className="container my-5">
-      <ShopAddressModal 
-        isShow={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <ShopAddressModal
+        isShow={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         onAddressSelect={handleAddressSelect}
       />
 
       <div className="card shadow-sm" style={{ maxWidth: '900px', margin: '0 auto' }}>
         <div className="card-body p-5">
           <h2 className="card-title text-center mb-4">Đăng ký trở thành Người bán</h2>
-          
+
           <div className="px-md-5 my-5">
             <Stepper steps={steps} currentStep={currentStep} />
           </div>
@@ -329,7 +329,7 @@ const RegisterShop = () => {
           <div className="px-md-4">
             {renderStepContent()}
           </div>
-          
+
           <div className="d-flex justify-content-between mt-5">
             {currentStep > 1 ? (
               <button className="btn btn-outline-secondary" onClick={prevStep}>
