@@ -28,6 +28,8 @@ import { AddressPage } from "./pages/Checkout/AddressPage";
 import Dashboard from "./pages/Shop/Dashboard";
 import Orders from "./pages/Shop/Orders";
 import RegisterShop from './pages/RegisterShop';
+import OrderDetail from "./pages/Shop/OrderDetail";
+
 import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
@@ -87,7 +89,13 @@ function App() {
         {/* Đã đổi path thành "/seller" để tránh xung đột với "/shop/:id" */}
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
+          {/* 2. THÊM ROUTE MỚI Ở ĐÂY */}
+          {/* Route cho Danh sách (List) */}
+          <Route path="orders" element={<Orders />} /> 
+          {/* Route cho Chi tiết (Detail) */}
+          <Route path="orders/:id" element={<OrderDetail />} />
           <Route path="orders" element={<Orders />} />
+          {/* <Route path="products" element={<ShopProducts />} /> */}
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
           <Route path="products" element={<ShopProducts />} />
