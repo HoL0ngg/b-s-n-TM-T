@@ -28,11 +28,25 @@ class userController {
 
     updateProfileController = async (req: Request, res: Response) => {
         try {
-            const userPhone = req.params.id;
+            const userPhone = (req as any).user.id;
 
             const profileData = req.body; // { name, gender, birthday }
+            const file = req.file;
 
-            const updatedUser = await userService.updateProfileService(userPhone, profileData);
+            const fieldsToUpdate: any = {
+                name: profileData.name,
+                gender: profileData.gender,
+                birthday: profileData.birthday,
+            };
+
+            if (file) {
+                const avatarPath = `/avatars/${file.filename}`;
+                fieldsToUpdate.avatar_url = avatarPath;
+            }
+
+            const updatedUser = await userService.updateProfileService(userPhone, fieldsToUpdate);
+            console.log(updatedUser);
+
 
             res.status(200).json({
                 message: 'Cập nhật thành công!',

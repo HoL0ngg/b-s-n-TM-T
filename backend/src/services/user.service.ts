@@ -22,22 +22,27 @@ class userService {
         return row[0] as UserProfile;
     }
     updateProfileService = async (id: string, data: any) => {
-        const { name, gender, birthday } = data;
-        const [updateResult] = await pool.query(
-            `UPDATE user_profile 
-            SET username = ?, gender = ?, dob = ?, updated_at = NOW() 
-            WHERE phone_number = ?`,
-            [name, gender, birthday, id]
-        ) as [any[], any];
+        await pool.query(
+            "UPDATE user_profile SET username = ?, gender = ?, dob = ? WHERE phone_number = ?",
+            [data.name, data.gender, data.birthday, id]
+        );
 
-        if (updateResult.length === 0) {
-            throw new Error('Cập nhật thất bại');
+        // (Cập nhật 'users' nếu có ảnh mới)
+        if (data.avatar_url) {
+            await pool.query(
+                "UPDATE users SET avatar_url = ? WHERE phone_number = ?",
+                [data.avatar_url, id]
+            );
         }
+        console.log(id);
+
 
         const [updatedUserRows] = await pool.query(
-            `SELECT username, gender, DATE_FORMAT(dob, '%Y-%m-%d') AS dob FROM user_profile WHERE phone_number = ?`,
+            `SELECT username, gender, DATE_FORMAT(dob, '%Y-%m-%d') AS dob, avatar_url FROM user_profile JOIN users on users.phone_number = user_profile.phone_number WHERE user_profile.phone_number = ?`,
             [id]
         ) as [any[], any];
+
+        console.log(updatedUserRows);
 
         return updatedUserRows[0];
     }
@@ -111,6 +116,14 @@ class userService {
 
         const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo, is_default) VALUES (?, ?, ?, ?, ?)';
         await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, data.is_default || hihi]);
+    }
+
+    updateAvatar = async (avatarPath: string, userId: string) => {
+        const [countRows] = await pool.query(
+            "UPDATE users SET avatar_url = ? WHERE phone_number = ?",
+            [avatarPath, userId]
+        ) as [any[], any];
+        return countRows.length > 0;
     }
 }
 
