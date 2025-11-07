@@ -32,7 +32,8 @@
     "multer": "^2.0.2",
     "mysql2": "^3.15.1",
     "nodemailer": "^7.0.6",
-    "openai": "^5.20.3"
+    "openai": "^5.20.3",
+    "vnpay": "^2.4.4"
   },
   "devDependencies": {
     "@types/multer": "^2.0.0",
