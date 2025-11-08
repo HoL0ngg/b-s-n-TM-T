@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setAuthToken(token);
             fetchProfile()
                 .then(res => {
-                    // console.log(res.data);
+                    console.log(res.data);
                     setUser(res.data.user);
                     setUserProfile(res.data.userProfile);
                 })

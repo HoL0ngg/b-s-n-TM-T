@@ -1,10 +1,13 @@
 import axios from "axios";
-import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType } from "../types/ProductType";
+// Gộp Type từ cả 2 nhánh
+import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType, UpdatePromoItemDto, PromotionType, PromotionItem } from "../types/ProductType";
+// Import hàm helper (chúng ta sẽ tạo file này)
 import { getAuthHeaders } from "./apiHelpers";
 
+// Sửa lỗi gõ chữ
 const API_URL = "http://localhost:5000/api/products";
 
-// ... (Các hàm GET công khai giữ nguyên) ...
+// (Các hàm GET công khai giữ nguyên, lấy từ code của bạn)
 export const fetchProductsByID = async (id: string): Promise<ProductType> => {
     const res = await axios.get(`${API_URL}/${id}`);
     return res.data;
@@ -17,6 +20,8 @@ export const fetch5ProductByShopId = async (id: number): Promise<ProductType[]> 
     const res = await axios.get(`${API_URL}/shop/${id}?type=suggest`);
     return res.data;
 }
+
+// Lấy phiên bản code của bạn (đã sửa đúng route)
 export const fetchProductsByShopId = async (id: number, state: number, cate: number): Promise<ProductType[]> => {
     const sort = state == 1 ? "popular" : state == 2 ? "new" : "hot";
     const res = await axios.get(`${API_URL}/shop/${id}?type=all&sortBy=${sort}&bst=${cate}`);
@@ -41,9 +46,8 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
     return res.data;
 }
 
-// (Hàm CRUD sản phẩm)
+// (Lấy các hàm CRUD từ code của bạn (qhuykuteo) vì đã nâng cấp)
 export const createProduct = async (productData: any) => {
-    // Bỏ `_shopId` vì controller đã tự lấy
     try {
         const response = await axios.post(API_URL, productData, getAuthHeaders());
         return response.data;
@@ -70,7 +74,7 @@ export const deleteProduct = async (productId: number) => {
     }
 };
 
-// ... (Các hàm recommend/search... giữ nguyên) ...
+// (Các hàm recommend/search... giữ nguyên)
 export const apiGetForYouRecommendations = async () => {
     const res = await axios.get(`${API_URL}/recommend/for-you`);
     return res.data;
@@ -110,7 +114,7 @@ export const fetchProducts = async (query: any, category_id: number): Promise<Pr
     return res.data;
 }
 
-// (Hàm lấy thuộc tính)
+// (Hàm lấy thuộc tính - của bạn (qhuykuteo))
 export interface AttributeType {
     id: number;
     name: string;
@@ -124,14 +128,39 @@ export const fetchProductForEdit = async (productId: string | number): Promise<a
     return res.data;
 };
 
-// ========================================================
-// NÂNG CẤP MỚI: Thêm hàm bật/tắt trạng thái
-// ========================================================
+// (Hàm bật/tắt trạng thái - của bạn (qhuykuteo))
 export const updateProductStatus = async (productId: number, status: number) => {
     const response = await axios.patch(
         `${API_URL}/${productId}/status`, 
-        { status }, // Gửi { status: 0 } hoặc { status: 1 }
+        { status }, 
         getAuthHeaders()
     );
     return response.data;
+};
+
+// (Các hàm Khuyến mãi MỚI - của đồng đội (main))
+export const apiGetShopPromotions = async (): Promise<PromotionType[]> => {
+    const res = await axios.get(`${API_URL}/promotions`, getAuthHeaders()); // Sửa: Thêm getAuthHeaders
+    return res.data;
+};
+
+export const apiGetPromotionDetails = async (promotionId: number): Promise<PromotionItem[]> => {
+    const res = await axios.get(`${API_URL}/promotions/${promotionId}/items`, getAuthHeaders()); // Sửa: Thêm getAuthHeaders
+    return res.data;
+};
+
+export const apiSavePromotionDetails = async (
+    promotionId: number,
+    items: UpdatePromoItemDto[]
+) => {
+    const res = await axios.patch(`${API_URL}/promotions/${promotionId}/items`, items, getAuthHeaders()); // Sửa: Thêm getAuthHeaders
+    return res.data;
+};
+
+export const apiUpdatePromotionItem = async (promoId: number, variantId: number, discountValue: number) => {
+    return axios.patch(`${API_URL}/promotions/${promoId}/items/${variantId}`, { discount_value: discountValue }, getAuthHeaders()); // Sửa: Thêm getAuthHeaders
+};
+
+export const apiDeletePromotionItem = async (promoId: number, variantId: number) => {
+    return axios.delete(`${API_URL}/promotions/${promoId}/items/${variantId}`, getAuthHeaders()); // Sửa: Thêm getAuthHeaders
 };

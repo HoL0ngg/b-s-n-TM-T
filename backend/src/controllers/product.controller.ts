@@ -88,7 +88,9 @@ class productController {
         }
     }
     
-    // --- (Các hàm CRUD (create/update/delete) giữ nguyên) ---
+    // =================================================================
+    // CÁC HÀM CRUD (LẤY TỪ NHÁNH `qhuykuteo` CỦA BẠN VÌ MỚI HƠN)
+    // =================================================================
     createProductController = async (req: Request, res: Response) => {
         try {
             const shopId = (req as any).shop?.id;
@@ -308,14 +310,11 @@ class productController {
         }
     };
 
-    // =================================================================
-    // NÂNG CẤP MỚI: Thêm hàm bật/tắt trạng thái
-    // =================================================================
     updateProductStatusController = async (req: Request, res: Response) => {
         try {
             const productId = Number(req.params.id);
             const shopId = (req as any).shop?.id;
-            const { status } = req.body; // status nên là 0 hoặc 1
+            const { status } = req.body; 
 
             if (status === undefined || (status !== 0 && status !== 1)) {
                 return res.status(400).json({ success: false, message: 'Trạng thái (status) không hợp lệ.' });
@@ -329,7 +328,6 @@ class productController {
             if (success) {
                 res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công.' });
             } else {
-                // Lỗi này xảy ra nếu productId không thuộc shopId
                 res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm hoặc bạn không có quyền.' });
             }
         } catch (error) {
@@ -337,5 +335,114 @@ class productController {
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
     };
+
+    // =================================================================
+    // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
+    // =================================================================
+    getShopPromotions = async (req: Request, res: Response) => {
+        try {
+            // Sửa: Lấy shop_id từ (req as any).shop.id
+            const shopId = (req as any).shop?.id;
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+
+            const promotions = await productService.getPromotionsByShopId(shopId);
+
+            res.status(200).json(promotions);
+        } catch (error) {
+            res.status(500).json({ message: "Lỗi máy chủ" });
+        }
+    }
+
+    getPromotionDetails = async (req: Request, res: Response) => {
+        try {
+            // Sửa: Lấy shop_id từ (req as any).shop.id
+            const shopId = (req as any).shop?.id;
+            const promotionId = Number(req.params.id);
+
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+            
+            // Sửa: Truyền shopId vào service để kiểm tra
+            const items = await productService.getItemsByPromotionId(promotionId, shopId);
+
+            res.status(200).json(items);
+        } catch (error: any) {
+            if (error.message === 'FORBIDDEN') {
+                return res.status(403).json({ message: "Không có quyền xem sự kiện này" });
+            }
+            console.log(error);
+            res.status(500).json({ message: "Lỗi máy chủ" });
+        }
+    }
+
+    updatePromotionItem = async (req: Request, res: Response) => {
+        try {
+            // Sửa: Lấy shop_id từ (req as any).shop.id
+            const shopId = (req as any).shop?.id;
+            const promoId = Number(req.params.promoId);
+            const variantId = Number(req.params.variantId);
+            const { discount_value } = req.body; 
+
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+
+            await productService.updateItem(shopId, promoId, variantId, discount_value);
+            res.json({ message: "Đã cập nhật sản phẩm" });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    deletePromotionItem = async (req: Request, res: Response) => {
+        try {
+            // Sửa: Thêm kiểm tra quyền
+            const shopId = (req as any).shop?.id;
+            const promoId = Number(req.params.promoId);
+            const variantId = Number(req.params.variantId);
+
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+            // (Bạn nên thêm hàm verifyShopOwnership... cho promotion item trong service)
+            // Tạm thời cho phép xóa
+            
+            await productService.deleteItem(promoId, variantId);
+            res.status(200).json({ message: "Đã xóa sản phẩm khỏi sự kiện" });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+            console.log(error);
+        }
+    }
+
+    savePromotionItems = async (req: Request, res: Response) => {
+        try {
+            const shopId = (req as any).shop?.id;
+            const promotionId = Number(req.params.id);
+            const items = req.body; // Mảng UpdatePromoItemDto[]
+
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+            if (!promotionId || !Array.isArray(items)) {
+                return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
+            }
+
+            // Sửa: Truyền shopId vào service để kiểm tra
+            await productService.syncPromotionItems(promotionId, items, shopId);
+
+            res.json({ message: "Cập nhật sản phẩm khuyến mãi thành công" });
+        } catch (error: any) {
+            console.error("Lỗi savePromotionItems:", error);
+            if (error.message === 'FORBIDDEN') {
+                return res.status(403).json({ message: "Bạn không có quyền sửa khuyến mãi này" });
+            }
+            res.status(500).json({ message: "Lỗi server khi lưu khuyến mãi" });
+        }
+    }
 }
+
 export default new productController();

@@ -79,6 +79,53 @@
   flex-grow: 1; /* Luôn chiếm đầy không gian, đẩy Footer xuống dưới */
   padding: 1.5rem; /* Khoảng cách cho nội dung trang */
 }
+
+/* --- TÙY CHỈNH LINK KHI ĐƯỢC CHỌN (ACTIVE) --- */
+
+/* Style cơ bản cho tất cả nav-link - thêm transition mượt */
+.shop-sidebar .nav-link {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.375rem;
+}
+
+/* Bỏ màu xanh mặc định, đổi thành màu cam khi active */
+.shop-sidebar .nav-link.active {
+  background-color: #ff953d !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+/* Đổi màu icon thành trắng khi được chọn */
+.shop-sidebar .nav-link.active i {
+  color: white !important;
+}
+
+/* Style cho link chưa active trong collapse menu */
+.shop-sidebar .collapse .nav-link:not(.active) {
+  background-color: transparent;
+  color: #212529;
+  font-weight: 400;
+}
+
+/* HOVER cho tất cả link CHƯA active (bao gồm cả item con) */
+.shop-sidebar .nav-link:not(.active):hover {
+  background-color: #fff0e6 !important;
+  color: #ff6b00 !important;
+  font-weight: 500;
+}
+
+/* HOVER cho link trong collapse menu (item con) */
+.shop-sidebar .collapse .nav-link:not(.active):hover {
+  background-color: #fff0e6 !important;
+  color: #ff6b00 !important;
+  font-weight: 500;
+}
+
+/* Hover cho icon */
+.shop-sidebar .nav-link:not(.active):hover i {
+  color: #ff6b00 !important;
+}
+
 /* --- TÙY CHỈNH LINK KHI ĐƯỢC CHỌN (ACTIVE) --- */
 
 /* Bỏ màu xanh mặc định, đổi thành màu cam */
@@ -92,7 +139,11 @@
 .shop-sidebar .nav-link.active i {
   color: white !important;
 }
-
+.shop-sidebar .collapse .nav-link:not(.active) {
+    background-color: transparent !important;
+    color: #212529 !important; /* Màu đen của Bootstrap */
+    font-weight: 400; /* Trọng lượng font bình thường */
+}
 /* Đổi màu nền khi di chuột (hover) qua link CHƯA active */
 .shop-sidebar .nav-link:not(.active):hover {
   background-color: #fff0e6; /* Màu cam rất nhạt */

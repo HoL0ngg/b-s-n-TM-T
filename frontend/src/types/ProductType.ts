@@ -11,7 +11,14 @@ export interface ProductType {
     product_variants: ProductVariantType[];
     images: ProductImageType[];
     avg_rating: number;
-    shop_cate_id?: number | null; // (Đã thêm)
+    
+    // Giữ code của bạn (qhuykuteo)
+    shop_cate_id?: number | null;
+    
+    // Giữ code của đồng đội (main)
+    original_price: number;
+    sale_price: number | null;
+    discount_percentage: number | null;
 }
 
 export interface ProductImageType {
@@ -38,15 +45,12 @@ export interface ProductReviewSummaryType {
     avg: number;
 }
 
-// ===== SỬA LỖI: Đổi tên các trường để khớp với CSDL mới =====
-// (File 'product_detail' cũ của bạn đã được thay bằng 'product_details')
 export interface ProductDetailsType {
     id: number,
     product_id: number,
-    attribute: string, // <-- Tên cũ là 'attribute'
-    value: string,     // <-- Tên cũ là 'value'
+    attribute: string, 
+    value: string,     
 }
-// =======================================================
 
 export interface AttributeOfProductVariantsType {
     attribute: string,
@@ -58,11 +62,21 @@ interface VariantOption {
 }
 export interface ProductVariantType {
     id: number;       
-    price: number;    
     stock: number;    
     options: VariantOption[]; 
     image_url: string;
+
+    // Giữ `price` (vì code của bạn cần)
+    price: number;
+    
+    // Giữ các trường của đồng đội (main)
+    original_price: number;
+    sale_price: number | null;
+    discount_percentage: number | null;
+    product_name?: string;    
+    options_string?: string;
 }
+
 export interface ProductResponseType {
     products: ProductType[];
     totalPages: number;
@@ -71,4 +85,30 @@ export interface ProductResponseType {
 export interface BrandOfProductType {
     id: number;
     name: string;
+}
+
+// Giữ các interface mới của đồng đội (main)
+export interface PromotionType {
+    id: number;
+    shop_id: number;
+    name: string;
+    start_date: string; 
+    end_date: string;   
+    is_active: boolean;
+}
+
+export interface UpdatePromoItemDto {
+    product_variant_id: number;
+    discount_value: number; // Đây là %
+}
+
+export interface PromotionItem {
+    promotion_id: number;
+    product_variant_id: number;
+    discount_value: number;
+    product_name: string;
+    product_image: string;
+    original_price: number; 
+    stock: number; 
+    options_string?: string;
 }

@@ -37,6 +37,19 @@ class shopController {
             res.status(501).json({ success: false });
         }
     }
+
+    getVariants = async (req: Request, res: Response) => {
+        try {
+            const shopId = Number(req.params.id);
+
+            const variants = await shopService.getAllVariantsByShopId(shopId);
+            res.status(200).json(variants);
+
+        } catch (error) {
+            console.error("Lỗi lấy danh sách biến thể:", error);
+            res.status(500).json({ message: "Lỗi máy chủ khi tải danh sách sản phẩm" });
+        }
+    }
 }
 
 export default new shopController();

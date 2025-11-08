@@ -4,6 +4,7 @@ import shopInfoService from "../services/shop.info.service";
 export const shopController = {
   
   // Method này giữ nguyên, dùng để lấy info shop BẤT KỲ bằng SĐT
+  // (Lấy phiên bản code của bạn (qhuykuteo) vì có bình luận rõ ràng)
   getShopByUserId: async (req: Request, res: Response) => {
     try {
       const { userId } = req.params; // userId này là SĐT (string)
@@ -27,6 +28,7 @@ export const shopController = {
   },
 
   // Method này đã được sửa để gọi service transaction
+  // (Lấy phiên bản code của bạn (qhuykuteo) vì đã nâng cấp)
   registerShop: async (req: Request, res: Response) => {
     try {
       // (req as any).user.id là SỐ ĐIỆN THOẠI (string) từ auth.middleware.ts
@@ -50,6 +52,7 @@ export const shopController = {
   },
 
   // Method này giữ nguyên, nó đã tương thích với service mới
+  // (Lấy phiên bản code của bạn (qhuykuteo) vì đã nâng cấp)
   updateShop: async (req: Request, res: Response) => {
     try {
       const { shopId } = req.params; // Đây là ID (number) của bảng shop_info

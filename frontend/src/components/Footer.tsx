@@ -15,10 +15,10 @@ export default function Footer() {
                     <div className="col-lg-3 col-md-6">
                         <h5 className="text-dark fw-semibold mb-3">Hỗ trợ Khách hàng</h5>
                         <ul className="list-unstyled footer-links">
-                            <li className="mb-2"><Link to="">Trung tâm Trợ giúp</Link></li>
-                            <li className="mb-2"><Link to="">Hướng dẫn Mua hàng</Link></li>
-                            <li className="mb-2"><Link to="">Vận chuyển</Link></li>
-                            <li className="mb-2"><Link to="">Chính sách Đổi trả</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Trung tâm trợ giúp</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Hướng dẫn mua hàng</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Vận chuyển</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Chính sách đổi trả</Link></li>
                         </ul>
                         <h6 className="text-dark fw-semibold mt-4">Hotline</h6>
                         <p className="mb-1"><strong>0937211264</strong> (8h-22h)</p>
@@ -29,10 +29,10 @@ export default function Footer() {
                     <div className="col-lg-3 col-md-6">
                         <h5 className="text-dark fw-semibold mb-3">Về BáSàn</h5>
                         <ul className="list-unstyled footer-links">
-                            <li className="mb-2"><Link to="">Giới thiệu BáSàn</Link></li>
-                            <li className="mb-2"><Link to="">Tuyển dụng</Link></li>
-                            <li className="mb-2"><Link to="">Điều khoản Dịch vụ</Link></li>
-                            <li className="mb-2"><Link to="">Chính sách Bảo mật</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Giới thiệu BáSàn</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Tuyển dụng</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Điều khoản dịch vụ</Link></li>
+                            <li className="mb-2"><Link className='text-decoration-none text-muted fw-semibold' to="">Chính sách bảo mật</Link></li>
                         </ul>
                     </div>
 

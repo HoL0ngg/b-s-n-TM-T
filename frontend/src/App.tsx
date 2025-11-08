@@ -23,19 +23,28 @@ import Purchase from "./pages/User/Purchase";
 import Cart from "./pages/Checkout/Cart";
 import { AddressPage } from "./pages/Checkout/AddressPage";
 
-// --- Các trang cho ShopLayout ---
+// --- Các trang cho ShopLayout (ĐÃ GỘP TỪ CẢ 2 NHÁNH) ---
 import Dashboard from "./pages/Shop/Dashboard";
 import Orders from "./pages/Shop/Orders";
 import RegisterShop from './pages/RegisterShop';
+import OrderDetail from "./pages/Shop/OrderDetail"; // (Từ 'main')
 import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
-import ShopCategoriesManager from "./pages/Shop/ShopCategories";
-import AddProduct from "./pages/Shop/AddProduct";
+import ShopCategoriesManager from "./pages/Shop/ShopCategories"; // (Từ 'qhuykuteo')
+import AddProduct from "./pages/Shop/AddProduct"; // (Từ 'qhuykuteo')
+import EditProduct from "./pages/Shop/EditProduct"; // (Từ 'qhuykuteo')
+import Promotion from "./pages/Shop/Promotion"; // (Từ 'main')
 
-// ===== IMPORT FILE MỚI =====
-import EditProduct from "./pages/Shop/EditProduct";
-// ==========================
+// --Các trang cho AdminLayout (Từ 'main')--
+import AdminProtectedRoute from "./components/Admin/AdminProtectedRoute";
+import AdminLayout from "./layouts/AdminLayout";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminShopManagement from "./pages/Admin/AdminShopManagement";
+import AdminUserManagement from "./pages/Admin/AdminUserManagement";
+import AdminProductApproval from "./pages/Admin/AdminProductApproval";
+import AdminPayouts from "./pages/Admin/AdminPayouts";
+import AdminShopDetail from "./pages/Admin/AdminShopDetail";
 
 function App() {
   return (
@@ -70,19 +79,43 @@ function App() {
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path="orders" element={<Orders />} />
+          
+          {/* (Route 'Orders' của 'main') */}
+          <Route path="orders" element={<Orders />} /> 
+          <Route path="orders/:id" element={<OrderDetail />} />
+
+          {/* (Route 'Settings' của 'main') */}
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
           
+          {/* (Các Route 'Products' của bạn 'qhuykuteo') */}
           <Route path="products" element={<ShopProducts />} />
           <Route path="categories" element={<ShopCategoriesManager />} />
-          
           <Route path="products/new" element={<AddProduct />} />
-          
-          {/* ===== ROUTE MỚI ĐỂ SỬA SẢN PHẨM ===== */}
           <Route path="products/edit/:id" element={<EditProduct />} />
-          {/* ======================================= */}
+
+          {/* (Route 'Promotion' của 'main') */}
+          <Route path="promotion" element={<Promotion />} />
         </Route>
+
+        {/* === 3. TRANG ADMIN (TỪ NHÁNH 'main') === */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminLayout />
+            </AdminProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="shops" element={<AdminShopManagement />} />
+          <Route path="users" element={<AdminUserManagement />} />
+          <Route path="products" element={<AdminProductApproval />} />
+          <Route path="payouts" element={<AdminPayouts />} />
+          <Route path="shops/:id" element={<AdminShopDetail />} />
+        </Route>
+        
+        {/* <Route path="*" element={<NotFoundPage />} /> */}
       </Routes>
     </BrowserRouter>
   );

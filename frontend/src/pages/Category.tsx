@@ -89,6 +89,7 @@ const Category = () => {
   // }, [query]);
   const loadProducts = useCallback(async () => {
     try {
+      setLoading(true);
       // Gọi một hàm API duy nhất, truyền toàn bộ object query
       const res = await fetchProducts(query, Number(id));
 
@@ -100,6 +101,8 @@ const Category = () => {
 
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
+    } finally {
+      setLoading(false);
     }
   }, [query]); // Chỉ phụ thuộc vào `query`
 
@@ -207,9 +210,11 @@ const Category = () => {
     const max = priceRange.maxPrice ? Number(priceRange.maxPrice) : null;
     if ((min != null && min < 0) || (max != null && max < 0)) {
       alert("Giá phải là số lớn hơn 0 !");
+      return;
     }
     if (min != null && max != null && min > max) {
       alert("Khoảng giá bạn vừa nhập không hợp lệ!");
+      return;
     }
     setQuery((prev) => ({
       ...prev,
@@ -338,6 +343,10 @@ const Category = () => {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="border-top p-3 m-2">
+              <h5>Đánh giá</h5>
+
             </div>
             <div className="border-top p-3 m-2">
               <button className="btn-apply fw-semibold" onClick={() => handleResetFilter()}>Đặt lại</button>

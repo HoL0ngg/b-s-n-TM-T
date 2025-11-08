@@ -13,6 +13,7 @@ import { FaMoneyBillWave } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
 import { createVietQROrder } from "../../api/cart";
+import { createPayment_momo, createPayment_vnpay } from "../../api/payments";
 
 export const AddressPage = () => {
     const location = useLocation();
@@ -131,21 +132,55 @@ export const AddressPage = () => {
         loadAddress(); // Tải lại danh sách (để reload)
     };
 
-    const handlePlaceOrder = async () => {
-        try {
-            // Gọi API backend (Bước 2)
-            const checkoutData = {
-                total: total
+    const handleCreatePaymentUrl = async (provider: string): Promise<string | null> => {
+        const checkoutData = {
+            total: total
+        };
+        const processPayment = async (provider: string, data: typeof checkoutData) => {
+            try {
+                switch(provider){
+                    case 'vnpay':
+                        return await createPayment_vnpay(data);
+                    case 'momo':
+                        return await createPayment_momo(data);
+                    default:
+                        throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
+                }
+                
+            } catch (error) {
+                console.error('[ERROR] ', error);
+                throw new Error('Tạo URL thanh toán thất bại');
             }
-            const response = await createVietQROrder(checkoutData);
+        };
 
-            setQrImage(response.qrDataURL); // "data:image/png;base64,iVBORw..."
-            setOrderId(response.orderId);
+        try {
+            const response = await processPayment(provider, checkoutData);
 
+            if(response.success && response.paymentUrl){
+                console.log(`URL thanh toán được tạo thành công: ${response.paymentUrl}`);
+                return response.paymentUrl;
+            } else{
+                console.error(response.message || '[ERROR] Lỗi tạo URL thanh toán');
+                alert(response.message || '[ERROR] Có lỗi khi tạo URL thanh toán');
+                return null;
+            }
         } catch (error) {
-            alert("Có lỗi, không thể tạo mã QR.");
+            console.error('[ERROR] ', error);
+            alert(error instanceof Error ? error.message : 'An unknown error occurred');
+            return null;
         }
     }
+    const handlePlaceOrder = async () => {
+        console.log(selectedMethod);
+        if(selectedMethod === "cod"){
+            alert("Chưa xử lý phương thức COD");
+            return;
+        }
+        const paymentUrl = await handleCreatePaymentUrl(selectedMethod);
+        if(paymentUrl){
+            window.location.href = paymentUrl;
+        }
+    };
 
     return (
         <>
@@ -185,7 +220,7 @@ export const AddressPage = () => {
                                                             ))}
                                                         </div>
                                                         <div>Số lượng: {item.quantity}</div>
-                                                        <div className="text-danger fw-bold">{item.product_price.toLocaleString()}đ</div>
+                                                        <div className="text-danger fw-bold">{Number(item.sale_price ? item.sale_price : item.original_price).toLocaleString('vi-VN')}đ</div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -196,7 +231,7 @@ export const AddressPage = () => {
                                                 </div>
                                                 <div className="text-end">
                                                     <div>20.000đ</div>
-                                                    <div>{subTotal.toLocaleString()}đ</div>
+                                                    <div>{subTotal.toLocaleString('vi-VN')}đ</div>
                                                 </div>
                                             </div>
                                         </div>

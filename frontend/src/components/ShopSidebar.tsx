@@ -1,32 +1,40 @@
-import { NavLink } from 'react-router-dom';
+import { useMemo } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap-icons/font/bootstrap-icons.css';
-
 
 interface ShopSidebarProps {
   isOpen: boolean;
 }
 
 const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
-  return (
-    <div className={`shop-sidebar bg-white ${isOpen ? 'open' : 'closed'}`}>
-      <nav className="nav nav-pills flex-column p-2 pt-4">
+  // 2. Giữ lại logic 'location' của 'main'
+  const location = useLocation();
 
-        {/* Link Dashboard */}
+  const searchParams = useMemo(() => {
+    return new URLSearchParams(location.search);
+  }, [location.search]);
+
+  const currentStatus = searchParams.get("status");
+  return (
+    <div className={`shop-sidebar bg-white ${isOpen ? "open" : "closed"}`}>
+      <nav className="nav nav-pills flex-column p-2 pt-4">
+        {/* --- Dashboard --- */}
         <li className="nav-item mb-1">
-          <NavLink to="/seller" className="nav-link text-dark" end>
+          <NavLink to="/seller" end className="nav-link text-dark">
             <i className="bi bi-speedometer2 me-3 fs-5"></i>
             <span className="sidebar-link-text">Tổng quan</span>
           </NavLink>
         </li>
 
-        {/* --- Nhóm Quản lý Đơn hàng --- */}
+        {/* --- Quản lý Đơn hàng (Lấy code xịn của 'main') --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
             Quản lý Đơn hàng
           </span>
         </li>
-        {/* Menu xổ xuống cho Đơn hàng */}
+
         <li className="nav-item">
           <a
             href="#submenu-orders"
@@ -39,59 +47,50 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             </div>
             {isOpen && <i className="bi bi-chevron-down small"></i>}
           </a>
-          <div className="collapse" id="submenu-orders">
+
+          <div className="collapse show" id="submenu-orders">
             <ul className="nav flex-column ms-4">
               <li>
-                {/* 1. Link "Tất cả" PHẢI CÓ 'end' */}
                 <NavLink
                   to="/seller/orders"
                   end
-                  className="nav-link text-dark small sidebar-link-text"
+                  className={({ isActive }) =>
+                    `nav-link small sidebar-link-text ${
+                      isActive && !currentStatus ? "active" : "text-dark"
+                    }`
+                  }
                 >
                   Tất cả
                 </NavLink>
               </li>
-              <li>
-                {/* 2. Các link con phải có đường dẫn khác nhau */}
-                <NavLink
-                  to="/seller/orders?status=pending"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Chờ xác nhận
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/seller/orders?status=packing"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Chờ đóng gói
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/seller/orders?status=shipping"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Đang giao
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/seller/orders?status=delivered"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Đã giao
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/seller/orders?status=cancelled"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Đã hủy
-                </NavLink>
-              </li>
+
+              {[
+                "pending",
+                "processing",
+                "shipped",
+                "delivered",
+                "cancelled",
+              ].map((status) => (
+                <li key={status}>
+                  <NavLink
+                    to={`/seller/orders?status=${status}`}
+                    className={() =>
+                      `nav-link small sidebar-link-text ${
+                        location.pathname === "/seller/orders" &&
+                        currentStatus === status
+                          ? "active"
+                          : "text-dark"
+                      }`
+                    }
+                  >
+                    {status === "pending" && "Chờ xác nhận"}
+                    {status === "processing" && "Chờ đóng gói"}
+                    {status === "shipped" && "Đang giao"}
+                    {status === "delivered" && "Đã giao"}
+                    {status === "cancelled" && "Đã hủy"}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
           </div>
         </li>
@@ -102,37 +101,26 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           </NavLink>
         </li>
 
-        {/* --- Nhóm Quản lý Sản phẩm --- */}
+        {/* --- Nhóm Quản lý Sản phẩm (Lấy code của bạn 'qhuykuteo') --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
             Quản lý Sản phẩm
           </span>
         </li>
         <li className="nav-item">
-          {/* 3. Link "Tất cả" này CŨNG PHẢI CÓ 'end' */}
-          <NavLink
-            to="/seller/products"
-            end
-            className="nav-link text-dark"
-          >
+          <NavLink to="/seller/products" end className="nav-link text-dark">
             <i className="bi bi-box-seam me-3 fs-5"></i>
-            {/* Sửa lại text "Sản phẩm" -> "sản phẩm" cho nhất quán */}
             <span className="sidebar-link-text">Tất cả sản phẩm</span>
           </NavLink>
         </li>
-        
-        {/* ===== BẮT ĐẦU SỬA LỖI ===== */}
         <li className="nav-item">
-          {/* Sửa 'to' từ "/seller/productses" -> "/seller/categories" */}
+          {/* Đây là code "xịn" của bạn (qhuykuteo) */}
           <NavLink to="/seller/categories" className="nav-link text-dark">
             <i className="bi bi-plus-square me-3 fs-5"></i>
             <span className="sidebar-link-text">Loại sản phẩm</span>
           </NavLink>
         </li>
-        {/* ===== KẾT THÚC SỬA LỖI ===== */}
-
-
-        {/* --- (Các nhóm khác giữ nguyên) --- */}
+        {/* ====================================================== */}
 
         {/* --- Nhóm Tài chính --- */}
         <li className="nav-item mt-2">
@@ -151,6 +139,18 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             <i className="bi bi-bank me-3 fs-5"></i>
             <span className="sidebar-link-text">Tài khoản Ngân hàng</span>
           </NavLink>
+        </li>
+        
+        {/* --- Mục mới của 'main' --- */}
+        <li className="nav-item mt-2">
+          <span className="nav-link text-muted small text-uppercase sidebar-link-text pointer">
+            <NavLink
+              to="/seller/promotion"
+              className="text-dark text-decoration-none"
+            >
+              Quản lý giảm giá
+            </NavLink>
+          </span>
         </li>
 
         {/* --- Nhóm Quản lý Shop --- */}
@@ -174,19 +174,24 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           <div className="collapse" id="submenu-shop">
             <ul className="nav flex-column ms-4">
               <li>
-                <NavLink to="/seller/settings/profile" className="nav-link text-dark small sidebar-link-text">
+                <NavLink
+                  to="/seller/settings/profile"
+                  className="nav-link text-dark small sidebar-link-text"
+                >
                   Hồ sơ Shop
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/seller/settings/view" className="nav-link text-dark small sidebar-link-text">
+                <NavLink
+                  to="/seller/settings/view"
+                  className="nav-link text-dark small sidebar-link-text"
+                >
                   Giao diện người xem
                 </NavLink>
               </li>
             </ul>
           </div>
         </li>
-
       </nav>
     </div>
   );

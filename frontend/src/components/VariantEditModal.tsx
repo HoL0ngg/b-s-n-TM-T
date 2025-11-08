@@ -1,11 +1,7 @@
-// Đường dẫn: frontend/src/components/VariantEditModal.tsx
-// (PHIÊN BẢN SỬA LỖI TYPESCRIPT VÀ THÊM BỘ CHỌN SỐ LƯỢNG)
-
-// SỬA LỖI (Dòng 4): Xóa `import React` không cần thiết
 import { useState, useEffect, useMemo } from 'react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/CartContext'; 
 import type { CartItem } from '../types/CartType';
-import { fetchProductsByID } from '../api/products'; // (Đã sửa lỗi gõ chữ)
+import { fetchProductsByID } from '../api/products'; 
 import type { ProductType } from '../types/ProductType';
 
 interface VariantEditModalProps {
@@ -20,14 +16,12 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
     const [fullProduct, setFullProduct] = useState<ProductType | null>(null);
     const [selectedAttrs, setSelectedAttrs] = useState<{ [key: string]: string }>({});
     
-    // SỬA LỖI (Dòng 27): `setQuantity` giờ đã được sử dụng ở dưới
     const [quantity, setQuantity] = useState(cartItem.quantity); 
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (show) {
             setIsLoading(true);
-            // Reset quantity về số lượng của item khi modal mở
             setQuantity(cartItem.quantity); 
             
             fetchProductsByID(cartItem.product_id.toString())
@@ -35,17 +29,16 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                     setFullProduct(data);
                     console.log(data);
 
-                    // SỬA LỖI (Dòng 48): Thêm type `{ [key: string]: string }`
                     const initialOptions: { [key: string]: string } = {};
                     if (cartItem.options) cartItem.options.forEach((opt: any) => {
-                        initialOptions[opt.attribute] = opt.value; // Lỗi đã được sửa
+                        initialOptions[opt.attribute] = opt.value; 
                     });
                     setSelectedAttrs(initialOptions);
                 })
                 .catch(err => console.error("Lỗi tải chi tiết sản phẩm:", err))
                 .finally(() => setIsLoading(false));
         }
-    }, [show, cartItem]); // Chạy lại khi modal mở
+    }, [show, cartItem]); 
 
     const currentVariant = useMemo(() => {
         if (!fullProduct || !selectedAttrs) return undefined;
@@ -80,13 +73,12 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
         setSelectedAttrs(prev => ({ ...prev, [attrName]: val }));
     };
 
-    // Hàm thay đổi số lượng
     const handleQuantityChange = (amount: number) => {
         setQuantity(prevQty => {
             const newQty = prevQty + amount;
             const stock = currentVariant?.stock ?? 0;
-            if (newQty < 1) return 1; // Tối thiểu là 1
-            if (newQty > stock) return stock; // Tối đa là tồn kho
+            if (newQty < 1) return 1; 
+            if (newQty > stock) return stock; 
             return newQty;
         });
     };
@@ -96,15 +88,14 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
             alert("Vui lòng chọn đầy đủ tùy chọn.");
             return;
         }
-        // Kiểm tra lại số lượng lần nữa
         if (quantity > currentVariant.stock) {
              alert(`Số lượng vượt quá tồn kho (Tồn kho: ${currentVariant.stock})`);
-             setQuantity(currentVariant.stock); // Set về max
+             setQuantity(currentVariant.stock); 
              return;
         }
 
         updateCartItem(cartItem.product_variant_id, currentVariant.id, quantity);
-        onClose(); // Đóng modal
+        onClose(); 
     };
 
     const stock = currentVariant?.stock ?? 0;
@@ -145,7 +136,6 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                                     </div>
                                 ))}
 
-                                {/* ===== BẮT ĐẦU THÊM MỚI UI SỐ LƯỢNG ===== */}
                                 <div className="mb-3">
                                     <div className="fw-semibold">Số lượng</div>
                                     <div className="d-flex align-items-center gap-2 mt-1">
@@ -160,7 +150,7 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                                             className="form-control text-center" 
                                             style={{width: '60px'}}
                                             value={quantity}
-                                            readOnly // Chỉ cho phép thay đổi bằng nút
+                                            readOnly 
                                         />
                                         
                                         <button 
@@ -170,13 +160,14 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                                         > + </button>
                                     </div>
                                 </div>
-                                {/* ===== KẾT THÚC THÊM MỚI UI SỐ LƯỢNG ===== */}
 
 
                                 <div className="mt-3">
                                     <div>Giá:
                                         <span className="fw-bold text-danger ms-2">
-                                            {currentVariant ? (currentVariant.price * quantity).toLocaleString() : '...'}đ
+                                            {/* ===== ĐÃ SỬA XUNG ĐỘT ===== */}
+                                            {currentVariant ? (currentVariant.price * quantity).toLocaleString('vi-VN') : '...'}đ
+                                            {/* ========================== */}
                                         </span>
                                     </div>
                                     <div>Tồn kho: {stock > 0 ? stock : 'Hết hàng'}
@@ -192,7 +183,7 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                             type="button"
                             className="btn btn-primary"
                             onClick={handleSaveChanges}
-                            disabled={!currentVariant || isLoading || stock === 0} // Vô hiệu hóa nếu hết hàng
+                            disabled={!currentVariant || isLoading || stock === 0} 
                         >
                             Lưu thay đổi
                         </button>

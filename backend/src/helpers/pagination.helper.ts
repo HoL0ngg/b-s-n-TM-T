@@ -1,3 +1,4 @@
+import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 import type { Product, ProductResponse } from "../models/product.model";
 
@@ -8,32 +9,28 @@ export const paginationProducts = async (whereClause: string,
     orderBy: string = ""
 ): Promise<ProductResponse> => {
     const offset = (page - 1) * limit;
-    const [countRows] = await pool.query(
-        `SELECT COUNT(*) as total FROM products ${whereClause}`,
-        params
-    );
-    const total = (countRows as any)[0].total;
-    const totalPages = Math.ceil(total / limit);
+    const countSql = `
+        SELECT COUNT(*) AS totalRows 
+        FROM v_products_list 
+        ${whereClause}
+    `;
 
-    const [rows] = await pool.query(
-        `SELECT 
-        products.id, 
-        products.name, 
-        products.description, 
-        products.base_price, 
-        products.shop_id, 
-        productimages.image_url, 
-        products.sold_count
-      FROM products 
-      LEFT JOIN productimages 
-          ON productimages.product_id = products.id 
-          AND productimages.is_main = 1
-      ${whereClause}
-      GROUP BY products.id
-      ${orderBy}
-      LIMIT ? OFFSET ?`,
-        [...params, limit, offset]
-    );
+    type TotalCount = { totalRows: number };
+    const [countRows] = await pool.query<TotalCount[] & RowDataPacket[]>(countSql, params);
+    const totalRows = countRows[0].totalRows;
+    const totalPages = Math.ceil(totalRows / limit);
+
+    const dataSql = `
+        SELECT * FROM v_products_list
+        ${whereClause}
+        ${orderBy}
+        LIMIT ? 
+        OFFSET ?
+    `;
+
+    const finalParams = [...params, limit, offset];
+
+    const [rows] = await pool.query<Product[] & RowDataPacket[]>(dataSql, finalParams);
 
     return { products: rows as Product[], totalPages };
 }
