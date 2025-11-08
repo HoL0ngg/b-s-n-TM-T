@@ -1,29 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     fetchShopCategories,
     createShopCategory,
     updateShopCategory,
     deleteShopCategory
 } from '../../api/shopCategory';
-// Sửa lỗi: Import 'ShopCategoryType' bằng 'import type'
-import type { ShopCategoryType } from '../../api/shopCategory';
+import type { ShopCategoryType } from '../../api/shopCategory'; // (Giờ đã có product_count)
 
 type ModalMode = 'add' | 'edit';
 
 export default function ShopCategoriesManager() {
+    const navigate = useNavigate();
     const [categories, setCategories] = useState<ShopCategoryType[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    // State cho Modal
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState<ModalMode>('add');
     const [currentCategory, setCurrentCategory] = useState<Partial<ShopCategoryType> | null>(null);
-    
-    // State cho Xóa
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState<ShopCategoryType | null>(null);
 
+    // (loadCategories, handleAdd, ... giữ nguyên)
     const loadCategories = useCallback(async () => {
         try {
             setLoading(true);
@@ -37,34 +35,28 @@ export default function ShopCategoriesManager() {
             setLoading(false);
         }
     }, []);
-
     useEffect(() => {
         loadCategories();
     }, [loadCategories]);
-
     const handleAdd = () => {
         setModalMode('add');
         setCurrentCategory({ name: '' });
         setShowModal(true);
         setError('');
     };
-
     const handleEdit = (category: ShopCategoryType) => {
         setModalMode('edit');
         setCurrentCategory({ ...category });
         setShowModal(true);
         setError('');
     };
-
     const handleDelete = (category: ShopCategoryType) => {
         setCategoryToDelete(category);
         setShowDeleteConfirm(true);
         setError('');
     };
-
     const confirmDelete = async () => {
         if (!categoryToDelete?.id) return;
-
         try {
             await deleteShopCategory(categoryToDelete.id);
             setCategories(categories.filter(c => c.id !== categoryToDelete.id));
@@ -76,16 +68,13 @@ export default function ShopCategoriesManager() {
             setShowDeleteConfirm(false);
         }
     };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentCategory || !currentCategory.name?.trim()) {
             setError("Tên danh mục không được để trống");
             return;
         }
-        
         setError('');
-        
         try {
             if (modalMode === 'add') {
                 await createShopCategory(currentCategory.name);
@@ -100,6 +89,9 @@ export default function ShopCategoriesManager() {
             setError(error.response?.data?.message || 'Không thể lưu danh mục');
         }
     };
+    const handleViewProducts = (categoryId: number) => {
+        navigate(`/seller/products?category_id=${categoryId}`);
+    };
 
     if (loading) {
         return (
@@ -113,7 +105,7 @@ export default function ShopCategoriesManager() {
 
     return (
         <div style={{ backgroundColor: '#FAFAFA', minHeight: '100vh', paddingBottom: '40px' }}>
-            {/* Header */}
+            {/* Header (Giữ nguyên) */}
             <div style={{ background: 'linear-gradient(135deg, #FFD43B 0%, #FFC107 100%)', padding: '32px 0', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
                 <div className="container">
                     <div className="d-flex justify-content-between align-items-center">
@@ -160,7 +152,7 @@ export default function ShopCategoriesManager() {
                 </div>
             </div>
 
-            {/* Main Content */}
+            {/* Main Content (Giữ nguyên) */}
             <div className="container mt-4">
                 {error && (
                     <div className="alert alert-danger mb-3" role="alert">
@@ -169,7 +161,7 @@ export default function ShopCategoriesManager() {
                     </div>
                 )}
 
-                {/* Categories Table */}
+                {/* Categories Table (NÂNG CẤP: Thêm cột "Số sản phẩm") */}
                 <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                     <table className="table mb-0" style={{ verticalAlign: 'middle' }}>
                         <thead>
@@ -179,6 +171,10 @@ export default function ShopCategoriesManager() {
                                 </th>
                                 <th style={{ fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA' }}>
                                     Tên danh mục
+                                </th>
+                                {/* ===== THÊM CỘT MỚI ===== */}
+                                <th style={{ fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA' }}>
+                                    Số sản phẩm
                                 </th>
                                 <th style={{ fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA', textAlign: 'right' }}>
                                     Thao tác
@@ -196,8 +192,26 @@ export default function ShopCategoriesManager() {
                                             {category.name}
                                         </div>
                                     </td>
+                                    {/* ===== THÊM DATA CHO CỘT MỚI ===== */}
+                                    <td style={{ padding: '16px 20px' }}>
+                                        <span style={{fontWeight: '500', fontSize: '14px', color: '#333'}}>
+                                            {category.product_count}
+                                        </span>
+                                    </td>
                                     <td style={{ padding: '16px 20px' }}>
                                         <div className="d-flex gap-2 justify-content-end">
+                                            <button
+                                                onClick={() => handleViewProducts(category.id)}
+                                                className="btn btn-sm p-0"
+                                                title="Xem sản phẩm"
+                                                style={{
+                                                    width: '32px', height: '32px', borderRadius: '6px',
+                                                    border: '1px solid #B2EBF2', backgroundColor: '#E0F7FA',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}
+                                            >
+                                                <i className="bi bi-eye-fill" style={{ color: '#0097A7', fontSize: '14px' }}></i>
+                                            </button>
                                             <button
                                                 onClick={() => handleEdit(category)}
                                                 className="btn btn-sm p-0"
@@ -239,7 +253,7 @@ export default function ShopCategoriesManager() {
                 </div>
             </div>
 
-            {/* Modal Add/Edit */}
+            {/* Modal Add/Edit (Giữ nguyên) */}
             {showModal && (
                 <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
                     <div className="modal-dialog modal-dialog-centered">
@@ -250,13 +264,8 @@ export default function ShopCategoriesManager() {
                                         <i className={`bi ${modalMode === 'add' ? 'bi-plus-circle-fill' : 'bi-pencil-square'}`}></i>
                                         {modalMode === 'add' ? 'Thêm danh mục mới' : 'Chỉnh sửa danh mục'}
                                     </h5>
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        onClick={() => { setShowModal(false); setError(''); }}
-                                    ></button>
+                                    <button type="button" className="btn-close" onClick={() => { setShowModal(false); setError(''); }}></button>
                                 </div>
-
                                 <div className="modal-body" style={{ padding: '24px' }}>
                                     {error && (
                                         <div className="alert alert-danger p-2" style={{fontSize: '13px'}} role="alert">
@@ -278,29 +287,9 @@ export default function ShopCategoriesManager() {
                                         />
                                     </div>
                                 </div>
-
                                 <div className="modal-footer" style={{ borderTop: '1px solid #f0f0f0', padding: '16px 24px' }}>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setShowModal(false); setError(''); }}
-                                        className="btn"
-                                        style={{
-                                            backgroundColor: '#f5f5f5', color: '#666', padding: '8px 20px',
-                                            borderRadius: '6px', border: '1px solid #e0e0e0',
-                                            fontWeight: '500', fontSize: '14px'
-                                        }}
-                                    >
-                                        Hủy
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="btn"
-                                        style={{
-                                            backgroundColor: '#FF9800', color: '#fff', padding: '8px 20px',
-                                            borderRadius: '6px', border: 'none',
-                                            fontWeight: '500', fontSize: '14px'
-                                        }}
-                                    >
+                                    <button type="button" onClick={() => { setShowModal(false); setError(''); }} className="btn" style={{ backgroundColor: '#f5f5f5', color: '#666', padding: '8px 20px', borderRadius: '6px', border: '1px solid #e0e0e0', fontWeight: '500', fontSize: '14px' }}>Hủy</button>
+                                    <button type="submit" className="btn" style={{ backgroundColor: '#FF9800', color: '#fff', padding: '8px 20px', borderRadius: '6px', border: 'none', fontWeight: '500', fontSize: '14px' }}>
                                         {modalMode === 'add' ? 'Thêm' : 'Cập nhật'}
                                     </button>
                                 </div>
@@ -310,7 +299,7 @@ export default function ShopCategoriesManager() {
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal (Giữ nguyên) */}
             {showDeleteConfirm && categoryToDelete && (
                 <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
                     <div className="modal-dialog modal-dialog-centered">
@@ -327,28 +316,8 @@ export default function ShopCategoriesManager() {
                                 <small className="text-danger" style={{ fontSize: '12px' }}>Hành động này không thể hoàn tác</small>
                             </div>
                             <div className="modal-footer" style={{ borderTop: '1px solid #f0f0f0', padding: '16px 24px', justifyContent: 'center', gap: '12px' }}>
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="btn"
-                                    style={{
-                                        backgroundColor: '#fff', color: '#666', padding: '8px 24px',
-                                        borderRadius: '6px', border: '1px solid #d9d9d9',
-                                        fontWeight: '500', fontSize: '14px'
-                                    }}
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    className="btn"
-                                    style={{
-                                        backgroundColor: '#ff4d4f', color: '#fff', padding: '8px 24px',
-                                        borderRadius: '6px', border: 'none',
-                                        fontWeight: '500', fontSize: '14px'
-                                    }}
-                                >
-                                    Xác nhận xóa
-                                </button>
+                                <button onClick={() => setShowDeleteConfirm(false)} className="btn" style={{ backgroundColor: '#fff', color: '#666', padding: '8px 24px', borderRadius: '6px', border: '1px solid #d9d9d9', fontWeight: '500', fontSize: '14px' }}>Hủy</button>
+                                <button onClick={confirmDelete} className="btn" style={{ backgroundColor: '#ff4d4f', color: '#fff', padding: '8px 24px', borderRadius: '6px', border: 'none', fontWeight: '500', fontSize: '14px' }}>Xác nhận xóa</button>
                             </div>
                         </div>
                     </div>

@@ -14,7 +14,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgetPassword from "./pages/forgetPassword";
 import Category from "./pages/Category";
-import Shop from "./pages/Shop"; // Trang xem shop (của khách)
+import Shop from "./pages/Shop"; 
 import ProductDetail from "./pages/ProductDetail";
 import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
@@ -30,20 +30,19 @@ import RegisterShop from './pages/RegisterShop';
 import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
+import ShopCategoriesManager from "./pages/Shop/ShopCategories";
+import AddProduct from "./pages/Shop/AddProduct";
 
-// ===== IMPORT MỚI (CHỈ THÊM DÒNG NÀY) =====
-import ShopCategoriesManager from "./pages/Shop/ShopCategories"; 
-// ============================================
+// ===== IMPORT FILE MỚI =====
+import EditProduct from "./pages/Shop/EditProduct";
+// ==========================
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-
       <Routes>
-
         {/* === 1. CÁC TRANG CÔNG KHAI (DÙNG MAIN LAYOUT) === */}
-        {/* (Toàn bộ phần này giữ nguyên, không thay đổi) */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
@@ -65,28 +64,25 @@ function App() {
           <Route element={<CheckoutLayout />}>
             <Route path="/cart" element={<Cart />}></Route>
             <Route path="/checkout/address" element={<AddressPage />} />
-            {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
           </Route>
         </Route>
 
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
-        {/* (Path chính là "/seller") */}
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
-          <Route path="products" element={<ShopProducts />} />
           
-          {/* ===== ROUTE MỚI (CHỈ THÊM DÒNG NÀY) ===== */}
+          <Route path="products" element={<ShopProducts />} />
           <Route path="categories" element={<ShopCategoriesManager />} />
+          
+          <Route path="products/new" element={<AddProduct />} />
+          
+          {/* ===== ROUTE MỚI ĐỂ SỬA SẢN PHẨM ===== */}
+          <Route path="products/edit/:id" element={<EditProduct />} />
           {/* ======================================= */}
-
         </Route>
-
-        {/* Thêm route 404 (Not Found) nếu cần */}
-        {/* <Route path="*" element={<NotFoundPage />} /> */}
-
       </Routes>
     </BrowserRouter>
   );

@@ -421,7 +421,23 @@ INSERT INTO `products` (`id`, `name`, `description`, `status`, `created_at`, `up
 (32, 'Son Kem Merzy Siêu Lì, Lâu Trôi, Lên Màu Chuẩn Academia Mellow Tint 4g', '', 1, '2025-10-07', '2025-10-17', 144000, 1, 17, 1, 1, 15);
 
 -- --------------------------------------------------------
+-- --------------------------------------------------------
+--
+-- Cấu trúc bảng cho bảng `product_details`
+-- (Dùng để lưu chi tiết sản phẩm dạng Key-Value)
+--
+CREATE TABLE `product_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `attribute_key` varchar(255) NOT NULL,
+  `attribute_value` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Thêm ràng buộc khóa ngoại
+ALTER TABLE `product_details`
+  ADD CONSTRAINT `fk_details_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 --
 -- Cấu trúc bảng cho bảng `productvariants`
 --

@@ -1,19 +1,30 @@
-// backend/src/services/shopCategory.service.ts
 import pool from "../config/db";
 import { OkPacket, RowDataPacket } from "mysql2";
 
+// NÂNG CẤP: Thêm product_count
 export interface ShopCategory {
     id: number;
     shop_id: number;
     name: string;
+    product_count: number; 
 }
 
 // Lấy tất cả danh mục của MỘT shop
 export const getCategoriesByShopId = async (shopId: number): Promise<ShopCategory[]> => {
-    const [rows] = await pool.query(
-        "SELECT id, shop_id, name FROM shop_categories WHERE shop_id = ?",
-        [shopId]
-    );
+    // NÂNG CẤP: Dùng LEFT JOIN, COUNT và GROUP BY để đếm số sản phẩm
+    const query = `
+        SELECT 
+            sc.id, 
+            sc.shop_id, 
+            sc.name, 
+            COUNT(p.id) AS product_count
+        FROM shop_categories sc
+        LEFT JOIN products p ON sc.id = p.shop_cate_id AND p.shop_id = ?
+        WHERE sc.shop_id = ?
+        GROUP BY sc.id, sc.shop_id, sc.name
+        ORDER BY sc.name ASC
+    `;
+    const [rows] = await pool.query(query, [shopId, shopId]);
     return rows as ShopCategory[];
 };
 

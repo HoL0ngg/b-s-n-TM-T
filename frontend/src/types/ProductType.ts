@@ -9,9 +9,9 @@ export interface ProductType {
     image_url: string;
     sold_count: number;
     product_variants: ProductVariantType[];
-    images: ProductImageType[]; 
+    images: ProductImageType[];
     avg_rating: number;
-    shop_cate_id?: number | null; // <--- TRƯỜNG MỚI ĐỂ QUẢN LÝ LOẠI SP
+    shop_cate_id?: number | null; // (Đã thêm)
 }
 
 export interface ProductImageType {
@@ -19,7 +19,6 @@ export interface ProductImageType {
     image_url: string;
     is_main: number;
 }
-
 export interface ProductReviewType {
     id: number;
     rating: number;
@@ -29,7 +28,6 @@ export interface ProductReviewType {
     email: string;
     avatar_url: string;
 }
-
 export interface ProductReviewSummaryType {
     1: number;
     2: number;
@@ -40,27 +38,29 @@ export interface ProductReviewSummaryType {
     avg: number;
 }
 
+// ===== SỬA LỖI: Đổi tên các trường để khớp với CSDL mới =====
+// (File 'product_detail' cũ của bạn đã được thay bằng 'product_details')
 export interface ProductDetailsType {
     id: number,
     product_id: number,
-    attribute: string,
-    value: string,
+    attribute: string, // <-- Tên cũ là 'attribute'
+    value: string,     // <-- Tên cũ là 'value'
 }
+// =======================================================
+
 export interface AttributeOfProductVariantsType {
     attribute: string,
     values: string[],
 }
-
 interface VariantOption {
-    attribute: string; // "Màu sắc"
-    value: string;     // "Cam"
+    attribute: string; 
+    value: string;     
 }
-
 export interface ProductVariantType {
-    id: number;           // 1, 2, 3...
-    price: number;        // 223000
-    stock: number;        // 40
-    options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
+    id: number;       
+    price: number;    
+    stock: number;    
+    options: VariantOption[]; 
     image_url: string;
 }
 export interface ProductResponseType {
