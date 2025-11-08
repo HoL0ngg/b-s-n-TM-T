@@ -6,8 +6,10 @@
     "framer-motion": "^12.23.24",
     "leaflet": "^1.9.4",
     "lodash.debounce": "^4.0.8",
+    "multer": "^2.0.2",
     "react-leaflet": "^5.0.0",
-    "swiper": "^12.0.2"
+    "swiper": "^12.0.2",
+    "vnpay": "^2.4.4"
   },
   "devDependencies": {
     "@types/lodash.debounce": "^4.0.9"

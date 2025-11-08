@@ -7,9 +7,9 @@ use basan;
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 05, 2025 lúc 05:59 PM
+-- Thời gian đã tạo: Th10 04, 2025 lúc 09:43 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.0.30
+-- Phiên bản PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,8 +24,6 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `basan`
 --
-CREATE DATABASE IF NOT EXISTS `basan` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `basan`;
 
 -- --------------------------------------------------------
 
@@ -33,15 +31,13 @@ USE `basan`;
 -- Cấu trúc bảng cho bảng `address`
 --
 
-DROP TABLE IF EXISTS `address`;
-CREATE TABLE IF NOT EXISTS `address` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `address` (
+  `id` int(11) NOT NULL,
   `city` varchar(255) DEFAULT NULL,
   `ward` varchar(255) DEFAULT NULL,
   `street` varchar(255) DEFAULT NULL,
-  `home_number` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `home_number` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `address`
@@ -49,7 +45,8 @@ CREATE TABLE IF NOT EXISTS `address` (
 
 INSERT INTO `address` (`id`, `city`, `ward`, `street`, `home_number`) VALUES
 (1, 'TP. Hồ Chí Minh', 'Phường Chợ Quán', 'An Dương Vương', '273'),
-(2, 'TP. Hồ Chí Minh', 'Phường Chợ Quán', 'An Dương Vương', '275');
+(2, 'TP. Hồ Chí Minh', 'Phường Chợ Quán', 'An Dương Vương', '275'),
+(10, 'Thành phố Hà Nội', 'Phường Ba Đình', 'D5 HCM ádádsssss', NULL);
 
 -- --------------------------------------------------------
 
@@ -57,15 +54,12 @@ INSERT INTO `address` (`id`, `city`, `ward`, `street`, `home_number`) VALUES
 -- Cấu trúc bảng cho bảng `address_user`
 --
 
-DROP TABLE IF EXISTS `address_user`;
-CREATE TABLE IF NOT EXISTS `address_user` (
+CREATE TABLE `address_user` (
   `address_id` int(11) DEFAULT NULL,
   `phone_number` varchar(10) DEFAULT NULL,
   `is_default` tinyint(1) DEFAULT NULL,
   `user_name` varchar(255) DEFAULT NULL,
-  `phone_number_jdo` varchar(10) DEFAULT NULL,
-  KEY `address_id` (`address_id`),
-  KEY `phone_number` (`phone_number`)
+  `phone_number_jdo` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -74,7 +68,8 @@ CREATE TABLE IF NOT EXISTS `address_user` (
 
 INSERT INTO `address_user` (`address_id`, `phone_number`, `is_default`, `user_name`, `phone_number_jdo`) VALUES
 (1, '0987654321', 1, 'L0ngkute', '0937211264'),
-(2, '0987654321', 0, '0 phải L0ngg', '0937211265');
+(2, '0987654321', 0, '0 phải L0ngg', '0937211265'),
+(10, '0338740832', 1, 'Kim Long', '0338740832');
 
 -- --------------------------------------------------------
 
@@ -82,12 +77,10 @@ INSERT INTO `address_user` (`address_id`, `phone_number`, `is_default`, `user_na
 -- Cấu trúc bảng cho bảng `brands`
 --
 
-DROP TABLE IF EXISTS `brands`;
-CREATE TABLE IF NOT EXISTS `brands` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `brands` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `brands`
@@ -117,15 +110,19 @@ INSERT INTO `brands` (`id`, `name`) VALUES
 -- Cấu trúc bảng cho bảng `cart`
 --
 
-DROP TABLE IF EXISTS `cart`;
-CREATE TABLE IF NOT EXISTS `cart` (
+CREATE TABLE `cart` (
   `user_id` varchar(10) NOT NULL,
   `product_variant_id` int(11) NOT NULL,
   `quantity` int(11) DEFAULT NULL,
-  `added_at` datetime DEFAULT current_timestamp(),
-  PRIMARY KEY (`user_id`,`product_variant_id`),
-  KEY `product_variant_id` (`product_variant_id`)
+  `added_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `cart`
+--
+
+INSERT INTO `cart` (`user_id`, `product_variant_id`, `quantity`, `added_at`) VALUES
+('0338740832', 19, 1, '2025-11-04 15:12:23');
 
 -- --------------------------------------------------------
 
@@ -133,14 +130,12 @@ CREATE TABLE IF NOT EXISTS `cart` (
 -- Cấu trúc bảng cho bảng `categories`
 --
 
-DROP TABLE IF EXISTS `categories`;
-CREATE TABLE IF NOT EXISTS `categories` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `categories` (
+  `id` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
-  `img_url` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `img_url` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `categories`
@@ -162,14 +157,11 @@ INSERT INTO `categories` (`id`, `name`, `description`, `img_url`) VALUES
 -- Cấu trúc bảng cho bảng `generic`
 --
 
-DROP TABLE IF EXISTS `generic`;
-CREATE TABLE IF NOT EXISTS `generic` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `generic` (
+  `id` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `category_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `category_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `generic`
@@ -198,78 +190,15 @@ INSERT INTO `generic` (`id`, `name`, `category_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `orders`
---
-
-DROP TABLE IF EXISTS `orders`;
-CREATE TABLE IF NOT EXISTS `orders` (
-  `order_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(10) NOT NULL,
-  `address_id` int(11) DEFAULT NULL,
-  `total_amount` decimal(10,2) NOT NULL,
-  `shipping_fee` decimal(10,2) DEFAULT 0.00,
-  `status` varchar(50) NOT NULL DEFAULT 'Pending',
-  `payment_method` varchar(50) NOT NULL,
-  `payment_status` varchar(50) DEFAULT 'Unpaid',
-  `order_date` datetime NOT NULL DEFAULT current_timestamp(),
-  `notes` text DEFAULT NULL,
-  PRIMARY KEY (`order_id`),
-  KEY `user_id` (`user_id`),
-  KEY `address_id` (`address_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `orders`
---
-
-INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`) VALUES
-(1, '0987654333', 1, 736000.00, 0.00, 'Shipped', 'COD', 'Unpaid', '2025-11-05 20:16:05', NULL);
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `order_items`
---
-
-DROP TABLE IF EXISTS `order_items`;
-CREATE TABLE IF NOT EXISTS `order_items` (
-  `item_id` int(11) NOT NULL AUTO_INCREMENT,
-  `order_id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL,
-  `variant_id` int(11) DEFAULT NULL,
-  `product_name` varchar(255) NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `price_at_purchase` decimal(10,2) NOT NULL,
-  `subtotal` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`item_id`),
-  KEY `order_id` (`order_id`),
-  KEY `product_id` (`product_id`),
-  KEY `variant_id` (`variant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `order_items`
---
-
-INSERT INTO `order_items` (`item_id`, `order_id`, `product_id`, `variant_id`, `product_name`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
-(1, 1, 1, 1, 'Son Kem Bóng Maybelline', 2, 228000.00, 456000.00),
-(2, 1, 4, 19, 'Quần Tây Nam Owen', 1, 280000.00, 280000.00);
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc bảng cho bảng `productimages`
 --
 
-DROP TABLE IF EXISTS `productimages`;
-CREATE TABLE IF NOT EXISTS `productimages` (
-  `image_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `productimages` (
+  `image_id` int(11) NOT NULL,
   `image_url` varchar(500) NOT NULL,
   `product_id` int(11) NOT NULL,
-  `is_main` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`image_id`),
-  KEY `product_id` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `is_main` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productimages`
@@ -412,18 +341,14 @@ INSERT INTO `productimages` (`image_id`, `image_url`, `product_id`, `is_main`) V
 -- Cấu trúc bảng cho bảng `productreviews`
 --
 
-DROP TABLE IF EXISTS `productreviews`;
-CREATE TABLE IF NOT EXISTS `productreviews` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `productreviews` (
+  `id` int(11) NOT NULL,
   `rating` int(11) DEFAULT NULL CHECK (`rating` between 1 and 5),
   `comment` varchar(1000) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `user_id` varchar(10) NOT NULL,
-  `product_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `product_id` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `product_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `productreviews`
@@ -442,12 +367,11 @@ INSERT INTO `productreviews` (`id`, `rating`, `comment`, `created_at`, `user_id`
 -- Cấu trúc bảng cho bảng `products`
 --
 
-DROP TABLE IF EXISTS `products`;
-CREATE TABLE IF NOT EXISTS `products` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` varchar(1000) DEFAULT NULL,
-  `status` ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+  `status` int(11) DEFAULT 1,
   `created_at` date DEFAULT current_timestamp(),
   `updated_at` date DEFAULT current_timestamp(),
   `base_price` int(11) DEFAULT NULL,
@@ -455,67 +379,60 @@ CREATE TABLE IF NOT EXISTS `products` (
   `sold_count` int(11) DEFAULT NULL,
   `shop_id` int(11) DEFAULT NULL,
   `shop_cate_id` int(11) DEFAULT NULL,
-  `brand_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `generic_id` (`generic_id`),
-  KEY `shop_id` (`shop_id`),
-  KEY `shop_cate_id` (`shop_cate_id`),
-  KEY `brand_id` (`brand_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `brand_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `products`
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `status`, `created_at`, `updated_at`, `base_price`, `generic_id`, `sold_count`, `shop_id`, `shop_cate_id`, `brand_id`) VALUES
-(1, 'Son Kem Bóng Maybelline Bền Màu, Nhẹ Môi New York Superstay Vinyl Ink 4.2ml', 'Son Kem Bóng Bền Màu, Nhẹ Môi Maybelline New York Superstay Vinyl Ink 4.2ml là son kem lì đến từ thương hiệu Maybelline chứa công thức đột phá mới với công nghệ “khóa” màu thách thức lem trôi, nhẹ mướt, để lại lớp bóng nhẹ tinh tế, cho đôi môi căng tràn sức sống. Son bóng lên màu chuẩn, nhưng vẫn duy trì độ ẩm và giữ được sự mềm mịn cho môi.', 'approved', '2025-01-10', '2025-10-10', 228000, 1, 100, 1, 1, 1),
-(2, 'Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni', 'Giày đá banh, mang vô đá như Messi', 'approved', '2025-08-10', '2025-10-10', 2128000, 8, 20, 1, 1, 2),
-(3, 'Áo Sơ Mi Nam Tay Dài Aristino OwenShop', 'Áo sơ mi trắng', 'approved', '2025-02-10', '2025-10-10', 1128000, 7, 22, 1, 1, 3),
-(4, 'Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop', 'Quần tây đen', 'approved', '2025-10-10', '2025-10-10', 280000, 4, 50, 1, 1, 3),
-(5, '[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g', 'Son Dưỡng Thuần Chay Romand Glasting Melting Balm là son thỏi màu có dưỡng đến từ thương hiệu Romand với tinh chất dầu thực vật thuần chay cùng chất son siêu nhẹ môi có độ dưỡng cao, giúp dưỡng ẩm cho đôi môi mềm mại, căng mọng tự nhiên trong thời gian dài.', 'approved', '2025-01-10', '2025-10-10', 199000, 1, 10, 1, 1, 4),
-(6, 'Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy Tint 5ml', 'Son Kem Lì Bông Bền Màu Maybelline Superstay Teddy Tint là son kem lì nằm trong bộ sưu tập gấu hồng Teddy đáng yêu của thương hiệu Maybelline với công nghệ bồng bềnh Teddy Fluff siêu mềm mịn cho môi. Cùng với bảng màu son ngọt ngào có thể tô mờ hoặc tô đậm trên môi mang đến hiệu ứng mờ lì, căng mịn, cho môi sắc sảo.', 'approved', '2025-01-10', '2025-10-10', 218000, 1, 12, 1, 1, 1),
-(7, 'Son Thỏi 3CE Mịn Lì, Mềm Môi Cashmere Hug Lipstick 3.5g', 'Son Thỏi Mịn Lì, Mềm Môi 3CE Cashmere Hug Lipstick là son thỏi đến từ thương hiệu 3CE. Chất son matte mịn mờ, lướt nhẹ trên môi, mang lại cảm giác thoải mái, nhẹ môi suốt cả ngày. Màu lên chuẩn ngay từ lần quẹt đầu tiên. Thiết kế vỏ son nhám, có vân sọc cầm chắc tay, độc đáo, sang trọng.', 'approved', '2025-01-10', '2025-10-10', 369000, 1, 2, 1, 1, 5),
-(8, 'Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick 2g', 'Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick là son thỏi đến từ thương hiệu Romand. Chất son trong trẻo, lớp bóng mỏng và độ sáng trong mang đến cho bạn môi căng mịn như miếng thạch. Có độ lên màu ngay từ lần chạm đầu tiên và giữ màu lâu. Thành phần chiết xuất thiên nhiên có độ dưỡng ẩm sâu, mang đến môi căng mịn, mà không gây dính môi.', 'approved', '2025-01-10', '2025-10-10', 199000, 1, 42, 1, 1, 4),
-(9, 'Áo Polo thể thao nam ProMax S1 Logo Coolmate', '', 'approved', '2025-01-10', '2025-10-10', 219000, 7, 2192, 2, 1, 6),
-(10, 'Áo Sơ Mi Dài Tay Essentials Cotton mềm mại thoáng mát Coolmate', '', 'approved', '2025-01-10', '2025-10-10', 271320, 7, 395, 2, 1, 6),
-(11, 'Quần dài nam Kaki Excool co giãn đàn hồi Coolmate', '', 'approved', '2025-01-10', '2025-10-10', 389000, 4, 519, 2, 1, 6),
-(12, '[Công lắp 0Đ HCM/ HN] Smart Tivi Casper Ultra HD 4K 50inch / 55 inch - D50UGC620 / D50UGC620 - Chính hãng', '', 'approved', '2025-01-10', '2025-10-10', 8495000, 9, 372, 3, 1, 7),
-(13, '[Công lắp 0Đ HCM/ HN] Google Tivi Casper 43 inch - Full HD - 43FGK610 - Chính hãng - Bảo hành 2 năm', '', 'approved', '2025-01-10', '2025-10-10', 4390000, 9, 409, 3, 1, 7),
-(14, 'Tủ lạnh 4 cánh Casper Inverter 430L RM-430PB - Ngăn đông mềm - Chính hãng - Bảo hành 2 năm', '', 'approved', '2025-01-10', '2025-10-10', 11115000, 10, 2412, 3, 1, 7),
-(15, 'Máy lạnh/ Điều hòa Casper Inverter ProAir 1 chiều 1HP GC-09IB36 - Bảo hành 3 năm', '', 'approved', '2025-01-10', '2025-10-10', 5995000, 11, 3813, 3, 1, 7),
-(16, 'Máy giặt cửa trên Casper 7.5KG EcoWash WT-75NG1 - Bảo hành 2 năm - Chính hãng', '', 'approved', '2025-01-10', '2025-10-10', 3690000, 12, 9239, 3, 1, 7),
-(17, 'Máy giặt sấy Casper Prime Wash & Dry Giặt 11.5KG, Sấy 8KG - WF-P115VGT11 - Bảo hành 2 năm', '', 'approved', '2025-01-10', '2025-10-10', 8695000, 12, 519, 3, 1, 7),
-(18, 'Máy sấy thông hơi Casper 7.2KG TD-72VWD - Chính hãng - Bảo hành 2 năm', '', 'approved', '2025-01-10', '2025-10-10', 5290000, 13, 823, 3, 1, 7),
-(19, 'Gel chấm mụn Murad Rapid Relief Acne Treatment 15ml', '', 'approved', '2025-01-10', '2025-10-10', 776000, 14, 219, 4, 1, 8),
-(20, 'Tẩy tế bào da chết dịu nhẹ Murad AHA/BHA Exfoliating Cleanser 148ml', '', 'approved', '2025-01-10', '2025-10-10', 118800, 15, 229, 4, 1, 8),
-(21, 'Tinh chất hỗ trợ làm mờ vết nám Murad Rapid Dark Spot Correcting Serum 30ml', '', 'approved', '2025-01-10', '2025-10-10', 2371650, 2, 982, 4, 1, 8),
-(22, '[MỚI] Sữa Rửa Mặt Simple 240ml Purify+ Giảm Mụn Sau 7 Ngày, Repair+ Phục Hồi Da, Hydrate+ Giúp Da Trông Căng Mướt', '', 'approved', '2025-01-10', '2025-10-10', 222000, 16, 23123, 5, 1, 9),
-(23, 'Dầu Gội Đầu CLEAR MEN Perfume Đánh Bay Gàu Ngứa Và Lưu Hương Nước Hoa Đẳng Cấp 600G/840G', '', 'approved', '2025-01-10', '2025-10-10', 184000, 17, 519, 5, 1, 10),
-(24, 'Sữa rửa mặt sáng da sạch sâu Pond\'s Bright Miracle Niasorcinol 100G', '', 'approved', '2025-01-10', '2025-10-10', 78000, 16, 519, 5, 1, 11),
-(25, 'Vòng Tay Pandora Moments Bạc Dây Rắn Khóa Trái Tim 590719', '', 'approved', '2025-01-10', '2025-10-10', 2366000, 18, 519, 6, 1, 12),
-(26, 'Charm Pandora Mạ Vàng 14K Mặt Trời Ôm Mặt Trăng', '', 'approved', '2025-01-10', '2025-10-10', 2790000, 18, 519, 6, 1, 12),
-(27, '[SUGARPLUM BY OFÉLIA] Son Tint Lì Thuần Chay Siêu Nhẹ Môi OFÉLIA Sugarplum MistyNow Blurring Tint 3.8g', '', 'approved', '2025-10-07', '2025-10-17', 169000, 1, 2, 1, 1, 13),
-(28, 'Son Kem Lì L\'Oreal Nhẹ Môi, Lâu Trôi Infallible Matte Resistance', '', 'approved', '2025-10-07', '2025-10-17', 289000, 1, 2, 1, 1, 14),
-(29, 'Son Kem Lì, Mịn Mượt Nhẹ Môi L’Oreal Paris Chiffon Signature Matte Liquid Lipstick', '', 'approved', '2025-10-07', '2025-10-17', 259000, 1, 2, 1, 1, 14),
-(30, 'Son Kem Lì Merzy Bền Màu, Lâu Trôi Puffer Velvet Tint 3.7g', '', 'approved', '2025-10-07', '2025-10-17', 209000, 1, 7, 1, 1, 15),
-(31, 'Son Dưỡng Môi Cocoon Chiết Xuất Dầu Dừa Bến Tre Ben Tre Coconut Lip Balm', '', 'approved', '2025-10-07', '2025-10-17', 54000, 1, 10, 1, 1, 16),
-(32, 'Son Kem Merzy Siêu Lì, Lâu Trôi, Lên Màu Chuẩn Academia Mellow Tint 4g', '', 'approved', '2025-10-07', '2025-10-17', 144000, 1, 17, 1, 1, 15);
+(1, 'Son Kem Bóng Maybelline Bền Màu, Nhẹ Môi New York Superstay Vinyl Ink 4.2ml', 'Son Kem Bóng Bền Màu, Nhẹ Môi Maybelline New York Superstay Vinyl Ink 4.2ml là son kem lì đến từ thương hiệu Maybelline chứa công thức đột phá mới với công nghệ “khóa” màu thách thức lem trôi, nhẹ mướt, để lại lớp bóng nhẹ tinh tế, cho đôi môi căng tràn sức sống. Son bóng lên màu chuẩn, nhưng vẫn duy trì độ ẩm và giữ được sự mềm mịn cho môi.', 1, '2025-01-10', '2025-10-10', 228000, 1, 100, 1, 1, 1),
+(2, 'Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni', 'Giày đá banh, mang vô đá như Messi', 1, '2025-08-10', '2025-10-10', 2128000, 8, 20, 1, 1, 2),
+(3, 'Áo Sơ Mi Nam Tay Dài Aristino OwenShop', 'Áo sơ mi trắng', 1, '2025-02-10', '2025-10-10', 1128000, 7, 22, 1, 1, 3),
+(4, 'Quần Tây Nam Owen QS231500 màu đen dáng slim fit vải polyester OwenShop', 'Quần tây đen', 1, '2025-10-10', '2025-10-10', 280000, 4, 50, 1, 1, 3),
+(5, '[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g', 'Son Dưỡng Thuần Chay Romand Glasting Melting Balm là son thỏi màu có dưỡng đến từ thương hiệu Romand với tinh chất dầu thực vật thuần chay cùng chất son siêu nhẹ môi có độ dưỡng cao, giúp dưỡng ẩm cho đôi môi mềm mại, căng mọng tự nhiên trong thời gian dài.', 1, '2025-01-10', '2025-10-10', 199000, 1, 10, 1, 1, 4),
+(6, 'Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy Tint 5ml', 'Son Kem Lì Bông Bền Màu Maybelline Superstay Teddy Tint là son kem lì nằm trong bộ sưu tập gấu hồng Teddy đáng yêu của thương hiệu Maybelline với công nghệ bồng bềnh Teddy Fluff siêu mềm mịn cho môi. Cùng với bảng màu son ngọt ngào có thể tô mờ hoặc tô đậm trên môi mang đến hiệu ứng mờ lì, căng mịn, cho môi sắc sảo.', 1, '2025-01-10', '2025-10-10', 218000, 1, 12, 1, 1, 1),
+(7, 'Son Thỏi 3CE Mịn Lì, Mềm Môi Cashmere Hug Lipstick 3.5g', 'Son Thỏi Mịn Lì, Mềm Môi 3CE Cashmere Hug Lipstick là son thỏi đến từ thương hiệu 3CE. Chất son matte mịn mờ, lướt nhẹ trên môi, mang lại cảm giác thoải mái, nhẹ môi suốt cả ngày. Màu lên chuẩn ngay từ lần quẹt đầu tiên. Thiết kế vỏ son nhám, có vân sọc cầm chắc tay, độc đáo, sang trọng.', 1, '2025-01-10', '2025-10-10', 369000, 1, 2, 1, 1, 5),
+(8, 'Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick 2g', 'Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick là son thỏi đến từ thương hiệu Romand. Chất son trong trẻo, lớp bóng mỏng và độ sáng trong mang đến cho bạn môi căng mịn như miếng thạch. Có độ lên màu ngay từ lần chạm đầu tiên và giữ màu lâu. Thành phần chiết xuất thiên nhiên có độ dưỡng ẩm sâu, mang đến môi căng mịn, mà không gây dính môi.', 1, '2025-01-10', '2025-10-10', 199000, 1, 42, 1, 1, 4),
+(9, 'Áo Polo thể thao nam ProMax S1 Logo Coolmate', '', 1, '2025-01-10', '2025-10-10', 219000, 7, 2192, 2, 1, 6),
+(10, 'Áo Sơ Mi Dài Tay Essentials Cotton mềm mại thoáng mát Coolmate', '', 1, '2025-01-10', '2025-10-10', 271320, 7, 395, 2, 1, 6),
+(11, 'Quần dài nam Kaki Excool co giãn đàn hồi Coolmate', '', 1, '2025-01-10', '2025-10-10', 389000, 4, 519, 2, 1, 6),
+(12, '[Công lắp 0Đ HCM/ HN] Smart Tivi Casper Ultra HD 4K 50inch / 55 inch - D50UGC620 / D50UGC620 - Chính hãng', '', 1, '2025-01-10', '2025-10-10', 8495000, 9, 372, 3, 1, 7),
+(13, '[Công lắp 0Đ HCM/ HN] Google Tivi Casper 43 inch - Full HD - 43FGK610 - Chính hãng - Bảo hành 2 năm', '', 1, '2025-01-10', '2025-10-10', 4390000, 9, 409, 3, 1, 7),
+(14, 'Tủ lạnh 4 cánh Casper Inverter 430L RM-430PB - Ngăn đông mềm - Chính hãng - Bảo hành 2 năm', '', 1, '2025-01-10', '2025-10-10', 11115000, 10, 2412, 3, 1, 7),
+(15, 'Máy lạnh/ Điều hòa Casper Inverter ProAir 1 chiều 1HP GC-09IB36 - Bảo hành 3 năm', '', 1, '2025-01-10', '2025-10-10', 5995000, 11, 3813, 3, 1, 7),
+(16, 'Máy giặt cửa trên Casper 7.5KG EcoWash WT-75NG1 - Bảo hành 2 năm - Chính hãng', '', 1, '2025-01-10', '2025-10-10', 3690000, 12, 9239, 3, 1, 7),
+(17, 'Máy giặt sấy Casper Prime Wash & Dry Giặt 11.5KG, Sấy 8KG - WF-P115VGT11 - Bảo hành 2 năm', '', 1, '2025-01-10', '2025-10-10', 8695000, 12, 519, 3, 1, 7),
+(18, 'Máy sấy thông hơi Casper 7.2KG TD-72VWD - Chính hãng - Bảo hành 2 năm', '', 1, '2025-01-10', '2025-10-10', 5290000, 13, 823, 3, 1, 7),
+(19, 'Gel chấm mụn Murad Rapid Relief Acne Treatment 15ml', '', 1, '2025-01-10', '2025-10-10', 776000, 14, 219, 4, 1, 8),
+(20, 'Tẩy tế bào da chết dịu nhẹ Murad AHA/BHA Exfoliating Cleanser 148ml', '', 1, '2025-01-10', '2025-10-10', 118800, 15, 229, 4, 1, 8),
+(21, 'Tinh chất hỗ trợ làm mờ vết nám Murad Rapid Dark Spot Correcting Serum 30ml', '', 1, '2025-01-10', '2025-10-10', 2371650, 2, 982, 4, 1, 8),
+(22, '[MỚI] Sữa Rửa Mặt Simple 240ml Purify+ Giảm Mụn Sau 7 Ngày, Repair+ Phục Hồi Da, Hydrate+ Giúp Da Trông Căng Mướt', '', 1, '2025-01-10', '2025-10-10', 222000, 16, 23123, 5, 1, 9),
+(23, 'Dầu Gội Đầu CLEAR MEN Perfume Đánh Bay Gàu Ngứa Và Lưu Hương Nước Hoa Đẳng Cấp 600G/840G', '', 1, '2025-01-10', '2025-10-10', 184000, 17, 519, 5, 1, 10),
+(24, 'Sữa rửa mặt sáng da sạch sâu Pond\'s Bright Miracle Niasorcinol 100G', '', 1, '2025-01-10', '2025-10-10', 78000, 16, 519, 5, 1, 11),
+(25, 'Vòng Tay Pandora Moments Bạc Dây Rắn Khóa Trái Tim 590719', '', 1, '2025-01-10', '2025-10-10', 2366000, 18, 519, 6, 1, 12),
+(26, 'Charm Pandora Mạ Vàng 14K Mặt Trời Ôm Mặt Trăng', '', 1, '2025-01-10', '2025-10-10', 2790000, 18, 519, 6, 1, 12),
+(27, '[SUGARPLUM BY OFÉLIA] Son Tint Lì Thuần Chay Siêu Nhẹ Môi OFÉLIA Sugarplum MistyNow Blurring Tint 3.8g', '', 1, '2025-10-07', '2025-10-17', 169000, 1, 2, 1, 1, 13),
+(28, 'Son Kem Lì L\'Oreal Nhẹ Môi, Lâu Trôi Infallible Matte Resistance', '', 1, '2025-10-07', '2025-10-17', 289000, 1, 2, 1, 1, 14),
+(29, 'Son Kem Lì, Mịn Mượt Nhẹ Môi L’Oreal Paris Chiffon Signature Matte Liquid Lipstick', '', 1, '2025-10-07', '2025-10-17', 259000, 1, 2, 1, 1, 14),
+(30, 'Son Kem Lì Merzy Bền Màu, Lâu Trôi Puffer Velvet Tint 3.7g', '', 1, '2025-10-07', '2025-10-17', 209000, 1, 7, 1, 1, 15),
+(31, 'Son Dưỡng Môi Cocoon Chiết Xuất Dầu Dừa Bến Tre Ben Tre Coconut Lip Balm', '', 1, '2025-10-07', '2025-10-17', 54000, 1, 10, 1, 1, 16),
+(32, 'Son Kem Merzy Siêu Lì, Lâu Trôi, Lên Màu Chuẩn Academia Mellow Tint 4g', '', 1, '2025-10-07', '2025-10-17', 144000, 1, 17, 1, 1, 15);
+
 -- --------------------------------------------------------
 
 --
 -- Cấu trúc bảng cho bảng `productvariants`
 --
 
-DROP TABLE IF EXISTS `productvariants`;
-CREATE TABLE IF NOT EXISTS `productvariants` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `productvariants` (
+  `id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `stock` int(11) DEFAULT 0,
   `sku` varchar(100) DEFAULT NULL,
-  `image_url` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `product_id` (`product_id`)
+  `image_url` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -571,12 +488,10 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `ima
 -- Cấu trúc bảng cho bảng `product_attributes`
 --
 
-DROP TABLE IF EXISTS `product_attributes`;
-CREATE TABLE IF NOT EXISTS `product_attributes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `product_attributes` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `product_attributes`
@@ -594,15 +509,12 @@ INSERT INTO `product_attributes` (`id`, `name`) VALUES
 -- Cấu trúc bảng cho bảng `product_detail`
 --
 
-DROP TABLE IF EXISTS `product_detail`;
-CREATE TABLE IF NOT EXISTS `product_detail` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `product_detail` (
+  `id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `attribute` varchar(100) NOT NULL,
-  `value` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `product_id` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `value` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `product_detail`
@@ -621,45 +533,25 @@ INSERT INTO `product_detail` (`id`, `product_id`, `attribute`, `value`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `promotions`
---
-
--- DROP TABLE IF EXISTS `promotions`;
--- CREATE TABLE IF NOT EXISTS `promotions` (
---   `id` int(11) NOT NULL AUTO_INCREMENT,
---   `name` varchar(255) DEFAULT NULL,
---   `value` decimal(10,0) DEFAULT NULL,
---   `start_date` datetime DEFAULT current_timestamp(),
---   `end_date` datetime DEFAULT NULL,
---   `is_active` tinyint(4) DEFAULT NULL,
---   PRIMARY KEY (`id`)
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc bảng cho bảng `shops`
 --
 
-DROP TABLE IF EXISTS `shops`;
-CREATE TABLE IF NOT EXISTS `shops` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `shops` (
+  `id` int(11) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `logo_url` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `status` int(11) DEFAULT NULL,
   `created_at` date DEFAULT current_timestamp(),
-  `owner_id` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `owner_id` (`owner_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `owner_id` varchar(10) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `shops`
 --
 
 INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created_at`, `owner_id`) VALUES
-(1, 'Thế giới skin food', '/assets/shops/thegioiskinfood.png', 'Shop chuyên về mỹ phẩm', 1, '2025-08-25', '0772152991'),
+(1, 'Thế giới skin food', '/assets/shops/thegioiskinfood.png', 'Shop chuyên về mỹ phẩm', 1, '2025-08-25', '0987654321'),
 (2, 'Coolmate - Official Store', '/assets/shops/coolmate.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654333'),
 (3, 'Casper Official Store', '/assets/shops/casper.webp', 'Shop chuyên về đồ điện tử', 1, '2025-08-26', '0987654222'),
 (4, 'Murad Vietnam Official Store', '/assets/shops/murad.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654111'),
@@ -696,14 +588,11 @@ INSERT INTO promotion_items values (1, 1, 20), (1, 2, 10), (1, 3, 50), (1, 20, 1
 -- Cấu trúc bảng cho bảng `shop_categories`
 --
 
-DROP TABLE IF EXISTS `shop_categories`;
-CREATE TABLE IF NOT EXISTS `shop_categories` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `shop_categories` (
+  `id` int(11) NOT NULL,
   `shop_id` int(11) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `shop_id` (`shop_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `name` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `shop_categories`
@@ -720,32 +609,60 @@ INSERT INTO `shop_categories` (`id`, `shop_id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `shop_info`
+--
+
+CREATE TABLE `shop_info` (
+  `id` int(11) NOT NULL,
+  `user_id` varchar(10) NOT NULL,
+  `shop_name` varchar(255) NOT NULL,
+  `address` text NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `shipping_methods` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `business_type` varchar(50) DEFAULT 'personal',
+  `invoice_email` varchar(255) DEFAULT NULL,
+  `tax_code` varchar(20) DEFAULT NULL,
+  `identity_type` varchar(50) DEFAULT 'cccd',
+  `identity_number` varchar(20) NOT NULL,
+  `identity_full_name` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `shop_info`
+--
+
+INSERT INTO `shop_info` (`id`, `user_id`, `shop_name`, `address`, `email`, `phone`, `shipping_methods`, `business_type`, `invoice_email`, `tax_code`, `identity_type`, `identity_number`, `identity_full_name`, `created_at`, `updated_at`) VALUES
+(2, '0338740832', 'HoaBan', '155 Gia Sư Kim Tân, ấp Bình Tả 2, Phường Ba Đình, Thành phố Hà Nội', 'n.kimlong205@gmail.com', '0338740832', '[\"SPX\"]', 'personal', 'n.kimlong205@gmail.com', '080205013802', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-04 07:41:24', '2025-11-04 07:41:24');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `users`
 --
 
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE `users` (
   `phone_number` varchar(10) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
-  `avatar_url` varchar(255) DEFAULT NULL,
-  `role` varchar(50) NOT NULL DEFAULT 'user',
-  PRIMARY KEY (`phone_number`)
+  `avatar_url` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `role`) VALUES
-('0772152991', 'dtnchau.sgu@gmail.com', '$2b$10$HsTp5uLFodwI8/ZeSHdabOuT1m8Fi3ozmvuNCQUiyKNxEJTy2wcr2', '/assets/avatar/lion.png', 'user'),
-('0987654000', 'unilever@gmail.com', '123456', '/assets/bear.png', 'user'),
-('0987654111', 'murad@gmail.com', '123456', '/assets/bear.png', 'user'),
-('0987654222', 'casper@gmail.com', '123456', '/assets/bear.png', 'user'),
-('0987654321', 'hihi@gmail.com', '123456', '/assets/panda.png', 'user'),
-('0987654333', 'coolmate@gmail.com', '123456', '/assets/bear.png', 'user'),
-('0987654444', 'pandora@gmail.com', '123456', '/assets/bear.png', 'user'),
-('0987654555', 'thewhoo@gmail.com', '123456', '/assets/bear.png', 'user');
+INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`) VALUES
+('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png'),
+('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
+('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png');
 
 -- --------------------------------------------------------
 
@@ -753,24 +670,32 @@ INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `role`) 
 -- Cấu trúc bảng cho bảng `userviewhistory`
 --
 
-DROP TABLE IF EXISTS `userviewhistory`;
-CREATE TABLE IF NOT EXISTS `userviewhistory` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `userviewhistory` (
+  `id` int(11) NOT NULL,
   `user_id` varchar(10) DEFAULT NULL,
   `product_id` int(11) NOT NULL,
-  `viewed_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `product_id` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `viewed_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `userviewhistory`
 --
 
 INSERT INTO `userviewhistory` (`id`, `user_id`, `product_id`, `viewed_at`) VALUES
-(1, '0772152991', 24, '2025-11-04 09:52:31'),
-(2, '0772152991', 24, '2025-11-04 09:52:31');
+(1, '0338740832', 22, '2025-11-04 07:26:41'),
+(2, '0338740832', 22, '2025-11-04 07:26:41'),
+(3, '0338740832', 13, '2025-11-04 07:26:50'),
+(4, '0338740832', 13, '2025-11-04 07:26:50'),
+(5, '0338740832', 1, '2025-11-04 07:26:56'),
+(6, '0338740832', 1, '2025-11-04 07:26:56'),
+(7, '0338740832', 5, '2025-11-04 07:27:00'),
+(8, '0338740832', 5, '2025-11-04 07:27:00'),
+(9, '0338740832', 28, '2025-11-04 08:12:05'),
+(10, '0338740832', 28, '2025-11-04 08:12:05'),
+(11, '0338740832', 28, '2025-11-04 08:12:20'),
+(12, '0338740832', 28, '2025-11-04 08:12:20'),
+(13, '0338740832', 4, '2025-11-04 08:12:22'),
+(14, '0338740832', 4, '2025-11-04 08:12:22');
 
 -- --------------------------------------------------------
 
@@ -778,14 +703,12 @@ INSERT INTO `userviewhistory` (`id`, `user_id`, `product_id`, `viewed_at`) VALUE
 -- Cấu trúc bảng cho bảng `user_profile`
 --
 
-DROP TABLE IF EXISTS `user_profile`;
-CREATE TABLE IF NOT EXISTS `user_profile` (
+CREATE TABLE `user_profile` (
   `username` varchar(255) DEFAULT NULL,
   `dob` datetime DEFAULT NULL,
   `gender` tinyint(1) DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
-  `phone_number` varchar(10) NOT NULL,
-  PRIMARY KEY (`phone_number`)
+  `phone_number` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -793,7 +716,7 @@ CREATE TABLE IF NOT EXISTS `user_profile` (
 --
 
 INSERT INTO `user_profile` (`username`, `dob`, `gender`, `updated_at`, `phone_number`) VALUES
-('', '0000-00-00 00:00:00', 10, '0000-00-00 00:00:00', '0772152991'),
+('Nguyễn Kim Long', '2005-04-21 00:00:00', 1, '2025-11-04 14:16:30', '0338740832'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654000'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654111'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654222'),
@@ -808,16 +731,12 @@ INSERT INTO `user_profile` (`username`, `dob`, `gender`, `updated_at`, `phone_nu
 -- Cấu trúc bảng cho bảng `variantoptionvalues`
 --
 
-DROP TABLE IF EXISTS `variantoptionvalues`;
-CREATE TABLE IF NOT EXISTS `variantoptionvalues` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `variantoptionvalues` (
+  `id` int(11) NOT NULL,
   `variant_id` int(11) NOT NULL,
   `attribute_id` int(11) NOT NULL,
-  `value` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `variant_id` (`variant_id`),
-  KEY `attribute_id` (`attribute_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `value` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `variantoptionvalues`
@@ -864,53 +783,10 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc đóng vai cho view `v_products_list`
--- (See below for the actual view)
---
--- DROP VIEW IF EXISTS `v_products_list`;
--- CREATE TABLE IF NOT EXISTS `v_products_list` (
--- `id` int(11)
--- ,`name` varchar(255)
--- ,`description` varchar(1000)
--- ,`base_price` int(11)
--- ,`shop_id` int(11)
--- ,`generic_id` int(11)
--- ,`created_at` date
--- ,`updated_at` date
--- ,`sold_count` int(11)
--- ,`category_name` varchar(255)
--- ,`image_url` varchar(500)
--- ,`avg_rating` decimal(14,4)
--- ,`hot_score` decimal(17,5)
--- );
-
--- --------------------------------------------------------
-
---
 -- Cấu trúc cho view `v_products_list`
 --
 
-DROP VIEW IF EXISTS `v_products_list`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` 
-SQL SECURITY DEFINER 
--- VIEW `v_products_list`  
--- AS 
--- SELECT 
--- `p`.`id` AS `id`, 
--- `p`.`name` AS `name`, 
--- `p`.`description` AS `description`, 
--- `p`.`base_price` AS `base_price`, 
--- `p`.`shop_id` AS `shop_id`, 
--- `p`.`generic_id` AS `generic_id`, 
--- `p`.`created_at` AS `created_at`, 
--- `p`.`updated_at` AS `updated_at`, 
--- `p`.`sold_count` AS `sold_count`, 
--- `g`.`name` AS `category_name`, 
--- (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, 
--- (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
-
---
-VIEW v_products_list AS
+CREATE VIEW v_products_list AS
 SELECT 
     -- 1. Thông tin cơ bản từ bảng 'products'
     p.id, 
@@ -1072,8 +948,7 @@ ALTER TABLE `promotions`
 
 ALTER TABLE `promotion_items`
   ADD KEY `fk_promotion`(`promotion_id`),
-  ADD KEY `FK_productvariants`(`product_variant_id`),
-  ADD PRIMARY KEY (`promotion_id`, `product_variant_id`);
+  ADD KEY `FK_productvariants`(`product_variant_id`);
 
 --
 -- Chỉ mục cho bảng `shops`
@@ -1249,21 +1124,6 @@ ALTER TABLE `generic`
   ADD CONSTRAINT `generic_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 
 --
--- Các ràng buộc cho bảng `orders`
---
-ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`);
-
---
--- Các ràng buộc cho bảng `order_items`
---
-ALTER TABLE `order_items`
-  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
-  ADD CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`);
-
---
 -- Các ràng buộc cho bảng `productimages`
 --
 ALTER TABLE `productimages`
@@ -1308,6 +1168,12 @@ ALTER TABLE `shops`
 --
 ALTER TABLE `shop_categories`
   ADD CONSTRAINT `shop_categories_ibfk_1` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`);
+
+--
+-- Các ràng buộc cho bảng `shop_info`
+--
+ALTER TABLE `shop_info`
+  ADD CONSTRAINT `fk_shop_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `userviewhistory`
