@@ -267,7 +267,6 @@ class productController {
             const categoryId = Number(req.params.id); // Lấy từ param
             // console.log(categoryId);
 
-
             // 2. Xây dựng 'whereClause' và 'params'
             let whereClause = "WHERE 1=1";
             const params: any[] = [];
@@ -275,7 +274,7 @@ class productController {
             // --- PHẦN LOGIC QUAN TRỌNG ---
             // Ưu tiên filter theo subCategoryId (chính là generic_id)
             if (subCategoryId && Number(subCategoryId) !== 0) {
-                whereClause += " AND products.generic_id = ?";
+                whereClause += " AND v_products_list.generic_id = ?";
                 params.push(Number(subCategoryId));
             }
             // Nếu không, mới filter theo categoryId (cha của generic_id)
@@ -288,11 +287,11 @@ class productController {
 
             // Thêm filter Khoảng giá
             if (minPrice) {
-                whereClause += " AND products.base_price >= ?";
+                whereClause += " AND v_products_list.base_price >= ?";
                 params.push(minPrice);
             }
             if (maxPrice) {
-                whereClause += " AND products.base_price <= ?";
+                whereClause += " AND v_products_list.base_price <= ?";
                 params.push(maxPrice);
             }
 
@@ -301,24 +300,13 @@ class productController {
                 const brandIds = brand.split(",").map(Number).filter(Boolean);
                 if (brandIds.length > 0) {
                     const placeholders = brandIds.map(() => "?").join(",");
-                    whereClause += ` AND products.brand_id IN (${placeholders})`;
+                    whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
                     params.push(...brandIds);
                 }
             }
 
             // 3. Xây dựng 'orderBy'
             let orderBy = "";
-            switch (sort) {
-                case "priceAsc": // Cập nhật để khớp với front-end
-                    orderBy = "ORDER BY products.base_price ASC";
-                    break;
-                case "priceDesc": // Cập nhật để khớp với front-end
-                    orderBy = "ORDER BY products.base_price DESC";
-                    break;
-                default:
-                    orderBy = "";
-                    break;
-            }
 
             // 4. Gọi Service
             const productsPromise = productService.getProductsService(
@@ -338,8 +326,22 @@ class productController {
                 productsPromise,
                 brandsPromise,
             ]);
+
+            //Sort lại sản phẩm sau khi lấy ra 
+            let sortedProducts = [...productResult.products];
+            switch (sort) {
+                case "priceAsc": // Cập nhật để khớp với front-end
+                    sortedProducts.sort((a, b) => a.base_price - b.base_price);
+                    break;
+                case "priceDesc": // Cập nhật để khớp với front-end
+                    sortedProducts.sort((a, b) => b.base_price - a.base_price);
+                    break;
+                default:
+                    orderBy = "ORDER BY v_products_list.created_at DESC";
+                    break;
+            }
             res.status(200).json({
-                products: productResult.products,
+                products: sortedProducts,
                 totalPages: productResult.totalPages,
                 brands: brandsResult,
             });
