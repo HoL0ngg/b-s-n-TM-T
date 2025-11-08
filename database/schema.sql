@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS `productimages` (
   `image_id` int(11) NOT NULL AUTO_INCREMENT,
   `image_url` varchar(500) NOT NULL,
   `product_id` int(11) NOT NULL,
-  `isMain` tinyint(1) DEFAULT 0,
+  `is_main` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`image_id`),
   KEY `product_id` (`product_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -513,9 +513,9 @@ CREATE TABLE IF NOT EXISTS `productvariants` (
   `price` int(11) NOT NULL,
   `stock` int(11) DEFAULT 0,
   `sku` varchar(100) DEFAULT NULL,
+  `image_url` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`)
-  `image_url` varchar(200) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -624,16 +624,16 @@ INSERT INTO `product_detail` (`id`, `product_id`, `attribute`, `value`) VALUES
 -- Cấu trúc bảng cho bảng `promotions`
 --
 
-DROP TABLE IF EXISTS `promotions`;
-CREATE TABLE IF NOT EXISTS `promotions` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) DEFAULT NULL,
-  `value` decimal(10,0) DEFAULT NULL,
-  `start_date` datetime DEFAULT current_timestamp(),
-  `end_date` datetime DEFAULT NULL,
-  `is_active` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- DROP TABLE IF EXISTS `promotions`;
+-- CREATE TABLE IF NOT EXISTS `promotions` (
+--   `id` int(11) NOT NULL AUTO_INCREMENT,
+--   `name` varchar(255) DEFAULT NULL,
+--   `value` decimal(10,0) DEFAULT NULL,
+--   `start_date` datetime DEFAULT current_timestamp(),
+--   `end_date` datetime DEFAULT NULL,
+--   `is_active` tinyint(4) DEFAULT NULL,
+--   PRIMARY KEY (`id`)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -867,22 +867,22 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- Cấu trúc đóng vai cho view `v_products_list`
 -- (See below for the actual view)
 --
-DROP VIEW IF EXISTS `v_products_list`;
-CREATE TABLE IF NOT EXISTS `v_products_list` (
-`id` int(11)
-,`name` varchar(255)
-,`description` varchar(1000)
-,`base_price` int(11)
-,`shop_id` int(11)
-,`generic_id` int(11)
-,`created_at` date
-,`updated_at` date
-,`sold_count` int(11)
-,`category_name` varchar(255)
-,`image_url` varchar(500)
-,`avg_rating` decimal(14,4)
-,`hot_score` decimal(17,5)
-);
+-- DROP VIEW IF EXISTS `v_products_list`;
+-- CREATE TABLE IF NOT EXISTS `v_products_list` (
+-- `id` int(11)
+-- ,`name` varchar(255)
+-- ,`description` varchar(1000)
+-- ,`base_price` int(11)
+-- ,`shop_id` int(11)
+-- ,`generic_id` int(11)
+-- ,`created_at` date
+-- ,`updated_at` date
+-- ,`sold_count` int(11)
+-- ,`category_name` varchar(255)
+-- ,`image_url` varchar(500)
+-- ,`avg_rating` decimal(14,4)
+-- ,`hot_score` decimal(17,5)
+-- );
 
 -- --------------------------------------------------------
 
@@ -891,10 +891,26 @@ CREATE TABLE IF NOT EXISTS `v_products_list` (
 --
 
 DROP VIEW IF EXISTS `v_products_list`;
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`base_price` AS `base_price`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, `p`.`sold_count` AS `sold_count`, `g`.`name` AS `category_name`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`isMain` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` 
+SQL SECURITY DEFINER 
+-- VIEW `v_products_list`  
+-- AS 
+-- SELECT 
+-- `p`.`id` AS `id`, 
+-- `p`.`name` AS `name`, 
+-- `p`.`description` AS `description`, 
+-- `p`.`base_price` AS `base_price`, 
+-- `p`.`shop_id` AS `shop_id`, 
+-- `p`.`generic_id` AS `generic_id`, 
+-- `p`.`created_at` AS `created_at`, 
+-- `p`.`updated_at` AS `updated_at`, 
+-- `p`.`sold_count` AS `sold_count`, 
+-- `g`.`name` AS `category_name`, 
+-- (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, 
+-- (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, `p`.`sold_count`* 0.6 + ifnull((select avg(`pr`.`rating`) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`),0) * 0.4 AS `hot_score` FROM (`products` `p` join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) ;
 
 --
-CREATE VIEW v_products_list AS
+VIEW v_products_list AS
 SELECT 
     -- 1. Thông tin cơ bản từ bảng 'products'
     p.id, 
