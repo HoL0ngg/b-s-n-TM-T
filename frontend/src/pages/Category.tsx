@@ -200,6 +200,10 @@ const Category = () => {
   //  Handler chuyển trang
   const handlePageChange = (page: number) => {
     setIsUserAction(true);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+    });
     setQuery((prev) => ({
       ...prev,
       page,
