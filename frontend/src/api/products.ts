@@ -158,7 +158,7 @@ export const fetchProducts = async (query: any, category_id: number) => {
     // 5. Gọi API
     // `params.toString()` sẽ tạo ra: "page=1&limit=12&categoryId=5&sort=price-asc&..."
     const res = await axios.get(`${API_URl}/category/${category_id}?${params.toString()}`);
-    console.log(res.data);
+    // console.log(res.data);
 
     return res.data;
 }

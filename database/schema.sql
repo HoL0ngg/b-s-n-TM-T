@@ -804,6 +804,7 @@ SELECT
     -- 3. Giá gốc (từ 'products.base_price', mà bạn đã đồng bộ)
     p.base_price,
     p.brand_id,
+    p.status,
     -- 4. Ảnh chính (isMain = 1)
     (SELECT pi.image_url 
      FROM productimages pi 

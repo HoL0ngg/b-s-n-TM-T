@@ -268,7 +268,7 @@ class productController {
             // console.log(categoryId);
 
             // 2. Xây dựng 'whereClause' và 'params'
-            let whereClause = "WHERE 1=1";
+            let whereClause = "WHERE v_products_list.status = 1";
             const params: any[] = [];
 
             // --- PHẦN LOGIC QUAN TRỌNG ---

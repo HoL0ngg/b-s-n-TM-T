@@ -13,7 +13,7 @@ import orderRoutes from "./routes/order.route";
 import shopInfoRoutes from './routes/shop.info.route';
 import path from "path";
 import paymentRouter from "./routes/payment.route";
-
+import ProductsAdminRoute from "./routes/admin/productsAdmin.route";
 const app = express();
 app.use(bodyParser.json());
 
@@ -34,6 +34,7 @@ app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
 app.use("/api", orderRoutes);
 app.use('/api/payments', paymentRouter);
+app.use("/api/admin/productsAdmin", ProductsAdminRoute);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     FiEye,
     FiCheckCircle,
@@ -8,89 +8,43 @@ import {
     FiRotateCcw // Dùng lại cho việc "Duyệt lại"
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-
-// --- Dữ liệu mẫu (Mock Data) ---
-// Giờ là danh sách sản phẩm
-interface Product {
-    id: string;
-    name: string;
-    imageUrl: string; // Thêm ảnh thumbnail
-    shopName: string; // Tên shop đăng
-    category: string;
-    price: number;
-    status: 'approved' | 'pending' | 'rejected';
-}
-
-const mockProductsData: Product[] = [
-    { id: '3', name: 'Áo thun nam Cotton', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Áo', shopName: 'Shop Cây Cảnh Mini', category: 'Thời trang', price: 250000, status: 'pending' },
-    { id: 'P2002', name: 'Bonsai mini để bàn', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Cây', shopName: 'Shop Cây Cảnh Mini', category: 'Nhà cửa', price: 550000, status: 'approved' },
-    { id: 'P2003', name: 'Ấm trà gốm Bát Tràng', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Gốm', shopName: 'Gốm Sứ Bát Tràng', category: 'Nhà cửa', price: 1200000, status: 'approved' },
-    { id: 'P2004', name: 'Quần short Kaki', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Quần', shopName: 'Thời Trang Trẻ Em', category: 'Thời trang', price: 180000, status: 'pending' },
-    { id: 'P2005', name: 'Giày thể thao A-01', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Giày', shopName: 'Giày Thể Thao Cao Cấp', category: 'Giày dép', price: 890000, status: 'rejected' },
-    { id: 'P2006', name: 'Váy đầm công chúa', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Váy', shopName: 'Thời Trang Trẻ Em', category: 'Thời trang', price: 320000, status: 'pending' },
-    { id: 'P2007', name: 'Sạc dự phòng 20000mAh', imageUrl: 'https://placehold.co/60x60/EFEFEF/AAAAAA?text=Sạc', shopName: 'Thiết Bị Điện Tử ABC', category: 'Điện tử', price: 450000, status: 'approved' },
-];
-// --- Kết thúc Dữ liệu mẫu ---
-
+import { fetchProductsByStatusAdmin } from '../../api/admin/productsAdmin';
+import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
 
 const AdminProductApproval: React.FC = () => {
     // --- State ---
-    const [products, setProducts] = useState<Product[]>(mockProductsData);
+    const [products, setProducts] = useState<ProductTypeAdmin[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Mặc định lọc "Chờ duyệt"
-    const [statusFilter, setStatusFilter] = useState('pending');
+    // FIX: Thống nhất dùng '-1' cho 'rejected' để khớp với helper
+    // '0' = pending, '1' = approved, '-1' = rejected, 'all' = tất cả
+    const [statusFilter, setStatusFilter] = useState('0');
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    const [totalPages, setTotalPages] = useState(0); // CHANGED: Thêm state cho tổng số trang
+    const itemsPerPage = 5; // Vẫn dùng để truyền cho API
 
     // --- Helpers ---
-    const getStatusBadge = (status: 'approved' | 'pending' | 'rejected') => {
-        switch (status) {
-            case 'approved': return 'bg-success';
-            case 'pending': return 'bg-warning text-dark';
-            case 'rejected': return 'bg-danger';
+    const getStatusBadge = (status: string | number) => { // CHANGED
+        switch (String(status)) { // CHANGED
+            case '1': return 'bg-success';
+            case '0': return 'bg-warning text-dark';
+            case '-1': return 'bg-danger';
             default: return 'bg-secondary';
         }
     };
-    const getStatusText = (status: 'approved' | 'pending' | 'rejected') => {
-        switch (status) {
-            case 'approved': return 'Đã duyệt';
-            case 'pending': return 'Chờ duyệt';
-            case 'rejected': return 'Bị từ chối';
+    const getStatusText = (status: string | number) => { // CHANGED
+        switch (String(status)) { // CHANGED
+            case '1': return 'Đã duyệt';
+            case '0': return 'Chờ duyệt';
+            case '-1': return 'Bị từ chối';
             default: return 'Không rõ';
         }
     };
-    // Định dạng tiền tệ
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-    };
-    // --- Kết thúc Helpers ---
-
-    // --- Logic Lọc và Phân trang (Tương tự trang Shop) ---
-    const filteredProducts = useMemo(() => {
-        return products
-            .filter(product => {
-                return statusFilter === 'all' || product.status === statusFilter;
-            })
-            .filter(product => {
-                const searchLower = searchTerm.toLowerCase();
-                return (
-                    product.name.toLowerCase().includes(searchLower) ||
-                    product.shopName.toLowerCase().includes(searchLower) ||
-                    product.category.toLowerCase().includes(searchLower)
-                );
-            });
-    }, [products, searchTerm, statusFilter]);
-
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-    const paginatedProducts = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        return filteredProducts.slice(startIndex, endIndex);
-    }, [filteredProducts, currentPage, itemsPerPage]);
+    // ...
 
     const handlePageChange = (page: number) => {
+        // Check này vẫn đúng
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
@@ -98,29 +52,62 @@ const AdminProductApproval: React.FC = () => {
     // --- Kết thúc Logic Lọc ---
 
     // --- Xử lý hành động ---
-    const handleApprove = (productId: string) => {
+    const handleApprove = (productId: number) => {
+        // TODO: Gọi API để duyệt
+        // Ví dụ: await approveProductAPI(productId);
+
         alert(`Đã duyệt Sản phẩm ID: ${productId}`);
-        setProducts(currentProducts =>
-            currentProducts.map(product =>
-                product.id === productId
-                    ? { ...product, status: 'approved' }
-                    : product
-            )
+
+        // CHANGED: Cập nhật UI ngay lập tức bằng cách xóa khỏi state
+        setProducts(prevProducts =>
+            prevProducts.filter(product => product.id !== productId)
         );
     };
 
-    const handleReject = (productId: string) => {
-        // Trong thực tế, bạn có thể muốn một Modal hỏi lý do từ chối
+    const handleReject = (productId: number) => {
+        // TODO: Gọi API để từ chối
+        // Ví dụ: await rejectProductAPI(productId, 'Lý do...');
+
         alert(`Đã từ chối Sản phẩm ID: ${productId}`);
-        setProducts(currentProducts =>
-            currentProducts.map(product =>
-                product.id === productId
-                    ? { ...product, status: 'rejected' }
-                    : product
-            )
+
+        // CHANGED: Cập nhật UI ngay lập tức
+        setProducts(prevProducts =>
+            prevProducts.filter(product => product.id !== productId)
         );
     };
     // --- Kết thúc xử lý hành động ---
+
+    // CHANGED: Tên hàm rõ ràng hơn
+    const loadProducts = async () => {
+        try {
+            // CHANGED: Truyền đầy đủ state cho API
+            const data = await fetchProductsByStatusAdmin(
+                statusFilter,
+                currentPage,
+                itemsPerPage,
+                searchTerm
+            );
+            setProducts(data.products);
+            setTotalPages(data.totalPages); // Cập nhật tổng số trang từ server
+        } catch (error) {
+            console.log(error);
+            setProducts([]); // Xóa list nếu lỗi
+            setTotalPages(0);
+        }
+    }
+
+    // CHANGED: useEffect phải theo dõi các state filter
+    useEffect(() => {
+        loadProducts();
+        console.log("Loading data for:", statusFilter, currentPage, searchTerm);
+
+        // FIX: Thêm dependencies
+    }, [statusFilter, currentPage, searchTerm]);
+
+    // FIX: Reset về trang 1 khi filter hoặc search thay đổi
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter, searchTerm]);
 
     return (
         <div>
@@ -156,9 +143,9 @@ const AdminProductApproval: React.FC = () => {
                                     value={statusFilter} // Gắn state
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                 >
-                                    <option value="pending">Chờ duyệt</option>
-                                    <option value="approved">Đã duyệt</option>
-                                    <option value="rejected">Bị từ chối</option>
+                                    <option value="0">Chờ duyệt</option>
+                                    <option value="1">Đã duyệt</option>
+                                    <option value="-1">Bị từ chối</option>
                                     <option value="all">Tất cả</option>
                                 </select>
                             </div>
@@ -185,18 +172,17 @@ const AdminProductApproval: React.FC = () => {
                             </thead>
                             {/* Nội dung bảng */}
                             <tbody>
-                                {paginatedProducts.map((product) => (
+                                {products.map((product) => (
                                     <tr key={product.id}>
                                         {/* Cột sản phẩm (Ảnh + Tên) */}
                                         <td>
                                             <div className="d-flex align-items-center">
                                                 <img
-                                                    src={product.imageUrl}
+                                                    src={product.image_url}
                                                     alt={product.name}
                                                     className="rounded"
                                                     style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '1rem' }}
                                                     onError={(e) => {
-                                                        // Xử lý nếu ảnh lỗi
                                                         const target = e.target as HTMLImageElement;
                                                         target.src = "https://placehold.co/60x60/EFEFEF/AAAAAA?text=Lỗi";
                                                     }}
@@ -207,12 +193,12 @@ const AdminProductApproval: React.FC = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{product.shopName}</td>
-                                        <td>{product.category}</td>
-                                        <td className="fw-bold">{formatPrice(product.price)}</td>
+                                        <td>{product.shop_name}</td>
+                                        <td>{product.category_name}</td>
+                                        <td className="fw-bold">{product.base_price.toLocaleString()}</td>
                                         <td>
-                                            <span className={`badge ${getStatusBadge(product.status)}`}>
-                                                {getStatusText(product.status)}
+                                            <span className={`badge ${getStatusBadge(product.status.toString())}`}>
+                                                {getStatusText(product.status.toString())}
                                             </span>
                                         </td>
 
@@ -231,22 +217,22 @@ const AdminProductApproval: React.FC = () => {
                                                 </Link>
 
                                                 {/* Nút "Duyệt" */}
-                                                {(product.status === 'pending' || product.status === 'rejected') && (
+                                                {(product.status.toString() === '0' || product.status.toString() === '-1') && (
                                                     <button
                                                         className="btn btn-sm btn-outline-success"
-                                                        title={product.status === 'pending' ? 'Duyệt' : 'Duyệt lại'}
+                                                        title={product.status.toString() === '0' ? 'Duyệt' : 'Duyệt lại'}
                                                         onClick={() => handleApprove(product.id)}
                                                     >
                                                         {/* Nếu đang từ chối -> Dùng icon "Duyệt lại" */}
-                                                        {product.status === 'rejected' ? <FiRotateCcw /> : <FiCheckCircle />}
+                                                        {product.status.toString() === '-1' ? <FiRotateCcw /> : <FiCheckCircle />}
                                                     </button>
                                                 )}
 
                                                 {/* Nút "Từ chối" */}
-                                                {(product.status === 'pending' || product.status === 'approved') && (
+                                                {(product.status.toString() === '0' || product.status.toString() === '1') && (
                                                     <button
                                                         className="btn btn-sm btn-outline-danger"
-                                                        title="Từ chối / Gỡ"
+                                                        title="Từ chối"
                                                         onClick={() => handleReject(product.id)}
                                                     >
                                                         <FiXCircle />
@@ -263,7 +249,7 @@ const AdminProductApproval: React.FC = () => {
 
                     {/* --- 3. THANH PHÂN TRANG (Giống hệt trang Shop) --- */}
                     <nav aria-label="Page navigation" className="mt-3">
-                        <ul className="pagination justify-content-end mb-0">
+                        {products.length > 0 && (<ul className="pagination justify-content-end mb-0">
                             {/* Nút Trang trước */}
                             <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                                 <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
@@ -289,7 +275,7 @@ const AdminProductApproval: React.FC = () => {
                                     Sau
                                 </button>
                             </li>
-                        </ul>
+                        </ul>)}
                     </nav>
 
                 </div>
