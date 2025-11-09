@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FiEye,
     FiCheckCircle,
@@ -8,8 +8,9 @@ import {
     FiRotateCcw // Dùng lại cho việc "Duyệt lại"
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { fetchProductsByStatusAdmin } from '../../api/admin/productsAdmin';
+import { fetchProductsByStatusAdmin, updateProductStatusAdmin } from '../../api/admin/productsAdmin';
 import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
+import Swal from 'sweetalert2';
 
 const AdminProductApproval: React.FC = () => {
     // --- State ---
@@ -50,19 +51,47 @@ const AdminProductApproval: React.FC = () => {
         }
     };
     // --- Kết thúc Logic Lọc ---
+    ;
 
-    // --- Xử lý hành động ---
-    const handleApprove = (productId: number) => {
-        // TODO: Gọi API để duyệt
-        // Ví dụ: await approveProductAPI(productId);
+    const handleApprove = async (productId: number) => {
+        try {
+            // Hiển thị thông báo loading
+            Swal.fire({
+                title: 'Đang duyệt...',
+                text: 'Vui lòng chờ trong giây lát.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-        alert(`Đã duyệt Sản phẩm ID: ${productId}`);
+            // Gọi API
+            const data = await updateProductStatusAdmin(productId, 1);
 
-        // CHANGED: Cập nhật UI ngay lập tức bằng cách xóa khỏi state
-        setProducts(prevProducts =>
-            prevProducts.filter(product => product.id !== productId)
-        );
+            // Cập nhật UI
+            setProducts(prevProducts =>
+                prevProducts.filter(product => product.id !== productId)
+            );
+
+            // Hiển thị thành công
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: data.message || `Đã duyệt thành công sản phẩm ID: ${productId}`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (err: any) {
+            // Hiển thị lỗi
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: err?.response?.data?.message || err.message || 'Lỗi không xác định',
+            });
+        }
     };
+
 
     const handleReject = (productId: number) => {
         // TODO: Gọi API để từ chối

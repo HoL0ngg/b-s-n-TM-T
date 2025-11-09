@@ -681,6 +681,25 @@ class productService {
             connection.release(); // Trả kết nối về pool
         }
     }
+    updateProductStatusService = async (productId: number, status: number, reason?: string) => {
+        try {
+            const [result]: any = await pool.query(
+                `UPDATE products 
+             SET status = ?
+             WHERE id = ?`,
+                [status, productId]
+            );
+
+            if (result.affectedRows === 0) {
+                return false; // Không tìm thấy sản phẩm
+            }
+
+            return true; // Cập nhật thành công
+        } catch (error) {
+            console.error("Lỗi trong updateProductStatusService:", error);
+            throw error;
+        }
+    }
 }
 
 export default new productService();
