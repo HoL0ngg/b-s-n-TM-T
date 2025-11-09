@@ -35,6 +35,7 @@ app.use("/api/cart", CartRouter);
 app.use("/api", orderRoutes);
 app.use('/api/payments', paymentRouter);
 app.use("/api/admin/productsAdmin", ProductsAdminRoute);
+app.use('/api/shopinfo', shopInfoRoutes);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");

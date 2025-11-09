@@ -69,7 +69,6 @@ export default function Profile() {
     const avatarSrc = preview || (user?.avatar_url
         ? `${API_BASE_URL}${user?.avatar_url}` // <-- Mấu chốt là đây
         : "/assets/panda.png");
-    console.log(`${user?.avatar_url}`);
 
     // 4. HÀM SUBMIT
     const handleSubmit = async (e: React.FormEvent) => {

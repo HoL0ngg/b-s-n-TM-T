@@ -29,8 +29,11 @@ export const shopController = {
     registerShop: async (req: Request, res: Response) => {
         try {
             // (req as any).user.id (kiểu number) được lấy từ token
+            console.log("hihhi");
+
             const userId = (req as any).user.id;
             const shopData = req.body;
+
 
             if (!userId) {
                 throw new Error("Không tìm thấy ID người dùng từ token.");
