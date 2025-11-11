@@ -805,6 +805,7 @@ SELECT
     p.base_price,
     p.brand_id,
     p.status,
+    s.name AS shop_name,
     -- 4. Ảnh chính (isMain = 1)
     (SELECT pi.image_url 
      FROM productimages pi 
@@ -850,7 +851,9 @@ FROM
     products p
 -- JOIN bảng danh mục
 JOIN 
-    generic g ON g.id = p.generic_id;
+    generic g ON g.id = p.generic_id
+JOIN 
+    shops s ON s.id = p.shop_id;
 
 --
 -- Chỉ mục cho các bảng đã đổ
