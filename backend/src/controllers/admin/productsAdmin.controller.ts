@@ -43,6 +43,7 @@ class ProductsAdminController {
             const { id } = req.params;
             const productId = parseInt(id, 10);
             const { status, reason } = req.body;
+            console.log(reason);
 
             if (isNaN(productId)) {
                 return res.status(400).json({ message: "Product ID không hợp lệ." });
