@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FiEye,
     FiCheckCircle,
@@ -8,8 +8,9 @@ import {
     FiRotateCcw // Dùng lại cho việc "Duyệt lại"
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
-import { fetchProductsByStatusAdmin } from '../../api/admin/productsAdmin';
+import { fetchProductsByStatusAdmin, updateProductStatusAdmin } from '../../api/admin/productsAdmin';
 import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
+import Swal from 'sweetalert2';
 
 const AdminProductApproval: React.FC = () => {
     // --- State ---
@@ -22,7 +23,7 @@ const AdminProductApproval: React.FC = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0); // CHANGED: Thêm state cho tổng số trang
-    const itemsPerPage = 5; // Vẫn dùng để truyền cho API
+    const itemsPerPage = 1; // Vẫn dùng để truyền cho API
 
     // --- Helpers ---
     const getStatusBadge = (status: string | number) => { // CHANGED
@@ -50,33 +51,81 @@ const AdminProductApproval: React.FC = () => {
         }
     };
     // --- Kết thúc Logic Lọc ---
+    ;
 
-    // --- Xử lý hành động ---
-    const handleApprove = (productId: number) => {
-        // TODO: Gọi API để duyệt
-        // Ví dụ: await approveProductAPI(productId);
+    const handleApprove = async (productId: number) => {
+        try {
+            // Hiển thị thông báo loading
+            Swal.fire({
+                title: 'Đang duyệt...',
+                text: 'Vui lòng chờ trong giây lát.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-        alert(`Đã duyệt Sản phẩm ID: ${productId}`);
+            // Gọi API
+            const data = await updateProductStatusAdmin(productId, 1);
 
-        // CHANGED: Cập nhật UI ngay lập tức bằng cách xóa khỏi state
-        setProducts(prevProducts =>
-            prevProducts.filter(product => product.id !== productId)
-        );
+            // Cập nhật UI
+            setProducts(prevProducts =>
+                prevProducts.filter(product => product.id !== productId)
+            );
+
+            // Hiển thị thành công
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: data.message || `Đã duyệt thành công sản phẩm ID: ${productId}`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (err: any) {
+            // Hiển thị lỗi
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: err?.response?.data?.message || err.message || 'Lỗi không xác định',
+            });
+        }
     };
+    const handleReject = async (productId: number) => {
+        const { value: reason } = await Swal.fire({
+            title: "Nhập lý do từ chối",
+            input: "text",
+            inputPlaceholder: "Ví dụ: Hình ảnh không hợp lệ",
+            showCancelButton: true,
+            confirmButtonText: "Xác nhận từ chối",
+            cancelButtonText: "Hủy",
+            inputValidator: (value) => {
+                if (!value.trim()) {
+                    return "Bạn cần nhập lý do!";
+                }
+            }
+        });
 
-    const handleReject = (productId: number) => {
-        // TODO: Gọi API để từ chối
-        // Ví dụ: await rejectProductAPI(productId, 'Lý do...');
+        // Nếu người dùng nhập lý do
+        if (reason) {
+            console.log(reason);
 
-        alert(`Đã từ chối Sản phẩm ID: ${productId}`);
+            try {
+                const response = await updateProductStatusAdmin(productId, -1, reason);
 
-        // CHANGED: Cập nhật UI ngay lập tức
-        setProducts(prevProducts =>
-            prevProducts.filter(product => product.id !== productId)
-        );
+                // response là { message: string }
+                Swal.fire("Thành công!", response.message, "success");
+
+                // Xóa sản phẩm vừa từ chối khỏi UI
+                setProducts(prevProducts =>
+                    prevProducts.filter(product => product.id !== productId)
+                );
+
+            } catch (err: any) {
+                Swal.fire("Lỗi!", err.message || "Không thể cập nhật trạng thái sản phẩm.", "error");
+            }
+        }
     };
-    // --- Kết thúc xử lý hành động ---
-
     // CHANGED: Tên hàm rõ ràng hơn
     const loadProducts = async () => {
         try {
@@ -115,10 +164,10 @@ const AdminProductApproval: React.FC = () => {
 
             {/* --- 1. KHU VỰC LỌC VÀ TÌM KIẾM --- */}
             <div className="card shadow-sm mb-4">
-                <div className="card-body">
+                <div className="card-body ">
                     <div className="row g-3">
                         {/* Input Tìm kiếm */}
-                        <div className="col-md-8">
+                        <div className="col-md-8  overflow-y-scroll">
                             <label htmlFor="searchInput" className="form-label">Tìm kiếm</label>
                             <div className="input-group">
                                 <span className="input-group-text"><FiSearch /></span>
@@ -248,35 +297,76 @@ const AdminProductApproval: React.FC = () => {
                     </div>
 
                     {/* --- 3. THANH PHÂN TRANG (Giống hệt trang Shop) --- */}
+
                     <nav aria-label="Page navigation" className="mt-3">
-                        {products.length > 0 && (<ul className="pagination justify-content-end mb-0">
-                            {/* Nút Trang trước */}
-                            <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
-                                    Trước
-                                </button>
-                            </li>
+                        {/* Sử dụng `totalPages > 1` là một điều kiện tốt hơn 
+      thay vì `products.length > 0` để hiển thị phân trang 
+    */}
+                        {totalPages > 1 && (
+                            <ul className="pagination justify-content-end mb-0">
+                                {/* Nút Trang trước */}
+                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                                    <button
+                                        className="page-link"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                    >
+                                        Trước
+                                    </button>
+                                </li>
 
-                            {/* Các nút số trang */}
-                            {[...Array(totalPages).keys()].map(num => {
-                                const pageNum = num + 1;
-                                return (
-                                    <li key={pageNum} className={`page-item ${currentPage === pageNum ? 'active' : ''}`}>
-                                        <button className="page-link" onClick={() => handlePageChange(pageNum)}>
-                                            {pageNum}
-                                        </button>
-                                    </li>
-                                );
-                            })}
+                                {/* Hiển thị số trang (ĐÃ CẬP NHẬT LOGIC) */}
+                                {(() => {
+                                    const pages: (number | "dots")[] = [];
 
-                            {/* Nút Trang sau */}
-                            <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
-                                    Sau
-                                </button>
-                            </li>
-                        </ul>)}
+                                    // Sử dụng biến 'currentPage' từ code gốc của bạn
+                                    const page = currentPage;
+
+                                    if (totalPages <= 3) {
+                                        for (let i = 1; i <= totalPages; i++) pages.push(i);
+                                    } else if (page <= 3) {
+                                        pages.push(1, 2, 3, "dots", totalPages);
+                                    } else if (page >= totalPages - 2) {
+                                        pages.push(1, "dots", totalPages - 2, totalPages - 1, totalPages);
+                                    } else {
+                                        pages.push(1, "dots", page - 1, page, page + 1, "dots", totalPages);
+                                    }
+
+                                    // Render mảng 'pages' ra thành các thẻ <li>
+                                    return pages.map((p, index) =>
+                                        p === "dots" ? (
+                                            <li key={`dots-${index}`} className="page-item disabled">
+                                                <span className="page-link">...</span>
+                                            </li>
+                                        ) : (
+                                            <li
+                                                key={`page-${p}`}
+                                                // Dùng class 'active' của Bootstrap
+                                                className={`page-item ${currentPage === p ? 'active' : ''}`}
+                                            >
+                                                <button
+                                                    className="page-link"
+                                                    onClick={() => handlePageChange(p)}
+                                                >
+                                                    {p}
+                                                </button>
+                                            </li>
+                                        )
+                                    );
+                                })()}
+
+                                {/* Nút Trang sau */}
+                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                                    <button
+                                        className="page-link"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                    >
+                                        Sau
+                                    </button>
+                                </li>
+                            </ul>
+                        )}
                     </nav>
+
 
                 </div>
             </div>

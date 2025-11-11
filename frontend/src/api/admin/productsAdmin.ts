@@ -29,3 +29,20 @@ export const fetchProductsByStatusAdmin = async (
     });
     return res.data;
 }
+
+export const updateProductStatusAdmin = async (
+    producId: number,
+    status: number,
+    reason?: string
+): Promise<{ message: string }> => {
+    const res = await axios.patch(`${API_URL}/${producId}`, {
+        status,
+        reason
+    }, {
+        // --- FIX: THÊM DÒNG NÀY ---
+        withCredentials: true
+        // ---------------------------
+    });
+    return res.data;
+
+}
