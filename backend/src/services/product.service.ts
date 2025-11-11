@@ -681,6 +681,46 @@ class productService {
             connection.release(); // Trả kết nối về pool
         }
     }
+    updateProductStatusService = async (productId: number, status: number, reason?: string) => {
+        const conn = await pool.getConnection();
+        try {
+            await conn.beginTransaction();
+
+            // Cập nhật trạng thái sản phẩm
+            const [updateResult]: any = await conn.query(
+                `UPDATE products 
+             SET status = ? 
+             WHERE id = ?`,
+                [status, productId]
+            );
+
+            if (updateResult.affectedRows === 0) {
+                await conn.rollback();
+                return false; // Không tìm thấy sản phẩm
+            }
+
+            // Nếu bị từ chối thì lưu lý do vào bảng product_rejections
+            if (status === -1 && reason) {
+                console.log("hahha");
+
+                await conn.query(
+                    `INSERT INTO product_rejections (product_id, reason)
+                 VALUES (?, ?)`,
+                    [productId, reason]
+                );
+            }
+
+            await conn.commit();
+            return true;
+        } catch (error) {
+            await conn.rollback();
+            console.error("❌ Lỗi trong updateProductStatusService:", error);
+            throw error;
+        } finally {
+            conn.release();
+        }
+    };
+
 }
 
 export default new productService();

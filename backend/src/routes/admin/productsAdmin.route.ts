@@ -6,4 +6,7 @@ const ProductsAdminRoute = Router();
 
 ProductsAdminRoute.get("/", verifyToken, productsAdminController.getProductsByStatusController);
 
+ProductsAdminRoute.patch("/:id", verifyToken, productsAdminController.updateProductStatusController);
+
+
 export default ProductsAdminRoute;
