@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import type { ProductVariantType, PromotionItem, PromotionType } from '../../types/ProductType';
 import { apiDeletePromotionItem, apiGetPromotionDetails, apiGetShopPromotions, apiSavePromotionDetails } from '../../api/products';
 import DateRangeDisplay from '../../components/DateRangeDisplay';
-import ProductPickerModal from '../../components/ProductPickerModel';
+import ProductPickerModal from '../../components/CreatePromotionModal';
+import CreatePromotionModal from '../../components/CreatePromotionModal';
 
 export default function Promotion() {
 
@@ -19,6 +20,8 @@ export default function Promotion() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
+
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     // --- EFFECTS ---
     // Tải danh sách sự kiện (cột 1) khi vào trang
@@ -67,6 +70,11 @@ export default function Promotion() {
         }
     };
 
+    const handleCreateSuccess = () => {
+        setIsCreateModalOpen(false); // Đóng modal
+        // fetchPromotions(); // Tải lại danh sách (để thấy event mới)
+    };
+
     const handleDeleteItem = async (variantId: number) => {
         if (!selectedPromo || !window.confirm("Bạn chắc chắn muốn xóa?")) return;
         console.log(variantId);
@@ -112,7 +120,7 @@ export default function Promotion() {
                 <div className="col-md-4">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                         <h4>Sự kiện giảm giá</h4>
-                        <button className="btn btn-primary btn-sm">Tạo mới</button>
+                        <button className="btn btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>Tạo mới</button>
                     </div>
                     <div className="list-group">
                         {promotions ? promotions.map(promo => (
@@ -145,7 +153,7 @@ export default function Promotion() {
                                     <strong>Sản phẩm áp dụng</strong>
                                     <button
                                         className="btn btn-outline-primary"
-                                        onClick={() => setIsProductPickerOpen(true)}
+                                        onClick={() => setIsCreateModalOpen(true)}
                                     >
                                         + Thêm sản phẩm
                                     </button>
@@ -185,12 +193,6 @@ export default function Promotion() {
                                     </table>
                                 )}
                             </div>
-                            <ProductPickerModal
-                                show={isProductPickerOpen}
-                                onHide={() => setIsProductPickerOpen(false)}
-                                shopId={selectedPromo.shop_id}
-                                onSave={handleAddProducts}
-                            />
                             <div className="card-footer text-end">
                                 <button className="btn btn-success" onClick={handleSaveChanges}>
                                     Lưu thay đổi
@@ -200,6 +202,11 @@ export default function Promotion() {
                     )}
                 </div>
             </div>
+            <CreatePromotionModal
+                show={isCreateModalOpen}
+                onHide={() => setIsCreateModalOpen(false)}
+                onSaveSuccess={handleCreateSuccess} // <-- SỬA THÀNH 'onSave'
+            />
         </div>
     );
 }
