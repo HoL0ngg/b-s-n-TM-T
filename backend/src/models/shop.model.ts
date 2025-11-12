@@ -1,5 +1,5 @@
-import db from '../config/db';  
-import { RowDataPacket } from 'mysql2/promise'; 
+import db from '../config/db';
+import { RowDataPacket } from 'mysql2/promise';
 
 export interface Shop {
     id: Number;
@@ -19,13 +19,18 @@ export interface ShopCategories {
 
 export const findShopIdByOwner = async (ownerPhone: string): Promise<number | null> => {
     const [rows] = await db.query<RowDataPacket[]>(
-        `SELECT id FROM shops WHERE owner_id = ?`, 
+        `SELECT id FROM shops WHERE owner_id = ?`,
         [ownerPhone]
     );
 
     if (rows.length > 0) {
-        return rows[0].id; 
+        return rows[0].id;
     }
 
     return null;
 };
+
+export interface ShopAdmin extends Shop {
+    username: string;
+    phone_number: string;
+}   

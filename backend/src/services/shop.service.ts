@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import type { Shop, ShopCategories } from "../models/shop.model";
+import type { Shop, ShopAdmin, ShopCategories } from "../models/shop.model";
 
 class shopService {
     getShopOnIdService = async (id: number): Promise<Shop> => {
@@ -101,6 +101,65 @@ class shopService {
         const [rows] = await pool.query<RowDataPacket[]>(sql, [shopId]);
         return rows;
     }
+    getShopsByStatusService = async (
+        status: string,
+        page: number,
+        limit: number,
+        searchTerm?: string
+    ): Promise<{ shops: ShopAdmin[]; totalPages: number }> => {
+        try {
+            // 1️⃣ Xây dựng điều kiện WHERE chung
+            let whereClause = "WHERE 1=1";
+            const params: any[] = [];
+
+            if (status !== "all") {
+                whereClause += " AND s.status = ?";
+                params.push(Number(status));
+            }
+
+            if (searchTerm) {
+                whereClause += " AND s.name LIKE ?";
+                params.push(`%${searchTerm}%`);
+            }
+
+            // 2️⃣ Đếm tổng số dòng (để tính totalPage)
+            const countQuery = `
+            SELECT COUNT(*) AS total
+            FROM shops AS s
+            ${whereClause};
+        `;
+            const [countResult]: any = await pool.query(countQuery, params);
+            const total = countResult[0]?.total || 0;
+            const totalPage = Math.ceil(total / limit);
+
+            // 3️⃣ Lấy dữ liệu phân trang
+            const dataQuery = `
+            SELECT 
+                s.*,
+                u.username,
+                u.updated_at,
+                u.phone_number
+            FROM shops AS s
+            LEFT JOIN user_profile AS u ON s.owner_id = u.phone_number
+            ${whereClause}
+            ORDER BY s.created_at DESC
+            LIMIT ? OFFSET ?;
+        `;
+
+            const dataParams = [...params, limit, (page - 1) * limit];
+            const [rows]: any = await pool.query(dataQuery, dataParams);
+
+            return {
+                shops: rows as ShopAdmin[],
+                totalPages: totalPage,
+            };
+        } catch (error) {
+            console.error("Lỗi trong getShopsByStatusService:", error);
+            throw error;
+        }
+    };
+
+
 }
 
 export default new shopService();
