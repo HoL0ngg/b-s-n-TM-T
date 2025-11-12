@@ -93,3 +93,11 @@ export interface UpdatePromoItemDto {
     product_variant_id: number;
     discount_value: number;
 }
+
+export interface CreatePromotionData {
+    name: string;
+    start_date: string;
+    end_date: string;
+    banner_url: string; // Kiểu File
+    shop_id: string;
+}

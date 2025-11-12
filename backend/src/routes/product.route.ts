@@ -1,6 +1,7 @@
 import { Router } from "express";
 import productController from "../controllers/product.controller";
 import { checkOptionalAuth, verifyToken } from "../middleware/auth.middleware";
+import { uploadPromoBanner } from "../config/multer";
 
 const ProductRouter = Router();
 
@@ -30,5 +31,6 @@ ProductRouter.get('/promotions/:id/items', verifyToken, productController.getPro
 ProductRouter.patch('/promotions/:id/items/:variantid', verifyToken, productController.updatePromotionItem);
 ProductRouter.patch('/promotions/:id/items', verifyToken, productController.savePromotionItems);
 ProductRouter.delete('/promotions/:promoId/items/:variantId', productController.deletePromotionItem);
+ProductRouter.post('/promotions/add', verifyToken, uploadPromoBanner, productController.CreatePromotion);
 
 export default ProductRouter;

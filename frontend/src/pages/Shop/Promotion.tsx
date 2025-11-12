@@ -1,21 +1,16 @@
 // src/pages/Shop/PromotionManagementPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ProductVariantType, PromotionItem, PromotionType } from '../../types/ProductType';
 import { apiDeletePromotionItem, apiGetPromotionDetails, apiGetShopPromotions, apiSavePromotionDetails } from '../../api/products';
 import DateRangeDisplay from '../../components/DateRangeDisplay';
-import ProductPickerModal from '../../components/CreatePromotionModal';
 import CreatePromotionModal from '../../components/CreatePromotionModal';
+import ProductPickerModal from '../../components/ProductPickerModal';
 
 export default function Promotion() {
-
-    // --- STATE ---
-    // Cột 1: Danh sách tất cả sự kiện
     const [promotions, setPromotions] = useState<PromotionType[]>([]);
 
-    // Cột 2: Sự kiện đang được chọn để sửa
     const [selectedPromo, setSelectedPromo] = useState<PromotionType | null>(null);
 
-    // Cột 2: Danh sách sản phẩm thuộc sự kiện đang chọn
     const [promoItems, setPromoItems] = useState<PromotionItem[]>([]);
 
     const [isLoading, setIsLoading] = useState(false);
@@ -23,11 +18,13 @@ export default function Promotion() {
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    // --- EFFECTS ---
-    // Tải danh sách sự kiện (cột 1) khi vào trang
-    useEffect(() => {
+    const fetchPromotions = useCallback(() => {
         apiGetShopPromotions().then(setPromotions);
     }, []);
+
+    useEffect(() => {
+        fetchPromotions();
+    }, [fetchPromotions]);
 
     // Tải chi tiết (sản phẩm) khi chọn 1 sự kiện
     useEffect(() => {
@@ -72,7 +69,7 @@ export default function Promotion() {
 
     const handleCreateSuccess = () => {
         setIsCreateModalOpen(false); // Đóng modal
-        // fetchPromotions(); // Tải lại danh sách (để thấy event mới)
+        fetchPromotions(); // Tải lại danh sách (để thấy event mới)
     };
 
     const handleDeleteItem = async (variantId: number) => {
@@ -153,7 +150,7 @@ export default function Promotion() {
                                     <strong>Sản phẩm áp dụng</strong>
                                     <button
                                         className="btn btn-outline-primary"
-                                        onClick={() => setIsCreateModalOpen(true)}
+                                        onClick={() => setIsProductPickerOpen(true)}
                                     >
                                         + Thêm sản phẩm
                                     </button>
@@ -193,6 +190,12 @@ export default function Promotion() {
                                     </table>
                                 )}
                             </div>
+                            <ProductPickerModal
+                                show={isProductPickerOpen}
+                                onHide={() => setIsProductPickerOpen(false)}
+                                shopId={selectedPromo.shop_id}
+                                onSave={handleAddProducts}
+                            />
                             <div className="card-footer text-end">
                                 <button className="btn btn-success" onClick={handleSaveChanges}>
                                     Lưu thay đổi
@@ -205,7 +208,7 @@ export default function Promotion() {
             <CreatePromotionModal
                 show={isCreateModalOpen}
                 onHide={() => setIsCreateModalOpen(false)}
-                onSaveSuccess={handleCreateSuccess} // <-- SỬA THÀNH 'onSave'
+                onSaveSuccess={handleCreateSuccess}
             />
         </div>
     );

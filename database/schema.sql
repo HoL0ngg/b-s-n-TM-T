@@ -569,11 +569,12 @@ CREATE TABLE `promotions` (
   `name` varchar(255) DEFAULT NULL,
   `start_date` datetime DEFAULT current_timestamp(),
   `end_date` datetime DEFAULT NULL,
+  `banner_url` varchar(255) DEFAULT NULL,
   `is_active` tinyint(4) DEFAULT 1,
   `shop_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO promotions values (1, "Giảm giá black friday", "2025-05-11", "2025-11-11", 1, 1);
+INSERT INTO promotions values (1, "Giảm giá black friday", "2025-05-11", "2025-11-11", "", 1, 1);
 
 CREATE TABLE `promotion_items` (
   promotion_id int,

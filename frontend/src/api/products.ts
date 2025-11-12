@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType, UpdatePromoItemDto, PromotionType, PromotionItem } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType, UpdatePromoItemDto, PromotionType, PromotionItem, CreatePromotionData } from "../types/ProductType";
 
 const API_URl = "http://localhost:5000/api/products";
 
@@ -191,4 +191,19 @@ export const apiUpdatePromotionItem = async (promoId: number, variantId: number,
 // Xóa 1 item
 export const apiDeletePromotionItem = async (promoId: number, variantId: number) => {
     return axios.delete(`${API_URl}/promotions/${promoId}/items/${variantId}`);
+};
+
+export const apiCreatePromotion = async (data: CreatePromotionData) => {
+    // 1. Dùng FormData vì bạn đang gửi file
+    const formData = new FormData();
+
+    // 2. Gắn dữ liệu (key phải khớp với backend)
+    formData.append('name', data.name);
+    formData.append('start_date', data.start_date);
+    formData.append('end_date', data.end_date);
+    formData.append('banner_image', data.banner_image);
+
+    // 3. Gửi FormData (Backend của bạn phải dùng 'multer' để đọc)
+    const res = await axios.post(`${API_URl}/promotions/add`, formData);
+    return res.data;
 };

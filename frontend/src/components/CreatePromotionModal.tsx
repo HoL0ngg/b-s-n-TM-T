@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // (Như bạn yêu cầu)
-// (Import CSS của modal tùy chỉnh, nếu có)
+import { motion, AnimatePresence } from 'framer-motion';
+import { apiCreatePromotion } from '../api/products';
 
 interface CreateModalProps {
     show: boolean;
@@ -42,12 +42,12 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
         setIsLoading(true);
 
         try {
-            // await apiCreatePromotion({
-            //     name,
-            //     start_date: startDate,
-            //     end_date: endDate,
-            //     banner_image: bannerFile // Truyền file
-            // });
+            await apiCreatePromotion({
+                name,
+                start_date: startDate,
+                end_date: endDate,
+                banner_image: bannerFile // Truyền file
+            });
 
             alert("Tạo sự kiện thành công!");
             onSaveSuccess(); // Báo cho cha tải lại
@@ -61,7 +61,6 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
         }
     };
 
-    // Reset form khi đóng
     useEffect(() => {
         if (!show) {
             setName("");
@@ -72,7 +71,6 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
         }
     }, [show]);
 
-    // (Các variant animation của Framer Motion)
     const backdropVariants = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
     const modalVariants = { hidden: { y: "-50px", opacity: 0 }, visible: { y: "0", opacity: 1 } };
 
@@ -81,21 +79,21 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
             {show && (
                 <>
                     <motion.div
-                        className="modal-backdrop fade show"
-                        variants={backdropVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="hidden"
+                        className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         onClick={onHide}
                     />
 
                     <motion.div
-                        className="modal fade show d-block"
+                        className="modal d-block"
                         tabIndex={-1}
                         variants={modalVariants}
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
+                        style={{ zIndex: 1050 }} // Đảm bảo modal cao hơn backdrop
                     >
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content">
@@ -106,7 +104,6 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
                                     </div>
                                     <div className="modal-body">
 
-                                        {/* Tên sự kiện */}
                                         <div className="mb-3">
                                             <label className="form-label">Tên sự kiện</label>
                                             <input

@@ -16,6 +16,7 @@ import paymentRouter from "./routes/payment.route";
 import ProductsAdminRoute from "./routes/admin/productsAdmin.route";
 const app = express();
 app.use(bodyParser.json());
+app.use(express.json());
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(cors({

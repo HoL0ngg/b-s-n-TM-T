@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, BrandOfProduct, ProductVariant, VariantOption, ProductResponse, ProductImage, UpdatePromoItemDto } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, BrandOfProduct, ProductVariant, VariantOption, ProductResponse, ProductImage, UpdatePromoItemDto, CreatePromotionData } from "../models/product.model";
 import { ResultSetHeader } from 'mysql2';
 import { paginationProducts } from "../helpers/pagination.helper";
 
@@ -719,7 +719,28 @@ class productService {
         } finally {
             conn.release();
         }
-    };
+    }
+
+    createPromotion = async (data: CreatePromotionData) => {
+        const { name, start_date, end_date, banner_url, shop_id } = data;
+
+        const sql = `
+            INSERT INTO promotions 
+                (name, start_date, end_date, banner_url, shop_id, is_active)
+            VALUES (?, ?, ?, ?, ?, 1) 
+        `;
+
+        const [result] = await pool.query<ResultSetHeader>(sql,
+            [name, start_date, end_date, banner_url, shop_id]
+        );
+
+        // Trả về sự kiện mới (bao gồm ID mới tạo)
+        return {
+            id: result.insertId,
+            ...data,
+            is_active: 1
+        };
+    }
 
 }
 

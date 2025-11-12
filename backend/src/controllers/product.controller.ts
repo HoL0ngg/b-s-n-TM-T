@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import productService from "../services/product.service";
+import { CreatePromotionData } from "../models/product.model";
 
 class productController {
 
@@ -433,6 +434,58 @@ class productController {
                 return res.status(403).json({ message: "Bạn không có quyền sửa khuyến mãi này" });
             }
             res.status(500).json({ message: "Lỗi server khi lưu khuyến mãi" });
+        }
+    }
+
+    CreatePromotion = async (req: Request, res: Response) => {
+        try {
+            // 1. Lấy shop_id từ middleware (đã xác thực)
+            const shopId = (req as any).user.shop_id;
+            if (!shopId) {
+                return res.status(403).json({ message: "Chưa đăng nhập" });
+            }
+            console.log(req.body);
+
+            // 2. Lấy dữ liệu TEXT (chữ) từ req.body (do multer xử lý)
+            const { name, start_date, end_date } = req.body;
+
+            // 3. Lấy dữ liệu FILE từ req.file (do multer xử lý)
+            const file = req.file;
+            if (!file) {
+                return res.status(400).json({ message: "Vui lòng tải lên ảnh banner." });
+            }
+
+            // 4. Kiểm tra dữ liệu đầu vào
+            if (!name || !start_date || !end_date) {
+                return res.status(400).json({ message: "Vui lòng nhập đầy đủ tên và ngày diễn ra sự kiện." });
+            }
+
+            if (new Date(start_date) >= new Date(end_date)) {
+                throw new Error("Ngày kết thúc phải sau ngày bắt đầu.");
+            }
+
+            // 5. Tạo đường dẫn URL cho ảnh (giống logic upload avatar)
+            const bannerUrl = `/uploads/promotions/${file.filename}`;
+
+            // 6. Gói dữ liệu lại để gửi xuống Service
+            // (Sử dụng interface CreatePromotionData)
+            const promotionData: CreatePromotionData = {
+                name,
+                start_date,
+                end_date,
+                banner_url: bannerUrl,
+                shop_id: shopId
+            };
+
+            // 7. Gọi Service để xử lý
+            const newPromotion = await productService.createPromotion(promotionData);
+
+            // 8. Trả về thành công
+            res.status(201).json(newPromotion); // 201 = Created
+
+        } catch (error: any) {
+            console.error("Lỗi Controller (createPromotion):", error);
+            res.status(500).json({ message: error.message || "Lỗi máy chủ khi tạo sự kiện" });
         }
     }
 }
