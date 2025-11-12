@@ -23,7 +23,7 @@ const AdminProductApproval: React.FC = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0); // CHANGED: Thêm state cho tổng số trang
-    const itemsPerPage = 1; // Vẫn dùng để truyền cho API
+    const itemsPerPage = 10; // Vẫn dùng để truyền cho API
 
     // --- Helpers ---
     const getStatusBadge = (status: string | number) => { // CHANGED

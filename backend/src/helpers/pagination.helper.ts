@@ -26,7 +26,8 @@ export const paginationProducts = async (whereClause: string,
         ${orderBy}
         LIMIT ? 
         OFFSET ?
-    `;
+        `;
+    // JOIN shops ON v_products_list.shop_id = shops.id
 
     const finalParams = [...params, limit, offset];
 

@@ -714,7 +714,7 @@ class productService {
             return true;
         } catch (error) {
             await conn.rollback();
-            console.error("❌ Lỗi trong updateProductStatusService:", error);
+            console.error("Lỗi trong updateProductStatusService:", error);
             throw error;
         } finally {
             conn.release();
@@ -741,6 +741,7 @@ class productService {
             is_active: 1
         };
     }
+
 
 }
 
