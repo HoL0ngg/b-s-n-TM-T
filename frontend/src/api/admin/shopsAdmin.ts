@@ -20,3 +20,25 @@ export const fetchShopsByStatusAdmin = async (
     });
     return res.data;
 }
+
+export const updateShopStatusAdmin = async (
+    shopId: number,
+    status: number,
+    reason?: string
+): Promise<{ message: string }> => {
+    try {
+        const res = await axios.put(`${API_URL}/${shopId}`, {
+            status,
+            reason
+        }, {
+            withCredentials: true
+        });
+        return res.data;
+    } catch (error: any) {
+        console.log("Lỗi khi gọi API updateShopStatusAdmin:", error);
+        throw new Error(
+            error.response?.data?.message || "Không thể cập nhật trạng thái shop"
+        );
+    }
+
+}

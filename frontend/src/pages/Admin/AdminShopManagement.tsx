@@ -9,7 +9,8 @@ import {
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import type { ShopAdminType } from '../../types/ShopType';
-import { fetchShopsByStatusAdmin } from '../../api/admin/shopsAdmin';
+import { fetchShopsByStatusAdmin, updateShopStatusAdmin } from '../../api/admin/shopsAdmin';
+import Swal from 'sweetalert2';
 
 
 // --- Dữ liệu mẫu (Mock Data) ---
@@ -70,17 +71,156 @@ const AdminShopManagement: React.FC = () => {
     // --- Kết thúc Logic Lọc ---
 
 
-    const handleApprove = (shopId: number) => {
-        alert(`Đã duyệt Shop ID: ${shopId}`);
+
+    const handleApprove = async (shopId: number) => {
+        const result = await Swal.fire({
+            title: 'Xác nhận duyệt shop?',
+            text: `Bạn có chắc chắn muốn duyệt shop ID: ${shopId}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Duyệt',
+            cancelButtonText: 'Hủy',
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const res = await updateShopStatusAdmin(shopId, 1);
+
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: res.message || `Shop ID ${shopId} đã được duyệt.`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+
+                setShops(prevShops => prevShops.filter(shop => shop.id !== shopId));
+            } catch (error: any) {
+                Swal.fire('Lỗi!', error.message || 'Có lỗi xảy ra khi duyệt shop.', 'error');
+            }
+        }
+    };
+    const handleBan = async (shopId: number) => {
+        const { value: reason } = await Swal.fire({
+            title: 'Nhập lý do từ chối',
+            input: 'text',
+            inputPlaceholder: 'Ví dụ: Hình ảnh không hợp lệ',
+            showCancelButton: true,
+            confirmButtonText: 'Từ chối',
+            cancelButtonText: 'Hủy',
+        });
+
+        if (reason) {
+            try {
+                const res = await updateShopStatusAdmin(shopId, -1, reason);
+                Swal.fire('Đã từ chối!', res.message || 'Shop đã bị từ chối.', 'success');
+                loadShops();
+            } catch (error: any) {
+                Swal.fire('Lỗi!', error.message || 'Không thể từ chối shop.', 'error');
+            }
+        }
     };
 
-    const handleBan = (shopId: number) => {
-        alert(`Đã cấm Shop ID: ${shopId}`);
+    const handleUnban = async (shopId: number) => {
+        const result = await Swal.fire({
+            title: 'Xác nhận mở cấm shop?',
+            text: `Bạn có chắc muốn mở cấm shop ID: ${shopId}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Mở cấm',
+            cancelButtonText: 'Hủy',
+        });
+
+        if (result.isConfirmed) {
+            try {
+
+                const res = await updateShopStatusAdmin(shopId, 1);
+
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: res.message || `Shop ID ${shopId} đã được mở cấm.`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+
+
+                loadShops();
+
+            } catch (error: any) {
+                Swal.fire('Lỗi!', error.message || 'Không thể mở cấm shop.', 'error');
+            }
+        }
     };
 
-    const handleUnban = (shopId: number) => {
-        alert(`Đã mở cấm Shop ID: ${shopId}`);
-    };
+    // const handleUpdateStatus = async (
+    //     shopId: number,
+    //     status: number,
+    //     title: string,
+    //     successMsg: string,
+    //     reason?: string
+    // ) => {
+    //     const result = await Swal.fire({
+    //         title,
+    //         icon: "question",
+    //         showCancelButton: true,
+    //         confirmButtonText: "Xác nhận",
+    //         cancelButtonText: "Hủy",
+    //     });
+
+    //     if (result.isConfirmed) {
+    //         try {
+    //             const res = await updateShopStatusAdmin(shopId, status, reason);
+    //             Swal.fire("Thành công!", res.message || successMsg, "success");
+    //             loadShops(); // 🔁 gọi lại hàm load danh sách
+    //         } catch (error: any) {
+    //             Swal.fire("Lỗi!", error.message || "Không thể cập nhật trạng thái shop.", "error");
+    //         }
+    //     }
+    // };
+
+    // const handleApprove = async (shopId: number) => {
+    //     await handleUpdateStatus(
+    //         shopId,
+    //         1,
+    //         `Xác nhận duyệt shop ID ${shopId}?`,
+    //         `Shop ID ${shopId} đã được duyệt.`
+    //     );
+    // };
+
+    // const handleBan = async (shopId: number) => {
+    //     const { value: reason } = await Swal.fire({
+    //         title: "Nhập lý do cấm shop",
+    //         input: "text",
+    //         inputPlaceholder: "Ví dụ: Vi phạm quy định",
+    //         showCancelButton: true,
+    //         confirmButtonText: "Cấm shop",
+    //         cancelButtonText: "Hủy",
+    //     });
+
+    //     if (reason) {
+    //         await handleUpdateStatus(
+    //             shopId,
+    //             -1,
+    //             `Xác nhận cấm shop ID ${shopId}?`,
+    //             `Shop ID ${shopId} đã bị cấm.`,
+    //             reason
+    //         );
+    //     }
+    // };
+
+    // const handleUnban = async (shopId: number) => {
+    //     await handleUpdateStatus(
+    //         shopId,
+    //         1,
+    //         `Xác nhận mở cấm shop ID ${shopId}?`,
+    //         `Shop ID ${shopId} đã được mở cấm.`
+    //     );
+    // };
     // --- Kết thúc xử lý hành động ---
     const loadShops = async () => {
 
@@ -166,7 +306,6 @@ const AdminShopManagement: React.FC = () => {
                                     <th scope="col">Tên Cửa hàng</th>
                                     <th scope="col">Chủ Shop</th>
                                     <th scope="col">Trạng thái</th>
-                                    <th scope="col">Sản phẩm</th>
                                     <th scope="col">Ngày tham gia</th>
                                     <th scope="col" className="text-center">Hành động</th>
                                 </tr>
@@ -197,7 +336,6 @@ const AdminShopManagement: React.FC = () => {
                                                 {getStatusText(shop.status.toString())}
                                             </span>
                                         </td>
-                                        <td>{shop.totalProduct}</td>
                                         <td>{new Date(shop.created_at).toLocaleDateString()}</td>
                                         <td className="text-center">
                                             <div className="btn-group" role="group">

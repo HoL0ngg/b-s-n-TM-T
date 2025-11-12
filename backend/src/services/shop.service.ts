@@ -108,7 +108,7 @@ class shopService {
         searchTerm?: string
     ): Promise<{ shops: ShopAdmin[]; totalPages: number }> => {
         try {
-            // 1️⃣ Xây dựng điều kiện WHERE chung
+            // Xây dựng điều kiện WHERE chung
             let whereClause = "WHERE 1=1";
             const params: any[] = [];
 
@@ -122,7 +122,7 @@ class shopService {
                 params.push(`%${searchTerm}%`);
             }
 
-            // 2️⃣ Đếm tổng số dòng (để tính totalPage)
+            //  Đếm tổng số dòng (để tính totalPage)
             const countQuery = `
             SELECT COUNT(*) AS total
             FROM shops AS s
@@ -132,7 +132,7 @@ class shopService {
             const total = countResult[0]?.total || 0;
             const totalPage = Math.ceil(total / limit);
 
-            // 3️⃣ Lấy dữ liệu phân trang
+            //  Lấy dữ liệu phân trang
             const dataQuery = `
             SELECT 
                 s.*,
@@ -158,7 +158,11 @@ class shopService {
             throw error;
         }
     };
-
+    updateShopStatusService = async (shopId: number, status: number): Promise<boolean> => {
+        const [result] = await pool.query("UPDATE shops SET status = ? WHERE id = ?", [status, shopId]);
+        const affectedRows = (result as any).affectedRows;
+        return affectedRows > 0;
+    };
 
 }
 
