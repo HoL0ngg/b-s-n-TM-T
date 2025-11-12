@@ -10,7 +10,7 @@ async function getCoordinates(address: string): Promise<{ lon: string, lat: stri
             headers: { 'User-Agent': 'MyApp (my-email@example.com)' } // Nominatim yêu cầu User-Agent
         });
 
-        if (response.data && response.data.length > 0) {
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
             return { lon: response.data[0].lon, lat: response.data[0].lat };
         }
         return null;
@@ -33,11 +33,12 @@ async function getDrivingDistance(
         const response = await axios.get(url);
 
         // OSRM trả về khoảng cách tính bằng MÉT
-        const distanceInMeters = response.data?.routes[0]?.distance;
+        // if (response.data && Array.isArray(response.data.routes) && response.data.routes.length > 0) {
 
-        if (distanceInMeters) {
-            return distanceInMeters;
-        }
+        //     // 2. Nếu an toàn, MỚI lấy distance
+        //     const distanceInMeters = response.data.routes[0].distance;
+        //     return distanceInMeters;
+        // }
         return null;
     } catch (error) {
         console.error("Lỗi OSRM Routing:", error);
