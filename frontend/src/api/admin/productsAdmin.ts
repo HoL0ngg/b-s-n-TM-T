@@ -13,7 +13,7 @@ export const fetchProductsByStatusAdmin = async (
 
     // Bỏ qua logic 'token' vì chưa làm đăng nhập admin
 
-    const res = await axios.get(`${API_URL}/`, {
+    const res = await axios.get(`${API_URL}/products`, {
         params: {
             status: status === 'all' ? undefined : status,
             page,

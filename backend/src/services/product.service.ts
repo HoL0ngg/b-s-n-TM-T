@@ -701,7 +701,7 @@ class productService {
 
             // Nếu bị từ chối thì lưu lý do vào bảng product_rejections
             if (status === -1 && reason) {
-                console.log("hahha");
+                // console.log("hahha");
 
                 await conn.query(
                     `INSERT INTO product_rejections (product_id, reason)
@@ -744,5 +744,4 @@ class productService {
 
 
 }
-
 export default new productService();

@@ -4,7 +4,7 @@ import { verifyToken } from "../../middleware/auth.middleware";
 
 const ProductsAdminRoute = Router();
 
-ProductsAdminRoute.get("/", verifyToken, productsAdminController.getProductsByStatusController);
+ProductsAdminRoute.get("/products", verifyToken, productsAdminController.getProductsByStatusController);
 
 ProductsAdminRoute.patch("/:id", verifyToken, productsAdminController.updateProductStatusController);
 

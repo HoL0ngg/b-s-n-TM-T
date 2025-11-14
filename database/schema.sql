@@ -551,7 +551,7 @@ CREATE TABLE `shops` (
 --
 
 INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created_at`, `owner_id`) VALUES
-(1, 'Thế giới skin food', '/assets/shops/thegioiskinfood.png', 'Shop chuyên về mỹ phẩm', 1, '2025-08-25', '0987654321'),
+(1, 'Thế giới skin food', '/assets/shops/thegioiskinfood.png', 'Shop chuyên về mỹ phẩm', 1, '2025-08-25', '0338740832'),
 (2, 'Coolmate - Official Store', '/assets/shops/coolmate.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654333'),
 (3, 'Casper Official Store', '/assets/shops/casper.webp', 'Shop chuyên về đồ điện tử', 1, '2025-08-26', '0987654222'),
 (4, 'Murad Vietnam Official Store', '/assets/shops/murad.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654111'),
@@ -718,13 +718,13 @@ CREATE TABLE `user_profile` (
 
 INSERT INTO `user_profile` (`username`, `dob`, `gender`, `updated_at`, `phone_number`) VALUES
 ('Nguyễn Kim Long', '2005-04-21 00:00:00', 1, '2025-11-04 14:16:30', '0338740832'),
-('', '2005-08-26 00:00:00', 1, NULL, '0987654000'),
-('', '2005-08-26 00:00:00', 1, NULL, '0987654111'),
-('', '2005-08-26 00:00:00', 1, NULL, '0987654222'),
+('Hồ Hoàng Long', '2005-08-26 00:00:00', 1, NULL, '0987654000'),
+('Đỗ Nhật Huy', '2005-08-26 00:00:00', 1, NULL, '0987654111'),
+('Bùi Nguyễn Trọng Nghĩa', '2005-08-26 00:00:00', 1, NULL, '0987654222'),
 ('', '2005-08-25 00:00:00', 1, NULL, '0987654321'),
 ('', '2005-08-26 00:00:00', 1, NULL, '0987654333'),
-('', '2005-08-26 00:00:00', 1, NULL, '0987654444'),
-('', '2005-08-26 00:00:00', 1, NULL, '0987654555');
+('Danh Thị Ngọc Châu', '2005-08-26 00:00:00', 1, NULL, '0987654444'),
+('Ronaldo siuuuu', '2005-08-26 00:00:00', 1, NULL, '0987654555');
 
 -- --------------------------------------------------------
 
