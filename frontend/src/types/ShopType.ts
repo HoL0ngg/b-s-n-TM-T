@@ -18,3 +18,9 @@ export interface ShopAdminType extends ShopType {
     username: string;
     phone_number: string;
 }
+
+export interface ShopDetailAdminType extends ShopAdminType {
+    productCount: number;
+    totalRevenue: number;
+    totalOrders: number;
+}

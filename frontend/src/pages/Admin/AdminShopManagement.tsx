@@ -1,4 +1,4 @@
-import React, { useState, useMemo, use, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FiEye,
     FiCheckCircle,
@@ -11,41 +11,14 @@ import { Link } from 'react-router-dom';
 import type { ShopAdminType } from '../../types/ShopType';
 import { fetchShopsByStatusAdmin, updateShopStatusAdmin } from '../../api/admin/shopsAdmin';
 import Swal from 'sweetalert2';
-
-
-// --- Dữ liệu mẫu (Mock Data) ---
-// Đổi tên thành "data" để tránh nhầm lẫn
-// interface Shop {
-//     id: string;
-//     name: string;
-//     ownerName: string;
-//     email: string;
-//     status: 'approved' | 'pending' | 'banned';
-//     joinedDate: string;
-//     productCount: number;
-// }
-// const mockShopsData: Shop[] = [
-//     { id: 'S001', name: 'Shop Cây Cảnh Mini', ownerName: 'Nguyễn Văn A', email: 'a.nguyen@example.com', status: 'approved', joinedDate: '2023-10-01', productCount: 45 },
-//     { id: 'S002', name: 'Gốm Sứ Bát Tràng', ownerName: 'Trần Thị B', email: 'b.tran@example.com', status: 'approved', joinedDate: '2023-09-15', productCount: 120 },
-//     { id: 'S003', name: 'Thời Trang Trẻ Em', ownerName: 'Lê Văn C', email: 'c.le@example.com', status: 'pending', joinedDate: '2023-11-01', productCount: 0 },
-//     { id: 'S004', name: 'Đồ Ăn Vặt Nhanh', ownerName: 'Phạm Hùng D', email: 'd.pham@example.com', status: 'banned', joinedDate: '2023-08-20', productCount: 15 },
-//     { id: 'S005', name: 'Thiết Bị Điện Tử ABC', ownerName: 'Vũ Minh E', email: 'e.vu@example.com', status: 'approved', joinedDate: '2023-10-05', productCount: 210 },
-//     { id: 'S006', name: 'Giày Thể Thao Cao Cấp', ownerName: 'Đỗ Thị F', email: 'f.do@example.com', status: 'pending', joinedDate: '2023-11-02', productCount: 0 },
-// ];
-// // --- Kết thúc Dữ liệu mẫu-- -
-
-
 const AdminShopManagement: React.FC = () => {
 
     const [shops, setShops] = useState<ShopAdminType[]>([]);
-    // ----------------------------------------
-
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const itemsPerPage = 5;
-
     // --- Helpers ---
     const getStatusBadge = (status: number | string) => {
         switch (status) {
@@ -67,96 +40,7 @@ const AdminShopManagement: React.FC = () => {
     // ----------------------------------------------------
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-    };
-    // --- Kết thúc Logic Lọc ---
-
-
-
-    // const handleApprove = async (shopId: number) => {
-    //     const result = await Swal.fire({
-    //         title: 'Xác nhận duyệt shop?',
-    //         text: `Bạn có chắc chắn muốn duyệt shop ID: ${shopId}?`,
-    //         icon: 'question',
-    //         showCancelButton: true,
-    //         confirmButtonColor: '#28a745',
-    //         cancelButtonColor: '#d33',
-    //         confirmButtonText: 'Duyệt',
-    //         cancelButtonText: 'Hủy',
-    //     });
-
-    //     if (result.isConfirmed) {
-    //         try {
-    //             const res = await updateShopStatusAdmin(shopId, 1);
-
-    //             Swal.fire({
-    //                 title: 'Thành công!',
-    //                 text: res.message || `Shop ID ${shopId} đã được duyệt.`,
-    //                 icon: 'success',
-    //                 timer: 2000,
-    //                 showConfirmButton: false,
-    //             });
-
-    //             setShops(prevShops => prevShops.filter(shop => shop.id !== shopId));
-    //         } catch (error: any) {
-    //             Swal.fire('Lỗi!', error.message || 'Có lỗi xảy ra khi duyệt shop.', 'error');
-    //         }
-    //     }
-    // };
-    // const handleBan = async (shopId: number) => {
-    //     const { value: reason } = await Swal.fire({
-    //         title: 'Nhập lý do từ chối',
-    //         input: 'text',
-    //         inputPlaceholder: 'Ví dụ: Hình ảnh không hợp lệ',
-    //         showCancelButton: true,
-    //         confirmButtonText: 'Từ chối',
-    //         cancelButtonText: 'Hủy',
-    //     });
-
-    //     if (reason) {
-    //         try {
-    //             const res = await updateShopStatusAdmin(shopId, -1, reason);
-    //             Swal.fire('Đã từ chối!', res.message || 'Shop đã bị từ chối.', 'success');
-    //             loadShops();
-    //         } catch (error: any) {
-    //             Swal.fire('Lỗi!', error.message || 'Không thể từ chối shop.', 'error');
-    //         }
-    //     }
-    // };
-
-    // const handleUnban = async (shopId: number) => {
-    //     const result = await Swal.fire({
-    //         title: 'Xác nhận mở cấm shop?',
-    //         text: `Bạn có chắc muốn mở cấm shop ID: ${shopId}?`,
-    //         icon: 'warning',
-    //         showCancelButton: true,
-    //         confirmButtonColor: '#3085d6',
-    //         cancelButtonColor: '#d33',
-    //         confirmButtonText: 'Mở cấm',
-    //         cancelButtonText: 'Hủy',
-    //     });
-
-    //     if (result.isConfirmed) {
-    //         try {
-
-    //             const res = await updateShopStatusAdmin(shopId, 1);
-
-    //             Swal.fire({
-    //                 title: 'Thành công!',
-    //                 text: res.message || `Shop ID ${shopId} đã được mở cấm.`,
-    //                 icon: 'success',
-    //                 timer: 2000,
-    //                 showConfirmButton: false,
-    //             });
-
-
-    //             loadShops();
-
-    //         } catch (error: any) {
-    //             Swal.fire('Lỗi!', error.message || 'Không thể mở cấm shop.', 'error');
-    //         }
-    //     }
-    // };
-
+    }
     const handleUpdateStatus = async (
         shopId: number,
         status: number,
