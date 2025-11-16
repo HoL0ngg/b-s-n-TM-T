@@ -1,4 +1,3 @@
-// src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthRedirectRoute from "./components/AuthRedirectRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -15,7 +14,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgetPassword from "./pages/forgetPassword";
 import Category from "./pages/Category";
-import Shop from "./pages/Shop"; // Trang xem shop (của khách)
+import Shop from "./pages/Shop"; 
 import ProductDetail from "./pages/ProductDetail";
 import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
@@ -24,37 +23,38 @@ import Purchase from "./pages/User/Purchase";
 import Cart from "./pages/Checkout/Cart";
 import { AddressPage } from "./pages/Checkout/AddressPage";
 
-// --- Các trang cho ShopLayout ---
+// --- Các trang cho ShopLayout (ĐÃ GỘP TỪ CẢ 2 NHÁNH) ---
 import Dashboard from "./pages/Shop/Dashboard";
 import Orders from "./pages/Shop/Orders";
 import RegisterShop from './pages/RegisterShop';
-import OrderDetail from "./pages/Shop/OrderDetail";
-
+import OrderDetail from "./pages/Shop/OrderDetail"; // (Từ 'main')
 import View from "./pages/Shop/View";
 import ProfileShop from "./pages/Shop/Profile";
 import ShopProducts from "./pages/Shop/Products";
-import Promotion from "./pages/Shop/Promotion";
-// --Các trang cho AdminLayout --
+import ShopCategoriesManager from "./pages/Shop/ShopCategories"; // (Từ 'qhuykuteo')
+import AddProduct from "./pages/Shop/AddProduct"; // (Từ 'qhuykuteo')
+import EditProduct from "./pages/Shop/EditProduct"; // (Từ 'qhuykuteo')
+import Promotion from "./pages/Shop/Promotion"; // (Từ 'main')
+
+// --Các trang cho AdminLayout (Từ 'main')--
 import AdminProtectedRoute from "./components/Admin/AdminProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminShopManagement from "./pages/Admin/AdminShopManagement";
+// (Sửa tên file import theo file 'main')
 import AdminUserSellersManagement from "./pages/Admin/AdminUserSellersManagement";
 import AdminUserBuyersManagement from "./pages/Admin/AdminUserBuyersManagement";
 import AdminProductApproval from "./pages/Admin/AdminProductApproval";
 import AdminPayouts from "./pages/Admin/AdminPayouts";
 import AdminShopDetail from "./pages/Admin/AdminShopDetail";
+
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-
       <Routes>
-
         {/* === 1. CÁC TRANG CÔNG KHAI (DÙNG MAIN LAYOUT) === */}
-        {/* Tất cả các route bên trong này sẽ có Navbar/Footer chung */}
         <Route element={<MainLayout />}>
-
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
@@ -62,11 +62,7 @@ function App() {
           <Route path="/category/:id" element={<Category />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />
-
-          {/* Trang xem shop CÔNG KHAI (của khách) */}
           <Route path="/shop/:id" element={<Shop />} />
-
-          {/* Path của user (dùng UserLayout lồng bên trong MainLayout) */}
           <Route path="/user" element={<UserLayout />}>
             <Route path="account">
               <Route index element={<Navigate to="profile" replace />} />
@@ -76,37 +72,35 @@ function App() {
             </Route>
             <Route path="purchase" element={<Purchase />} />
           </Route>
-
-          {/* Path của checkout (dùng CheckoutLayout lồng bên trong MainLayout) */}
           <Route element={<CheckoutLayout />}>
             <Route path="/cart" element={<Cart />}></Route>
             <Route path="/checkout/address" element={<AddressPage />} />
-            {/* <Route path="/checkout/payment" element={<PaymentPage />} /> */}
           </Route>
-
         </Route>
 
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
-        {/* Đã đổi path thành "/seller" để tránh xung đột với "/shop/:id" */}
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
-          {/* 2. THÊM ROUTE MỚI Ở ĐÂY */}
-          {/* Route cho Danh sách (List) */}
-          <Route path="orders" element={<Orders />} />
-          {/* Route cho Chi tiết (Detail) */}
+          
+          {/* (Route 'Orders' của 'main') */}
+          <Route path="orders" element={<Orders />} /> 
           <Route path="orders/:id" element={<OrderDetail />} />
-          <Route path="orders" element={<Orders />} />
-          {/* <Route path="products" element={<ShopProducts />} /> */}
+
+          {/* (Route 'Settings' của 'main') */}
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
+          
+          {/* (Các Route 'Products' của bạn 'qhuykuteo') */}
           <Route path="products" element={<ShopProducts />} />
+          <Route path="categories" element={<ShopCategoriesManager />} />
+          <Route path="products/new" element={<AddProduct />} />
+          <Route path="products/edit/:id" element={<EditProduct />} />
+
+          {/* (Route 'Promotion' của 'main') */}
           <Route path="promotion" element={<Promotion />} />
         </Route>
 
-        {/* Thêm route 404 (Not Found) nếu cần */}
-        {/* <Route path="*" element={<NotFoundPage />} /> */}
-
-
+        {/* === 3. TRANG ADMIN (TỪ NHÁNH 'main') === */}
         <Route
           path="/admin"
           element={
@@ -123,6 +117,8 @@ function App() {
           <Route path="payouts" element={<AdminPayouts />} />
           <Route path="shops/:id" element={<AdminShopDetail />} />
         </Route>
+        
+        {/* <Route path="*" element={<NotFoundPage />} /> */}
       </Routes>
     </BrowserRouter>
   );

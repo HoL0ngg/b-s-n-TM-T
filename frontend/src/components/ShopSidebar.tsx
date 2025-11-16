@@ -1,6 +1,6 @@
-// src/components/ShopSidebar.tsx
 import { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -9,6 +9,7 @@ interface ShopSidebarProps {
 }
 
 const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
+  // 2. Giữ lại logic 'location' của 'main'
   const location = useLocation();
 
   const searchParams = useMemo(() => {
@@ -27,7 +28,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           </NavLink>
         </li>
 
-        {/* --- Quản lý Đơn hàng --- */}
+        {/* --- Quản lý Đơn hàng (Lấy code xịn của 'main') --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
             Quản lý Đơn hàng
@@ -100,27 +101,26 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           </NavLink>
         </li>
 
-        {/* --- Nhóm Quản lý Sản phẩm --- */}
+        {/* --- Nhóm Quản lý Sản phẩm (Lấy code của bạn 'qhuykuteo') --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
-            Quản lý Sản phẩm aaa
+            Quản lý Sản phẩm
           </span>
         </li>
         <li className="nav-item">
-          {/* 3. Link "Tất cả" này CŨNG PHẢI CÓ 'end' */}
           <NavLink to="/seller/products" end className="nav-link text-dark">
             <i className="bi bi-box-seam me-3 fs-5"></i>
-            <span className="sidebar-link-text">Tất cả Sản phẩm</span>
+            <span className="sidebar-link-text">Tất cả sản phẩm</span>
           </NavLink>
         </li>
         <li className="nav-item">
-          <NavLink to="/seller/products" className="nav-link text-dark">
+          {/* Đây là code "xịn" của bạn (qhuykuteo) */}
+          <NavLink to="/seller/categories" className="nav-link text-dark">
             <i className="bi bi-plus-square me-3 fs-5"></i>
             <span className="sidebar-link-text">Loại sản phẩm</span>
           </NavLink>
         </li>
-
-        {/* --- (Các nhóm khác giữ nguyên) --- */}
+        {/* ====================================================== */}
 
         {/* --- Nhóm Tài chính --- */}
         <li className="nav-item mt-2">
@@ -140,6 +140,8 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
             <span className="sidebar-link-text">Tài khoản Ngân hàng</span>
           </NavLink>
         </li>
+        
+        {/* --- Mục mới của 'main' --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text pointer">
             <NavLink

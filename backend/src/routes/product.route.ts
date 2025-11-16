@@ -1,36 +1,61 @@
 import { Router } from "express";
 import productController from "../controllers/product.controller";
-import { checkOptionalAuth, verifyToken } from "../middleware/auth.middleware";
+
+// GIỮ TẤT CẢ IMPORT TỪ CẢ HAI NHÁNH
+import { verifyToken, checkOptionalAuth } from "../middleware/auth.middleware";
+import { checkShopOwner } from "../middleware/checkShopOwner";
 import { uploadPromoBanner } from "../config/multer";
 
 const ProductRouter = Router();
 
-ProductRouter.get("/category/:id", productController.getProductsController);
-ProductRouter.get("/images/:id", productController.getProductImgOnIdController);
-ProductRouter.get("/shops/:id", productController.getProductOnShopIdController);
-ProductRouter.get("/reviews/:id", productController.getReviewByProductIdController);
-ProductRouter.get("/reviews/:id/summary", productController.getReviewSummaryByProductIdController);
-ProductRouter.get("/productdetails/:id", productController.getProductDetailsByProductIdController);
-ProductRouter.get("/attributeofproductvariants/:id", productController.getAttributeOfProductVariantsController);
+// ===========================================
+// 1. TUYẾN ĐƯỜNG BẢO MẬT (TỪ NHÁNH CỦA BẠN - qhuykuteo)
+// ===========================================
+ProductRouter.post("/", verifyToken, checkShopOwner, productController.createProductController);
+ProductRouter.put("/:id", verifyToken, checkShopOwner, productController.updateProductController);
+ProductRouter.delete("/:id", verifyToken, checkShopOwner, productController.deleteProductController);
 
-ProductRouter.post("/", productController.createProductController);
-ProductRouter.put("/:id", productController.updateProductController);
-ProductRouter.delete("/:id", productController.deleteProductController);
+// (Cải tiến "Bật/Tắt" của bạn)
+ProductRouter.patch(
+    "/:id/status",
+    verifyToken,
+    checkShopOwner,
+    productController.updateProductStatusController
+);
 
-// GET by ID phải để cuối cùng để tránh conflict
-// ProductRouter.get("/:id", productController.getProductOnIdController);
+// (API "Sửa sản phẩm" của bạn)
+ProductRouter.get("/edit-details/:id", verifyToken, checkShopOwner, productController.getCompleteProductForEditController);
 
-ProductRouter.get("/product/search", productController.getProductsByKeyWordController)
-ProductRouter.get("/product/:id", checkOptionalAuth, productController.getProductOnIdController);
+
+// ===========================================
+// 2. TUYẾN ĐƯỜNG CÔNG KHAI (TRỘN TỪ CẢ HAI)
+// ===========================================
+
+// --- Các route chung & của bạn (qhuykuteo) ---
+ProductRouter.get("/product/search", productController.getProductsByKeyWordController);
 ProductRouter.get("/recommend/for-you", checkOptionalAuth, productController.getRecommendedProduct);
 ProductRouter.get("/recommend/new", productController.getNewProducts);
 ProductRouter.get("/recommend/hot", productController.getHotProducts);
+ProductRouter.get("/attributes/all", productController.getAllAttributesController);
+ProductRouter.get("/category/:id", productController.getProductsController);
+ProductRouter.get("/shop/:id", productController.getProductOnShopIdController);
+ProductRouter.get("/:id/images", productController.getProductImgOnIdController);
+ProductRouter.get("/:id/reviews", productController.getReviewByProductIdController);
+ProductRouter.get("/:id/review-summary", productController.getReviewSummaryByProductIdController);
+ProductRouter.get("/:id/details", productController.getProductDetailsByProductIdController);
+ProductRouter.get("/:id/attributes", productController.getAttributeOfProductVariantsController);
 
+// --- Các route MỚI của đồng đội (main) ---
 ProductRouter.get('/promotions', verifyToken, productController.getShopPromotions);
 ProductRouter.get('/promotions/:id/items', verifyToken, productController.getPromotionDetails);
 ProductRouter.patch('/promotions/:id/items/:variantid', verifyToken, productController.updatePromotionItem);
 ProductRouter.patch('/promotions/:id/items', verifyToken, productController.savePromotionItems);
 ProductRouter.delete('/promotions/:promoId/items/:variantId', productController.deletePromotionItem);
-ProductRouter.post('/promotions/add', verifyToken, uploadPromoBanner, productController.CreatePromotion);
+// (Route này nằm ngoài conflict block, nhưng là của 'main', rất quan trọng)
+ProductRouter.post('/promotions/add', verifyToken, uploadPromoBanner, productController.CreatePromotion); 
+
+// --- Route gốc (GET by ID) ---
+// (Luôn để cuối cùng)
+ProductRouter.get("/:id", checkOptionalAuth, productController.getProductOnIdController);
 
 export default ProductRouter;
