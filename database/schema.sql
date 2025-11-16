@@ -789,44 +789,44 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- Cấu trúc cho view `v_products_list`
 --
 
-CREATE VIEW v_products_list AS
+DROP VIEW IF EXISTS `v_products_list`;
+CREATE VIEW `v_products_list` AS
 SELECT 
-    -- 1. Thông tin cơ bản từ bảng 'products'
     p.id, 
     p.name, 
     p.description, 
     p.shop_id, 
-    p.generic_id, -- (ID danh mục con)
+    p.generic_id, 
     p.created_at,
     p.updated_at,
-    p.sold_count,
+    IFNULL(p.sold_count, 0) AS sold_count,
     
-    -- 2. Tên danh mục (từ bảng 'generic')
+    -- ===== 1. CỘT CỦA BẠN (ĐÃ GIỮ LẠI) =====
+    p.shop_cate_id, 
+    
+    -- ===== 2. CỘT CỦA ĐỒNG ĐỘI (ĐÃ GIỮ LẠI) =====
     g.name AS category_name,
-    
-    -- 3. Giá gốc (từ 'products.base_price', mà bạn đã đồng bộ)
     p.base_price,
     p.brand_id,
     p.status,
     s.name AS shop_name,
-    -- 4. Ảnh chính (isMain = 1)
+    
+    -- (Ảnh chính - đã sửa lỗi 'isMain' -> 'is_main')
     (SELECT pi.image_url 
      FROM productimages pi 
      WHERE pi.product_id = p.id AND pi.is_main = 1 
      LIMIT 1) AS image_url,
      
-    -- 5. Đánh giá trung bình (tính từ 'productreviews')
     (SELECT IFNULL(AVG(pr.rating), 0) 
      FROM productreviews pr 
      WHERE pr.product_id = p.id) AS avg_rating,
-     
-    -- 6. Điểm "Hot" (tính theo công thức của bạn)
+    
     (
-        p.sold_count * 0.6 + 
+        IFNULL(p.sold_count, 0) * 0.6 + 
         (SELECT IFNULL(AVG(pr.rating), 0) FROM productreviews pr WHERE pr.product_id = p.id) * 0.4
     ) AS hot_score,
 
-    -- 7. Giá Sale (tính giá thấp nhất CÓ KHUYẾN MÃI)
+    -- (Code "Khuyến mãi" của đồng đội - giữ nguyên)
     (
         SELECT ROUND(MIN(pv.price * (1 - (pi.discount_value / 100))))
         FROM productvariants pv
@@ -838,7 +838,6 @@ SELECT
             AND NOW() BETWEEN promo.start_date AND promo.end_date
     ) AS sale_price,
     
-    -- 8. % Giảm giá (lấy % cao nhất đang được áp dụng)
     (
         SELECT MAX(pi.discount_value) 
         FROM productvariants pv
@@ -852,8 +851,8 @@ SELECT
     
 FROM 
     products p
--- JOIN bảng danh mục
-JOIN 
+-- ===== 3. SỬA LỖI: DÙNG LEFT JOIN =====
+LEFT JOIN 
     generic g ON g.id = p.generic_id
 JOIN 
     shops s ON s.id = p.shop_id;

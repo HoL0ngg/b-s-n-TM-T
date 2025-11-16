@@ -96,7 +96,17 @@ class productService {
         return rows;
     };
     getReviewByProductIdService = async (id: number, type: number): Promise<ProductReview[]> => {
-        let sql = "SELECT id, rating, comment, created_at, phone_number, avatar_url, email FROM productreviews JOIN users on phone_number = user_id where product_id = ?";
+        let sql = `SELECT 
+             pr.id, 
+             pr.rating, 
+             pr.comment, 
+             pr.created_at, 
+             u.phone_number, 
+             u.avatar_url, 
+             u.email 
+           FROM productreviews pr 
+           JOIN users u ON pr.user_id = u.phone_number 
+           WHERE pr.product_id = ?`;
         const params = [id];
         if (type) {
             sql += " AND rating = ?";
@@ -123,12 +133,12 @@ class productService {
         return summary;
     }
     getProductDetailsByProductId = async (id: number) => {
-        const [row] = await pool.query("SELECT id, product_id, attribute_key, attribute_value FROM product_details WHERE product_id = ?", [id]);
+        const [row] = await pool.query("SELECT id, product_id, attribute, value FROM product_detail WHERE product_id = ?", [id]);
         return (row as RowDataPacket[]).map(r => ({
             id: r.id,
             product_id: r.product_id,
-            attribute: r.attribute_key,
-            value: r.attribute_value
+            attribute: r.attribute,
+            value: r.value
         })) as ProductDetails[];
     }
     getAttributeOfProductVariantsByProductIdService = async (id: number) => {
@@ -170,7 +180,7 @@ class productService {
             }
             if (details && Array.isArray(details) && details.length > 0) {
                 const detailValues = details.map((d: any) => [productId, d.key, d.value]);
-                await connection.query(`INSERT INTO product_details (product_id, attribute_key, attribute_value) VALUES ?`, [detailValues]);
+                await connection.query(`INSERT INTO product_detail (product_id, attribute, value) VALUES ?`, [detailValues]);
             }
             await connection.commit();
             const [product] = await pool.query(`SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`, [productId]) as [Product[], any];
@@ -210,10 +220,10 @@ class productService {
             } else {
                 await connection.query<ResultSetHeader>(`INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`, [productId, base_price, productData.stock || 0]);
             }
-            await connection.query('DELETE FROM product_details WHERE product_id = ?', [productId]);
+            await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
             if (details && Array.isArray(details) && details.length > 0) {
                 const detailValues = details.map((d: any) => [productId, d.key, d.value]);
-                await connection.query(`INSERT INTO product_details (product_id, attribute_key, attribute_value) VALUES ?`, [detailValues]);
+                await connection.query(`INSERT INTO product_detail (product_id, attribute, value) VALUES ?`, [detailValues]);
             }
             await connection.commit();
             const [product] = await pool.query(`SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`, [productId]) as [Product[], any];
@@ -234,7 +244,7 @@ class productService {
             await connection.query('DELETE FROM productreviews WHERE product_id = ?', [productId]);
             await connection.query('DELETE FROM variantoptionvalues WHERE variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)', [productId]);
             await connection.query('DELETE FROM productvariants WHERE product_id = ?', [productId]);
-            await connection.query('DELETE FROM product_details WHERE product_id = ?', [productId]);
+            await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
             await connection.query('DELETE FROM products WHERE id = ?', [productId]);
             await connection.commit();
             return { success: true, message: 'Product deleted successfully' };
@@ -307,8 +317,8 @@ class productService {
         const [imageRows] = await pool.query<RowDataPacket[]>(`SELECT image_url FROM productimages WHERE product_id = ? AND is_main = 1`, [productId]);
         product.image_url = imageRows.length > 0 ? imageRows[0].image_url : null;
         const [variantRows] = await pool.query<RowDataPacket[]>(`SELECT pv.id as variant_id, pv.price, pv.stock, pv.sku, pv.image_url, vov.attribute_id, vov.value FROM productvariants pv LEFT JOIN variantoptionvalues vov ON pv.id = vov.variant_id WHERE pv.product_id = ?`, [productId]);
-        const [detailRows] = await pool.query<RowDataPacket[]>(`SELECT attribute_key, attribute_value FROM product_details WHERE product_id = ?`, [productId]);
-        product.details = detailRows.map(d => ({ key: d.attribute_key, value: d.attribute_value }));
+        const [detailRows] = await pool.query<RowDataPacket[]>(`SELECT attribute, value FROM product_detail WHERE product_id = ?`, [productId]);
+        product.details = detailRows.map(d => ({ key: d.attribute, value: d.value }));
         if (variantRows.length === 0) {
             product.variations = [];
             product.attribute_id = null;

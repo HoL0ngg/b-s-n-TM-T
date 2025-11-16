@@ -156,7 +156,7 @@ export default function AddProduct() {
         }
 
         try {
-            await createProduct(shopId, productData); 
+            await createProduct(productData); 
             setLoading(false);
             navigate('/seller/products');
         } catch (err: any) {

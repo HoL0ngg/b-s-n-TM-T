@@ -12,6 +12,7 @@ export const getAuthHeaders = () => {
 
     return {
         headers: {
+            'Content-Type': 'application/json',
             'Authorization': token || ''
         }
     };
