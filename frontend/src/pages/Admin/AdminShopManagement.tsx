@@ -12,7 +12,6 @@ import type { ShopAdminType } from '../../types/ShopType';
 import { fetchShopsByStatusAdmin, updateShopStatusAdmin } from '../../api/admin/shopsAdmin';
 import Swal from 'sweetalert2';
 import Pagenum from '../../components/Admin/Pagenum';
-import ScrollToTop from '../../components/ScrollToTop';
 
 const AdminShopManagement: React.FC = () => {
 
@@ -43,7 +42,6 @@ const AdminShopManagement: React.FC = () => {
     // ----------------------------------------------------
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        <ScrollToTop />;
     }
     const handleUpdateStatus = async (
         shopId: number,

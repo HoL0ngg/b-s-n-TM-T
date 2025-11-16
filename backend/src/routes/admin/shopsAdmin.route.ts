@@ -6,6 +6,6 @@ const ShopsAdminRoute = Router();
 
 ShopsAdminRoute.get("/shops", verifyToken, shopsAdminController.getShopsByStatusController);
 
-ShopsAdminRoute.put("/:id", verifyToken, shopsAdminController.updateShopStatusController);
+ShopsAdminRoute.patch("/:id", verifyToken, shopsAdminController.updateShopStatusController);
 
 export default ShopsAdminRoute;

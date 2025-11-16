@@ -12,8 +12,6 @@ import { fetchProductsByStatusAdmin, updateProductStatusAdmin } from '../../api/
 import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
 import Swal from 'sweetalert2';
 import Pagenum from '../../components/Admin/Pagenum';
-import ScrollToTop from '../../components/ScrollToTop';
-
 const AdminProductApproval: React.FC = () => {
     // --- State ---
     const [products, setProducts] = useState<ProductTypeAdmin[]>([]);
@@ -51,7 +49,6 @@ const AdminProductApproval: React.FC = () => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
-        <ScrollToTop />
     };
     // --- Kết thúc Logic Lọc ---
     ;
