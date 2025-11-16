@@ -22,3 +22,12 @@ export interface UserProfile {
     avatar_url: string;
     updated_at: string;
 }
+
+export interface UserAdmin {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    status: number;
+    created_at: string;
+}

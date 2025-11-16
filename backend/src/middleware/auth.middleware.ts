@@ -87,20 +87,22 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
         const phone = userPayload.id; // Đây là 'phone_number' (user_id)
 
         // 2. [SỬA] Gắn đối tượng AuthUser (sạch) vào req.user
-        const user: AuthUser = {
-            userId: phone, // <-- Cung cấp 'userId' (string) mà Controller cần
-            phone: phone
-        };
-        (req as any).user = user; 
+        // const user: AuthUser = {
+        //     userId: phone, // <-- Cung cấp 'userId' (string) mà Controller cần
+        //     phone: phone
+        // };
+        // (req as any).user = user;
 
-        // 3. [LOẠI BỎ] Đã bỏ truy vấn đến user_profile để tăng tốc middleware
+        const [profileRows] = await pool.query(
+            `SELECT username, gender, DATE_FORMAT(dob, '%Y-%m-%d') AS dob, updated_at FROM user_profile WHERE phone_number = ?`,
+            [phone]
+        );
 
-        // next();
-        // if (Array.isArray(profileRows) && profileRows.length > 0) {
-        //     (req as any).userProfile = profileRows[0];
-        // } else {
-        //     (req as any).userProfile = null;
-        // }
+        if (Array.isArray(profileRows) && profileRows.length > 0) {
+            (req as any).userProfile = profileRows[0];
+        } else {
+            (req as any).userProfile = null;
+        }
 
         const [shopRows] = await pool.query<RowDataPacket[]>(
             `SELECT id FROM shops WHERE owner_id = ?`,
@@ -135,7 +137,7 @@ export async function checkOptionalAuth(req: Request, res: Response, next: NextF
     }
 
     try {
-        const userPayload = jwt.verify(token, SECRET_KEY) as { id: string; [key: string]: any };
+        const userPayload = jwt.verify(token, SECRET_KEY) as { id: string;[key: string]: any };
         const phone = userPayload.id;
 
         const user: Partial<AuthUser> = {

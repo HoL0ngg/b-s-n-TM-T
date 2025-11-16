@@ -1,5 +1,10 @@
+// Đường dẫn: backend/src/controllers/product.controller.ts
+// (PHIÊN BẢN ĐÃ SỬA XUNG ĐỘT - ĐÃ TRỘN)
+
 import { Request, Response } from "express"
 import productService from "../services/product.service";
+// SỬA: Thêm import 'CreatePromotionData' từ nhánh 'main'
+import { CreatePromotionData } from "../models/product.model";
 
 class productController {
     // ... (Tất cả các hàm GET (getProductOnIdController, ...) giữ nguyên) ...
@@ -226,52 +231,73 @@ class productController {
             console.log(err);
         }
     }
+    
+    // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
             const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
             const categoryId = Number(req.params.id); 
-            let whereClause = "WHERE 1=1";
+            
+            // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
+            let whereClause = "WHERE v_products_list.status = 1"; // (Từ 'main')
             const params: any[] = [];
+            
             if (subCategoryId && Number(subCategoryId) !== 0) {
-                whereClause += " AND products.generic_id = ?";
+                whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
                 params.push(Number(subCategoryId));
             }
             else if (categoryId) {
-                whereClause += " AND products.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                // Sửa lỗi: Phải là v_products_list.generic_id
+                whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
                 params.push(categoryId);
             }
             if (minPrice) {
-                whereClause += " AND products.base_price >= ?";
+                whereClause += " AND v_products_list.base_price >= ?";
                 params.push(minPrice);
             }
             if (maxPrice) {
-                whereClause += " AND products.base_price <= ?";
+                whereClause += " AND v_products_list.base_price <= ?";
                 params.push(maxPrice);
             }
             if (brand && typeof brand === "string" && brand.length > 0) {
                 const brandIds = brand.split(",").map(Number).filter(Boolean);
                 if (brandIds.length > 0) {
                     const placeholders = brandIds.map(() => "?").join(",");
-                    whereClause += ` AND products.brand_id IN (${placeholders})`;
+                    whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
                     params.push(...brandIds);
                 }
             }
+            
+            // (Không sort bằng SQL, để logic của 'main' sort bằng JS)
             let orderBy = "";
-            switch (sort) {
-                case "priceAsc": orderBy = "ORDER BY products.base_price ASC"; break;
-                case "priceDesc": orderBy = "ORDER BY products.base_price DESC"; break;
-                default: orderBy = ""; break;
-            }
+            
             const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy);
+            
             let brandsPromise;
             if (subCategoryId && Number(subCategoryId) !== 0) {
                 brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
             } else if (categoryId) {
                 brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
             }
+            
             const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
+
+            // Lấy logic `sort` (sắp xếp) của 'main' (đồng đội)
+            let sortedProducts = [...productResult.products];
+            switch (sort) {
+                case "priceAsc": 
+                    sortedProducts.sort((a, b) => a.base_price - b.base_price);
+                    break;
+                case "priceDesc": 
+                    sortedProducts.sort((a, b) => b.base_price - a.base_price);
+                    break;
+                default:
+                    // Mặc định
+                    break;
+            }
+            
             res.status(200).json({
-                products: productResult.products,
+                products: sortedProducts, // Trả về mảng đã sort
                 totalPages: productResult.totalPages,
                 brands: brandsResult,
             });
@@ -283,6 +309,8 @@ class productController {
             });
         }
     };
+    // ===== KẾT THÚC TRỘN (MERGE) HÀM NÀY =====
+
     getAllAttributesController = async (req: Request, res: Response) => {
         try {
             const attributes = await productService.getAllAttributesService();
@@ -341,7 +369,7 @@ class productController {
     // =================================================================
     getShopPromotions = async (req: Request, res: Response) => {
         try {
-            // Sửa: Lấy shop_id từ (req as any).shop.id
+            // Sửa: Lấy shop_id từ (req as any).shop.id (vì bạn đã có checkShopOwner)
             const shopId = (req as any).shop?.id;
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
@@ -407,8 +435,7 @@ class productController {
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
             }
-            // (Bạn nên thêm hàm verifyShopOwnership... cho promotion item trong service)
-            // Tạm thời cho phép xóa
+            // (Cần logic kiểm tra quyền ở service, tạm thời cho phép xóa)
             
             await productService.deleteItem(promoId, variantId);
             res.status(200).json({ message: "Đã xóa sản phẩm khỏi sự kiện" });
@@ -422,7 +449,7 @@ class productController {
         try {
             const shopId = (req as any).shop?.id;
             const promotionId = Number(req.params.id);
-            const items = req.body; // Mảng UpdatePromoItemDto[]
+            const items = req.body; 
 
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
@@ -441,6 +468,50 @@ class productController {
                 return res.status(403).json({ message: "Bạn không có quyền sửa khuyến mãi này" });
             }
             res.status(500).json({ message: "Lỗi server khi lưu khuyến mãi" });
+        }
+    }
+    
+    // (Hàm CreatePromotion mới của đồng đội)
+    CreatePromotion = async (req: Request, res: Response) => {
+        try {
+            // Sửa: Lấy shop_id từ (req as any).shop.id
+            const shopId = (req as any).shop?.id;
+            if (!shopId) {
+                return res.status(403).json({ message: "Chưa đăng nhập hoặc không phải chủ shop" });
+            }
+            console.log(req.body);
+
+            const { name, start_date, end_date } = req.body;
+            const file = req.file;
+            if (!file) {
+                return res.status(400).json({ message: "Vui lòng tải lên ảnh banner." });
+            }
+
+            if (!name || !start_date || !end_date) {
+                return res.status(400).json({ message: "Vui lòng nhập đầy đủ tên và ngày diễn ra sự kiện." });
+            }
+
+            if (new Date(start_date) >= new Date(end_date)) {
+                throw new Error("Ngày kết thúc phải sau ngày bắt đầu.");
+            }
+
+            const bannerUrl = `/uploads/promotions/${file.filename}`;
+
+            const promotionData: CreatePromotionData = {
+                name,
+                start_date,
+                end_date,
+                banner_url: bannerUrl,
+                shop_id: shopId
+            };
+
+            const newPromotion = await productService.createPromotion(promotionData);
+
+            res.status(201).json(newPromotion); 
+
+        } catch (error: any) {
+            console.error("Lỗi Controller (createPromotion):", error);
+            res.status(500).json({ message: error.message || "Lỗi máy chủ khi tạo sự kiện" });
         }
     }
 }

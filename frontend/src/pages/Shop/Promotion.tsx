@@ -1,30 +1,30 @@
 // src/pages/Shop/PromotionManagementPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ProductVariantType, PromotionItem, PromotionType } from '../../types/ProductType';
 import { apiDeletePromotionItem, apiGetPromotionDetails, apiGetShopPromotions, apiSavePromotionDetails } from '../../api/products';
 import DateRangeDisplay from '../../components/DateRangeDisplay';
-import ProductPickerModal from '../../components/ProductPickerModel';
+import CreatePromotionModal from '../../components/CreatePromotionModal';
+import ProductPickerModal from '../../components/ProductPickerModal';
 
 export default function Promotion() {
-
-    // --- STATE ---
-    // Cột 1: Danh sách tất cả sự kiện
     const [promotions, setPromotions] = useState<PromotionType[]>([]);
 
-    // Cột 2: Sự kiện đang được chọn để sửa
     const [selectedPromo, setSelectedPromo] = useState<PromotionType | null>(null);
 
-    // Cột 2: Danh sách sản phẩm thuộc sự kiện đang chọn
     const [promoItems, setPromoItems] = useState<PromotionItem[]>([]);
 
     const [isLoading, setIsLoading] = useState(false);
     const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
 
-    // --- EFFECTS ---
-    // Tải danh sách sự kiện (cột 1) khi vào trang
-    useEffect(() => {
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const fetchPromotions = useCallback(() => {
         apiGetShopPromotions().then(setPromotions);
     }, []);
+
+    useEffect(() => {
+        fetchPromotions();
+    }, [fetchPromotions]);
 
     // Tải chi tiết (sản phẩm) khi chọn 1 sự kiện
     useEffect(() => {
@@ -65,6 +65,11 @@ export default function Promotion() {
         } catch (error) {
             alert("Lỗi! Không thể lưu.");
         }
+    };
+
+    const handleCreateSuccess = () => {
+        setIsCreateModalOpen(false); // Đóng modal
+        fetchPromotions(); // Tải lại danh sách (để thấy event mới)
     };
 
     const handleDeleteItem = async (variantId: number) => {
@@ -112,7 +117,7 @@ export default function Promotion() {
                 <div className="col-md-4">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                         <h4>Sự kiện giảm giá</h4>
-                        <button className="btn btn-primary btn-sm">Tạo mới</button>
+                        <button className="btn btn-primary btn-sm" onClick={() => setIsCreateModalOpen(true)}>Tạo mới</button>
                     </div>
                     <div className="list-group">
                         {promotions ? promotions.map(promo => (
@@ -200,6 +205,11 @@ export default function Promotion() {
                     )}
                 </div>
             </div>
+            <CreatePromotionModal
+                show={isCreateModalOpen}
+                onHide={() => setIsCreateModalOpen(false)}
+                onSaveSuccess={handleCreateSuccess}
+            />
         </div>
     );
 }

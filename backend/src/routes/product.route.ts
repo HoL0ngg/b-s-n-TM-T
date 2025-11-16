@@ -4,6 +4,7 @@ import productController from "../controllers/product.controller";
 // GIỮ TẤT CẢ IMPORT TỪ CẢ HAI NHÁNH
 import { verifyToken, checkOptionalAuth } from "../middleware/auth.middleware";
 import { checkShopOwner } from "../middleware/checkShopOwner";
+import { uploadPromoBanner } from "../config/multer";
 
 const ProductRouter = Router();
 
@@ -50,6 +51,8 @@ ProductRouter.get('/promotions/:id/items', verifyToken, productController.getPro
 ProductRouter.patch('/promotions/:id/items/:variantid', verifyToken, productController.updatePromotionItem);
 ProductRouter.patch('/promotions/:id/items', verifyToken, productController.savePromotionItems);
 ProductRouter.delete('/promotions/:promoId/items/:variantId', productController.deletePromotionItem);
+// (Route này nằm ngoài conflict block, nhưng là của 'main', rất quan trọng)
+ProductRouter.post('/promotions/add', verifyToken, uploadPromoBanner, productController.CreatePromotion); 
 
 // --- Route gốc (GET by ID) ---
 // (Luôn để cuối cùng)

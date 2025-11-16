@@ -5,7 +5,8 @@ import {
     FiShoppingBag,
     FiUsers,
     FiBox,
-    FiDollarSign
+    FiDollarSign,
+    FiChevronDown // Thêm icon mũi tên
 } from 'react-icons/fi';
 
 // Định nghĩa props
@@ -13,13 +14,56 @@ interface AdminSidebarProps {
     isCollapsed: boolean;
 }
 
-// Định nghĩa menu (có thể chuyển ra file riêng nếu muốn)
-const menuItems = [
-    { key: '/admin', label: 'Dashboard', icon: <FiHome /> },
-    { key: '/admin/shops', label: 'Quản lý Shop', icon: <FiShoppingBag /> },
-    { key: '/admin/users', label: 'Quản lý User', icon: <FiUsers /> },
-    { key: '/admin/products', label: 'Kiểm duyệt Sản phẩm', icon: <FiBox /> },
-    { key: '/admin/payouts', label: 'Đối soát', icon: <FiDollarSign /> },
+// Định nghĩa kiểu cho menu
+interface MenuItem {
+    key: string;
+    label: string;
+    icon: React.ReactNode;
+    path?: string; // Dành cho các link đơn
+    pathPrefix?: string; // Dành cho các mục cha
+    children?: {
+        key: string;
+        label: string;
+        path: string;
+    }[];
+}
+
+// Cập nhật cấu trúc menu
+const menuItems: MenuItem[] = [
+    {
+        key: 'dashboard',
+        label: 'Dashboard',
+        icon: <FiHome />,
+        path: '/admin'
+    },
+    {
+        key: 'shops',
+        label: 'Quản lý Shop',
+        icon: <FiShoppingBag />,
+        path: '/admin/shops'
+    },
+    {
+        key: 'users',
+        label: 'Quản lý người dùng',
+        icon: <FiUsers />,
+        pathPrefix: '/admin/users', // Dùng để xác định active state
+        children: [
+            { key: 'sellers', label: 'Sellers', path: '/admin/users/sellers' },
+            { key: 'buyers', label: 'Buyers', path: '/admin/users/buyers' },
+        ],
+    },
+    {
+        key: 'products',
+        label: 'Kiểm duyệt sản phẩm',
+        icon: <FiBox />,
+        path: '/admin/products'
+    },
+    {
+        key: 'payouts',
+        label: 'Đối soát',
+        icon: <FiDollarSign />,
+        path: '/admin/payouts'
+    },
 ];
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
@@ -27,10 +71,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
 
     // Logic tìm menu active
     const getSelectedKey = () => {
-        const matchedKey = menuItems
-            .map(item => item.key)
-            .sort((a, b) => b.length - a.length)
+        const allPaths = [
+            ...menuItems.filter(item => item.path).map(item => item.path!),
+            ...menuItems
+                .filter(item => item.children)
+                .flatMap(item => item.children!.map(child => child.path)),
+        ];
+
+        const matchedKey = allPaths
+            .sort((a, b) => b.length - a.length) // Ưu tiên đường dẫn dài hơn (cụ thể hơn)
             .find(key => location.pathname.startsWith(key));
+
         return matchedKey || '/admin';
     };
     const activeKey = getSelectedKey();
@@ -46,18 +97,68 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
 
             {/* Menu (dùng nav-pills của Bootstrap) */}
             <ul className="nav nav-pills flex-column mb-auto">
-                {menuItems.map(item => (
-                    <li className="nav-item" key={item.key}>
-                        <Link
-                            to={item.key}
-                            className={`nav-link ${item.key === activeKey ? 'active' : ''}`}
-                        >
-                            <span className="menu-icon">{item.icon}</span>
-                            {/* Ẩn text khi collapsed */}
-                            {!isCollapsed && <span className='ms-2'>{item.label}</span>}
-                        </Link>
-                    </li>
-                ))}
+                {menuItems.map(item => {
+                    // TRƯỜNG HỢP CÓ MENU CON
+                    if (item.children) {
+                        const isParentActive = activeKey.startsWith(item.pathPrefix!);
+                        return (
+                            <li className="nav-item" key={item.key}>
+                                {/* Link cha (dùng để toggle) */}
+                                <a
+                                    href={`#${item.key}-submenu`}
+                                    data-bs-toggle="collapse"
+                                    aria-expanded={isParentActive}
+                                    className={`nav-link d-flex justify-content-between align-items-center ${isParentActive ? 'active' : ''}`}
+                                >
+                                    <div className="d-flex align-items-center">
+                                        <span className="menu-icon">{item.icon}</span>
+                                        {!isCollapsed && <span className='ms-2'>{item.label}</span>}
+                                    </div>
+                                    {/* Mũi tên (chỉ hiển thị khi không collapse) */}
+                                    {!isCollapsed && (
+                                        <FiChevronDown
+                                            style={{
+                                                transition: 'transform 0.2s',
+                                                transform: isParentActive ? 'rotate(180deg)' : 'rotate(0deg)'
+                                            }}
+                                        />
+                                    )}
+                                </a>
+                                {/* Các link con (trong div collapse) */}
+                                <div
+                                    className={`collapse ${isParentActive ? 'show' : ''}`}
+                                    id={`${item.key}-submenu`}
+                                >
+                                    <ul className="nav flex-column ps-4">
+                                        {item.children.map(child => (
+                                            <li className="nav-item mt-2" key={child.key}>
+                                                <Link
+                                                    to={child.path}
+                                                    className={`nav-link ${child.path === activeKey ? 'active' : ''}`}
+                                                >
+                                                    {!isCollapsed && child.label}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </li>
+                        );
+                    }
+
+                    // TRƯỜNG HỢP LINK ĐƠN (như cũ)
+                    return (
+                        <li className="nav-item" key={item.key}>
+                            <Link
+                                to={item.path!}
+                                className={`nav-link ${item.path === activeKey ? 'active' : ''}`}
+                            >
+                                <span className="menu-icon">{item.icon}</span>
+                                {!isCollapsed && <span className='ms-2'>{item.label}</span>}
+                            </Link>
+                        </li>
+                    );
+                })}
             </ul>
 
             {/* Footer của Sidebar */}

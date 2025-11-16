@@ -112,3 +112,10 @@ export interface PromotionItem {
     stock: number; 
     options_string?: string;
 }
+
+export interface CreatePromotionData {
+    name: string;
+    start_date: string;
+    end_date: string;
+    banner_image: File; // Kiểu File
+}

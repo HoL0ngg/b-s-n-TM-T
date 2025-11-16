@@ -50,7 +50,7 @@
 //     return (
 //         <div className="container mt-4">
 //             <h2>Quản lý Đơn hàng</h2>
-            
+
 //             <table className="table table-striped table-bordered">
 //                 <thead className="thead-dark">
 //                     <tr>
@@ -119,10 +119,10 @@
 import React, { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { useSearchParams, Link } from 'react-router-dom'; // 1. Import thêm 'Link'
-import { getShopOrders, updateShopOrderStatus } from '../../api/order'; 
+import { getShopOrders, updateShopOrderStatus } from '../../api/order';
 import { type IOrder, type OrderStatus, type IApiError } from '../../types/OrderType';
 // 2. Import Bootstrap Icons (giả sử bạn đã setup, nếu chưa hãy npm install bootstrap-icons)
-import 'bootstrap-icons/font/bootstrap-icons.css'; 
+// import 'bootstrap-icons/font/bootstrap-icons.css'; 
 
 export default function Orders() {
     const [orders, setOrders] = useState<IOrder[]>([]);
@@ -157,7 +157,7 @@ export default function Orders() {
         try {
             await updateShopOrderStatus(orderId, newStatus);
             alert('Cập nhật trạng thái thành công!');
-            fetchOrders(); 
+            fetchOrders();
         } catch (err) {
             const axiosError = err as AxiosError<IApiError>;
             alert('Lỗi khi cập nhật: ' + (axiosError.response?.data?.message || 'Lỗi không xác định'));
@@ -171,7 +171,7 @@ export default function Orders() {
     return (
         <div className="container mt-4">
             <h2 className="mb-4">Quản lý Đơn hàng</h2>
-            
+
             {/* Bọc bảng trong 1 card để chuyên nghiệp hơn */}
             <div className="card shadow-sm border-0">
                 <div className="card-body">
@@ -199,10 +199,10 @@ export default function Orders() {
                                         <td>
                                             <strong className="text-primary">#{order.order_id}</strong>
                                         </td>
-                                        
+
                                         {/* Ngày đặt */}
                                         <td>{new Date(order.order_date).toLocaleDateString('vi-VN')}</td>
-                                        
+
                                         {/* Tổng tiền (Căn phải) */}
                                         <td className="text-end fw-bold">
                                             {order.total_amount.toLocaleString('vi-VN')} VNĐ
@@ -217,7 +217,7 @@ export default function Orders() {
                                                 {order.payment_status}
                                             </span>
                                         </td>
-                                        
+
                                         {/* Trạng thái ĐH (Căn giữa, có Icon) */}
                                         <td className="text-center">
                                             <span className={`badge ${getStatusColor(order.status)}`}>
@@ -225,12 +225,12 @@ export default function Orders() {
                                                 {order.status}
                                             </span>
                                         </td>
-                                        
+
                                         {/* Hành động (Căn giữa) */}
                                         <td className="text-center">
                                             {/* Nút Xem chi tiết (ví dụ) */}
-                                            <Link 
-                                                to={`/seller/orders/${order.order_id}`} 
+                                            <Link
+                                                to={`/seller/orders/${order.order_id}`}
                                                 className="btn btn-sm btn-outline-primary me-2"
                                                 title="Xem chi tiết"
                                             >
@@ -239,7 +239,7 @@ export default function Orders() {
 
                                             {/* Các nút hành động */}
                                             {order.status === 'Pending' && (
-                                                <button 
+                                                <button
                                                     className="btn btn-sm btn-primary"
                                                     title="Xác nhận đơn"
                                                     onClick={() => handleStatusChange(order.order_id, 'Processing')}
@@ -248,7 +248,7 @@ export default function Orders() {
                                                 </button>
                                             )}
                                             {order.status === 'Processing' && (
-                                                <button 
+                                                <button
                                                     className="btn btn-sm btn-success"
                                                     title="Giao hàng"
                                                     onClick={() => handleStatusChange(order.order_id, 'Shipped')}

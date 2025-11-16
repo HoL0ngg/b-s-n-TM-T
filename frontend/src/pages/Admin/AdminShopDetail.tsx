@@ -22,9 +22,9 @@ interface Shop {
     totalOrders: number;
 }
 const mockShops: Shop[] = [
-    { id: 'S001', name: 'Shop Cây Cảnh Mini', ownerName: 'Nguyễn Văn A', email: 'a.nguyen@example.com', phone: '0901234567', address: '123 Đường ABC, Q.1, TP.HCM', description: 'Chuyên cây cảnh mini, tiểu cảnh', status: 'approved', joinedDate: '2023-10-01', productCount: 45, totalRevenue: 15000000, totalOrders: 120 },
-    { id: 'S003', name: 'Thời Trang Trẻ Em', ownerName: 'Lê Văn C', email: 'c.le@example.com', phone: '0907654321', address: '456 Đường XYZ, Q.3, TP.HCM', description: 'Quần áo trẻ em nhập khẩu', status: 'pending', joinedDate: '2023-11-01', productCount: 0, totalRevenue: 0, totalOrders: 0 },
-    { id: 'S004', name: 'Đồ Ăn Vặt Nhanh', ownerName: 'Phạm Hùng D', email: 'd.pham@example.com', phone: '0908889999', address: '789 Đường DEF, Q.10, TP.HCM', description: 'Đồ ăn vặt các loại', status: 'banned', joinedDate: '2023-08-20', productCount: 15, totalRevenue: 2500000, totalOrders: 50 },
+    { id: '1', name: 'Shop Cây Cảnh Mini', ownerName: 'Nguyễn Văn A', email: 'a.nguyen@example.com', phone: '0901234567', address: '123 Đường ABC, Q.1, TP.HCM', description: 'Chuyên cây cảnh mini, tiểu cảnh', status: 'approved', joinedDate: '2023-10-01', productCount: 45, totalRevenue: 15000000, totalOrders: 120 },
+    { id: '2', name: 'Thời Trang Trẻ Em', ownerName: 'Lê Văn C', email: 'c.le@example.com', phone: '0907654321', address: '456 Đường XYZ, Q.3, TP.HCM', description: 'Quần áo trẻ em nhập khẩu', status: 'pending', joinedDate: '2023-11-01', productCount: 0, totalRevenue: 0, totalOrders: 0 },
+    { id: '4', name: 'Đồ Ăn Vặt Nhanh', ownerName: 'Phạm Hùng D', email: 'd.pham@example.com', phone: '0908889999', address: '789 Đường DEF, Q.10, TP.HCM', description: 'Đồ ăn vặt các loại', status: 'banned', joinedDate: '2023-08-20', productCount: 15, totalRevenue: 2500000, totalOrders: 50 },
     // ... (các shop khác)
 ];
 // (Dữ liệu mẫu cho các tab, bạn sẽ fetch chúng dựa trên shop ID)

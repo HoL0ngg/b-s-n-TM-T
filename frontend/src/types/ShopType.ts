@@ -3,13 +3,24 @@ export interface ShopType {
     name: string;
     logo_url: string;
     description: string;
-    status: Number;
+    status: number;
     created_at: Date;
     totalProduct: number;
     avgRating: number;
 }
 
 export interface ShopCateType {
-    id: Number;
+    id: number;
     name: string;
+}
+
+export interface ShopAdminType extends ShopType {
+    username: string;
+    phone_number: string;
+}
+
+export interface ShopDetailAdminType extends ShopAdminType {
+    productCount: number;
+    totalRevenue: number;
+    totalOrders: number;
 }

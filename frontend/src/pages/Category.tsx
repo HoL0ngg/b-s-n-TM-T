@@ -33,69 +33,14 @@ const Category = () => {
     maxPrice: null as number | null,
     brand: [] as number[],
   });
-
-  //  Hàm fetch duy nhất
-  // const loadProducts = useCallback(async () => {
-  //   try {
-  //     // setLoading(true);
-  //     let res;
-
-  //     if (query.subCategoryId !== 0) {
-  //       // Có danh mục con
-  //       if (query.sort !== "default") {
-  //         res = await fetchProductsInPriceOrder(
-  //           query.subCategoryId,
-  //           query.page,
-  //           query.limit,
-  //           query.sort
-  //         );
-  //       } else {
-  //         res = await fetchProductsBySubCategory(
-  //           query.subCategoryId,
-  //           query.page,
-  //           query.limit
-  //         );
-  //       }
-  //     } else {
-  //       // Không có danh mục con
-  //       if (query.sort !== "default") {
-  //         res = await fetchProductsInPriceOrder(
-  //           query.categoryId,
-  //           query.page,
-  //           query.limit,
-  //           query.sort
-  //         );
-  //       } else {
-  //         res = await fetchProducts(
-  //           query.categoryId,
-  //           query.page,
-  //           query.limit
-  //         );
-  //       }
-  //     }
-  //     // console.log(res.products);
-  //     setProducts(res.products);
-  //     setTotalPages(res.totalPages);
-  //     setBrands(res.brands ?? []);
-  //   } catch (err) {
-  //     console.error("Lỗi khi load sản phẩm:", err);
-  //   }
-  //   // finally {
-  //   //   setTimeout(() => {
-  //   //     setLoading(false);
-
-  //   //   }, 300);
-  //   // }
-  // }, [query]);
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       // Gọi một hàm API duy nhất, truyền toàn bộ object query
       const res = await fetchProducts(query, Number(id));
-
-
-
       setProducts(res.products);
+      console.log(res.products);
+
       setTotalPages(res.totalPages);
       setBrands(res.brands ?? []);
 
@@ -200,6 +145,10 @@ const Category = () => {
   //  Handler chuyển trang
   const handlePageChange = (page: number) => {
     setIsUserAction(true);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+    });
     setQuery((prev) => ({
       ...prev,
       page,

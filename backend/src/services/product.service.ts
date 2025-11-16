@@ -1,10 +1,9 @@
 // Đường dẫn: backend/src/services/product.service.ts
-// (PHIÊN BẢN ĐÃ SỬA XUNG ĐỘT - ĐÃ TRỘN)
+// (PHIÊN BẢN ĐÃ SỬA LỖI TRÙNG LẶP HÀM)
 
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
-// Sửa: Thêm UpdatePromoItemDto từ model
-import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, BrandOfProduct, ProductVariant, VariantOption, ProductResponse, ProductImage, UpdatePromoItemDto } from "../models/product.model";
+import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, BrandOfProduct, ProductVariant, VariantOption, ProductResponse, ProductImage, UpdatePromoItemDto, CreatePromotionData } from "../models/product.model";
 import { ResultSetHeader } from 'mysql2';
 import { paginationProducts } from "../helpers/pagination.helper";
 
@@ -28,17 +27,14 @@ class productService {
                      pv.sku, 
                      pv.image_url,
                      
-                     -- Lấy % giảm giá (nếu có)
                      pi.discount_value AS discount_percentage,
                      
-                     -- Tính giá sale (nếu có)
                      (CASE
                          WHEN pi.discount_value IS NOT NULL 
                          THEN (pv.price * (1 - (pi.discount_value / 100)))
                          ELSE NULL 
                      END) AS sale_price,
 
-                     -- Sửa: Đổi tên 'price' để khớp với logic cũ
                      (CASE
                          WHEN pi.discount_value IS NOT NULL 
                          THEN (pv.price * (1 - (pi.discount_value / 100)))
@@ -48,7 +44,6 @@ class productService {
                  FROM 
                      productvariants pv
                  
-                 -- Dùng LEFT JOIN để vẫn lấy được biến thể dù không có KM
                  LEFT JOIN 
                      promotion_items pi ON pv.id = pi.product_variant_id
                  LEFT JOIN 
@@ -331,6 +326,10 @@ class productService {
         }
         return product;
     };
+    
+    // =================================================================
+    // NÂNG CẤP MỚI: Chỉ giữ 1 hàm updateProductStatusService (của bạn)
+    // =================================================================
     updateProductStatusService = async (productId: number, shopId: number, status: number) => {
         const [result] = await pool.query<ResultSetHeader>(
             "UPDATE products SET status = ? WHERE id = ? AND shop_id = ?",
@@ -347,13 +346,12 @@ class productService {
             "SELECT * FROM promotions WHERE shop_id = ? ORDER BY start_date DESC",
             [shopId]
         );
-        return rows; // Trả về mảng Promotion[]
+        return rows; 
     }
 
     getItemsByPromotionId = async (promotionId: number, shopId: number) => {
-        // Thêm kiểm tra: Khuyến mãi này có thuộc shopId này không
         const promo = await this.findById(promotionId);
-        if (promo.shop_id !== shopId) {
+        if (!promo || promo.shop_id !== shopId) { 
             throw new Error('FORBIDDEN');
         }
 
@@ -410,7 +408,10 @@ class productService {
     }
 
     updateItem = async (shopId: number, promoId: number, variantId: number, discountValue: number) => {
-        // (Cần thêm kiểm tra quyền)
+        const promo = await this.findById(promoId);
+        if (!promo || promo.shop_id !== shopId) {
+            throw new Error('FORBIDDEN');
+        }
         await pool.query(
             "UPDATE promotion_items SET discount_value = ? WHERE promotion_id = ? AND product_variant_id = ?",
             [discountValue, promoId, variantId]
@@ -426,9 +427,8 @@ class productService {
     }
 
     syncPromotionItems = async (promotionId: number, items: UpdatePromoItemDto[], shopId: number) => {
-        // Thêm kiểm tra quyền
         const promo = await this.findById(promotionId);
-        if (promo.shop_id !== shopId) {
+        if (!promo || promo.shop_id !== shopId) {
             throw new Error('FORBIDDEN');
         }
 
@@ -474,6 +474,25 @@ class productService {
             connection.release(); 
         }
     }
-}
+    
+    createPromotion = async (data: CreatePromotionData) => {
+        const { name, start_date, end_date, banner_url, shop_id } = data;
 
+        const sql = `
+            INSERT INTO promotions 
+                (name, start_date, end_date, banner_url, shop_id, is_active)
+            VALUES (?, ?, ?, ?, ?, 1) 
+        `;
+
+        const [result] = await pool.query<ResultSetHeader>(sql,
+            [name, start_date, end_date, banner_url, shop_id]
+        );
+
+        return {
+            id: result.insertId,
+            ...data,
+            is_active: 1
+        };
+    }
+}
 export default new productService();

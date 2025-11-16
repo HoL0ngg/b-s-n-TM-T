@@ -1,6 +1,6 @@
 import axios from "axios";
 // Gộp Type từ cả 2 nhánh
-import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType, UpdatePromoItemDto, PromotionType, PromotionItem } from "../types/ProductType";
+import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsType, AttributeOfProductVariantsType, ProductResponseType, UpdatePromoItemDto, PromotionType, PromotionItem, CreatePromotionData } from "../types/ProductType";
 // Import hàm helper (chúng ta sẽ tạo file này)
 import { getAuthHeaders } from "./apiHelpers";
 
@@ -163,4 +163,16 @@ export const apiUpdatePromotionItem = async (promoId: number, variantId: number,
 
 export const apiDeletePromotionItem = async (promoId: number, variantId: number) => {
     return axios.delete(`${API_URL}/promotions/${promoId}/items/${variantId}`, getAuthHeaders()); // Sửa: Thêm getAuthHeaders
+};
+
+export const apiCreatePromotion = async (data: CreatePromotionData) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('start_date', data.start_date);
+    formData.append('end_date', data.end_date);
+    formData.append('banner_image', data.banner_image);
+
+    // SỬA LỖI: Thêm getAuthHeaders() vì route này được bảo mật
+    const res = await axios.post(`${API_URL}/promotions/add`, formData, getAuthHeaders());
+    return res.data;
 };

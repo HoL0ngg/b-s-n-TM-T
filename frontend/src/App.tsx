@@ -41,7 +41,9 @@ import AdminProtectedRoute from "./components/Admin/AdminProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminShopManagement from "./pages/Admin/AdminShopManagement";
-import AdminUserManagement from "./pages/Admin/AdminUserManagement";
+// (Sửa tên file import theo file 'main')
+import AdminUserSellersManagement from "./pages/Admin/AdminUserSellersManagement";
+import AdminUserBuyersManagement from "./pages/Admin/AdminUserBuyersManagement";
 import AdminProductApproval from "./pages/Admin/AdminProductApproval";
 import AdminPayouts from "./pages/Admin/AdminPayouts";
 import AdminShopDetail from "./pages/Admin/AdminShopDetail";
@@ -109,7 +111,8 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="shops" element={<AdminShopManagement />} />
-          <Route path="users" element={<AdminUserManagement />} />
+          <Route path="users/sellers" element={<AdminUserSellersManagement />} />
+          <Route path="users/buyers" element={<AdminUserBuyersManagement />} />
           <Route path="products" element={<AdminProductApproval />} />
           <Route path="payouts" element={<AdminPayouts />} />
           <Route path="shops/:id" element={<AdminShopDetail />} />
