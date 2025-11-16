@@ -198,8 +198,7 @@ class userService {
         `;
             const dataParams = [...params, limit, (page - 1) * limit];
             const [rows]: any = await pool.query(query, dataParams);
-            console.log(rows);
-
+            // console.log(rows);
             return {
                 users: rows as UserAdmin[],
                 totalPages: totalPage,
@@ -208,6 +207,12 @@ class userService {
             console.error("Lỗi trong getUsersByStatusController:", error);
             throw error;
         }
+    }
+    updateUserStatusService = async (phone: string, status: number) => {
+        const query = `UPDATE users SET status = ? WHERE phone_number = ?`;
+        const [result] = await pool.query(query, [status, phone]);
+        const affectedRows = (result as any).affectedRows;
+        return affectedRows > 0;
     }
 }
 export default new userService();

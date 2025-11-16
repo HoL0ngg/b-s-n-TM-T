@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     FiEye,
     FiCheckCircle,
@@ -12,8 +12,6 @@ import { fetchProductsByStatusAdmin, updateProductStatusAdmin } from '../../api/
 import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
 import Swal from 'sweetalert2';
 import Pagenum from '../../components/Admin/Pagenum';
-import ScrollToTop from '../../components/ScrollToTop';
-
 const AdminProductApproval: React.FC = () => {
     // --- State ---
     const [products, setProducts] = useState<ProductTypeAdmin[]>([]);
@@ -51,7 +49,6 @@ const AdminProductApproval: React.FC = () => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
-        <ScrollToTop />
     };
     // --- Kết thúc Logic Lọc ---
     ;
@@ -129,8 +126,15 @@ const AdminProductApproval: React.FC = () => {
             }
         }
     };
-    // CHANGED: Tên hàm rõ ràng hơn
-    const loadProducts = async () => {
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+        });
+    }
+
+    const loadProducts = useCallback(async () => {
         try {
             // CHANGED: Truyền đầy đủ state cho API
             const data = await fetchProductsByStatusAdmin(
@@ -140,27 +144,25 @@ const AdminProductApproval: React.FC = () => {
                 searchTerm
             );
             setProducts(data.products);
-            setTotalPages(data.totalPages); // Cập nhật tổng số trang từ server
+            setTotalPages(data.totalPages); // Cập nhật tổng số trang từ server            
+            scrollToTop();
         } catch (error) {
             console.log(error);
             setProducts([]); // Xóa list nếu lỗi
             setTotalPages(0);
         }
-    }
+    }, [statusFilter, currentPage, searchTerm])
 
     // CHANGED: useEffect phải theo dõi các state filter
     useEffect(() => {
         loadProducts();
-        console.log("Loading data for:", statusFilter, currentPage, searchTerm);
-
         // FIX: Thêm dependencies
-    }, [statusFilter, currentPage, searchTerm]);
+    }, [loadProducts]);
 
     // FIX: Reset về trang 1 khi filter hoặc search thay đổi
     useEffect(() => {
         setCurrentPage(1);
     }, [statusFilter, searchTerm]);
-
     return (
         <div>
             <h1 className="mb-4">Kiểm duyệt Sản phẩm</h1>

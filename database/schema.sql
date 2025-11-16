@@ -810,8 +810,8 @@ SELECT
     p.brand_id,
     p.status,
     s.name AS shop_name,
-    
-    -- (Ảnh chính - đã sửa lỗi 'isMain' -> 'is_main')
+    s.status AS shop_status,
+    -- 4. Ảnh chính (isMain = 1)
     (SELECT pi.image_url 
      FROM productimages pi 
      WHERE pi.product_id = p.id AND pi.is_main = 1 

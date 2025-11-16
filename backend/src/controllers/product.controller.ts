@@ -92,7 +92,7 @@ class productController {
             console.log(error);
         }
     }
-    
+
     // =================================================================
     // CÁC HÀM CRUD (LẤY TỪ NHÁNH `qhuykuteo` CỦA BẠN VÌ MỚI HƠN)
     // =================================================================
@@ -106,17 +106,17 @@ class productController {
                 return res.status(400).json({ success: false, message: 'Tên sản phẩm là bắt buộc' });
             }
             if (productData.variations && productData.variations.length > 0) {
-                 if (!productData.attribute_id) {
-                     return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
-                 }
-                 for (const v of productData.variations) {
-                     if (!v.value || !v.price || v.stock === undefined) {
-                         return res.status(400).json({ success: false, message: 'Mỗi phân loại phải có `value`, `price`, và `stock`' });
-                     }
-                 }
+                if (!productData.attribute_id) {
+                    return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
+                }
+                for (const v of productData.variations) {
+                    if (!v.value || !v.price || v.stock === undefined) {
+                        return res.status(400).json({ success: false, message: 'Mỗi phân loại phải có `value`, `price`, và `stock`' });
+                    }
+                }
             } else {
                 if (!productData.base_price) {
-                     return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
+                    return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
                 }
             }
             if (productData.details && Array.isArray(productData.details)) {
@@ -154,11 +154,11 @@ class productController {
                 return res.status(400).json({ success: false, message: 'Tên sản phẩm là bắt buộc' });
             }
             if (productData.variations && productData.variations.length > 0) {
-                 if (!productData.attribute_id) {
-                     return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
-                 }
+                if (!productData.attribute_id) {
+                    return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
+                }
             } else if (!productData.base_price) {
-                 return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
+                return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
             }
             if (productData.details && Array.isArray(productData.details)) {
                 for (const d of productData.details) {
@@ -195,7 +195,7 @@ class productController {
             res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
         }
     };
-    
+
     // --- (Các hàm GET còn lại giữ nguyên) ---
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
@@ -231,17 +231,30 @@ class productController {
             console.log(err);
         }
     }
-    
+
     // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
-            const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
-            const categoryId = Number(req.params.id); 
-            
-            // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
-            let whereClause = "WHERE v_products_list.status = 1"; // (Từ 'main')
+            // 1. Lấy tham số
+            const {
+                page = 1,
+                limit = 12,
+                sort = "default",
+                subCategoryId, // Lấy từ query
+                minPrice,
+                maxPrice,
+                brand,
+            } = req.query;
+
+            const categoryId = Number(req.params.id); // Lấy từ param
+            // console.log(categoryId);
+
+            // 2. Xây dựng 'whereClause' và 'params'
+            let whereClause = `
+            WHERE status = 1 AND shop_status = 1             
+            `;
             const params: any[] = [];
-            
+
             if (subCategoryId && Number(subCategoryId) !== 0) {
                 whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
                 params.push(Number(subCategoryId));
@@ -267,35 +280,35 @@ class productController {
                     params.push(...brandIds);
                 }
             }
-            
+
             // (Không sort bằng SQL, để logic của 'main' sort bằng JS)
             let orderBy = "";
-            
+
             const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy);
-            
+
             let brandsPromise;
             if (subCategoryId && Number(subCategoryId) !== 0) {
                 brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
             } else if (categoryId) {
                 brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
             }
-            
+
             const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
 
             // Lấy logic `sort` (sắp xếp) của 'main' (đồng đội)
             let sortedProducts = [...productResult.products];
             switch (sort) {
-                case "priceAsc": 
+                case "priceAsc":
                     sortedProducts.sort((a, b) => a.base_price - b.base_price);
                     break;
-                case "priceDesc": 
+                case "priceDesc":
                     sortedProducts.sort((a, b) => b.base_price - a.base_price);
                     break;
                 default:
                     // Mặc định
                     break;
             }
-            
+
             res.status(200).json({
                 products: sortedProducts, // Trả về mảng đã sort
                 totalPages: productResult.totalPages,
@@ -342,7 +355,7 @@ class productController {
         try {
             const productId = Number(req.params.id);
             const shopId = (req as any).shop?.id;
-            const { status } = req.body; 
+            const { status } = req.body;
 
             if (status === undefined || (status !== 0 && status !== 1)) {
                 return res.status(400).json({ success: false, message: 'Trạng thái (status) không hợp lệ.' });
@@ -392,7 +405,7 @@ class productController {
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
             }
-            
+
             // Sửa: Truyền shopId vào service để kiểm tra
             const items = await productService.getItemsByPromotionId(promotionId, shopId);
 
@@ -412,7 +425,7 @@ class productController {
             const shopId = (req as any).shop?.id;
             const promoId = Number(req.params.promoId);
             const variantId = Number(req.params.variantId);
-            const { discount_value } = req.body; 
+            const { discount_value } = req.body;
 
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
@@ -436,7 +449,7 @@ class productController {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
             }
             // (Cần logic kiểm tra quyền ở service, tạm thời cho phép xóa)
-            
+
             await productService.deleteItem(promoId, variantId);
             res.status(200).json({ message: "Đã xóa sản phẩm khỏi sự kiện" });
         } catch (error: any) {
@@ -449,7 +462,7 @@ class productController {
         try {
             const shopId = (req as any).shop?.id;
             const promotionId = Number(req.params.id);
-            const items = req.body; 
+            const items = req.body;
 
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
@@ -470,7 +483,7 @@ class productController {
             res.status(500).json({ message: "Lỗi server khi lưu khuyến mãi" });
         }
     }
-    
+
     // (Hàm CreatePromotion mới của đồng đội)
     CreatePromotion = async (req: Request, res: Response) => {
         try {
@@ -507,7 +520,7 @@ class productController {
 
             const newPromotion = await productService.createPromotion(promotionData);
 
-            res.status(201).json(newPromotion); 
+            res.status(201).json(newPromotion);
 
         } catch (error: any) {
             console.error("Lỗi Controller (createPromotion):", error);

@@ -27,7 +27,7 @@ export const updateShopStatusAdmin = async (
     reason?: string
 ): Promise<{ message: string }> => {
     try {
-        const res = await axios.put(`${API_URL}/${shopId}`, {
+        const res = await axios.patch(`${API_URL}/${shopId}`, {
             status,
             reason
         }, {

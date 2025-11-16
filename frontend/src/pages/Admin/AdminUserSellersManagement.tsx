@@ -4,9 +4,12 @@ import {
     FiEdit,
     FiLock,
     FiFilter,
+    FiUnlock,
 } from 'react-icons/fi';
 import type { UserAdminType } from "../../types/admin/UserTypeAdmin";
-import { fetchSellerByStatusAdmin } from "../../api/admin/usersAdmin";
+import { fetchSellerByStatusAdmin, updateUserStatusAdmin } from "../../api/admin/usersAdmin";
+import Pagenum from "../../components/Admin/Pagenum";
+import Swal from "sweetalert2";
 
 const AdminUserManagement: React.FC = () => {
 
@@ -60,21 +63,71 @@ const AdminUserManagement: React.FC = () => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth", // cuộn mượt
+    }
+    const handleUpdateStatus = async (
+        title: string,
+        phone: string,
+        newStatus: number) => {
+        const result = await Swal.fire({
+            title,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Xác nhận",
+            cancelButtonText: "Hủy",
         });
+        if (result.isConfirmed) {
+            try {
+                const res = await updateUserStatusAdmin(phone, newStatus);
+                Swal.fire("Thành công!", res.message, "success");
+                loadUsers();
+            } catch (error) {
+                Swal.fire({
+                    title: "Lỗi",
+                    text: "Cập nhật trạng thái người dùng thất bại.",
+                    icon: "error",
+                });
+            }
+        }
+    }
+    const handleBanUser = async (phone: string) => {
+        await handleUpdateStatus(
+            "Bạn có chắc chắn muốn khóa người dùng này?",
+            phone,
+            -1
+        );
+    }
+    const handleUnbanUser = async (phone: string) => {
+        await handleUpdateStatus(
+            "Bạn có chắc chắn muốn mở khóa người dùng này?",
+            phone,
+            1
+        );
     }
     const loadUsers = async () => {
         try {
             const res = await fetchSellerByStatusAdmin(statusFilter, currentPage, itemsPerPage, search);
             setUsers(res.users);
             setTotalPages(res.totalPages);
-            console.log("Danh sách người dùng đã tải:", res.users);
+            // console.log("Danh sách người dùng đã tải:", res.users);
+            // console.log("Total Pages:", res.totalPages);
+            scrollToTop();
         } catch (error) {
             console.error("Lỗi khi tải danh sách người dùng:", error);
         }
     }
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+        });
+    }
+    useEffect(() => {
+        loadUsers();
+    }, [statusFilter, currentPage, search]);
+    useEffect(() => {
+        setCurrentPage(1);
+
+    }, [search, statusFilter]);
     return (
         <div>
             <h1 className="mb-4">Quản lý Người dùng</h1>
@@ -162,7 +215,12 @@ const AdminUserManagement: React.FC = () => {
                                                 <FiEdit size={16} />
                                             </button>
                                             <button className="btn btn-danger btn-sm">
-                                                <FiLock size={16} />
+                                                {user.status === 1 && (
+                                                    <FiLock size={16} onClick={() => handleBanUser(user.phone)} />
+                                                )}
+                                                {user.status === -1 && (
+                                                    <FiUnlock size={16} onClick={() => handleUnbanUser(user.phone)} />
+                                                )}
                                             </button>
                                         </div>
                                     </td>
@@ -170,7 +228,10 @@ const AdminUserManagement: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                    {/* --- 3. THANH PHÂN TRANG (Không đổi) --- */}
+                    <Pagenum currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
                 </div>
+
             </div>
 
             {/* MODAL ADD / EDIT USER */}
@@ -253,6 +314,7 @@ const AdminUserManagement: React.FC = () => {
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
