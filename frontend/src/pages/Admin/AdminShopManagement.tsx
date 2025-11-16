@@ -107,6 +107,12 @@ const AdminShopManagement: React.FC = () => {
             `Shop ID ${shopId} đã được mở cấm.`
         );
     };
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+        });
+    }
     const loadShops = async () => {
 
         try {
@@ -116,11 +122,10 @@ const AdminShopManagement: React.FC = () => {
                 itemsPerPage,
                 searchTerm
             );
-            console.log(statusFilter);
-            console.log("Dữ liệu shop tải về:", data);
-
             setShops(data.shops);
             setTotalPages(data.totalPages);
+            // console.log(statusFilter);
+            // console.log("Dữ liệu shop tải về:", data);            
         } catch (error) {
             console.log("Lỗi khi tải danh sách shop:", error);
         }
@@ -128,6 +133,7 @@ const AdminShopManagement: React.FC = () => {
 
     useEffect(() => {
         loadShops();
+        scrollToTop();
     }, [statusFilter, currentPage, searchTerm]);
 
     useEffect(() => {

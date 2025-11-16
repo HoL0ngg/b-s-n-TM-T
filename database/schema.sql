@@ -809,6 +809,7 @@ SELECT
     p.brand_id,
     p.status,
     s.name AS shop_name,
+    s.status AS shop_status,
     -- 4. Ảnh chính (isMain = 1)
     (SELECT pi.image_url 
      FROM productimages pi 

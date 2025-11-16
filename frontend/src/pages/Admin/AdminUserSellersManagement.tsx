@@ -108,11 +108,18 @@ const AdminUserManagement: React.FC = () => {
             const res = await fetchSellerByStatusAdmin(statusFilter, currentPage, itemsPerPage, search);
             setUsers(res.users);
             setTotalPages(res.totalPages);
-            console.log("Danh sách người dùng đã tải:", res.users);
-            console.log("Total Pages:", res.totalPages);
+            // console.log("Danh sách người dùng đã tải:", res.users);
+            // console.log("Total Pages:", res.totalPages);
+            scrollToTop();
         } catch (error) {
             console.error("Lỗi khi tải danh sách người dùng:", error);
         }
+    }
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+        });
     }
     useEffect(() => {
         loadUsers();

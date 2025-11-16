@@ -13,13 +13,13 @@ const Pagenum: React.FC<PaginationProps> = ({
     onPageChange,
 }) => {
 
-    // Di chuyển hàm vào trong component (hoặc để ngoài cũng được)
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth", // cuộn mượt
-        });
-    };
+    // // Di chuyển hàm vào trong component (hoặc để ngoài cũng được)
+    // const scrollToTop = () => {
+    //     window.scrollTo({
+    //         top: 0,
+    //         behavior: "smooth", // cuộn mượt
+    //     });
+    // };
 
     // 2. Tách logic render số trang ra một hàm riêng cho sạch sẽ
     const renderPageNumbers = () => {
@@ -51,7 +51,7 @@ const Pagenum: React.FC<PaginationProps> = ({
                     <button
                         className="page-link"
                         // 3. Gọi hàm onPageChange từ props thay vì handlePageChange
-                        onClick={() => { onPageChange(p); scrollToTop(); }}
+                        onClick={() => { onPageChange(p); }}
                     >
                         {p}
                     </button>
@@ -73,7 +73,7 @@ const Pagenum: React.FC<PaginationProps> = ({
                     <button
                         className="page-link"
                         // 3. Gọi hàm onPageChange từ props
-                        onClick={() => { onPageChange(currentPage - 1); scrollToTop(); }}
+                        onClick={() => { onPageChange(currentPage - 1) }}
                         disabled={currentPage === 1} // Thêm disabled để chặn click
                     >
                         Trước
@@ -90,8 +90,7 @@ const Pagenum: React.FC<PaginationProps> = ({
                         // 3. Gọi hàm onPageChange từ props
                         // SỬA LỖI: Thêm scrollToTop() vào đây
                         onClick={() => {
-                            onPageChange(currentPage + 1);
-                            scrollToTop(); // <--- Thêm dòng này
+                            onPageChange(currentPage + 1);                            // <--- Thêm dòng này
                         }}
                         disabled={currentPage === totalPages} // Thêm disabled
                     >

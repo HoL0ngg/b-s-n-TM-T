@@ -5,8 +5,9 @@ import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 import type { BrandOfProductType, ProductType } from "../types/ProductType";
 import { fetchCategories, fetchSubCategories } from "../api/categories";
 import { fetchProducts } from "../api/products";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
+
 
 
 const Category = () => {
@@ -21,6 +22,7 @@ const Category = () => {
   const [brands, setBrands] = useState<BrandOfProductType[]>([])
   const [isUserAction, setIsUserAction] = useState(false);
   const [priceRange, setPriceRange] = useState({ minPrice: "", maxPrice: "" });
+  const scrollableContentRef = useRef<HTMLDivElement>(null);
 
   //  Gom toàn bộ điều kiện truy vấn vào 1 state duy nhất
   const [query, setQuery] = useState({
@@ -39,11 +41,9 @@ const Category = () => {
       // Gọi một hàm API duy nhất, truyền toàn bộ object query
       const res = await fetchProducts(query, Number(id));
       setProducts(res.products);
-      console.log(res.products);
-
       setTotalPages(res.totalPages);
       setBrands(res.brands ?? []);
-
+      scrollToTop();
     } catch (err) {
       console.error("Lỗi khi load sản phẩm:", err);
     } finally {
@@ -145,15 +145,19 @@ const Category = () => {
   //  Handler chuyển trang
   const handlePageChange = (page: number) => {
     setIsUserAction(true);
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
-    });
+    // scrollToTop();
     setQuery((prev) => ({
       ...prev,
       page,
     }));
   };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+    });
+  }
   const handleApplyBtn = () => {
     const min = priceRange.minPrice ? Number(priceRange.minPrice) : null;
     const max = priceRange.maxPrice ? Number(priceRange.maxPrice) : null;
@@ -304,7 +308,7 @@ const Category = () => {
           </div>
 
           {/* Product list */}
-          <div className="col-lg-9 col-md-8 col-12">
+          <div className="col-lg-9 col-md-8 col-12" ref={scrollableContentRef}>
             <div className="row row-cols-1 row-cols-md-2 g-4">
               <div className="d-flex justify-content-between w-100">
 
