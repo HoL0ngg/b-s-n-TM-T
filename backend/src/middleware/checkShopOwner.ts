@@ -1,48 +1,54 @@
-// backend/src/middleware/checkShopOwner.ts
-import { Request, Response, NextFunction } from "express";
-import pool from "../config/db";
+// Đường dẫn: backend/src/middleware/checkShopOwner.ts
+// (PHIÊN BẢN ĐÃ SỬA LỖI)
 
-interface ShopPayload {
-    id: number;
-    name: string;
-    owner_id: string;
-}
+import { Request, Response, NextFunction } from 'express';
+import pool from '../config/db';
+import { RowDataPacket } from 'mysql2';
 
-/**
- * Middleware này chạy SAU `verifyToken`.
- * Nó lấy user_id (phone_number) từ `req.user.id`
- * và tìm shop tương ứng mà user này làm chủ.
- * Nếu tìm thấy, nó sẽ gán thông tin shop vào `(req as any).shop`.
- * Nếu không, nó sẽ từ chối truy cập.
- */
-export async function checkShopOwner(req: Request, res: Response, next: NextFunction) {
+// Hàm này kiểm tra xem user (từ token) có phải là chủ shop không
+export const checkShopOwner = async (req: Request, res: Response, next: NextFunction) => {
+    
+    // === BẮT ĐẦU SỬA LỖI ===
+    // (Bỏ qua kiểm tra này cho các route 'Khuyến mãi' (GET)
+    // vì chúng ta cần nó ở trang public, nhưng vẫn cần token)
+    if (req.path.startsWith('/promotions') && req.method === 'GET') {
+        return next();
+    }
+    // === KẾT THÚC SỬA LỖI ===
+
     try {
-        const user = (req as any).user;
-        if (!user || !user.id) {
-            return res.status(401).json({ message: "Yêu cầu xác thực (Không tìm thấy user)" });
+        const userId = (req as any).user?.id; // Lấy SĐT (string) từ verifyToken
+        
+        if (!userId) {
+            return res.status(401).json({ message: "Token không hợp lệ hoặc thiếu (Lỗi 401)" });
         }
 
-        const userPhone = user.id;
-
-        // Tìm shop dựa trên owner_id (chính là phone_number của user)
-        const [shopRows] = await pool.query(
-            "SELECT id, name, owner_id FROM shops WHERE owner_id = ?",
-            [userPhone]
+        // Tìm shop dựa trên SĐT (owner_id)
+        const [rows] = await pool.query<RowDataPacket[]>(
+            `SELECT id FROM shops WHERE owner_id = ?`,
+            [userId]
         );
 
-        if (!Array.isArray(shopRows) || shopRows.length === 0) {
-            return res.status(403).json({ message: "Bạn không có quyền truy cập. Bạn không phải là chủ shop." });
+        if (rows.length === 0) {
+            // (Thêm log này để bạn biết)
+            console.error(`Lỗi checkShopOwner: User ${userId} không phải là chủ shop.`);
+            
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Bạn không có quyền truy cập. Bạn không phải là chủ shop.' 
+            });
         }
 
-        const shop = (shopRows as ShopPayload[])[0];
+        const shop = rows[0];
 
-        // Gán thông tin shop vào request để các controller sau có thể sử dụng
-        (req as any).shop = shop;
+        // Gán shop (bao gồm shop.id) vào request để các controller sau có thể dùng
+        (req as any).shop = shop; 
 
+        // Quan trọng: Phải gọi next() để đi tiếp
         next();
 
-    } catch (err) {
-        console.error("Lỗi tại middleware checkShopOwner:", err);
-        return res.status(500).json({ message: "Lỗi máy chủ khi xác thực chủ shop" });
+    } catch (error) {
+        console.error('Lỗi nghiêm trọng trong middleware checkShopOwner:', error);
+        return res.status(500).json({ message: 'Lỗi máy chủ (Middleware)' });
     }
-}
+};

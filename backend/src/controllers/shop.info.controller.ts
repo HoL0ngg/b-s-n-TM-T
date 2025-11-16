@@ -3,8 +3,6 @@ import shopInfoService from "../services/shop.info.service";
 
 export const shopController = {
   
-  // Method này giữ nguyên, dùng để lấy info shop BẤT KỲ bằng SĐT
-  // (Lấy phiên bản code của bạn (qhuykuteo) vì có bình luận rõ ràng)
   getShopByUserId: async (req: Request, res: Response) => {
     try {
       const { userId } = req.params; // userId này là SĐT (string)
