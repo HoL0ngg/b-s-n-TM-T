@@ -11,6 +11,9 @@ import { Link } from 'react-router-dom';
 import type { ShopAdminType } from '../../types/ShopType';
 import { fetchShopsByStatusAdmin, updateShopStatusAdmin } from '../../api/admin/shopsAdmin';
 import Swal from 'sweetalert2';
+import Pagenum from '../../components/Admin/Pagenum';
+import ScrollToTop from '../../components/ScrollToTop';
+
 const AdminShopManagement: React.FC = () => {
 
     const [shops, setShops] = useState<ShopAdminType[]>([]);
@@ -40,6 +43,7 @@ const AdminShopManagement: React.FC = () => {
     // ----------------------------------------------------
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+        <ScrollToTop />;
     }
     const handleUpdateStatus = async (
         shopId: number,
@@ -273,74 +277,7 @@ const AdminShopManagement: React.FC = () => {
                     </div>
 
                     {/* --- 3. THANH PHÂN TRANG (Không đổi) --- */}
-                    <nav aria-label="Page navigation" className="mt-3">
-                        {/* Sử dụng `totalPages > 1` là một điều kiện tốt hơn 
-      thay vì `products.length > 0` để hiển thị phân trang 
-    */}
-                        {totalPages > 1 && (
-                            <ul className="pagination justify-content-end mb-0">
-                                {/* Nút Trang trước */}
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                    >
-                                        Trước
-                                    </button>
-                                </li>
-
-                                {/* Hiển thị số trang (ĐÃ CẬP NHẬT LOGIC) */}
-                                {(() => {
-                                    const pages: (number | "dots")[] = [];
-
-                                    // Sử dụng biến 'currentPage' từ code gốc của bạn
-                                    const page = currentPage;
-
-                                    if (totalPages <= 3) {
-                                        for (let i = 1; i <= totalPages; i++) pages.push(i);
-                                    } else if (page <= 3) {
-                                        pages.push(1, 2, 3, "dots", totalPages);
-                                    } else if (page >= totalPages - 2) {
-                                        pages.push(1, "dots", totalPages - 2, totalPages - 1, totalPages);
-                                    } else {
-                                        pages.push(1, "dots", page - 1, page, page + 1, "dots", totalPages);
-                                    }
-
-                                    // Render mảng 'pages' ra thành các thẻ <li>
-                                    return pages.map((p, index) =>
-                                        p === "dots" ? (
-                                            <li key={`dots-${index}`} className="page-item disabled">
-                                                <span className="page-link">...</span>
-                                            </li>
-                                        ) : (
-                                            <li
-                                                key={`page-${p}`}
-                                                // Dùng class 'active' của Bootstrap
-                                                className={`page-item ${currentPage === p ? 'active' : ''}`}
-                                            >
-                                                <button
-                                                    className="page-link"
-                                                    onClick={() => handlePageChange(p)}
-                                                >
-                                                    {p}
-                                                </button>
-                                            </li>
-                                        )
-                                    );
-                                })()}
-
-                                {/* Nút Trang sau */}
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                    >
-                                        Sau
-                                    </button>
-                                </li>
-                            </ul>
-                        )}
-                    </nav>
+                    <Pagenum currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
 
                 </div>
             </div>

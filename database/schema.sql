@@ -648,7 +648,9 @@ CREATE TABLE `users` (
   `phone_number` varchar(10) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `password` varchar(255) DEFAULT NULL,
-  `avatar_url` varchar(255) DEFAULT NULL
+  `avatar_url` varchar(255) DEFAULT NULL,
+  `status` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

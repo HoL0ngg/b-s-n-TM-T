@@ -33,7 +33,7 @@ body {
 
 .sidebar .nav-link.active {
   color: white;
-  background-color: #0d6efd; /* Màu primary của Bootstrap */
+  background-color: #0d6efd;
 }
 
 /* Căn giữa icon khi thu nhỏ */
