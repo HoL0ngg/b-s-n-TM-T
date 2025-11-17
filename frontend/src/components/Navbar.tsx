@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useMemo, useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchProductsByKeyWord } from "../api/products";
+import { fetchShopByOwnerId } from "../api/shop"; 
 import debounce from "lodash.debounce";
 import type { ProductType } from "../types/ProductType";
 
@@ -77,19 +78,28 @@ export default function Navbar() {
     const handleShopNavigation = async () => {
         if (user && user.id) {
             setCheckingShop(true);
-            const shopExists = await checkShopExists(user.id.toString());
-            setHasShop(shopExists);
-            setCheckingShop(false);
+            try {
+                // Gọi API kiểm tra shop
+                const shop = await fetchShopByOwnerId(user.id);
+                const shopExists = shop !== null;
+                setHasShop(shopExists);
 
-            if (shopExists) {
-                navigate("/seller");
-            } else {
+                if (shopExists) {
+                    navigate("/seller");
+                } else {
+                    navigate("/register-shop");
+                }
+            } catch (error) {
+                console.error("Error checking shop:", error);
                 navigate("/register-shop");
+            } finally {
+                setCheckingShop(false);
             }
         } else {
             navigate("/login");
         }
     };
+
 
     //  Hàm fetch và debounce tìm kiếm
     const fetchProducts = async (val: string) => {

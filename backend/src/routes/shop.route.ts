@@ -7,5 +7,7 @@ ShopRouter.get("/by-owner/:ownerId", shopController.getShopByOwnerController); /
 ShopRouter.get("/shop/:id", shopController.getShopOnIdController);
 ShopRouter.get("/hot", shopController.getHotShops);
 ShopRouter.get('/variants/:id', shopController.getVariants)
-
+ShopRouter.post("/", shopController.createShopController);
+ShopRouter.put("/:id", shopController.updateShopController);
+ShopRouter.delete("/:id", shopController.deleteShopController);
 export default ShopRouter;
