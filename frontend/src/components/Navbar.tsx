@@ -31,6 +31,8 @@ export default function Navbar() {
     const [checkingShop, setCheckingShop] = useState(false);
     const [keyword, setKeyWord] = useState<string>("");
     const [products, setProducts] = useState<ProductType[]>([]);
+    console.log(user);
+
 
     const totalItemCount = useMemo(() => {
         return cart.reduce((total, shop) => {

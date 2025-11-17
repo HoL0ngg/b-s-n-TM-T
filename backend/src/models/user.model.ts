@@ -3,6 +3,9 @@ export interface User {
     email: string;
     avatar_url: string;
     shop_id: string;
+    role: string;
+    status: number;
+    created_at: string;
 }
 
 export interface Address {

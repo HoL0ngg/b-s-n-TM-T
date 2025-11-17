@@ -104,6 +104,15 @@ export async function verifyToken(req: Request, res: Response, next: NextFunctio
             (req as any).userProfile = null;
         }
 
+        const [userRows] = await pool.query<RowDataPacket[]>(
+            `SELECT role FROM users WHERE phone_number = ?`,
+            [phone]
+        );
+        if (userRows.length === 0) {
+            return res.status(401).json({ message: "Người dùng không tồn tại" });
+        }
+        (req as any).user.role = userRows[0].role; // Gán 'role' (CUSTOMER, SHOP_OWNER, ADMIN)
+
         const [shopRows] = await pool.query<RowDataPacket[]>(
             `SELECT id FROM shops WHERE owner_id = ?`,
             [phone]
@@ -149,5 +158,21 @@ export async function checkOptionalAuth(req: Request, res: Response, next: NextF
         next();
     } catch (err) {
         return next(); // Token sai, vẫn cho qua
+    }
+}
+
+export function checkAdmin(req: Request, res: Response, next: NextFunction) {
+    if ((req as any).user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: "Yêu cầu quyền Admin" });
+    }
+}
+
+export function checkShopOwner(req: Request, res: Response, next: NextFunction) {
+    if ((req as any).user.role === 'shop_owner') {
+        next();
+    } else {
+        res.status(403).json({ message: "Tài khoản không phải là chủ shop" });
     }
 }

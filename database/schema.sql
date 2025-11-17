@@ -650,22 +650,24 @@ CREATE TABLE `users` (
   `password` varchar(255) DEFAULT NULL,
   `avatar_url` varchar(255) DEFAULT NULL,
   `status` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp()
+  `created_at` datetime DEFAULT current_timestamp(),
+  `role` enum('customer','admin','shop_owner') NOT NULL DEFAULT 'customer'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`) VALUES
-('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png'),
-('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
-('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
-('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
-('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png'),
-('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
-('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png'),
-('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png');
+INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `role`) VALUES
+('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png', 'shop_owner'),
+('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
+('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
+('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png', 'shop_owner'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
+('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
+('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
+('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'admin');
 
 -- --------------------------------------------------------
 
