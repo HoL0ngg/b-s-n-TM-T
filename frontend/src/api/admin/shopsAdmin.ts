@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ShopAdminType } from "../../types/ShopType";
+import type { ShopAdminType, ShopDetailAdminType } from "../../types/ShopType";
 
 const API_URL = "http://localhost:5000/api/admin/shopsAdmin";
 export const fetchShopsByStatusAdmin = async (
@@ -41,4 +41,9 @@ export const updateShopStatusAdmin = async (
         );
     }
 
+}
+
+export const fetchShopDetail = async (shopId: number): Promise<ShopDetailAdminType[]> => {
+    const res = await axios.get(`${API_URL}/shops/${shopId}`);
+    return res.data;
 }

@@ -742,6 +742,15 @@ class productService {
         };
     }
 
+    getProductsOnShopId = async (shopId: number): Promise<Product[]> => {
+        let query = `
+            SELECT p.*
+            FROM products p
+            WHERE p.shop_id = ?
+        `;
+        const [rows] = await pool.query(query, [shopId]);
+        return rows as Product[];
+    }
 
 }
 export default new productService();

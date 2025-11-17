@@ -214,5 +214,16 @@ class userService {
         const affectedRows = (result as any).affectedRows;
         return affectedRows > 0;
     }
+    getShopOwnerInformation = async (shopId: number): Promise<UserAdmin> => {
+        const query = `
+            SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name
+            FROM shops s
+            JOIN users u ON u.phone_number = s.owner_id
+            JOIN user_profile uf ON uf.phone_number = u.phone_number
+            WHERE s.shop_id = ?
+        `;
+        const [rows] = await pool.query(query, [shopId]);
+        return rows[0] as UserAdmin;
+    }
 }
 export default new userService();

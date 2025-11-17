@@ -1,6 +1,7 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 import type { Shop, ShopAdmin, ShopCategories } from "../models/shop.model";
+import { Product } from "../models/product.model";
 
 class shopService {
     getShopOnIdService = async (id: number): Promise<Shop> => {
@@ -163,7 +164,6 @@ class shopService {
         const affectedRows = (result as any).affectedRows;
         return affectedRows > 0;
     };
-
 }
 
 export default new shopService();

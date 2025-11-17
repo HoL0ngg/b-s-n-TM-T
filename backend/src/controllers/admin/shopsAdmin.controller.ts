@@ -1,5 +1,7 @@
 import { Request, Response } from "express"
 import shopService from "../../services/shop.service";
+import userService from "../../services/user.service";
+import productService from "../../services/product.service";
 class shopsAdminController {
     getShopsByStatusController = async (req: Request, res: Response) => {
         try {
@@ -41,5 +43,27 @@ class shopsAdminController {
             res.status(500).json({ message: 'Internal server error' });
         }
     };
+    getShopDetailController = async (req: Request, res: Response) => {
+        try {
+            const id = parseInt(req.params.id, 10);
+            const shopPromise = shopService.getShopOnIdService(id);
+            const userPromise = userService.getShopOwnerInformation(id);
+            const productsPromise = productService.getProductsOnShopId(id);
+            const [shopResult, userResult, productsResult] = await Promise.all([
+                shopPromise,
+                userPromise,
+                productsPromise
+            ])
+
+            res.status(200).json({
+                shop: shopResult,
+                userInfo: userResult,
+                products: productsResult
+            })
+        } catch (error) {
+            console.error("Lỗi trong getShopDetailController:", error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
 }
 export default new shopsAdminController();
