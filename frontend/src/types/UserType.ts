@@ -3,6 +3,7 @@ export type UserType = {
     email: string;
     avatar_url: string;
     role: 'buyer' | 'seller';
+    shop_id: number;
     phone: number;
 } | null;
 

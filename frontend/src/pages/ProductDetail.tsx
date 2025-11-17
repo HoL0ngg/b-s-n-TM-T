@@ -14,6 +14,7 @@ import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
 import { useNavigate } from "react-router-dom";
 import { formatTimeAgo } from "../utils/helper";
+import { IoChevronBackCircleOutline } from "react-icons/io5";
 
 
 const ProductDetail = () => {
@@ -21,7 +22,7 @@ const ProductDetail = () => {
     const [product, setProduct] = useState<ProductType>();
     const { id } = useParams<{ id: string | undefined }>();
     const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
-    
+
     // ===== BẮT ĐẦU SỬA LỖI 1 =====
     // Sửa state để chấp nhận `null`
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -35,7 +36,7 @@ const ProductDetail = () => {
     const [productDetails, setProductDetails] = useState<ProductDetailsType[]>([]);
     const [attributeOfProductVariants, setAttributeOfProductVariants] = useState<AttributeOfProductVariantsType[]>([]);
     const navigator = useNavigate();
-    
+
     // (Các hàm loadProductDetails và loadAttributeOfProduct giữ nguyên)
     const loadProductDetails = async () => {
         if (!id) return;
@@ -93,13 +94,13 @@ const ProductDetail = () => {
                 console.error("Failed to fetch product images:", err);
             }
         };
-        
+
         // Chạy các hàm load
         loadAttributeOfProduct();
         loadProductDetails();
         loadProductAndShop();
         loadProductImg();
-        
+
         // ===== BẮT ĐẦU SỬA LỖI 3 =====
         // Xóa dòng code gây lỗi. Logic đã được chuyển vào `loadProductImg`.
         // setSelectedImage(mainProductImage); // <--- XÓA DÒNG NÀY
@@ -112,7 +113,7 @@ const ProductDetail = () => {
     // thay vì `product.images` (sai, vì `product` không chứa ảnh)
     const mainProductImage = useMemo(() => {
         if (!images || images.length === 0) { // Phụ thuộc vào state `images`
-            return null; 
+            return null;
         }
         const mainImg = images.find(img => img.is_main === 1); // Tìm trong state `images`
         if (mainImg) {
@@ -136,6 +137,10 @@ const ProductDetail = () => {
 
     const handleClick = () => {
         navigator(`/shop/${product?.shop_id}`)
+    }
+
+    const handleBack = () => {
+        navigator(-1);
     }
 
     const formatPhone = (phone: string): string => {
@@ -172,7 +177,8 @@ const ProductDetail = () => {
 
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
     return (
-        <div className="container mt-5">
+        <div className="container mt-5 position-relative">
+            <div className="position-absolute pointer top-0 start-0 translate-middle fs-2 text-muted" onClick={handleBack}><IoChevronBackCircleOutline /></div>
             <div className="container">
                 <div className="row">
                     <div className="col-12 col-md-1">
@@ -199,9 +205,9 @@ const ProductDetail = () => {
                 </div >
 
             </div>
-            
+
             {/* (Phần code hiển thị shop, chi tiết, mô tả... giữ nguyên) */}
-            
+
             <div className="row mt-4 p-3">
                 <div className="col-7">
                     <div className="fw-bold fs-4">Chi tiết sản phẩm</div>
