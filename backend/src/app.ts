@@ -43,7 +43,7 @@ app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
 
 // Routes của bạn (qhuykuteo)
-app.use('/api/shop_info', shopInfoRoutes); // (Có dấu gạch dưới)
+// app.use('/api/shop_info', shopInfoRoutes); // (Có dấu gạch dưới)
 app.use("/api/auth", authRoutes); 
 app.use("/api/shop-categories", shopCategoryRoutes);
 

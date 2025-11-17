@@ -13,6 +13,7 @@ import Step3TaxInfo from '../components/ShopSteps/Step3TaxInfo';
 import Step4Identity from '../components/ShopSteps/Step4Identity';
 import ShopAddressModal from '../components/ShopAddressModal';
 
+import { apiCreateShop } from '../api/shop';
 import { createShopInfo } from '../api/shopinfo';
 
 const steps = [
@@ -30,6 +31,7 @@ const formatAddress = (addr: AddressType) => {
 const RegisterShop = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -45,6 +47,8 @@ const RegisterShop = () => {
     identityType: 'cccd',
     identityNumber: '',
     identityFullName: '',
+    description: '', // Thêm mô tả cho shop
+    logoUrl: '', // Thêm logo cho shop
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,7 +83,6 @@ const RegisterShop = () => {
     }
   }, [auth.user]);
 
-  // Hàm xử lý khi user chọn địa chỉ từ modal
   const handleAddressSelect = (selectedAddress: string) => {
     setFormData(prev => ({
       ...prev,
@@ -88,7 +91,6 @@ const RegisterShop = () => {
     setIsModalOpen(false);
   };
 
-  // Validation cho Step 1
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
 
@@ -98,6 +100,25 @@ const RegisterShop = () => {
       newErrors.shopName = 'Tên shop phải có ít nhất 3 ký tự';
     } else if (formData.shopName.length > 100) {
       newErrors.shopName = 'Tên shop không được vượt quá 100 ký tự';
+    }
+
+    // Validation cho logo (optional nhưng nếu có thì phải hợp lệ)
+    if (formData.logoUrl && formData.logoUrl.trim()) {
+      // Kiểm tra nếu là base64 image
+      const base64Regex = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/;
+      // Hoặc kiểm tra nếu là URL
+      const urlRegex = /^(https?:\/\/|\/)/;
+      
+      if (!base64Regex.test(formData.logoUrl) && !urlRegex.test(formData.logoUrl)) {
+        newErrors.logoUrl = 'Logo không hợp lệ';
+      }
+    }
+
+    // Validation cho description (optional nhưng nếu có thì có giới hạn)
+    if (formData.description && formData.description.trim()) {
+      if (formData.description.length > 500) {
+        newErrors.description = 'Mô tả không được vượt quá 500 ký tự';
+      }
     }
 
     if (!formData.address.trim()) {
@@ -122,7 +143,6 @@ const RegisterShop = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Validation cho Step 2
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
 
@@ -134,7 +154,6 @@ const RegisterShop = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Validation cho Step 3
   const validateStep3 = () => {
     const newErrors: Record<string, string> = {};
 
@@ -158,7 +177,6 @@ const RegisterShop = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Validation cho Step 4
   const validateStep4 = () => {
     const newErrors: Record<string, string> = {};
 
@@ -234,6 +252,7 @@ const RegisterShop = () => {
       return;
     }
 
+    // Validate tất cả các bước
     const isStep1Valid = validateStep1();
     const isStep2Valid = validateStep2();
     const isStep3Valid = validateStep3();
@@ -245,13 +264,72 @@ const RegisterShop = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const response = await createShopInfo(formData);
+      console.log("🚀 Bắt đầu đăng ký shop...");
+      
+      // Bước 1: Tạo shop trong bảng `shops`
+      const shopPayload = {
+        name: formData.shopName,
+        logo_url: formData.logoUrl || '/assets/shops/default-shop.png',
+        description: formData.description || `Shop chuyên về ${formData.shopName}`,
+        status: 1, // Active
+        owner_id: auth.user.id
+      };
+
+      console.log("📦 Payload tạo shop:", shopPayload);
+      const shopId = await apiCreateShop(shopPayload);
+      console.log("✅ Shop đã tạo với ID:", shopId);
+
+      if (!shopId) {
+        throw new Error("Không thể tạo shop - Backend không trả về shopId");
+      }
+
+      // Bước 2: Tạo thông tin chi tiết trong bảng `shop_info`
+      const shopInfoPayload = {
+        shop_id: shopId,
+        user_id: auth.user.id,
+        address: formData.address,
+        email: formData.email,
+        phone: formData.phone,
+        shipping_methods: JSON.stringify(formData.shippingMethods),
+        business_type: formData.businessType,
+        invoice_email: formData.invoiceEmail || null,
+        tax_code: formData.taxCode || null,
+        identity_type: formData.identityType,
+        identity_number: formData.identityNumber,
+        identity_full_name: formData.identityFullName,
+      };
+
+      console.log("📦 Payload tạo shop info:", shopInfoPayload);
+      await createShopInfo(shopInfoPayload);
+      console.log("✅ Shop info đã tạo thành công");
+
       alert("Đăng ký shop thành công!");
       navigate('/seller');
     } catch (error: any) {
-      console.error("Lỗi khi đăng ký shop:", error);
-      alert(error.response?.data?.message || "Đăng ký thất bại");
+      console.error("❌ Lỗi chi tiết:", error);
+      
+      // Xử lý các loại lỗi khác nhau
+      let errorMessage = "Đăng ký thất bại";
+      
+      if (error.code === 'ERR_NETWORK') {
+        errorMessage = "Lỗi kết nối! Vui lòng kiểm tra:\n- Backend có đang chạy không?\n- URL API có đúng không?\n- CORS đã được cấu hình chưa?";
+      } else if (error.response) {
+        // Server trả về response với status code lỗi
+        errorMessage = error.response.data?.message || `Lỗi ${error.response.status}: ${error.response.statusText}`;
+        console.error("📡 Response lỗi:", error.response.data);
+      } else if (error.request) {
+        // Request đã được gửi nhưng không nhận được response
+        errorMessage = "Không nhận được phản hồi từ server. Vui lòng kiểm tra backend!";
+      } else {
+        errorMessage = error.message || "Đã xảy ra lỗi không xác định";
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -266,6 +344,8 @@ const RegisterShop = () => {
               onEditAddress={() => setIsModalOpen(true)}
             />
             {errors.shopName && <div className="text-danger small mt-2">{errors.shopName}</div>}
+            {errors.logoUrl && <div className="text-danger small mt-2">{errors.logoUrl}</div>}
+            {errors.description && <div className="text-danger small mt-2">{errors.description}</div>}
             {errors.address && <div className="text-danger small mt-2">{errors.address}</div>}
             {errors.email && <div className="text-danger small mt-2">{errors.email}</div>}
             {errors.phone && <div className="text-danger small mt-2">{errors.phone}</div>}
@@ -332,7 +412,7 @@ const RegisterShop = () => {
 
           <div className="d-flex justify-content-between mt-5">
             {currentStep > 1 ? (
-              <button className="btn btn-outline-secondary" onClick={prevStep}>
+              <button className="btn btn-outline-secondary" onClick={prevStep} disabled={isSubmitting}>
                 Quay lại
               </button>
             ) : (
@@ -340,14 +420,18 @@ const RegisterShop = () => {
             )}
 
             {currentStep < steps.length && (
-              <button className="btn btn-primary" onClick={nextStep}>
+              <button className="btn btn-primary" onClick={nextStep} disabled={isSubmitting}>
                 Tiếp theo
               </button>
             )}
 
             {currentStep === steps.length && (
-              <button className="btn btn-primary" onClick={handleSubmit}>
-                Hoàn tất
+              <button 
+                className="btn btn-primary" 
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Đang xử lý...' : 'Hoàn tất'}
               </button>
             )}
           </div>
