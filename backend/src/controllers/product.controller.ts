@@ -235,24 +235,11 @@ class productController {
     // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
-            // 1. Lấy tham số
-            const {
-                page = 1,
-                limit = 12,
-                sort = "default",
-                subCategoryId, // Lấy từ query
-                minPrice,
-                maxPrice,
-                brand,
-            } = req.query;
+            const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
+            const categoryId = Number(req.params.id);
 
-            const categoryId = Number(req.params.id); // Lấy từ param
-            // console.log(categoryId);
-
-            // 2. Xây dựng 'whereClause' và 'params'
-            let whereClause = `
-            WHERE status = 1 AND shop_status = 1             
-            `;
+            // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
+            let whereClause = "WHERE v_products_list.status = 1"; // (Từ 'main')
             const params: any[] = [];
 
             if (subCategoryId && Number(subCategoryId) !== 0) {
@@ -383,7 +370,7 @@ class productController {
     getShopPromotions = async (req: Request, res: Response) => {
         try {
             // Sửa: Lấy shop_id từ (req as any).shop.id (vì bạn đã có checkShopOwner)
-            const shopId = (req as any).shop?.id;
+            const shopId = (req as any).user.shop_id;
             if (!shopId) {
                 return res.status(403).json({ message: "Không tìm thấy shop" });
             }
@@ -399,7 +386,7 @@ class productController {
     getPromotionDetails = async (req: Request, res: Response) => {
         try {
             // Sửa: Lấy shop_id từ (req as any).shop.id
-            const shopId = (req as any).shop?.id;
+            const shopId = (req as any).user.shop_id;
             const promotionId = Number(req.params.id);
 
             if (!shopId) {
@@ -422,7 +409,7 @@ class productController {
     updatePromotionItem = async (req: Request, res: Response) => {
         try {
             // Sửa: Lấy shop_id từ (req as any).shop.id
-            const shopId = (req as any).shop?.id;
+            const shopId = (req as any).user.shop_id;
             const promoId = Number(req.params.promoId);
             const variantId = Number(req.params.variantId);
             const { discount_value } = req.body;
@@ -441,7 +428,7 @@ class productController {
     deletePromotionItem = async (req: Request, res: Response) => {
         try {
             // Sửa: Thêm kiểm tra quyền
-            const shopId = (req as any).shop?.id;
+            const shopId = (req as any).user.shop_id;
             const promoId = Number(req.params.promoId);
             const variantId = Number(req.params.variantId);
 
@@ -460,7 +447,7 @@ class productController {
 
     savePromotionItems = async (req: Request, res: Response) => {
         try {
-            const shopId = (req as any).shop?.id;
+            const shopId = (req as any).user.shop_id;
             const promotionId = Number(req.params.id);
             const items = req.body;
 
@@ -488,14 +475,13 @@ class productController {
     CreatePromotion = async (req: Request, res: Response) => {
         try {
             // Sửa: Lấy shop_id từ (req as any).shop.id
-            const shopId = (req as any).shop?.id;
+            const shopId = (req as any).user.shop_id;
             if (!shopId) {
                 return res.status(403).json({ message: "Chưa đăng nhập hoặc không phải chủ shop" });
             }
-            console.log(req.body);
-
             const { name, start_date, end_date } = req.body;
             const file = req.file;
+
             if (!file) {
                 return res.status(400).json({ message: "Vui lòng tải lên ảnh banner." });
             }

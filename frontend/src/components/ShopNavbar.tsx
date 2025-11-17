@@ -1,5 +1,5 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 interface ShopNavbarProps {
   isOpen: boolean;
@@ -7,17 +7,20 @@ interface ShopNavbarProps {
 }
 
 const ShopNavbar = ({ isOpen, toggleSidebar }: ShopNavbarProps) => {
+  const { user } = useAuth();
+  console.log(user);
+
   return (
-    <nav 
-      className="navbar navbar-expand navbar-dark fixed-top navbar-custom-dark" 
+    <nav
+      className="navbar navbar-expand navbar-dark fixed-top navbar-custom-dark"
       style={{ zIndex: 1030 }}
     >
       <div className="container-fluid">
-        
+
         {/* Logo và Nút Toggle */}
         <div className="d-flex align-items-center">
-          <button 
-            className="btn btn-white me-3" 
+          <button
+            className="btn btn-white me-3"
             onClick={toggleSidebar}
             title={isOpen ? "Thu gọn menu" : "Mở rộng menu"}
           >
@@ -35,19 +38,19 @@ const ShopNavbar = ({ isOpen, toggleSidebar }: ShopNavbarProps) => {
           <li className="nav-item">
             <a className="nav-link position-relative" href="#" title="Thông báo">
               <i className="bi bi-bell"></i>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                    style={{ fontSize: '0.65rem', padding: '0.25rem 0.45rem' }}>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style={{ fontSize: '0.65rem', padding: '0.25rem 0.45rem' }}>
                 3
               </span>
             </a>
           </li>
-          
+
           {/* Messages */}
           <li className="nav-item">
             <a className="nav-link position-relative" href="#" title="Tin nhắn">
               <i className="bi bi-envelope"></i>
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" 
-                    style={{ fontSize: '0.65rem', padding: '0.25rem 0.45rem' }}>
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success"
+                style={{ fontSize: '0.65rem', padding: '0.25rem 0.45rem' }}>
                 5
               </span>
             </a>
@@ -62,9 +65,9 @@ const ShopNavbar = ({ isOpen, toggleSidebar }: ShopNavbarProps) => {
 
           {/* Divider */}
           <li className="nav-item">
-            <div style={{ 
-              width: '1px', 
-              height: '24px', 
+            <div style={{
+              width: '1px',
+              height: '24px',
               backgroundColor: 'rgba(255,255,255,0.3)',
               margin: '0 0.5rem'
             }}></div>
@@ -81,21 +84,21 @@ const ShopNavbar = ({ isOpen, toggleSidebar }: ShopNavbarProps) => {
               aria-expanded="false"
             >
               <img
-                src="./assets/avatar/bear.png"
+                src={user?.avatar_url}
                 className="rounded-circle"
                 height="36"
                 width="36"
                 alt="Avatar"
                 style={{ objectFit: 'cover' }}
               />
-              <span className="d-none d-md-inline fw-medium">Admin</span>
+              <span className="d-none d-md-inline fw-medium">{user?.id}</span>
             </a>
-            <ul className="dropdown-menu dropdown-menu-end shadow" 
-                aria-labelledby="navbarDropdownMenuLink">
+            <ul className="dropdown-menu dropdown-menu-end shadow"
+              aria-labelledby="navbarDropdownMenuLink">
               <li>
                 <div className="dropdown-item-text">
-                  <div className="fw-bold">Admin User</div>
-                  <small className="text-muted">admin@shop.com</small>
+                  <div className="fw-bold">{user?.id}</div>
+                  <small className="text-muted">{user?.email}</small>
                 </div>
               </li>
               <li><hr className="dropdown-divider" /></li>
@@ -113,8 +116,8 @@ const ShopNavbar = ({ isOpen, toggleSidebar }: ShopNavbarProps) => {
               </li>
               <li><hr className="dropdown-divider" /></li>
               <li>
-                <NavLink 
-                  to="/" 
+                <NavLink
+                  to="/"
                   className="dropdown-item d-flex align-items-center text-primary"
                 >
                   <i className="bi bi-arrow-left-circle me-2"></i>

@@ -19,6 +19,7 @@ import paymentRouter from "./routes/payment.route";
 import ProductsAdminRoute from "./routes/admin/productsAdmin.route"; // <-- Từ nhánh 'main'
 import ShopsAdminRoute from "./routes/admin/shopsAdmin.route"; // <-- Từ nhánh 'main'
 import UsersAdminRoute from "./routes/admin/usersAdmin.route"; // <-- Từ nhánh 'main'
+import AdminRouter from "./routes/admin.route";
 
 const app = express();
 app.use(bodyParser.json());
@@ -44,14 +45,15 @@ app.use("/api/cart", CartRouter);
 
 // Routes của bạn (qhuykuteo)
 app.use('/api/shop_info', shopInfoRoutes); // (Có dấu gạch dưới)
-app.use("/api/auth", authRoutes); 
+app.use("/api/auth", authRoutes);
 app.use("/api/shop-categories", shopCategoryRoutes);
 
 // Routes của đồng đội (main)
-app.use("/api", orderRoutes);
 app.use('/api/payments', paymentRouter);
 app.use("/api/admin/productsAdmin", ProductsAdminRoute);
 app.use('/api/shopinfo', shopInfoRoutes); // (Không có dấu gạch dưới)
+app.use("/api/admin", AdminRouter);
+app.use("/api", orderRoutes);
 app.use("/api/admin/shopsAdmin", ShopsAdminRoute);
 app.use("/api/admin/usersAdmin", UsersAdminRoute);
 

@@ -46,7 +46,7 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
                 name,
                 start_date: startDate,
                 end_date: endDate,
-                banner_image: bannerFile // Truyền file
+                banner_image: bannerFile
             });
 
             alert("Tạo sự kiện thành công!");
