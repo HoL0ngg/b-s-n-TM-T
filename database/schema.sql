@@ -1,13 +1,9 @@
-drop database basan;
-CREATE database basan;
-use basan;
-
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 04, 2025 lúc 09:43 AM
+-- Thời gian đã tạo: Th10 17, 2025 lúc 01:43 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -440,47 +436,47 @@ CREATE TABLE `productvariants` (
 --
 
 INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `image_url`) VALUES
-(1, 1, 228000, 50, 'MBL-DO-4ML', "/assets/products/son1.3.jpg"),
-(2, 1, 233000, 60, 'MBL-HONG-4ML', ""),
-(3, 1, 223000, 40, 'MBL-CAM-4ML', ""),
-(4, 2, 2128000, 10, 'ADID-XANH-38', ""),
-(5, 2, 2138000, 8, 'ADID-XANH-39', ""),
-(6, 2, 2148000, 6, 'ADID-XANH-40', ""),
-(7, 2, 2148000, 12, 'ADID-HONG-38', ""),
-(8, 2, 2158000, 9, 'ADID-HONG-39', ""),
-(9, 2, 2168000, 7, 'ADID-HONG-40', ""),
-(10, 3, 1128000, 19, 'AST-TRANG-S', ""),
-(11, 3, 1138000, 18, 'AST-TRANG-M', ""),
-(12, 3, 1148000, 15, 'AST-TRANG-L', ""),
-(13, 3, 1133000, 22, 'AST-DEN-S', ""),
-(14, 3, 1143000, 19, 'AST-DEN-M', ""),
-(15, 3, 1153000, 14, 'AST-DEN-L', ""),
-(16, 3, 1138000, 16, 'AST-XANH-S', ""),
-(17, 3, 1148000, 14, 'AST-XANH-M', ""),
-(18, 3, 1158000, 12, 'AST-XANH-L', ""),
-(19, 4, 280000, 2, 'hjhj', ""),
-(20, 5, 199000, 10, 'hjhj', ""),
-(21, 6, 218000, 69, 'hjhj', ""),
-(22, 7, 369000, 2, 'hjhj', ""),
-(23, 8, 199000, 2, 'hjhj', ""),
-(24, 9, 219000, 2, 'hjhj', ""),
-(25, 10, 271320, 2, 'hjhj', ""),
-(26, 11, 389000, 1, 'hjhj', ""),
-(27, 12, 8495000, 1, 'hjhj', ""),
-(28, 13, 4390000, 1, 'hjhj', ""),
-(29, 14, 11115000, 1, 'hjhj', ""),
-(30, 15, 5995000, 1, 'hjhj', ""),
-(31, 16, 3690000, 1, 'hjhj', ""),
-(32, 17, 8695000, 1, 'hjhj', ""),
-(33, 18, 5290000, 1, 'hjhj', ""),
-(34, 19, 776000, 1, 'hjhj', ""),
-(35, 20, 118800, 1, 'hjhj', ""),
-(36, 21, 2371650, 1, 'hjhj', ""),
-(37, 22, 222000, 1, 'hjhj', ""),
-(38, 23, 184000, 1, 'hjhj', ""),
-(39, 24, 78000, 1, 'hjhj', ""),
-(40, 25, 2366000, 1, 'hjhj', ""),
-(41, 26, 2790000, 1, 'hjhj', "");
+(1, 1, 228000, 50, 'MBL-DO-4ML', '/assets/products/son1.3.jpg'),
+(2, 1, 233000, 60, 'MBL-HONG-4ML', ''),
+(3, 1, 223000, 40, 'MBL-CAM-4ML', ''),
+(4, 2, 2128000, 10, 'ADID-XANH-38', ''),
+(5, 2, 2138000, 8, 'ADID-XANH-39', ''),
+(6, 2, 2148000, 6, 'ADID-XANH-40', ''),
+(7, 2, 2148000, 12, 'ADID-HONG-38', ''),
+(8, 2, 2158000, 9, 'ADID-HONG-39', ''),
+(9, 2, 2168000, 7, 'ADID-HONG-40', ''),
+(10, 3, 1128000, 19, 'AST-TRANG-S', ''),
+(11, 3, 1138000, 18, 'AST-TRANG-M', ''),
+(12, 3, 1148000, 15, 'AST-TRANG-L', ''),
+(13, 3, 1133000, 22, 'AST-DEN-S', ''),
+(14, 3, 1143000, 19, 'AST-DEN-M', ''),
+(15, 3, 1153000, 14, 'AST-DEN-L', ''),
+(16, 3, 1138000, 16, 'AST-XANH-S', ''),
+(17, 3, 1148000, 14, 'AST-XANH-M', ''),
+(18, 3, 1158000, 12, 'AST-XANH-L', ''),
+(19, 4, 280000, 2, 'hjhj', ''),
+(20, 5, 199000, 10, 'hjhj', ''),
+(21, 6, 218000, 69, 'hjhj', ''),
+(22, 7, 369000, 2, 'hjhj', ''),
+(23, 8, 199000, 2, 'hjhj', ''),
+(24, 9, 219000, 2, 'hjhj', ''),
+(25, 10, 271320, 2, 'hjhj', ''),
+(26, 11, 389000, 1, 'hjhj', ''),
+(27, 12, 8495000, 1, 'hjhj', ''),
+(28, 13, 4390000, 1, 'hjhj', ''),
+(29, 14, 11115000, 1, 'hjhj', ''),
+(30, 15, 5995000, 1, 'hjhj', ''),
+(31, 16, 3690000, 1, 'hjhj', ''),
+(32, 17, 8695000, 1, 'hjhj', ''),
+(33, 18, 5290000, 1, 'hjhj', ''),
+(34, 19, 776000, 1, 'hjhj', ''),
+(35, 20, 118800, 1, 'hjhj', ''),
+(36, 21, 2371650, 1, 'hjhj', ''),
+(37, 22, 222000, 1, 'hjhj', ''),
+(38, 23, 184000, 1, 'hjhj', ''),
+(39, 24, 78000, 1, 'hjhj', ''),
+(40, 25, 2366000, 1, 'hjhj', ''),
+(41, 26, 2790000, 1, 'hjhj', '');
 
 -- --------------------------------------------------------
 
@@ -533,6 +529,54 @@ INSERT INTO `product_detail` (`id`, `product_id`, `attribute`, `value`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `promotions`
+--
+
+CREATE TABLE `promotions` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `start_date` datetime DEFAULT current_timestamp(),
+  `end_date` datetime DEFAULT NULL,
+  `banner_url` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(4) DEFAULT 1,
+  `shop_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `promotions`
+--
+
+INSERT INTO `promotions` (`id`, `name`, `start_date`, `end_date`, `banner_url`, `is_active`, `shop_id`) VALUES
+(1, 'Giảm giá black friday', '2025-05-11 00:00:00', '2025-11-11 00:00:00', '', 1, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `promotion_items`
+--
+
+CREATE TABLE `promotion_items` (
+  `promotion_id` int(11) DEFAULT NULL,
+  `product_variant_id` int(11) DEFAULT NULL,
+  `discount_value` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `promotion_items`
+--
+
+INSERT INTO `promotion_items` (`promotion_id`, `product_variant_id`, `discount_value`) VALUES
+(1, 1, 20),
+(1, 2, 10),
+(1, 3, 50),
+(1, 20, 12),
+(1, 21, 10),
+(1, 22, 20),
+(1, 23, 22);
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `shops`
 --
 
@@ -556,33 +600,9 @@ INSERT INTO `shops` (`id`, `name`, `logo_url`, `description`, `status`, `created
 (3, 'Casper Official Store', '/assets/shops/casper.webp', 'Shop chuyên về đồ điện tử', 1, '2025-08-26', '0987654222'),
 (4, 'Murad Vietnam Official Store', '/assets/shops/murad.webp', 'Shop chuyên về quần áo', 1, '2025-08-26', '0987654111'),
 (5, 'Unilever Chăm Sóc Sắc Đẹp', '/assets/shops/unilever.webp', '', 1, '2025-08-26', '0987654000'),
-(6, 'Pandora VN', '/assets/shops/pandora.webp', '', 1, '2025-08-26', '0987654444');
+(6, 'Pandora VN', '/assets/shops/pandora.webp', '', 1, '2025-08-26', '0987654444'),
+(7, 'KimLong', '/assets/shops/default-shop.png', 'ứađâsda', 1, '2025-11-17', '0917842142');
 
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `promotions`
---
-
-CREATE TABLE `promotions` (
-  `id` int(11) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `start_date` datetime DEFAULT current_timestamp(),
-  `end_date` datetime DEFAULT NULL,
-  `banner_url` varchar(255) DEFAULT NULL,
-  `is_active` tinyint(4) DEFAULT 1,
-  `shop_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-INSERT INTO promotions values (1, "Giảm giá black friday", "2025-05-11", "2025-11-11", "", 1, 1);
-
-CREATE TABLE `promotion_items` (
-  promotion_id int,
-  product_variant_id int,
-  discount_value int
-);
-
-INSERT INTO promotion_items values (1, 1, 20), (1, 2, 10), (1, 3, 50), (1, 20, 12), (1, 21, 10), (1, 22, 20), (1, 23, 22);
 -- --------------------------------------------------------
 
 --
@@ -605,7 +625,8 @@ INSERT INTO `shop_categories` (`id`, `shop_id`, `name`) VALUES
 (3, 3, 'Sản phẩm mới'),
 (4, 4, 'Sản phẩm mới'),
 (5, 5, 'Sản phẩm mới'),
-(6, 6, 'Sản phẩm mới');
+(6, 6, 'Sản phẩm mới'),
+(7, 7, 'Vip');
 
 -- --------------------------------------------------------
 
@@ -615,28 +636,27 @@ INSERT INTO `shop_categories` (`id`, `shop_id`, `name`) VALUES
 
 CREATE TABLE `shop_info` (
   `id` int(11) NOT NULL,
-  `user_id` varchar(10) NOT NULL,
-  `shop_name` varchar(255) NOT NULL,
-  `address` text NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone` varchar(20) NOT NULL,
-  `shipping_methods` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `business_type` varchar(50) DEFAULT 'personal',
+  `shop_id` int(11) NOT NULL,
+  `user_id` varchar(20) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `shipping_methods` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`shipping_methods`)),
+  `business_type` varchar(50) DEFAULT NULL,
   `invoice_email` varchar(255) DEFAULT NULL,
-  `tax_code` varchar(20) DEFAULT NULL,
-  `identity_type` varchar(50) DEFAULT 'cccd',
-  `identity_number` varchar(20) NOT NULL,
-  `identity_full_name` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `tax_code` varchar(100) DEFAULT NULL,
+  `identity_type` varchar(50) DEFAULT NULL,
+  `identity_number` varchar(50) DEFAULT NULL,
+  `identity_full_name` varchar(255) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `shop_info`
 --
 
-INSERT INTO `shop_info` (`id`, `user_id`, `shop_name`, `address`, `email`, `phone`, `shipping_methods`, `business_type`, `invoice_email`, `tax_code`, `identity_type`, `identity_number`, `identity_full_name`, `created_at`, `updated_at`) VALUES
-(2, '0338740832', 'HoaBan', '155 Gia Sư Kim Tân, ấp Bình Tả 2, Phường Ba Đình, Thành phố Hà Nội', 'n.kimlong205@gmail.com', '0338740832', '[\"SPX\"]', 'personal', 'n.kimlong205@gmail.com', '080205013802', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-04 07:41:24', '2025-11-04 07:41:24');
+INSERT INTO `shop_info` (`id`, `shop_id`, `user_id`, `address`, `email`, `phone`, `shipping_methods`, `business_type`, `invoice_email`, `tax_code`, `identity_type`, `identity_number`, `identity_full_name`, `updated_at`) VALUES
+(1, 7, '0917842142', '2312 áđâsđâsđâsđá, Phường Thục Phán, Cao Bằng', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14');
 
 -- --------------------------------------------------------
 
@@ -658,16 +678,17 @@ CREATE TABLE `users` (
 -- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `role`) VALUES
-('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png', 'shop_owner'),
-('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
-('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
-('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
-('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png', 'shop_owner'),
-('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
-('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
-('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'shop_owner'),
-('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 'admin');
+INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `status`, `created_at`, `role`) VALUES
+('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0917842142', 'longnguyen210405@gmail.com', '$2b$10$DOxxYzLITFuc50bmC/YycuqkqpLQhSmPuttYKeie6Cn2a.8qf0ryG', '/assets/avatar/lion.png', 1, '2025-11-17 19:31:34', 'customer'),
+('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'admin');
 
 -- --------------------------------------------------------
 
@@ -722,6 +743,7 @@ CREATE TABLE `user_profile` (
 
 INSERT INTO `user_profile` (`username`, `dob`, `gender`, `updated_at`, `phone_number`) VALUES
 ('Nguyễn Kim Long', '2005-04-21 00:00:00', 1, '2025-11-04 14:16:30', '0338740832'),
+('KimLong', '2005-04-21 00:00:00', 1, '0000-00-00 00:00:00', '0917842142'),
 ('Hồ Hoàng Long', '2005-08-26 00:00:00', 1, NULL, '0987654000'),
 ('Đỗ Nhật Huy', '2005-08-26 00:00:00', 1, NULL, '0987654111'),
 ('Bùi Nguyễn Trọng Nghĩa', '2005-08-26 00:00:00', 1, NULL, '0987654222'),
@@ -788,76 +810,40 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc đóng vai cho view `v_products_list`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_products_list` (
+`id` int(11)
+,`name` varchar(255)
+,`description` varchar(1000)
+,`shop_id` int(11)
+,`generic_id` int(11)
+,`created_at` date
+,`updated_at` date
+,`sold_count` int(11)
+,`shop_cate_id` int(11)
+,`category_name` varchar(255)
+,`base_price` int(11)
+,`brand_id` int(11)
+,`status` int(11)
+,`shop_name` varchar(255)
+,`shop_status` int(11)
+,`image_url` varchar(500)
+,`avg_rating` decimal(14,4)
+,`hot_score` decimal(17,5)
+,`sale_price` decimal(22,0)
+,`discount_percentage` int(11)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc cho view `v_products_list`
 --
+DROP TABLE IF EXISTS `v_products_list`;
 
-DROP VIEW IF EXISTS `v_products_list`;
-CREATE VIEW `v_products_list` AS
-SELECT 
-    p.id, 
-    p.name, 
-    p.description, 
-    p.shop_id, 
-    p.generic_id, 
-    p.created_at,
-    p.updated_at,
-    IFNULL(p.sold_count, 0) AS sold_count,
-    
-    -- ===== 1. CỘT CỦA BẠN (ĐÃ GIỮ LẠI) =====
-    p.shop_cate_id, 
-    
-    -- ===== 2. CỘT CỦA ĐỒNG ĐỘI (ĐÃ GIỮ LẠI) =====
-    g.name AS category_name,
-    p.base_price,
-    p.brand_id,
-    p.status,
-    s.name AS shop_name,
-    s.status AS shop_status,
-    -- 4. Ảnh chính (isMain = 1)
-    (SELECT pi.image_url 
-     FROM productimages pi 
-     WHERE pi.product_id = p.id AND pi.is_main = 1 
-     LIMIT 1) AS image_url,
-     
-    (SELECT IFNULL(AVG(pr.rating), 0) 
-     FROM productreviews pr 
-     WHERE pr.product_id = p.id) AS avg_rating,
-    
-    (
-        IFNULL(p.sold_count, 0) * 0.6 + 
-        (SELECT IFNULL(AVG(pr.rating), 0) FROM productreviews pr WHERE pr.product_id = p.id) * 0.4
-    ) AS hot_score,
-
-    -- (Code "Khuyến mãi" của đồng đội - giữ nguyên)
-    (
-        SELECT ROUND(MIN(pv.price * (1 - (pi.discount_value / 100))))
-        FROM productvariants pv
-        JOIN promotion_items pi ON pv.id = pi.product_variant_id
-        JOIN promotions promo ON pi.promotion_id = promo.id
-        WHERE 
-            pv.product_id = p.id
-            AND promo.is_active = 1
-            AND NOW() BETWEEN promo.start_date AND promo.end_date
-    ) AS sale_price,
-    
-    (
-        SELECT MAX(pi.discount_value) 
-        FROM productvariants pv
-        JOIN promotion_items pi ON pv.id = pi.product_variant_id
-        JOIN promotions promo ON pi.promotion_id = promo.id
-        WHERE 
-            pv.product_id = p.id
-            AND promo.is_active = 1
-            AND NOW() BETWEEN promo.start_date AND promo.end_date
-    ) AS discount_percentage
-    
-FROM 
-    products p
--- ===== 3. SỬA LỖI: DÙNG LEFT JOIN =====
-LEFT JOIN 
-    generic g ON g.id = p.generic_id
-JOIN 
-    shops s ON s.id = p.shop_id;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, ifnull(`p`.`sold_count`,0) AS `sold_count`, `p`.`shop_cate_id` AS `shop_cate_id`, `g`.`name` AS `category_name`, `p`.`base_price` AS `base_price`, `p`.`brand_id` AS `brand_id`, `p`.`status` AS `status`, `s`.`name` AS `shop_name`, `s`.`status` AS `shop_status`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, ifnull(`p`.`sold_count`,0) * 0.6 + (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) * 0.4 AS `hot_score`, (select round(min(`pv`.`price` * (1 - `pi`.`discount_value` / 100)),0) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `sale_price`, (select max(`pi`.`discount_value`) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `discount_percentage` FROM ((`products` `p` left join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) join `shops` `s` on(`s`.`id` = `p`.`shop_id`)) ;
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -952,11 +938,14 @@ ALTER TABLE `product_detail`
 --
 ALTER TABLE `promotions`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_shops`(`shop_id`);
+  ADD KEY `fk_shops` (`shop_id`);
 
+--
+-- Chỉ mục cho bảng `promotion_items`
+--
 ALTER TABLE `promotion_items`
-  ADD KEY `fk_promotion`(`promotion_id`),
-  ADD KEY `FK_productvariants`(`product_variant_id`);
+  ADD KEY `fk_promotion` (`promotion_id`),
+  ADD KEY `FK_productvariants` (`product_variant_id`);
 
 --
 -- Chỉ mục cho bảng `shops`
@@ -977,7 +966,8 @@ ALTER TABLE `shop_categories`
 --
 ALTER TABLE `shop_info`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_shop_user` (`user_id`);
+  ADD KEY `idx_shop_id` (`shop_id`),
+  ADD KEY `idx_user_id` (`user_id`);
 
 --
 -- Chỉ mục cho bảng `users`
@@ -1075,25 +1065,25 @@ ALTER TABLE `product_detail`
 -- AUTO_INCREMENT cho bảng `promotions`
 --
 ALTER TABLE `promotions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `shops`
 --
 ALTER TABLE `shops`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT cho bảng `shop_categories`
 --
 ALTER TABLE `shop_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT cho bảng `shop_info`
 --
 ALTER TABLE `shop_info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `userviewhistory`
@@ -1181,7 +1171,7 @@ ALTER TABLE `shop_categories`
 -- Các ràng buộc cho bảng `shop_info`
 --
 ALTER TABLE `shop_info`
-  ADD CONSTRAINT `fk_shop_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_shop_info_shop` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`);
 
 --
 -- Các ràng buộc cho bảng `userviewhistory`
