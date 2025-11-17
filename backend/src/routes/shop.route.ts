@@ -6,6 +6,6 @@ ShopRouter.get("/by-owner/:ownerId", shopController.getShopByOwnerController); /
 // ShopRouter.get("/:id", shopController.getShopOnIdController); // Đặt sau
 ShopRouter.get("/shop/:id", shopController.getShopOnIdController);
 ShopRouter.get("/hot", shopController.getHotShops);
-ShopRouter.get('/variants/:id', shopController.getVariants)
+ShopRouter.get('/variants/:id', shopController.getVariants);
 
 export default ShopRouter;

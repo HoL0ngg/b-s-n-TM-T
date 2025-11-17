@@ -4,6 +4,7 @@ import { fetchShopCategories } from '../../api/shopCategory';
 import type { ShopCategoryType } from '../../api/shopCategory';
 import { fetchProductAttributes, updateProduct, fetchProductForEdit } from '../../api/products';
 import type { AttributeType } from '../../api/products';
+import TiptapEditor from '../../components/TipTapEditor';
 
 interface Variation {
     value: string;
@@ -20,7 +21,7 @@ interface DetailItem {
 export default function EditProduct() {
     const { id: productId } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    
+
     const [loading, setLoading] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
     const [error, setError] = useState('');
@@ -45,7 +46,7 @@ export default function EditProduct() {
     const [details, setDetails] = useState<DetailItem[]>([
         { key: '', value: '' }
     ]);
-    
+
     // (useEffect loadInitialData giữ nguyên)
     useEffect(() => {
         const loadInitialData = async () => {
@@ -74,13 +75,13 @@ export default function EditProduct() {
             try {
                 setPageLoading(true);
                 const data = await fetchProductForEdit(productId);
-                
+
                 setName(data.name);
                 setDescription(data.description || '');
                 setImageUrl(data.image_url || '');
                 setShopCateId(data.shop_cate_id);
                 setStatus(data.status);
-                
+
                 // NÂNG CẤP: Điền dữ liệu "Chi tiết"
                 if (data.details && data.details.length > 0) {
                     setDetails(data.details);
@@ -102,7 +103,7 @@ export default function EditProduct() {
                     setBasePrice(data.base_price || 0);
                     setBaseStock(data.stock || 0);
                 }
-                
+
             } catch (err: any) {
                 setError(err.response?.data?.message || "Không thể tải dữ liệu sản phẩm.");
             } finally {
@@ -126,7 +127,7 @@ export default function EditProduct() {
         const newVariations = variations.filter((_, i) => i !== index);
         setVariations(newVariations);
     };
-    
+
     // NÂNG CẤP: Hàm xử lý "Chi tiết sản phẩm"
     const handleDetailChange = (index: number, field: keyof DetailItem, value: string) => {
         const newDetails = [...details];
@@ -137,7 +138,7 @@ export default function EditProduct() {
         setDetails([...details, { key: '', value: '' }]);
     };
     const handleRemoveDetail = (index: number) => {
-        if (details.length <= 1) { 
+        if (details.length <= 1) {
             setDetails([{ key: '', value: '' }]);
             return;
         }
@@ -190,9 +191,9 @@ export default function EditProduct() {
         }
 
         try {
-            await updateProduct(Number(productId), productData); 
+            await updateProduct(Number(productId), productData);
             setLoading(false);
-            navigate('/seller/products'); 
+            navigate('/seller/products');
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || "Đã xảy ra lỗi khi cập nhật sản phẩm.");
@@ -209,7 +210,7 @@ export default function EditProduct() {
             </div>
         );
     }
-    
+
     return (
         <div className="container mt-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
             <form onSubmit={handleSubmit}>
@@ -235,7 +236,11 @@ export default function EditProduct() {
                         </div>
                         <div className="mb-3">
                             <label className="form-label">Mô tả sản phẩm</label>
-                            <textarea className="form-control" rows={5} value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
+                            <TiptapEditor
+                                value={description}
+                                onChange={setDescription}
+                            />
+                            {/* <textarea className="form-control" rows={5} value={description} onChange={(e) => setDescription(e.target.value)}></textarea> */}
                         </div>
                         <div className="row">
                             <div className="col-md-6 mb-3">
@@ -254,37 +259,37 @@ export default function EditProduct() {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* ===== NÂNG CẤP: THÊM THẺ "CHI TIẾT SẢN PHẨM" ===== */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header">Chi tiết sản phẩm</div>
                     <div className="card-body">
                         {details.map((detail, index) => (
-                             <div key={index} className="row align-items-center mb-2">
+                            <div key={index} className="row align-items-center mb-2">
                                 <div className="col-md-5">
                                     <label className="form-label">Thuộc tính</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        placeholder="ví dụ: Thương hiệu" 
-                                        value={detail.key} 
-                                        onChange={(e) => handleDetailChange(index, 'key', e.target.value)} 
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="ví dụ: Thương hiệu"
+                                        value={detail.key}
+                                        onChange={(e) => handleDetailChange(index, 'key', e.target.value)}
                                     />
                                 </div>
                                 <div className="col-md-5">
                                     <label className="form-label">Giá trị</label>
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        placeholder="ví dụ: Maybelline" 
-                                        value={detail.value} 
-                                        onChange={(e) => handleDetailChange(index, 'value', e.target.value)} 
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="ví dụ: Maybelline"
+                                        value={detail.value}
+                                        onChange={(e) => handleDetailChange(index, 'value', e.target.value)}
                                     />
                                 </div>
                                 <div className="col-md-2 d-flex align-items-end">
-                                    <button 
-                                        type="button" 
-                                        className="btn btn-outline-danger btn-sm" 
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger btn-sm"
                                         onClick={() => handleRemoveDetail(index)}
                                     >Xóa</button>
                                 </div>
@@ -356,11 +361,11 @@ export default function EditProduct() {
                         )}
                     </div>
                 </div>
-                
+
                 {/* (Thẻ Trạng thái và Nút bấm giữ nguyên) */}
                 <div className="card shadow-sm mb-3">
-                     <div className="card-header">Trạng thái đăng bán</div>
-                     <div className="card-body">
+                    <div className="card-header">Trạng thái đăng bán</div>
+                    <div className="card-body">
                         <div className="form-check">
                             <input className="form-check-input" type="radio" name="statusRadio" id="statusPublish" value={1} checked={status === 1} onChange={(e) => setStatus(Number(e.target.value))} />
                             <label className="form-check-label" htmlFor="statusPublish">Đăng bán (Công khai)</label>
@@ -369,7 +374,7 @@ export default function EditProduct() {
                             <input className="form-check-input" type="radio" name="statusRadio" id="statusDraft" value={0} checked={status === 0} onChange={(e) => setStatus(Number(e.target.value))} />
                             <label className="form-check-label" htmlFor="statusDraft">Lưu nháp (Ẩn)</label>
                         </div>
-                     </div>
+                    </div>
                 </div>
                 <div className="d-flex justify-content-end mb-5">
                     <button type="button" className="btn btn-outline-secondary me-2" onClick={() => navigate('/seller/products')}>Hủy</button>

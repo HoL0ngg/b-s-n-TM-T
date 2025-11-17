@@ -769,3 +769,116 @@
   border-color: #6c757d;
   margin-right: 0.5rem;
 }
+
+/* src/components/TiptapEditor.css */
+
+/* 1. CSS cho khung */
+.tiptap-container {
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+/* 2. CSS cho thanh công cụ */
+.menu-bar {
+  background: #f8f9fa;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ced4da;
+}
+
+.menu-bar button {
+  background: white;
+  border: 1px solid #ced4da;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.25rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.menu-bar button:hover {
+  background: #f1f3f5;
+}
+
+.menu-bar button.is-active {
+  background: #0d6efd;
+  /* Màu xanh (primary) */
+  color: white;
+}
+
+.menu-bar button:disabled {
+  opacity: 0.5;
+}
+
+/* 3. CSS cho khung soạn thảo (Quan trọng) */
+.tiptap {
+  padding: 1rem;
+  min-height: 250px;
+  /* Chiều cao tối thiểu */
+  outline: none;
+  /* Bỏ viền xanh khi focus */
+}
+
+/* 4. CSS cho các thẻ HTML (Vì Tiptap render HTML thật) */
+.tiptap p {
+  margin: 0 0 1rem 0;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 2rem;
+}
+
+.tiptap strong {
+  font-weight: bold;
+}
+
+.tiptap em {
+  font-style: italic;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+  margin: 0.5em 0;
+}
+
+.tiptap img.ProseMirror-selectednode {
+  outline: 2px solid #ff5722;
+}
+
+.product-description {
+  /* Giữ cho văn bản và mọi thứ xuống dòng đẹp mắt */
+  line-height: 1.6;
+  color: #333;
+}
+
+/* --- ĐÂY LÀ PHẦN SỬA LỖI CỦA BẠN --- */
+.product-description img {
+  /* Bắt TẤT CẢ các thẻ <img> bên trong */
+
+  max-width: 100% !important;
+  /* 1. Đảm bảo ảnh không bao giờ tràn ra ngoài */
+  height: auto !important;
+  /* 2. Giữ đúng tỷ lệ ảnh */
+
+  /* (Tùy chọn: Thêm style cho đẹp) */
+  border-radius: 8px;
+  /* Bo góc ảnh */
+  margin: 1rem 0;
+  /* Thêm khoảng cách trên/dưới cho ảnh */
+}
+
+/* ------------------------------------ */
+
+.product-description p {
+  margin-bottom: 1rem;
+  /* Thêm khoảng cách giữa các đoạn văn */
+}
