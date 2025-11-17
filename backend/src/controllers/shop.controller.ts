@@ -50,6 +50,7 @@ class shopController {
             res.status(500).json({ message: "Lỗi máy chủ khi tải danh sách sản phẩm" });
         }
     }
+    
 }
 
 export default new shopController();

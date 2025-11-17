@@ -3,7 +3,7 @@ import * as OrderService from '../services/order.service';
 
 export const getShopOrdersController = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
         const { status } = req.query;
 
         const orders = await OrderService.getOrdersForShop(userId, status as string | undefined);
@@ -37,7 +37,7 @@ export const updateShopOrderStatusController = async (req: Request, res: Respons
 
 export const getShopOrderDetailController = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
         const orderId = parseInt(req.params.orderId);
 
         if (isNaN(orderId)) {

@@ -22,7 +22,6 @@ export const findShopIdByOwner = async (ownerPhone: string): Promise<number | nu
         `SELECT id FROM shops WHERE owner_id = ?`, 
         [ownerPhone]
     );
-
     if (rows.length > 0) {
         return rows[0].id; 
     }
