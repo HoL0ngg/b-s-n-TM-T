@@ -67,7 +67,7 @@ export default function Profile() {
     }, [selectedFile]);
 
     const avatarSrc = preview || (user?.avatar_url
-        ? `${API_BASE_URL}${user?.avatar_url}` // <-- Mấu chốt là đây
+        ? `${API_BASE_URL}${user?.avatar_url}`
         : "/assets/panda.png");
 
     // 4. HÀM SUBMIT

@@ -157,37 +157,39 @@ export default function Promotion() {
                                 </div>
 
                                 {isLoading ? <div>Đang tải...</div> : (
-                                    <table className="table align-middle">
-                                        <thead>
-                                            <tr>
-                                                <th>Sản phẩm</th>
-                                                <th>Giảm giá</th>
-                                                <th>Xóa</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {promoItems.map(item => (
-                                                <tr key={item.product_variant_id}>
-                                                    <td>{item.product_name}
-                                                        <small className='ms-4'>{item.options_string}</small>
-                                                    </td>
-                                                    <td>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control form-control-sm w-100"
-                                                            value={item.discount_value}
-                                                            onChange={(e) => handleDiscountChange(item.product_variant_id, e.target.value)}
-                                                            min={0}
-                                                            max={100} // Giới hạn từ 0% đến 100
-                                                        />
-                                                    </td>
-                                                    <td>
-                                                        <button className="btn btn-danger btn-sm" onClick={() => handleDeleteItem(item.product_variant_id)}>X</button>
-                                                    </td>
+                                    <div className='overflow-auto' style={{ height: '400px' }}>
+                                        <table className="table align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sản phẩm</th>
+                                                    <th>Giảm giá</th>
+                                                    <th>Xóa</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {promoItems.map(item => (
+                                                    <tr key={item.product_variant_id}>
+                                                        <td>{item.product_name}
+                                                            <small className='ms-4 fst-italic text-primary'>{item.options_string}</small>
+                                                        </td>
+                                                        <td>
+                                                            <input
+                                                                type="number"
+                                                                className="form-control form-control-sm w-100"
+                                                                value={item.discount_value}
+                                                                onChange={(e) => handleDiscountChange(item.product_variant_id, e.target.value)}
+                                                                min={0}
+                                                                max={100} // Giới hạn từ 0% đến 100
+                                                            />
+                                                        </td>
+                                                        <td>
+                                                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteItem(item.product_variant_id)}>X</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 )}
                             </div>
                             <ProductPickerModal

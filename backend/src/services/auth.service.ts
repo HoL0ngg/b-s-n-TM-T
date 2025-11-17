@@ -20,7 +20,7 @@ export async function login(phone_number: string, password: string) {
     if (!validPass) throw new Error("Sai mật khẩu");
 
     const token = jwt.sign(
-        { id: user.phone_number, email: user.email, username: "", avatar_url: user.avatar_url },
+        { id: user.phone_number, email: user.email, username: "", avatar_url: user.avatar_url, role: user.role },
         SECRET_KEY,
         { expiresIn: "1h" }
     );
@@ -87,4 +87,30 @@ export async function changePassword(email: string, password: string) {
 export async function findUserByPhoneNumber(id: number) {
     const [rows] = await pool.query("SELECT * FROM users WHERE phone_number = ?", [id]);
     return (rows as any[])[0];
+}
+
+export async function loginAdminAccount(sdt: string, password: string) {
+    const user = await findUserByPhoneNumber(Number(sdt));
+    if (!user) {
+        throw new Error("SĐT hoặc mật khẩu không đúng");
+    }
+
+    if (user.role !== 'admin') {
+        throw new Error("Tài khoản không phải là Admin");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        throw new Error("SĐT hoặc mật khẩu không đúng");
+    }
+
+    // 4. Tạo token
+    const token = jwt.sign(
+        { id: user.phone_number, role: user.role, shop_id: user.shop_id },
+        SECRET_KEY,
+        { expiresIn: '1d' }
+    );
+
+    delete user.password;
+    return { token, user };
 }
