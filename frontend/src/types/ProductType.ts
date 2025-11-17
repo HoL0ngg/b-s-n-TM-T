@@ -11,6 +11,11 @@ export interface ProductType {
     product_variants: ProductVariantType[];
     images: ProductImageType[];
     avg_rating: number;
+    
+    // Giữ code của bạn (qhuykuteo)
+    shop_cate_id?: number | null;
+    
+    // Giữ code của đồng đội (main)
     original_price: number;
     sale_price: number | null;
     discount_percentage: number | null;
@@ -21,7 +26,6 @@ export interface ProductImageType {
     image_url: string;
     is_main: number;
 }
-
 export interface ProductReviewType {
     id: number;
     rating: number;
@@ -31,7 +35,6 @@ export interface ProductReviewType {
     email: string;
     avatar_url: string;
 }
-
 export interface ProductReviewSummaryType {
     1: number;
     2: number;
@@ -45,31 +48,33 @@ export interface ProductReviewSummaryType {
 export interface ProductDetailsType {
     id: number,
     product_id: number,
-    attribute: string,
-    value: string,
+    attribute: string, 
+    value: string,     
 }
+
 export interface AttributeOfProductVariantsType {
     attribute: string,
     values: string[],
 }
-
 interface VariantOption {
-    attribute: string; // "Màu sắc"
-    value: string;     // "Cam"
+    attribute: string; 
+    value: string;     
 }
-
 export interface ProductVariantType {
-    id: number;           // 1, 2, 3...
-    stock: number;        // 40
-    options: VariantOption[]; // [{ attribute: "Màu sắc", value: "Cam" }, { attribute: "Dung tích", value: "4ML" }]
+    id: number;       
+    stock: number;    
+    options: VariantOption[]; 
     image_url: string;
 
+    // Giữ `price` (vì code của bạn cần)
+    price: number;
+    
+    // Giữ các trường của đồng đội (main)
     original_price: number;
     sale_price: number | null;
     discount_percentage: number | null;
-
-    product_name?: string;    // Tên sản phẩm cha
-    options_string?: string;  // Chuỗi các tùy chọn (ví dụ: "Màu: Đỏ, Size: M")
+    product_name?: string;    
+    options_string?: string;
 }
 
 export interface ProductResponseType {
@@ -82,12 +87,13 @@ export interface BrandOfProductType {
     name: string;
 }
 
+// Giữ các interface mới của đồng đội (main)
 export interface PromotionType {
     id: number;
     shop_id: number;
     name: string;
-    start_date: string; // Dùng 'string' vì JSON trả về từ API (ISO 8601)
-    end_date: string;   // Dùng 'string'
+    start_date: string; 
+    end_date: string;   
     is_active: boolean;
 }
 
@@ -97,16 +103,19 @@ export interface UpdatePromoItemDto {
 }
 
 export interface PromotionItem {
-    // --- Từ bảng 'promotion_items' ---
     promotion_id: number;
     product_variant_id: number;
     discount_value: number;
-
-    // --- Lấy từ JOIN (để hiển thị UI) ---
     product_name: string;
-    product_image: string; // URL ảnh
-    original_price: number; // Giá gốc của biến thể
-    stock: number; // Tồn kho hiện tại
-
+    product_image: string;
+    original_price: number; 
+    stock: number; 
     options_string?: string;
+}
+
+export interface CreatePromotionData {
+    name: string;
+    start_date: string;
+    end_date: string;
+    banner_image: File; // Kiểu File
 }

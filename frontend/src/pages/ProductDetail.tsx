@@ -1,15 +1,20 @@
+// Đường dẫn: frontend/src/pages/ProductDetail.tsx
+// (PHIÊN BẢN SỬA LỖI MÀN HÌNH TRẮNG HOÀN CHỈNH)
+
 import { useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
 import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetailsType, AttributeOfProductVariantsType } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
-import { fecthProductsByID, fecthProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants, fetchTotalProductByShopId } from "../api/products";
+// Sửa lỗi gõ chữ và import (đã làm ở bước trước)
+import { fetchProductsByID, fetchProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
 import { useNavigate } from "react-router-dom";
 import { formatTimeAgo } from "../utils/helper";
+import { IoChevronBackCircleOutline } from "react-icons/io5";
 
 
 const ProductDetail = () => {
@@ -17,7 +22,12 @@ const ProductDetail = () => {
     const [product, setProduct] = useState<ProductType>();
     const { id } = useParams<{ id: string | undefined }>();
     const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
-    const [selectedImage, setSelectedImage] = useState<string>();
+
+    // ===== BẮT ĐẦU SỬA LỖI 1 =====
+    // Sửa state để chấp nhận `null`
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    // ===== KẾT THÚC SỬA LỖI 1 =====
+
     const [shop, setShop] = useState<ShopType>();
     const [rating, setRating] = useState<number>(0);
     const [ratingSummary, setRatingSummary] = useState<ProductReviewSummaryType>({
@@ -26,11 +36,12 @@ const ProductDetail = () => {
     const [productDetails, setProductDetails] = useState<ProductDetailsType[]>([]);
     const [attributeOfProductVariants, setAttributeOfProductVariants] = useState<AttributeOfProductVariantsType[]>([]);
     const navigator = useNavigate();
+
+    // (Các hàm loadProductDetails và loadAttributeOfProduct giữ nguyên)
     const loadProductDetails = async () => {
         if (!id) return;
         try {
             const data = await fetchProductDetails(Number(id));
-
             setProductDetails(data);
         } catch (error) {
             console.error(error);
@@ -41,17 +52,16 @@ const ProductDetail = () => {
         try {
             const data = await fetchAttributeOfProductVariants(Number(id));
             setAttributeOfProductVariants(data);
-
         } catch (error) {
             console.log(error);
-
         }
     }
+
     useEffect(() => {
         const loadProductAndShop = async () => {
             if (!id) return;
             try {
-                const data = await fecthProductsByID(id);
+                const data = await fetchProductsByID(id); // (Đã sửa lỗi gõ chữ)
                 console.log(data);
 
                 setProduct(data);
@@ -73,29 +83,47 @@ const ProductDetail = () => {
         const loadProductImg = async () => {
             if (!id) return;
             try {
-                const data = await fecthProductImg(id);
+                const data = await fetchProductImg(id); // (Đã sửa lỗi gõ chữ)
                 setImages(data);
+                // Tự động set ảnh đầu tiên (hoặc ảnh main) làm ảnh được chọn
                 if (data.length > 0) {
-                    setSelectedImage(data[0].image_url);
+                    const mainImg = data.find(img => img.is_main === 1);
+                    setSelectedImage(mainImg ? mainImg.image_url : data[0].image_url);
                 }
             } catch (err) {
                 console.error("Failed to fetch product images:", err);
             }
         };
+
+        // Chạy các hàm load
         loadAttributeOfProduct();
         loadProductDetails();
         loadProductAndShop();
         loadProductImg();
-        setSelectedImage(mainProductImage);
-    }, [id]);
 
+        // ===== BẮT ĐẦU SỬA LỖI 3 =====
+        // Xóa dòng code gây lỗi. Logic đã được chuyển vào `loadProductImg`.
+        // setSelectedImage(mainProductImage); // <--- XÓA DÒNG NÀY
+        // ===== KẾT THÚC SỬA LỖI 3 =====
+
+    }, [id]); // Bỏ `mainProductImage` ra khỏi dependency array
+
+    // ===== BẮT ĐẦU SỬA LỖI 2 =====
+    // Sửa `useMemo` để nó phụ thuộc vào state `images` (đúng)
+    // thay vì `product.images` (sai, vì `product` không chứa ảnh)
     const mainProductImage = useMemo(() => {
-        if (!product || !product.images || product.images.length === 0) {
-            return null; // Trả về null nếu chưa có
+        if (!images || images.length === 0) { // Phụ thuộc vào state `images`
+            return null;
         }
-        const mainImg = product.images.find(img => img.is_main === 1);
-        return mainImg || product.images[0].image_url;
-    }, [product]);
+        const mainImg = images.find(img => img.is_main === 1); // Tìm trong state `images`
+        if (mainImg) {
+            return mainImg.image_url;
+        }
+        // Nếu không có ảnh main, lấy ảnh đầu tiên
+        return images[0].image_url;
+    }, [images]); // Dependency array là `images`
+    // ===== KẾT THÚC SỬA LỖI 2 =====
+
 
     const reloadReview = async (hihi: number) => {
         if (!product?.id) return;
@@ -111,12 +139,13 @@ const ProductDetail = () => {
         navigator(`/shop/${product?.shop_id}`)
     }
 
+    const handleBack = () => {
+        navigator(-1);
+    }
+
     const formatPhone = (phone: string): string => {
         if (!phone) return "";
-        // Lấy 3 ký tự cuối
         const lastThreeDigits = phone.slice(-3);
-
-        // Nối với 7 dấu *
         return "*******" + lastThreeDigits;
     }
 
@@ -148,7 +177,8 @@ const ProductDetail = () => {
 
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
     return (
-        <div className="container mt-5">
+        <div className="container mt-5 position-relative">
+            <div className="position-absolute pointer top-0 start-0 translate-middle fs-2 text-muted" onClick={handleBack}><IoChevronBackCircleOutline /></div>
             <div className="container">
                 <div className="row">
                     <div className="col-12 col-md-1">
@@ -159,7 +189,6 @@ const ProductDetail = () => {
                             <img
                                 src={selectedImage}
                                 alt="Selected"
-                                // className="rounded"
                                 style={{ width: "550px", height: "550px", objectFit: "cover", borderRadius: "10px" }}
                             />
                         ) : (
@@ -176,35 +205,9 @@ const ProductDetail = () => {
                 </div >
 
             </div>
-            {/* <div className="container border mt-4 d-flex p-4 rounded shadow gap-4">
-                <div className="">
-                    <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "100px", width: "100px" }} />
-                </div>
-                <div className="">
-                    <div className="fs-4 ps-1">{shop?.name}</div>
-                    <div className="text-muted ps-1">online 10 phút trc</div>
-                    <div className="d-flex gap-2 mt-1">
-                        <div className="btn btn-primary"><i className="fa-solid fa-plus"></i> Theo dõi</div>
-                        <div className="btn btn-secondary" onClick={() => handleClick()}>Xem shop</div>
-                    </div>
-                </div>
-                <div className="border-start d-flex gap-4 justify-content-between flex-fill p-3">
-                    <div>
-                        <div className="text-muted">Đánh giá </div>
-                        <div className="text-muted mt-2">Sản phẩm</div>
-                    </div>
-                    <div>
-                        <div className="text-muted">Tỉ lệ phản hồi</div>
-                        <div className="text-muted mt-2">Thời gian phản hồi</div>
-                    </div>
-                    <div>
-                        <div className="text-muted">Tham gia: <span className="text-primary">{shop?.created_at
-                            ? new Date(shop.created_at.toString()).toLocaleDateString("vi-VN")
-                            : "Đang tải ..."}</span></div>
-                        <div className="text-muted mt-2">Người theo dõi</div>
-                    </div>
-                </div>
-            </div> */}
+
+            {/* (Phần code hiển thị shop, chi tiết, mô tả... giữ nguyên) */}
+
             <div className="row mt-4 p-3">
                 <div className="col-7">
                     <div className="fw-bold fs-4">Chi tiết sản phẩm</div>
@@ -234,7 +237,6 @@ const ProductDetail = () => {
                             <div className="ms-3">
                                 <div className="fs-4 fw-bolder text-primary">{shop?.name}</div>
                                 <div className="btn custom-btn w-100 mt-1" onClick={handleClick}>Xem shop</div>
-                                {/* <div className="text-muted">Sao</div> */}
                             </div>
                         </div>
                         <div className="row p-3 text-center">
@@ -275,8 +277,6 @@ const ProductDetail = () => {
                         <div className={rating == 3 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(3)}>3 sao ({formatCount(ratingSummary[3])})</div>
                         <div className={rating == 2 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(2)}>2 sao ({formatCount(ratingSummary[2])})</div>
                         <div className={rating == 1 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(1)}>1 sao ({formatCount(ratingSummary[1])})</div>
-                        {/* <div className={rating == 6 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(6)}>Có bình luận</div> */}
-                        {/* <div className={rating == 7 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(7)}>Có hình ảnh/video</div> */}
                     </div>
                 </div>
                 {productReviews.length > 0 ? productReviews.map((review) => (

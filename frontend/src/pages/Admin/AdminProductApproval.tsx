@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     FiEye,
     FiCheckCircle,
@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { fetchProductsByStatusAdmin, updateProductStatusAdmin } from '../../api/admin/productsAdmin';
 import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
 import Swal from 'sweetalert2';
-
+import Pagenum from '../../components/Admin/Pagenum';
 const AdminProductApproval: React.FC = () => {
     // --- State ---
     const [products, setProducts] = useState<ProductTypeAdmin[]>([]);
@@ -126,8 +126,15 @@ const AdminProductApproval: React.FC = () => {
             }
         }
     };
-    // CHANGED: Tên hàm rõ ràng hơn
-    const loadProducts = async () => {
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // 'smooth' để cuộn mượt, 'auto' để cuộn ngay lập tức
+        });
+    }
+
+    const loadProducts = useCallback(async () => {
         try {
             // CHANGED: Truyền đầy đủ state cho API
             const data = await fetchProductsByStatusAdmin(
@@ -137,27 +144,25 @@ const AdminProductApproval: React.FC = () => {
                 searchTerm
             );
             setProducts(data.products);
-            setTotalPages(data.totalPages); // Cập nhật tổng số trang từ server
+            setTotalPages(data.totalPages); // Cập nhật tổng số trang từ server            
+            scrollToTop();
         } catch (error) {
             console.log(error);
             setProducts([]); // Xóa list nếu lỗi
             setTotalPages(0);
         }
-    }
+    }, [statusFilter, currentPage, searchTerm])
 
     // CHANGED: useEffect phải theo dõi các state filter
     useEffect(() => {
         loadProducts();
-        console.log("Loading data for:", statusFilter, currentPage, searchTerm);
-
         // FIX: Thêm dependencies
-    }, [statusFilter, currentPage, searchTerm]);
+    }, [loadProducts]);
 
     // FIX: Reset về trang 1 khi filter hoặc search thay đổi
     useEffect(() => {
         setCurrentPage(1);
     }, [statusFilter, searchTerm]);
-
     return (
         <div>
             <h1 className="mb-4">Kiểm duyệt Sản phẩm</h1>
@@ -298,75 +303,7 @@ const AdminProductApproval: React.FC = () => {
 
                     {/* --- 3. THANH PHÂN TRANG (Giống hệt trang Shop) --- */}
 
-                    <nav aria-label="Page navigation" className="mt-3">
-                        {/* Sử dụng `totalPages > 1` là một điều kiện tốt hơn 
-      thay vì `products.length > 0` để hiển thị phân trang 
-    */}
-                        {totalPages > 1 && (
-                            <ul className="pagination justify-content-end mb-0">
-                                {/* Nút Trang trước */}
-                                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                    >
-                                        Trước
-                                    </button>
-                                </li>
-
-                                {/* Hiển thị số trang (ĐÃ CẬP NHẬT LOGIC) */}
-                                {(() => {
-                                    const pages: (number | "dots")[] = [];
-
-                                    // Sử dụng biến 'currentPage' từ code gốc của bạn
-                                    const page = currentPage;
-
-                                    if (totalPages <= 3) {
-                                        for (let i = 1; i <= totalPages; i++) pages.push(i);
-                                    } else if (page <= 3) {
-                                        pages.push(1, 2, 3, "dots", totalPages);
-                                    } else if (page >= totalPages - 2) {
-                                        pages.push(1, "dots", totalPages - 2, totalPages - 1, totalPages);
-                                    } else {
-                                        pages.push(1, "dots", page - 1, page, page + 1, "dots", totalPages);
-                                    }
-
-                                    // Render mảng 'pages' ra thành các thẻ <li>
-                                    return pages.map((p, index) =>
-                                        p === "dots" ? (
-                                            <li key={`dots-${index}`} className="page-item disabled">
-                                                <span className="page-link">...</span>
-                                            </li>
-                                        ) : (
-                                            <li
-                                                key={`page-${p}`}
-                                                // Dùng class 'active' của Bootstrap
-                                                className={`page-item ${currentPage === p ? 'active' : ''}`}
-                                            >
-                                                <button
-                                                    className="page-link"
-                                                    onClick={() => handlePageChange(p)}
-                                                >
-                                                    {p}
-                                                </button>
-                                            </li>
-                                        )
-                                    );
-                                })()}
-
-                                {/* Nút Trang sau */}
-                                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                    <button
-                                        className="page-link"
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                    >
-                                        Sau
-                                    </button>
-                                </li>
-                            </ul>
-                        )}
-                    </nav>
-
+                    <Pagenum currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
 
                 </div>
             </div>

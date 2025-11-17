@@ -1,48 +1,45 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useCart } from '../context/CartContext'; // (Context của bạn)
+import { useState, useEffect, useMemo } from 'react';
+import { useCart } from '../context/CartContext'; 
 import type { CartItem } from '../types/CartType';
-import { fecthProductsByID } from '../api/products';
+import { fetchProductsByID } from '../api/products'; 
 import type { ProductType } from '../types/ProductType';
 
 interface VariantEditModalProps {
-    show: boolean; // Prop để Bật/Tắt modal
-    onClose: () => void; // Hàm để Đóng modal
-    cartItem: CartItem; // Sản phẩm đang sửa
+    show: boolean; 
+    onClose: () => void; 
+    cartItem: CartItem; 
 }
 
 export default function VariantEditModal({ show, onClose, cartItem }: VariantEditModalProps) {
-    const { updateCartItem } = useCart(); // (Chúng ta sẽ tạo hàm này ở Bước 3)
+    const { updateCartItem } = useCart(); 
 
-    // State của riêng Modal
     const [fullProduct, setFullProduct] = useState<ProductType | null>(null);
     const [selectedAttrs, setSelectedAttrs] = useState<{ [key: string]: string }>({});
-    const [quantity, setQuantity] = useState(cartItem.quantity);
+    
+    const [quantity, setQuantity] = useState(cartItem.quantity); 
     const [isLoading, setIsLoading] = useState(false);
 
-    // 1. Tải toàn bộ thông tin sản phẩm (để có list biến thể) khi modal mở
     useEffect(() => {
         if (show) {
             setIsLoading(true);
-            // Gọi API bạn đã có để lấy toàn bộ thông tin
-            fecthProductsByID(cartItem.product_id.toString())
+            setQuantity(cartItem.quantity); 
+            
+            fetchProductsByID(cartItem.product_id.toString())
                 .then(data => {
-                    setFullProduct(data); // (Giả sử API trả về { product, attributes })
+                    setFullProduct(data);
                     console.log(data);
 
-
-                    // Set các tùy chọn ban đầu (ví dụ: "Màu sắc": "Hồng")
-                    const initialOptions = {};
+                    const initialOptions: { [key: string]: string } = {};
                     if (cartItem.options) cartItem.options.forEach((opt: any) => {
-                        initialOptions[opt.attribute] = opt.value;
+                        initialOptions[opt.attribute] = opt.value; 
                     });
                     setSelectedAttrs(initialOptions);
                 })
                 .catch(err => console.error("Lỗi tải chi tiết sản phẩm:", err))
                 .finally(() => setIsLoading(false));
         }
-    }, [show, cartItem]); // Chạy lại khi modal mở
+    }, [show, cartItem]); 
 
-    // 2. Logic tìm biến thể (giống hệt trang sản phẩm)
     const currentVariant = useMemo(() => {
         if (!fullProduct || !selectedAttrs) return undefined;
 
@@ -54,57 +51,55 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
     }, [selectedAttrs, fullProduct]);
 
     const derivedAttributes = useMemo(() => {
-        // Nếu chưa tải xong, trả về mảng rỗng
         if (!fullProduct || !fullProduct.product_variants) {
             return [];
         }
-
-        // Dùng Map để gom nhóm các thuộc tính
-        // (ví dụ: "Màu sắc" => Set("Hồng", "Cam", "Đỏ"))
         const attrMap = new Map<string, Set<string>>();
-
-        // Lặp qua từng biến thể (variant)
         for (const variant of fullProduct.product_variants) {
-            // Lặp qua từng tùy chọn (option) của biến thể đó
             for (const option of variant.options) {
-                // option = { attribute: "Màu sắc", value: "Hồng" }
-
-                // Nếu chưa thấy "Màu sắc", tạo một Set mới
                 if (!attrMap.has(option.attribute)) {
                     attrMap.set(option.attribute, new Set());
                 }
-                // Thêm giá trị "Hồng" vào Set
                 attrMap.get(option.attribute)?.add(option.value);
             }
         }
-
-        // Chuyển Map thành mảng mà JSX cần
-        // Ví dụ: [ { attribute: "Màu sắc", values: ["Hồng", "Cam", "Đỏ"] }, ... ]
         return Array.from(attrMap.entries()).map(([key, valueSet]) => ({
             attribute: key,
             values: Array.from(valueSet)
         }));
+    }, [fullProduct]); 
 
-    }, [fullProduct]); // Chỉ tính toán lại khi 'fullProduct' thay đổi
-
-    // 3. Hàm chọn
     const handleSelectAttribute = (attrName: string, val: string) => {
         setSelectedAttrs(prev => ({ ...prev, [attrName]: val }));
     };
 
-    // 4. Hàm lưu
+    const handleQuantityChange = (amount: number) => {
+        setQuantity(prevQty => {
+            const newQty = prevQty + amount;
+            const stock = currentVariant?.stock ?? 0;
+            if (newQty < 1) return 1; 
+            if (newQty > stock) return stock; 
+            return newQty;
+        });
+    };
+
     const handleSaveChanges = () => {
         if (!currentVariant) {
             alert("Vui lòng chọn đầy đủ tùy chọn.");
             return;
         }
+        if (quantity > currentVariant.stock) {
+             alert(`Số lượng vượt quá tồn kho (Tồn kho: ${currentVariant.stock})`);
+             setQuantity(currentVariant.stock); 
+             return;
+        }
 
-        // Gọi hàm context
         updateCartItem(cartItem.product_variant_id, currentVariant.id, quantity);
-        onClose(); // Đóng modal
+        onClose(); 
     };
 
-    // 5. Giao diện (Dùng class của Bootstrap)
+    const stock = currentVariant?.stock ?? 0;
+
     return (
         <div
             className={`modal fade ${show ? 'show' : ''}`}
@@ -120,13 +115,10 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                     <div className="modal-body">
                         {isLoading && <div>Đang tải...</div>}
 
-                        {/* Tái sử dụng logic/giao diện từ trang sản phẩm */}
                         {fullProduct && (
                             <>
-                                {/* Tên sản phẩm */}
                                 <h6 className="fw-bold">{fullProduct.name}</h6>
 
-                                {/* Lặp qua các thuộc tính */}
                                 {derivedAttributes.map((attr) => (
                                     <div key={attr.attribute} className="mb-3">
                                         <div className="fw-semibold">{attr.attribute}</div>
@@ -144,14 +136,41 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                                     </div>
                                 ))}
 
-                                {/* Giá và Tồn kho (động) */}
+                                <div className="mb-3">
+                                    <div className="fw-semibold">Số lượng</div>
+                                    <div className="d-flex align-items-center gap-2 mt-1">
+                                        <button 
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => handleQuantityChange(-1)}
+                                            disabled={quantity <= 1}
+                                        > - </button>
+                                        
+                                        <input 
+                                            type="text" 
+                                            className="form-control text-center" 
+                                            style={{width: '60px'}}
+                                            value={quantity}
+                                            readOnly 
+                                        />
+                                        
+                                        <button 
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => handleQuantityChange(1)}
+                                            disabled={!currentVariant || quantity >= stock}
+                                        > + </button>
+                                    </div>
+                                </div>
+
+
                                 <div className="mt-3">
                                     <div>Giá:
                                         <span className="fw-bold text-danger ms-2">
-                                            {currentVariant ? currentVariant.price.toLocaleString('vi-VN') : '...'}đ
+                                            {/* ===== ĐÃ SỬA XUNG ĐỘT ===== */}
+                                            {currentVariant ? (currentVariant.price * quantity).toLocaleString('vi-VN') : '...'}đ
+                                            {/* ========================== */}
                                         </span>
                                     </div>
-                                    <div>Tồn kho: {currentVariant ? currentVariant.stock : '...'}
+                                    <div>Tồn kho: {stock > 0 ? stock : 'Hết hàng'}
                                     </div>
                                 </div>
 
@@ -164,7 +183,7 @@ export default function VariantEditModal({ show, onClose, cartItem }: VariantEdi
                             type="button"
                             className="btn btn-primary"
                             onClick={handleSaveChanges}
-                            disabled={!currentVariant || isLoading || currentVariant.stock == 0} // Vô hiệu hóa nếu chưa chọn
+                            disabled={!currentVariant || isLoading || stock === 0} 
                         >
                             Lưu thay đổi
                         </button>

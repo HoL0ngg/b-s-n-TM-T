@@ -5,6 +5,7 @@ export const getShopOrdersController = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
         const { status } = req.query;
+        console.log("userId", userId)
 
         const orders = await OrderService.getOrdersForShop(userId, status as string | undefined);
         res.status(200).json(orders);

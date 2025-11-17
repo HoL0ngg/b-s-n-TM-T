@@ -1,20 +1,26 @@
 import { Request, Response } from "express";
 import shopService from "../services/shop.service";
 
-class shopController {
-    getShopOnIdController = async (req: Request, res: Response) => {
-        const id = req.params.id;
-        const type = req.query.type || "";
-        if (type != "") {
-            const tmp = await shopService.getShopCateOnIdService(Number(id), type.toString());
-            return res.status(200).json(tmp);
+class ShopController {
+    async getShopOnIdController(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.id);
+            const type = req.query.type?.toString() || "";
+
+            if (type) {
+                const tmp = await shopService.getShopCateOnIdService(id, type);
+                return res.status(200).json(tmp);
+            }
+
+            const data = await shopService.getShopOnIdService(id);
+            res.status(200).json(data);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Internal server error" });
         }
-        const data = await shopService.getShopOnIdService(Number(id));
-        res.status(200).json(data);
     }
 
-    // ← THÊM FUNCTION NÀY
-    getShopByOwnerController = async (req: Request, res: Response) => {
+    async getShopByOwnerController(req: Request, res: Response) {
         try {
             const ownerId = req.params.ownerId;
             const shop = await shopService.getShopByOwnerService(ownerId);
@@ -29,28 +35,81 @@ class shopController {
             res.status(500).json({ error: "Internal server error" });
         }
     }
-    getHotShops = async (req: Request, res: Response) => {
+
+    async getHotShops(req: Request, res: Response) {
         try {
             const data = await shopService.getHotShops();
             res.status(200).json(data);
         } catch (err) {
-            res.status(501).json({ success: false });
+            console.error(err);
+            res.status(500).json({ success: false });
         }
     }
 
-    getVariants = async (req: Request, res: Response) => {
+    async getVariants(req: Request, res: Response) {
         try {
             const shopId = Number(req.params.id);
-
             const variants = await shopService.getAllVariantsByShopId(shopId);
             res.status(200).json(variants);
-
         } catch (error) {
             console.error("Lỗi lấy danh sách biến thể:", error);
             res.status(500).json({ message: "Lỗi máy chủ khi tải danh sách sản phẩm" });
         }
     }
-    
+
+    async createShopController(req: Request, res: Response) {
+        try {
+            console.log('📦 Received create shop request:', req.body);
+            const { name, logo_url, description, status, owner_id } = req.body;
+
+            if (!name || !owner_id) {
+                return res.status(400).json({ message: 'Thiếu thông tin bắt buộc: name và owner_id' });
+            }
+
+            const shopId = await shopService.createShopService(
+                name,
+                logo_url || '/assets/shops/default-shop.png',
+                description || '',
+                status || 1,
+                owner_id
+            );
+
+            console.log('✅ Shop created with ID:', shopId);
+            res.status(201).json({ shopId, message: 'Shop created successfully' });
+
+        } catch (error: any) {
+            console.error('❌ Error creating shop:', error);
+            res.status(500).json({ message: 'Error creating shop', error: error.message });
+        }
+    }
+
+    async updateShopController(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.id);
+            const { name, logo_url, description, status } = req.body;
+
+            const success = await shopService.updateShopService(id, name, logo_url, description, status);
+            if (!success) return res.status(404).json({ message: 'Shop not found' });
+
+            res.json({ message: 'Shop updated successfully' });
+        } catch (error: any) {
+            console.error('Error updating shop:', error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+    async deleteShopController(req: Request, res: Response) {
+        try {
+            const id = Number(req.params.id);
+            const success = await shopService.deleteShopService(id);
+
+            if (!success) return res.status(404).json({ message: 'Shop not found' });
+            res.json({ message: 'Shop deleted successfully' });
+        } catch (error: any) {
+            console.error('Error deleting shop:', error);
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
-export default new shopController();
+export default new ShopController();

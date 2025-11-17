@@ -1,7 +1,7 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 
-import type { Address, User, UserProfile } from "../models/user.model";
+import type { Address, User, UserAdmin, UserProfile } from "../models/user.model";
 
 class userService {
     getUserByIdService = async (id: string): Promise<User> => {
@@ -125,6 +125,94 @@ class userService {
         ) as [any[], any];
         return countRows.length > 0;
     }
-}
 
+    getSellersSerivce = async (status: string, page: number, limit: number, searchTerm?: string): Promise<{ users: UserAdmin[], totalPages: number }> => {
+        try {
+            let whereClause = "WHERE 1=1";
+            const params: any[] = [];
+
+            if (status !== "all") {
+                whereClause += " AND u.status = ?";
+                params.push(Number(status));
+            }
+            if (searchTerm) {
+                whereClause += " AND (uf.username LIKE ? OR u.email LIKE ?)";
+                params.push(`%${searchTerm}%`, `%${searchTerm}%`);
+            }
+            const countQuery = `
+            SELECT COUNT(*) AS total
+            FROM users AS u
+            ${whereClause};
+        `;
+            const [countResult]: any = await pool.query(countQuery, params);
+            const total = countResult[0]?.total || 0;
+            const totalPage = Math.ceil(total / limit);
+            let query = `
+            SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name
+            FROM users u
+            JOIN user_profile uf ON u.phone_number = uf.phone_number
+            JOIN shops s ON s.owner_id = u.phone_number 
+            ${whereClause}
+            ORDER BY u.created_at DESC
+            LIMIT ? OFFSET ?;
+        `;
+            const dataParams = [...params, limit, (page - 1) * limit];
+            const [rows]: any = await pool.query(query, dataParams);
+            return {
+                users: rows as UserAdmin[],
+                totalPages: totalPage,
+            };
+        } catch (error) {
+            console.error("Lỗi trong getUsersByStatusController:", error);
+            throw error;
+        }
+    }
+    getBuyersService = async (status: string, page: number, limit: number, searchTerm?: string): Promise<{ users: UserAdmin[], totalPages: number }> => {
+        try {
+            let whereClause = "WHERE 1=1 AND u.phone_number NOT IN (SELECT owner_id FROM shops)";
+            const params: any[] = [];
+
+            if (status !== "all") {
+                whereClause += " AND u.status = ?";
+                params.push(Number(status));
+            }
+            if (searchTerm) {
+                whereClause += " AND (uf.username LIKE ? OR u.email LIKE ?)";
+                params.push(`%${searchTerm}%`, `%${searchTerm}%`);
+            }
+            const countQuery = `
+            SELECT COUNT(*) AS total
+            FROM users AS u
+            ${whereClause};
+        `;
+            const [countResult]: any = await pool.query(countQuery, params);
+            const total = countResult[0]?.total || 0;
+            const totalPage = Math.ceil(total / limit);
+            let query = `
+            SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name
+            FROM users u
+            JOIN user_profile uf ON u.phone_number = uf.phone_number                        
+            ${whereClause}
+            ORDER BY u.created_at DESC
+            LIMIT ? OFFSET ?;
+        `;
+            const dataParams = [...params, limit, (page - 1) * limit];
+            const [rows]: any = await pool.query(query, dataParams);
+            // console.log(rows);
+            return {
+                users: rows as UserAdmin[],
+                totalPages: totalPage,
+            };
+        } catch (error) {
+            console.error("Lỗi trong getUsersByStatusController:", error);
+            throw error;
+        }
+    }
+    updateUserStatusService = async (phone: string, status: number) => {
+        const query = `UPDATE users SET status = ? WHERE phone_number = ?`;
+        const [result] = await pool.query(query, [status, phone]);
+        const affectedRows = (result as any).affectedRows;
+        return affectedRows > 0;
+    }
+}
 export default new userService();

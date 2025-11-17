@@ -2,6 +2,10 @@ export interface User {
     phone_number: string;
     email: string;
     avatar_url: string;
+    shop_id: string;
+    role: string;
+    status: number;
+    created_at: string;
 }
 
 export interface Address {
@@ -21,4 +25,13 @@ export interface UserProfile {
     gender: number;
     avatar_url: string;
     updated_at: string;
+}
+
+export interface UserAdmin {
+    name: string;
+    email: string;
+    phone: string;
+    role: string;
+    status: number;
+    created_at: string;
 }

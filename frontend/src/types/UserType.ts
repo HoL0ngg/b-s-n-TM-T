@@ -2,7 +2,8 @@ export type UserType = {
     id: number;
     email: string;
     avatar_url: string;
-    role: 'buyer' | 'seller';
+    role: "customer" | "shop_owner" | "admin";
+    shop_id: number;
     phone: number;
 } | null;
 
