@@ -42,8 +42,6 @@ app.use("/api/shops", ShopRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
 
-// Routes của bạn (qhuykuteo)
-// app.use('/api/shop_info', shopInfoRoutes); // (Có dấu gạch dưới)
 app.use("/api/auth", authRoutes); 
 app.use("/api/shop-categories", shopCategoryRoutes);
 
@@ -51,7 +49,7 @@ app.use("/api/shop-categories", shopCategoryRoutes);
 app.use("/api", orderRoutes);
 app.use('/api/payments', paymentRouter);
 app.use("/api/admin/productsAdmin", ProductsAdminRoute);
-app.use('/api/shopinfo', shopInfoRoutes); // (Không có dấu gạch dưới)
+app.use('/api/shopinfo', shopInfoRoutes); 
 app.use("/api/admin/shopsAdmin", ShopsAdminRoute);
 app.use("/api/admin/usersAdmin", UsersAdminRoute);
 

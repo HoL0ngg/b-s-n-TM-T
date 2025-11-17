@@ -8,8 +8,6 @@ const router = express.Router();
 router.get('/user/:userId', shopController.getShopByUserId);
 
 router.post('/register', verifyToken, shopController.registerShop); // Add verifyToken here too
-
-// ✅ FIX: Route should match what you're calling
 router.put('/update/:shopId', verifyToken, shopController.updateShop); // Changed from /update/:shopId
 
 export default router;
