@@ -14,7 +14,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgetPassword from "./pages/forgetPassword";
 import Category from "./pages/Category";
-import Shop from "./pages/Shop"; 
+import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Profile from "./pages/User/Account/Profile";
 import Address from "./pages/User/Account/Address";
@@ -47,6 +47,7 @@ import AdminUserBuyersManagement from "./pages/Admin/AdminUserBuyersManagement";
 import AdminProductApproval from "./pages/Admin/AdminProductApproval";
 import AdminPayouts from "./pages/Admin/AdminPayouts";
 import AdminShopDetail from "./pages/Admin/AdminShopDetail";
+import AdminLogin from "./pages/Admin/AdminLogin";
 
 function App() {
   return (
@@ -81,15 +82,15 @@ function App() {
         {/* === 2. KÊNH NGƯỜI BÁN (DÙNG SHOP LAYOUT) === */}
         <Route path="/seller" element={<ShopLayout />}>
           <Route index element={<Dashboard />} />
-          
+
           {/* (Route 'Orders' của 'main') */}
-          <Route path="orders" element={<Orders />} /> 
+          <Route path="orders" element={<Orders />} />
           <Route path="orders/:id" element={<OrderDetail />} />
 
           {/* (Route 'Settings' của 'main') */}
           <Route path="settings/view" element={<View />} />
           <Route path="settings/profile" element={<ProfileShop />} />
-          
+
           {/* (Các Route 'Products' của bạn 'qhuykuteo') */}
           <Route path="products" element={<ShopProducts />} />
           <Route path="categories" element={<ShopCategoriesManager />} />
@@ -101,6 +102,7 @@ function App() {
         </Route>
 
         {/* === 3. TRANG ADMIN (TỪ NHÁNH 'main') === */}
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route
           path="/admin"
           element={
@@ -117,7 +119,7 @@ function App() {
           <Route path="payouts" element={<AdminPayouts />} />
           <Route path="shops/:id" element={<AdminShopDetail />} />
         </Route>
-        
+
         {/* <Route path="*" element={<NotFoundPage />} /> */}
       </Routes>
     </BrowserRouter>

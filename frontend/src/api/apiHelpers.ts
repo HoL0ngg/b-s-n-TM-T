@@ -4,7 +4,7 @@ import axios from "axios";
 // để đính kèm vào các request cần bảo mật
 export const getAuthHeaders = () => {
     const token = axios.defaults.headers.common['Authorization'];
-    
+
     if (!token) {
         // Cảnh báo này không làm dừng chương trình
         console.warn("Token không tìm thấy trong axios defaults. Đảm bảo AuthContext đã chạy.");
@@ -12,7 +12,7 @@ export const getAuthHeaders = () => {
 
     return {
         headers: {
-            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/json',
             'Authorization': token || ''
         }
     };
