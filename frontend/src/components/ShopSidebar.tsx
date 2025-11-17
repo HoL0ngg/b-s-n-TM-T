@@ -142,56 +142,32 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
         </li>
         
         {/* --- Mục mới của 'main' --- */}
-        <li className="nav-item mt-2">
-          <span className="nav-link text-muted small text-uppercase sidebar-link-text pointer">
-            <NavLink
-              to="/seller/promotion"
-              className="text-dark text-decoration-none"
-            >
-              Quản lý giảm giá
-            </NavLink>
-          </span>
-        </li>
+      <li className="nav-item">
+        <NavLink
+          to="/seller/promotion"
+          className="nav-link text-dark d-flex align-items-center"
+        >
+          <i className="bi bi-tag me-3 fs-5"></i>
+          <span className="sidebar-link-text">{isOpen && "Quản lý giảm giá"}</span>
+        </NavLink>
+      </li>
 
-        {/* --- Nhóm Quản lý Shop --- */}
-        <li className="nav-item mt-2">
-          <span className="nav-link text-muted small text-uppercase sidebar-link-text">
-            Quản lý Shop
-          </span>
-        </li>
+
+
+       {/* --- Nhóm Quản lý Shop --- */}
+
         <li className="nav-item">
-          <a
-            href="#submenu-shop"
-            data-bs-toggle="collapse"
+          <NavLink
+            to="/seller/settings/profile"
             className="nav-link text-dark d-flex justify-content-between"
           >
             <div>
               <i className="bi bi-gear me-3 fs-5"></i>
               <span className="sidebar-link-text">Thiết lập Shop</span>
             </div>
-            {isOpen && <i className="bi bi-chevron-down small"></i>}
-          </a>
-          <div className="collapse" id="submenu-shop">
-            <ul className="nav flex-column ms-4">
-              <li>
-                <NavLink
-                  to="/seller/settings/profile"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Hồ sơ Shop
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/seller/settings/view"
-                  className="nav-link text-dark small sidebar-link-text"
-                >
-                  Giao diện người xem
-                </NavLink>
-              </li>
-            </ul>
-          </div>
+          </NavLink>
         </li>
+
       </nav>
     </div>
   );
