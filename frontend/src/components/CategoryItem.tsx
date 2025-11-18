@@ -10,7 +10,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ category }) => {
 
   return (
     <div className="col text-center d-flex flex-column align-items-center">
-      <div className="rounded-circle shadow d-flex align-items-center" style={{ height: '160px', width: '160px' }}>
+      <div className="rounded-circle shadow d-flex align-items-center pointer" style={{ height: '160px', width: '160px' }} onClick={() => navigate(`/category/${category.id}`)}>
         <img
           src={category.img_url}
           alt={category.name}
@@ -20,9 +20,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({ category }) => {
             width: "100%",
             maxWidth: "100px",
             margin: "0 auto",
-            cursor: "pointer",
           }}
-          onClick={() => navigate(`/category/${category.id}`)}
         />
       </div>
       <p className="mt-2">{category.name}</p>
