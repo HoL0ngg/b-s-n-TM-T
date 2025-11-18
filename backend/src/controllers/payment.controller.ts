@@ -1,26 +1,38 @@
 import axios from "axios";
 import { Request, Response } from "express";
-import { VNPay } from 'vnpay';
-import { HashAlgorithm, VnpLocale, ProductCode, VerifyReturnUrl } from 'vnpay';
-
+import { VNPay, consoleLogger } from 'vnpay';
+import { HashAlgorithm, VnpLocale, ProductCode, VerifyReturnUrl, VerifyIpnCall } from 'vnpay';
+import {
+    IpnFailChecksum,
+    IpnOrderNotFound,
+    IpnInvalidAmount,
+    InpOrderAlreadyConfirmed,
+    IpnUnknownError,
+    IpnSuccess,
+} from 'vnpay';
 class PaymentController {
-    createPayment_vnpay = async (req: Request, res: Response) => {
-        const vnpay = new VNPay({
-            tmnCode: process.env.VNP_TMN_CODE!,
-            secureSecret: process.env.VNP_HASH_SECRET!,
-            vnpayHost: 'https://sandbox.vnpayment.vn',
-            testMode: true,
-            enableLog: true,
-        });
+    readonly vnpay = new VNPay({
+        tmnCode: process.env.VNP_TMN_CODE!,
+        secureSecret: process.env.VNP_HASH_SECRET!,
+        vnpayHost: 'https://sandbox.vnpayment.vn',
+        testMode: true,
+        enableLog: true,
+    });
 
+    createPayment_vnpay = async (req: Request, res: Response) => {
         try {
+            /*
+                Tạo mới đơn hàng
+                *** Chưa xử lý ***
+                const order = await createOrder(req.body)
+            */
             const order = {
                 id: `ORDER_TESTING_${Date.now()}`,
                 user_id: (req as any).user.id,
                 amount: (req as any).body.total,
             }
             // Tạo URL      
-            const paymentUrl = vnpay.buildPaymentUrl({
+            const paymentUrl = this.vnpay.buildPaymentUrl({
                 vnp_Amount: order.amount,
                 vnp_IpAddr:
                     req.headers['x-forwarded-for'] instanceof Array
@@ -121,6 +133,67 @@ class PaymentController {
             });
         }
     };
+
+    handleIpn_vnpay = async (req, res) => {
+        try {
+            const verify: VerifyIpnCall = this.vnpay.verifyIpnCall(req.query,  {
+                logger: {
+                    type: 'all',
+                    loggerFn: consoleLogger,
+                },
+            },);
+            
+            if(!verify.isVerified) {
+                return res.json(IpnFailChecksum);
+            }
+
+            if (!verify.isSuccess) {
+                return res.json(IpnUnknownError);
+            }
+
+            /*
+                Tìm đơn hàng trong cơ sở dữ liệu
+                *** Chưa xử lý ***
+                const foundOrder = await findOrderById(verify.vnp_TxnRef);
+            */
+
+            const foundOrder = {
+                orderId: "nah",
+                amount: 0,
+                status: "pending"
+            }
+            // Nếu không tìm thấy đơn hàng hoặc mã đơn hàng không khớp
+            if (!foundOrder || verify.vnp_TxnRef !== foundOrder.orderId) {
+                return res.json(IpnOrderNotFound);
+            }
+
+            // Nếu số tiền thanh toán không khớp
+            if (verify.vnp_Amount !== foundOrder.amount) {
+                return res.json(IpnInvalidAmount);
+            }
+
+            // Nếu đơn hàng đã được xác nhận trước đó
+            if (foundOrder.status === 'completed') {
+                return res.json(InpOrderAlreadyConfirmed);
+            }
+
+            /*
+                Cập nhật trạng thái đơn hàng
+            */
+            foundOrder.status = 'completed';
+            /*
+                Cập nhật đơn hàng lên database
+                *** Chưa xử lý ***
+                await updateOrder(foundOrder); 
+            */
+
+            // Sau đó cập nhật trạng thái trở lại cho VNPay để họ biết đã xác nhận đơn hàng
+            return res.json(IpnSuccess);
+        } catch (error) {
+         console.log(`verify error: ${error}`);
+         return res.json(IpnUnknownError);
+     }
+    }
 }
 
 export default new PaymentController();
