@@ -11,7 +11,7 @@ UserRouter.get("/:id/address/default", userController.getDefaultAddressByuserIdC
 UserRouter.post("/:id/address", userController.postAddressUserController)
 UserRouter.put("/:id/address/change-default", verifyToken, userController.postChangeAddressDefault)
 UserRouter.get("/:id/profile", userController.getUserProfileController);
-UserRouter.patch("/profile", verifyToken, uploadAvatar.single('avatar'), userController.updateProfileController);
+UserRouter.patch("/profile", verifyToken, uploadAvatar, userController.updateProfileController);
 // UserRouter.patch('/avatar', verifyToken, uploadAvatar.single('avatar'), userController.updateAvatar);
 
 export default UserRouter;

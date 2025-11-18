@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { TiDeleteOutline } from "react-icons/ti";
 import { BsCartXFill } from "react-icons/bs";
 import VariantEditModal from "../../components/VariantEditModal";
+import { handleSwalAlert } from "../../utils/helper";
 
 export default function Cart() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -101,6 +102,12 @@ export default function Cart() {
             selectedItems.includes(item.product_id)
         );
         const total = calculateTotal(); // (Hàm của bạn)
+
+        if (itemsToCheckout.length === 0) {
+            handleSwalAlert("Thông báo báo", "Vui lòng chọn sản phẩm để thanh toán.");
+            setLoading(false);
+            return;
+        }
 
         sessionStorage.setItem('checkoutItems', JSON.stringify(itemsToCheckout));
         sessionStorage.setItem('checkoutTotal', JSON.stringify(total));

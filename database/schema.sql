@@ -138,14 +138,14 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `description`, `img_url`) VALUES
-(1, 'Mỹ phẩm', 'Danh mục Mỹ phẩm bao gồm các sản phẩm chăm sóc da, trang điểm và làm đẹp dành cho mọi lứa tuổi. Tất cả sản phẩm đều được chọn lọc kỹ lưỡng, đảm bảo chất lượng, an toàn cho người dùng và giúp bạn tỏa sáng tự nhiên mỗi ngày.', '/assets/categories/my pham.jpg'),
-(2, 'Quần', 'Danh mục Quần mang đến nhiều kiểu dáng hiện đại và thoải mái như quần jeans, quần tây, quần kaki, legging và jogger. Chất liệu đa dạng, form dáng chuẩn, phù hợp cho cả đi làm, đi học và dạo phố, giúp bạn tự tin thể hiện phong cách riêng.', '/assets/categories/quan.jpg'),
-(3, 'Áo', 'Danh mục Áo gồm nhiều lựa chọn thời trang như áo thun, áo sơ mi, áo khoác, áo len và áo polo. Các sản phẩm được thiết kế tinh tế, chất liệu thoáng mát, dễ phối đồ và phù hợp cho mọi hoàn cảnh — từ công sở đến đi chơi.', '/assets/categories/ao.jpg'),
-(4, 'Giày', 'Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.', '/assets/categories/giay.webp'),
-(5, 'Laptop', 'Adudu', '/assets/categories/laptop.jpg'),
-(6, 'Sức khỏe', 'adudu', '/assets/categories/suckhoe.png'),
-(7, 'Đồ điện tử', 'adudu', '/assets/categories/dodientu.png'),
-(8, 'Trang sức', 'adudu', '/assets/categories/trangsuc.png');
+(1, 'Sức khỏe & Làm đẹp', 'Danh mục Mỹ phẩm bao gồm các sản phẩm chăm sóc da, trang điểm và làm đẹp dành cho mọi lứa tuổi. Tất cả sản phẩm đều được chọn lọc kỹ lưỡng, đảm bảo chất lượng, an toàn cho người dùng và giúp bạn tỏa sáng tự nhiên mỗi ngày.', '/assets/categories/suc khoe.png'),
+(2, 'Thời trang & Phụ kiện', 'Danh mục Quần mang đến nhiều kiểu dáng hiện đại và thoải mái như quần jeans, quần tây, quần kaki, legging và jogger. Chất liệu đa dạng, form dáng chuẩn, phù hợp cho cả đi làm, đi học và dạo phố, giúp bạn tự tin thể hiện phong cách riêng.', '/assets/categories/thoi trang.png'),
+(3, 'Nhà cửa & Đời sống', 'Danh mục Áo gồm nhiều lựa chọn thời trang như áo thun, áo sơ mi, áo khoác, áo len và áo polo. Các sản phẩm được thiết kế tinh tế, chất liệu thoáng mát, dễ phối đồ và phù hợp cho mọi hoàn cảnh — từ công sở đến đi chơi.', '/assets/categories/nha cua.png'),
+(4, 'Thể thao & Du lịch', 'Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.', '/assets/categories/the thao.png'),
+(5, 'Điện tử & Công nghệ', 'Adudu', '/assets/categories/dien tu.png'),
+(6, 'Sách & Văn phòng phẩm', 'adudu', '/assets/categories/van phong pham.png'),
+(7, 'Thú cưng', 'adudu', '/assets/categories/thu cung.png'),
+(8, 'Trang sức', 'adudu', '/assets/categories/trang suc.png');
 
 -- --------------------------------------------------------
 
@@ -170,17 +170,17 @@ INSERT INTO `generic` (`id`, `name`, `category_id`) VALUES
 (4, 'Quần dài', 2),
 (5, 'Quần short', 2),
 (6, 'Quẩn thun', 2),
-(7, 'Áo sơ mi', 3),
+(7, 'Áo sơ mi', 2),
 (8, 'Giày đá banh', 4),
-(9, 'Tivi', 7),
-(10, 'Tủ lạnh', 7),
-(11, 'Máy lạnh', 7),
-(12, 'Máy giặt', 7),
-(13, 'Máy sấy', 7),
+(9, 'Tivi', 5),
+(10, 'Tủ lạnh', 5),
+(11, 'Máy lạnh', 5),
+(12, 'Máy giặt', 5),
+(13, 'Máy sấy', 5),
 (14, 'Gel trị mụn', 1),
 (15, 'Tẩy tế bào chết', 1),
-(16, 'Sữa rửa mặt', 6),
-(17, 'Dầu gội đầu', 6),
+(16, 'Sữa rửa mặt', 1),
+(17, 'Dầu gội đầu', 1),
 (18, 'Vòng tay', 8);
 
 -- --------------------------------------------------------

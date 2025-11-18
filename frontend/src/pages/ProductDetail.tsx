@@ -124,6 +124,9 @@ const ProductDetail = () => {
     }, [images]); // Dependency array là `images`
     // ===== KẾT THÚC SỬA LỖI 2 =====
 
+    console.log(product);
+
+
 
     const reloadReview = async (hihi: number) => {
         if (!product?.id) return;
@@ -227,6 +230,10 @@ const ProductDetail = () => {
                                 <p>Khong co chi tiet sp</p>
                             </div>
                         )}
+                    <div className="fw-bold fs-4">Mô tả sản phẩm</div>
+                    <div className="product-description"> {/* <-- 1. Đặt một class cha ở đây */}
+                        <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
+                    </div>
                 </div>
                 <div className="col-5">
                     <div className="p-4 border rounded">
