@@ -58,6 +58,7 @@ class PaymentController {
 
         const partnerCode = process.env.MOMO_PARTNER_CODE!;
         const accessKey = process.env.MOMO_ACCESS_KEY!;
+
         const secretkey = process.env.MOMO_SECRET_KEY!;
         const requestId = partnerCode + new Date().getTime();
         const orderId = order.id;
