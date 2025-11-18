@@ -138,7 +138,7 @@ export const AddressPage = () => {
         };
         const processPayment = async (provider: string, data: typeof checkoutData) => {
             try {
-                switch(provider){
+                switch (provider) {
                     case 'vnpay':
                         return await createPayment_vnpay(data);
                     case 'momo':
@@ -146,7 +146,7 @@ export const AddressPage = () => {
                     default:
                         throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
                 }
-                
+
             } catch (error) {
                 console.error('[ERROR] ', error);
                 throw new Error('Tạo URL thanh toán thất bại');
@@ -156,10 +156,10 @@ export const AddressPage = () => {
         try {
             const response = await processPayment(provider, checkoutData);
 
-            if(response.success && response.paymentUrl){
+            if (response.success && response.paymentUrl) {
                 console.log(`URL thanh toán được tạo thành công: ${response.paymentUrl}`);
                 return response.paymentUrl;
-            } else{
+            } else {
                 console.error(response.message || '[ERROR] Lỗi tạo URL thanh toán');
                 alert(response.message || '[ERROR] Có lỗi khi tạo URL thanh toán');
                 return null;
@@ -172,12 +172,12 @@ export const AddressPage = () => {
     }
     const handlePlaceOrder = async () => {
         console.log(selectedMethod);
-        if(selectedMethod === "cod"){
+        if (selectedMethod === "cod") {
             alert("Chưa xử lý phương thức COD");
             return;
         }
         const paymentUrl = await handleCreatePaymentUrl(selectedMethod);
-        if(paymentUrl){
+        if (paymentUrl) {
             window.location.href = paymentUrl;
         }
     };
@@ -191,7 +191,7 @@ export const AddressPage = () => {
                         <div className="container p-4">
                             {groupedCart.map((shopGroup) => {
                                 const subTotal = shopGroup.items.reduce((sum, item) => {
-                                    return sum + (item.product_price * item.quantity);
+                                    return sum + (item.original_price * item.quantity);
                                 }, 0);
                                 return (
                                     <div key={shopGroup.shop_id} className="shop-container mb-4">
