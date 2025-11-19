@@ -6,8 +6,9 @@ import {
     FiUsers,
     FiBox,
     FiDollarSign,
-    FiChevronDown // Thêm icon mũi tên
+    FiChevronDown,
 } from 'react-icons/fi';
+import { LiaShippingFastSolid } from "react-icons/lia";
 
 // Định nghĩa props
 interface AdminSidebarProps {
@@ -63,6 +64,12 @@ const menuItems: MenuItem[] = [
         label: 'Đối soát',
         icon: <FiDollarSign />,
         path: '/admin/payouts'
+    },
+    {
+        key: 'orders',
+        label: 'Quản lý đơn hàng',
+        icon: <LiaShippingFastSolid />,
+        path: '/admin/orders'
     },
 ];
 

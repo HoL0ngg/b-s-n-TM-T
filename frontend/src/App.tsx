@@ -48,6 +48,7 @@ import AdminProductApproval from "./pages/Admin/AdminProductApproval";
 import AdminPayouts from "./pages/Admin/AdminPayouts";
 import AdminShopDetail from "./pages/Admin/AdminShopDetail";
 import AdminLogin from "./pages/Admin/AdminLogin";
+import AdminOrders from "./pages/Admin/AdminOrders";
 
 function App() {
   return (
@@ -117,6 +118,7 @@ function App() {
           <Route path="users/buyers" element={<AdminUserBuyersManagement />} />
           <Route path="products" element={<AdminProductApproval />} />
           <Route path="payouts" element={<AdminPayouts />} />
+          <Route path="orders" element={<AdminOrders />} />
           <Route path="shops/:id" element={<AdminShopDetail />} />
         </Route>
 
