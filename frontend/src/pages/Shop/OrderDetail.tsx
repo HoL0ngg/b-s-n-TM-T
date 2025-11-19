@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { getShopOrderDetail } from '../../api/order';
-import { type IOrder, type IApiError } from '../../types/OrderType'; // Import các kiểu
-
-// Mở rộng IOrder để bao gồm 'items' (chi tiết sản phẩm)
+import { type IOrder, type IApiError } from '../../types/OrderType';
 interface IOrderDetail extends IOrder {
-    items: any[]; // Bạn nên tạo interface IOrderItem sau
+    items: any[];
 }
 
 const OrderDetail: React.FC = () => {
@@ -66,7 +64,7 @@ const OrderDetail: React.FC = () => {
             {/* Danh sách sản phẩm thuộc shop */}
             <div className="card shadow-sm border-0">
                 <div className="card-header">
-                    <strong>Sản phẩm trong đơn hàng (Thuộc Shop của bạn)</strong>
+                    <strong>Sản phẩm trong đơn hàng</strong>
                 </div>
                 <div className="card-body">
                     <table className="table align-middle">

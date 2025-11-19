@@ -423,7 +423,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `status`, `created_at`, `up
 --
 
 CREATE TABLE `productvariants` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL,2222
   `product_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `stock` int(11) DEFAULT 0,
