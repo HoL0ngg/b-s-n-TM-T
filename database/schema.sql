@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 17, 2025 lúc 01:43 PM
+-- Thời gian đã tạo: Th10 19, 2025 lúc 10:49 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Phiên bản PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -118,7 +118,8 @@ CREATE TABLE `cart` (
 --
 
 INSERT INTO `cart` (`user_id`, `product_variant_id`, `quantity`, `added_at`) VALUES
-('0338740832', 19, 1, '2025-11-04 15:12:23');
+('0338740832', 19, 1, '2025-11-04 15:12:23'),
+('0338740832', 21, 1, '2025-11-17 21:16:34');
 
 -- --------------------------------------------------------
 
@@ -182,6 +183,65 @@ INSERT INTO `generic` (`id`, `name`, `category_id`) VALUES
 (16, 'Sữa rửa mặt', 6),
 (17, 'Dầu gội đầu', 6),
 (18, 'Vòng tay', 8);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `orders`
+--
+
+CREATE TABLE `orders` (
+  `order_id` int(11) NOT NULL,
+  `user_id` varchar(10) NOT NULL,
+  `address_id` int(11) DEFAULT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  `shipping_fee` decimal(10,2) DEFAULT 0.00,
+  `status` varchar(50) NOT NULL DEFAULT 'Pending',
+  `payment_method` varchar(50) NOT NULL,
+  `payment_status` varchar(50) DEFAULT 'Unpaid',
+  `order_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `notes` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `orders`
+--
+
+INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`) VALUES
+(1, '0987654333', 1, 1354000.00, 0.00, 'Delivered', 'COD', 'Paid', '2025-11-05 20:16:05', NULL),
+(2, '0917842142', 1, 2408000.00, 0.00, 'Cancelled', 'COD', 'Unpaid', '2025-11-19 12:16:05', NULL),
+(3, '0987654000', 1, 516000.00, 0.00, 'Delivered', 'COD', 'Paid', '2025-11-19 16:16:05', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `item_id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `variant_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price_at_purchase` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `order_items`
+--
+
+INSERT INTO `order_items` (`item_id`, `order_id`, `product_id`, `variant_id`, `product_name`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
+(1, 1, 1, 1, 'Son Kem Bóng Maybelline', 2, 228000.00, 456000.00),
+(2, 2, 4, 19, 'Quần Tây Nam Owen', 1, 280000.00, 280000.00),
+(3, 1, 6, 1, 'Son Kem Lì Bông Maybelline Bền Màu Superstay Teddy Tint 5ml', 1, 500000.00, 500000.00),
+(4, 1, 5, 5, '[DUSTY ON THE NUDE] Son Dưỡng Dạng Thỏi Có Màu Thuần Chay Romand Glasting Melting Balm 3.5g', 2, 199000.00, 398000.00),
+(5, 2, 2, NULL, 'Giày Đá Banh Adidas X Crazyfast.1 Messi Xanh Biển Hồng Thể Thao Uni', 1, 2128000.00, 2128000.00),
+(6, 3, 8, 10, 'Son Thỏi Bóng Căng Mọng, Mềm Môi Romand Sheer Tinted Stick 2g', 1, 199000.00, 199000.00),
+(7, 3, 30, NULL, 'Son Kem Lì Merzy Bền Màu, Lâu Trôi Puffer Velvet Tint 3.7g', 1, 209000.00, 209000.00),
+(8, 3, 31, 2, 'Son Dưỡng Môi Cocoon Chiết Xuất Dầu Dừa Bến Tre Ben Tre Coconut Lip Balm', 2, 54000.00, 108000.00);
 
 -- --------------------------------------------------------
 
@@ -423,7 +483,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `status`, `created_at`, `up
 --
 
 CREATE TABLE `productvariants` (
-  `id` int(11) NOT NULL,2222
+  `id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `stock` int(11) DEFAULT 0,
@@ -436,7 +496,7 @@ CREATE TABLE `productvariants` (
 --
 
 INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `image_url`) VALUES
-(1, 1, 228000, 50, 'MBL-DO-4ML', '/assets/products/son1.3.jpg'),
+(1, 1, 228000, 52, 'MBL-DO-4ML', '/assets/products/son1.3.jpg'),
 (2, 1, 233000, 60, 'MBL-HONG-4ML', ''),
 (3, 1, 223000, 40, 'MBL-CAM-4ML', ''),
 (4, 2, 2128000, 10, 'ADID-XANH-38', ''),
@@ -454,7 +514,7 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `ima
 (16, 3, 1138000, 16, 'AST-XANH-S', ''),
 (17, 3, 1148000, 14, 'AST-XANH-M', ''),
 (18, 3, 1158000, 12, 'AST-XANH-L', ''),
-(19, 4, 280000, 2, 'hjhj', ''),
+(19, 4, 280000, 4, 'hjhj', ''),
 (20, 5, 199000, 10, 'hjhj', ''),
 (21, 6, 218000, 69, 'hjhj', ''),
 (22, 7, 369000, 2, 'hjhj', ''),
@@ -684,8 +744,8 @@ INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `status`
 ('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'admin');
@@ -809,67 +869,6 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 
 -- --------------------------------------------------------
 
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `orders`
---
-
-DROP TABLE IF EXISTS `orders`;
-CREATE TABLE IF NOT EXISTS `orders` (
-  `order_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(10) NOT NULL,
-  `address_id` int(11) DEFAULT NULL,
-  `total_amount` decimal(10,2) NOT NULL,
-  `shipping_fee` decimal(10,2) DEFAULT 0.00,
-  `status` varchar(50) NOT NULL DEFAULT 'Pending',
-  `payment_method` varchar(50) NOT NULL,
-  `payment_status` varchar(50) DEFAULT 'Unpaid',
-  `order_date` datetime NOT NULL DEFAULT current_timestamp(),
-  `notes` text DEFAULT NULL,
-  PRIMARY KEY (`order_id`),
-  KEY `user_id` (`user_id`),
-  KEY `address_id` (`address_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `orders`
---
-
-INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`) VALUES
-(1, '0987654333', 1, 736000.00, 0.00, 'Shipped', 'COD', 'Unpaid', '2025-11-05 20:16:05', NULL);
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `order_items`
---
-
-DROP TABLE IF EXISTS `order_items`;
-CREATE TABLE IF NOT EXISTS `order_items` (
-  `item_id` int(11) NOT NULL AUTO_INCREMENT,
-  `order_id` int(11) NOT NULL,
-  `product_id` int(11) NOT NULL,
-  `variant_id` int(11) DEFAULT NULL,
-  `product_name` varchar(255) NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `price_at_purchase` decimal(10,2) NOT NULL,
-  `subtotal` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`item_id`),
-  KEY `order_id` (`order_id`),
-  KEY `product_id` (`product_id`),
-  KEY `variant_id` (`variant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Đang đổ dữ liệu cho bảng `order_items`
---
-
-INSERT INTO `order_items` (`item_id`, `order_id`, `product_id`, `variant_id`, `product_name`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
-(1, 1, 1, 1, 'Son Kem Bóng Maybelline', 2, 228000.00, 456000.00),
-(2, 1, 4, 19, 'Quần Tây Nam Owen', 1, 280000.00, 280000.00);
-
-
 --
 -- Cấu trúc đóng vai cho view `v_products_list`
 -- (See below for the actual view)
@@ -948,6 +947,23 @@ ALTER TABLE `categories`
 ALTER TABLE `generic`
   ADD PRIMARY KEY (`id`),
   ADD KEY `category_id` (`category_id`);
+
+--
+-- Chỉ mục cho bảng `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`order_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `address_id` (`address_id`);
+
+--
+-- Chỉ mục cho bảng `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`item_id`),
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `product_id` (`product_id`),
+  ADD KEY `variant_id` (`variant_id`);
 
 --
 -- Chỉ mục cho bảng `productimages`
@@ -1087,6 +1103,18 @@ ALTER TABLE `generic`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
+-- AUTO_INCREMENT cho bảng `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT cho bảng `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
 -- AUTO_INCREMENT cho bảng `productimages`
 --
 ALTER TABLE `productimages`
@@ -1183,6 +1211,21 @@ ALTER TABLE `generic`
   ADD CONSTRAINT `generic_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
 
 --
+-- Các ràng buộc cho bảng `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`),
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`);
+
+--
+-- Các ràng buộc cho bảng `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  ADD CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`);
+
+--
 -- Các ràng buộc cho bảng `productimages`
 --
 ALTER TABLE `productimages`
@@ -1254,24 +1297,6 @@ ALTER TABLE `variantoptionvalues`
   ADD CONSTRAINT `variantoptionvalues_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`),
   ADD CONSTRAINT `variantoptionvalues_ibfk_2` FOREIGN KEY (`attribute_id`) REFERENCES `product_attributes` (`id`);
 COMMIT;
-
-
---
--- Các ràng buộc cho bảng `orders`
---
-ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`);
-
---
--- Các ràng buộc cho bảng `order_items`
---
-ALTER TABLE `order_items`
-  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
-  ADD CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`);
-
---
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
