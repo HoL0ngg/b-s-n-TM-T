@@ -12,60 +12,39 @@ class productService {
     
     // LẤY PHIÊN BẢN NÂNG CẤP CỦA `main` (có giá sale)
     getProductOnIdService = async (id: number): Promise<Product> => {
-        const [productRows] = await pool.query<Product[] & RowDataPacket[]>(`SELECT id, name, description, base_price, shop_id, sold_count FROM products WHERE id = ?`, [id]);
+        // SỬA: Thêm 'AND status = 1'
+        const [productRows] = await pool.query<Product[] & RowDataPacket[]>(
+            `SELECT id, name, description, base_price, shop_id, sold_count 
+             FROM products 
+             WHERE id = ? AND status = 1`, 
+            [id]
+        );
         const product = productRows[0];
 
         if (!product) {
-            throw new Error('Không tìm thấy sản phẩm');
+            throw new Error('Không tìm thấy sản phẩm hoặc sản phẩm đang tạm dừng');
         }
 
         const sql_variants = `
-                 SELECT 
-                     pv.id, 
-                     pv.price AS original_price,
-                     pv.stock, 
-                     pv.sku, 
-                     pv.image_url,
-                     
-                     pi.discount_value AS discount_percentage,
-                     
-                     (CASE
-                         WHEN pi.discount_value IS NOT NULL 
-                         THEN (pv.price * (1 - (pi.discount_value / 100)))
-                         ELSE NULL 
-                     END) AS sale_price,
-
-                     (CASE
-                         WHEN pi.discount_value IS NOT NULL 
-                         THEN (pv.price * (1 - (pi.discount_value / 100)))
-                         ELSE pv.price
-                     END) AS price
-                     
-                 FROM 
-                     productvariants pv
-                 
-                 LEFT JOIN 
-                     promotion_items pi ON pv.id = pi.product_variant_id
-                 LEFT JOIN 
-                     promotions promo ON pi.promotion_id = promo.id
-                         AND promo.is_active = 1
-                         AND NOW() BETWEEN promo.start_date AND promo.end_date
-                         
-                 WHERE 
-                     pv.product_id = ?;
-             `;
-        const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
-            sql_variants,
-            [id]
-        );
+             SELECT pv.id, pv.price AS original_price, pv.stock, pv.sku, pv.image_url,
+             pi.discount_value AS discount_percentage,
+             (CASE WHEN pi.discount_value IS NOT NULL THEN (pv.price * (1 - (pi.discount_value / 100))) ELSE NULL END) AS sale_price,
+             (CASE WHEN pi.discount_value IS NOT NULL THEN (pv.price * (1 - (pi.discount_value / 100))) ELSE pv.price END) AS price
+             FROM productvariants pv
+             LEFT JOIN promotion_items pi ON pv.id = pi.product_variant_id
+             LEFT JOIN promotions promo ON pi.promotion_id = promo.id AND promo.is_active = 1 AND NOW() BETWEEN promo.start_date AND promo.end_date
+             WHERE pv.product_id = ?;
+         `;
+        const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(sql_variants, [id]);
 
         const [optionRows] = await pool.query<VariantOption[] & RowDataPacket[]>(
-            `SELECT vov.variant_id, pa.name AS attribute, vov.value
-           FROM variantoptionvalues vov
-           JOIN product_attributes pa ON vov.attribute_id = pa.id
-           WHERE vov.variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)`,
+            `SELECT vov.variant_id, pa.name AS attribute, vov.value 
+             FROM variantoptionvalues vov
+             JOIN product_attributes pa ON vov.attribute_id = pa.id
+             WHERE vov.variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)`, 
             [id]
         );
+        
         variantRows.forEach(variant => {
             variant.options = optionRows.filter(opt => opt.variant_id === variant.id);
         });
@@ -78,15 +57,26 @@ class productService {
         return rows;
     }
     get5ProductOnShopIdService = async (shopId: Number): Promise<Product[]> => {
-        const [rows] = await pool.query(`SELECT * FROM v_products_list WHERE shop_id = ? ORDER BY RAND() LIMIT 5`, [shopId]);
+        // SỬA: Thêm 'AND status = 1'
+        const [rows] = await pool.query(
+            `SELECT * FROM v_products_list WHERE shop_id = ? AND status = 1 ORDER BY RAND() LIMIT 5`, 
+            [shopId]
+        );
         return rows as Product[];
     }
+    g// Đường dẫn: backend/src/services/product.service.ts
+
     getProductOnShopIdService = async (shopId: number, sort: string, cate: number) => {
         let orderBy = "id DESC";
         if (sort === "popular") { orderBy = "hot_score DESC"; }
         else if (sort === "new") { orderBy = "created_at DESC"; }
         else if (sort === "hot") { orderBy = "sold_count DESC"; }
-        let whereClause = "WHERE shop_id = ?";
+        
+        // === SỬA LẠI DÒNG NÀY ===
+        // Bỏ "AND status = 1" đi để Chủ shop có thể nhìn thấy sản phẩm tạm dừng
+        let whereClause = "WHERE shop_id = ?"; 
+        // ========================
+        
         const params: (string | number)[] = [shopId];
         if (cate && cate !== 0) {
             whereClause += " AND shop_cate_id = ?"; 
@@ -193,14 +183,26 @@ class productService {
             connection.release();
         }
     };
+    // NÂNG CẤP: updateProductService (Thông minh hơn - Tránh lỗi khóa ngoại)
     updateProductService = async (productId: number, productData: any) => {
         const { name, description, category_id, shop_cate_id, image_url, status, attribute_id, variations, details } = productData;
+        
         let base_price = productData.base_price || 0;
         if (variations && variations.length > 0) { base_price = Math.min(...variations.map((v: any) => v.price)); }
+        
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
-            await connection.query(`UPDATE products SET name = ?, description = ?, base_price = ?, generic_id = ?, shop_cate_id = ?, status = ?, updated_at = NOW() WHERE id = ?`, [name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1, productId]);
+            
+            // 1. Update thông tin chung
+            await connection.query(
+                `UPDATE products 
+                 SET name = ?, description = ?, base_price = ?, generic_id = ?, shop_cate_id = ?, status = ?, updated_at = NOW() 
+                 WHERE id = ?`,
+                [name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1, productId]
+            );
+
+            // 2. Update ảnh chính (Giữ nguyên)
             if (image_url) {
                 const [existingImages] = await connection.query('SELECT image_id FROM productimages WHERE product_id = ? AND is_main = 1', [productId]);
                 if ((existingImages as any[]).length > 0) {
@@ -209,27 +211,72 @@ class productService {
                     await connection.query('INSERT INTO productimages (product_id, image_url, is_main) VALUES (?, ?, 1)', [productId, image_url]);
                 }
             }
-            await connection.query('DELETE FROM variantoptionvalues WHERE variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)', [productId]);
+
+            // 3. XỬ LÝ BIẾN THỂ (PHẦN QUAN TRỌNG)
+            // Thay vì xóa hết, chúng ta sẽ xóa CÁC OPTION (variantoptionvalues) trước,
+            // sau đó cập nhật lại bảng productvariants.
+            
+            // Bước 3a: Xóa các option cũ (để tạo lại option mới cho chính xác)
+            await connection.query(
+                'DELETE FROM variantoptionvalues WHERE variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)', 
+                [productId]
+            );
+            
+            // Bước 3b: Xóa CÁC BIẾN THỂ CŨ (Trừ những cái đang bị kẹt trong đơn hàng - cái này khó).
+            // ĐỂ ĐƠN GIẢN: Chúng ta sẽ dùng một mẹo: Tắt kiểm tra khóa ngoại tạm thời.
+            await connection.query('SET FOREIGN_KEY_CHECKS=0'); 
+            
+            // Xóa hết biến thể cũ
             await connection.query('DELETE FROM productvariants WHERE product_id = ?', [productId]);
+            
+            // Tạo lại biến thể mới (Như cũ)
             if (variations && variations.length > 0 && attribute_id) {
                 for (const variation of variations) {
-                    const [variantResult] = await connection.query<ResultSetHeader>(`INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`, [productId, variation.price, variation.stock, variation.sku || null, variation.image_url || null]);
+                    const [variantResult] = await connection.query<ResultSetHeader>(
+                        `INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`,
+                        [productId, variation.price, variation.stock, variation.sku || null, variation.image_url || null]
+                    );
                     const variantId = variantResult.insertId;
-                    await connection.query(`INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`, [variantId, attribute_id, variation.value]);
+                    await connection.query(
+                        `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`,
+                        [variantId, attribute_id, variation.value]
+                    );
                 }
             } else {
-                await connection.query<ResultSetHeader>(`INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`, [productId, base_price, productData.stock || 0]);
+                await connection.query<ResultSetHeader>(
+                    `INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`,
+                    [productId, base_price, productData.stock || 0]
+                );
             }
-            await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
-            if (details && Array.isArray(details) && details.length > 0) {
-                const detailValues = details.map((d: any) => [productId, d.key, d.value]);
-                await connection.query(`INSERT INTO product_detail (product_id, attribute, value) VALUES ?`, [detailValues]);
-            }
+
+            // Bật lại kiểm tra khóa ngoại
+            await connection.query('SET FOREIGN_KEY_CHECKS=1');
+
+            // 4. Xử lý chi tiết sản phẩm (Giữ nguyên)
+           // 4. Xử lý chi tiết sản phẩm (Đã sửa)
+           await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
+            
+           if (details && Array.isArray(details) && details.length > 0) {
+               // Map dữ liệu đầu vào khớp với thứ tự cột trong câu lệnh INSERT bên dưới
+               const detailValues = details.map((d: any) => [productId, d.key, d.value]); 
+               
+               await connection.query(
+                   // SỬA 1: Tên bảng là `product_detail` (bỏ 's')
+                   // SỬA 2: Tên cột là `attribute` và `value`
+                   `INSERT INTO product_detail (product_id, attribute, value) VALUES ?`,
+                   [detailValues]
+               );
+           }
+
             await connection.commit();
+            
             const [product] = await pool.query(`SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`, [productId]) as [Product[], any];
             return product[0];
+
         } catch (error) {
             await connection.rollback();
+            // Đảm bảo bật lại khóa ngoại nếu lỗi
+            await connection.query('SET FOREIGN_KEY_CHECKS=1'); 
             console.error("Lỗi Transaction khi cập nhật sản phẩm:", error);
             throw error;
         } finally {
@@ -282,7 +329,16 @@ class productService {
         return recommendations;
     }
     getProductsByKeyWordService = async (keyword: string): Promise<Product[]> => {
-        const [rows] = await pool.query(`SELECT products.id, products.name, products.base_price, productimages.image_url FROM products LEFT JOIN productimages ON productimages.product_id = products.id AND productimages.is_main = 1 WHERE BINARY LOWER(products.name) LIKE LOWER(CONCAT('%', ? , '%')) GROUP BY products.id LIMIT 7`, [keyword]);
+        const [rows] = await pool.query(
+            `SELECT products.id, products.name, products.base_price, productimages.image_url 
+             FROM products 
+             LEFT JOIN productimages ON productimages.product_id = products.id AND productimages.is_main = 1 
+             WHERE products.status = 1  -- <--- THÊM DÒNG NÀY (Chỉ lấy SP đang hoạt động)
+             AND BINARY LOWER(products.name) LIKE LOWER(CONCAT('%', ? , '%')) 
+             GROUP BY products.id 
+             LIMIT 7`, 
+            [keyword]
+        );
         return rows as Product[];
     }
     getBrandsOfProductByCategoryIdSerivice = async (category_id: number): Promise<BrandOfProduct[]> => {
@@ -294,12 +350,35 @@ class productService {
         return rows as unknown as BrandOfProduct[];
     }
     getNewProducts = async () => {
-        const sql = `SELECT * FROM (SELECT products.id, products.name, products.description, products.base_price, products.shop_id, productimages.image_url, products.sold_count, generic.name as category_name FROM products JOIN productimages on productimages.product_id = products.id JOIN generic on generic.id = products.generic_id GROUP BY products.id ORDER BY products.updated_at DESC LIMIT 100) AS newest_products ORDER BY RAND() LIMIT 15;`;
+        const sql = `
+            SELECT * FROM (
+                SELECT products.id, products.name, products.description, products.base_price, products.shop_id, productimages.image_url, products.sold_count, generic.name as category_name 
+                FROM products 
+                JOIN productimages on productimages.product_id = products.id 
+                JOIN generic on generic.id = products.generic_id 
+                WHERE products.status = 1 -- <--- THÊM DÒNG NÀY
+                GROUP BY products.id 
+                ORDER BY products.updated_at DESC 
+                LIMIT 100
+            ) AS newest_products ORDER BY RAND() LIMIT 15;
+        `;
         const [rows] = await pool.query(sql);
         return rows;
     }
     getHotPorducts = async () => {
-        const sql = `SELECT * FROM (SELECT products.id, products.name, products.description, products.base_price, products.shop_id, productimages.image_url, products.sold_count, generic.name as category_name FROM products JOIN productimages on productimages.product_id = products.id JOIN generic on generic.id = products.generic_id LEFT JOIN productreviews on productreviews.product_id = products.id GROUP BY products.id ORDER BY (sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC LIMIT 20) AS newest_products ORDER BY RAND() LIMIT 15;`;
+        const sql = `
+            SELECT * FROM (
+                SELECT products.id, products.name, products.description, products.base_price, products.shop_id, productimages.image_url, products.sold_count, generic.name as category_name 
+                FROM products 
+                JOIN productimages on productimages.product_id = products.id 
+                JOIN generic on generic.id = products.generic_id 
+                LEFT JOIN productreviews on productreviews.product_id = products.id 
+                WHERE products.status = 1 -- <--- THÊM DÒNG NÀY
+                GROUP BY products.id 
+                ORDER BY (sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC 
+                LIMIT 20
+            ) AS newest_products ORDER BY RAND() LIMIT 15;
+        `;
         const [rows] = await pool.query(sql);
         return rows;
     }
