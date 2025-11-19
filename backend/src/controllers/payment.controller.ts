@@ -10,6 +10,7 @@ import {
     IpnUnknownError,
     IpnSuccess,
 } from 'vnpay';
+import orderService from "../services/order.service";
 class PaymentController {
     readonly vnpay = new VNPay({
         tmnCode: process.env.VNP_TMN_CODE!,
@@ -21,19 +22,14 @@ class PaymentController {
 
     createPayment_vnpay = async (req: Request, res: Response) => {
         try {
-            /*
-                Tạo mới đơn hàng
-                *** Chưa xử lý ***
-                const order = await createOrder(req.body)
-            */
-            const order = {
-                id: `ORDER_TESTING_${Date.now()}`,
-                user_id: (req as any).user.id,
-                amount: (req as any).body.total,
-            }
+            const orderIds = (req as any).orderIds;
+            
+            const tmn_orderId = `${Date.now()}-${orderIds.join('-')}`;
+            const total_amount = req.body.total;
+
             // Tạo URL      
             const paymentUrl = this.vnpay.buildPaymentUrl({
-                vnp_Amount: order.amount,
+                vnp_Amount: total_amount,
                 vnp_IpAddr:
                     req.headers['x-forwarded-for'] instanceof Array
                         ? req.headers['x-forwarded-for'][0]
@@ -41,8 +37,8 @@ class PaymentController {
                         req.connection.remoteAddress ??
                         req.socket.remoteAddress ??
                         req.ip ?? '127.0.0.1',
-                vnp_TxnRef: order.id,
-                vnp_OrderInfo: `Thanh toan don hang ${order.id}`,
+                vnp_TxnRef: tmn_orderId,
+                vnp_OrderInfo: `Thanh toan don hang ${tmn_orderId}`,
                 vnp_OrderType: ProductCode.Other,
                 vnp_ReturnUrl: process.env.VNP_RETURN_URL!, // Đường dẫn nên là của frontend
                 vnp_Locale: VnpLocale.VN,
@@ -50,10 +46,11 @@ class PaymentController {
 
             return res.json({
                 success: true,
-                paymentUrl,
-                order,
+                paymentUrl
             });
         } catch (error) {
+            console.log(error);
+            
             return res.status(500).json({
                 success: false,
                 message: 'Lỗi khi tạo URL thanh toán',
@@ -151,43 +148,10 @@ class PaymentController {
             if (!verify.isSuccess) {
                 return res.json(IpnUnknownError);
             }
-
-            /*
-                Tìm đơn hàng trong cơ sở dữ liệu
-                *** Chưa xử lý ***
-                const foundOrder = await findOrderById(verify.vnp_TxnRef);
-            */
-
-            const foundOrder = {
-                orderId: "nah",
-                amount: 0,
-                status: "pending"
-            }
-            // Nếu không tìm thấy đơn hàng hoặc mã đơn hàng không khớp
-            if (!foundOrder || verify.vnp_TxnRef !== foundOrder.orderId) {
-                return res.json(IpnOrderNotFound);
-            }
-
-            // Nếu số tiền thanh toán không khớp
-            if (verify.vnp_Amount !== foundOrder.amount) {
-                return res.json(IpnInvalidAmount);
-            }
-
-            // Nếu đơn hàng đã được xác nhận trước đó
-            if (foundOrder.status === 'completed') {
-                return res.json(InpOrderAlreadyConfirmed);
-            }
-
-            /*
-                Cập nhật trạng thái đơn hàng
-            */
-            foundOrder.status = 'completed';
-            /*
-                Cập nhật đơn hàng lên database
-                *** Chưa xử lý ***
-                await updateOrder(foundOrder); 
-            */
-
+            const orderIds = verify.vnp_TxnRef.split('-').slice(1);
+            orderIds.forEach((orderId) => {
+                orderService.updateOrderPaymentStatus(orderId, `Paid`);
+            });
             // Sau đó cập nhật trạng thái trở lại cho VNPay để họ biết đã xác nhận đơn hàng
             return res.json(IpnSuccess);
         } catch (error) {
@@ -195,6 +159,60 @@ class PaymentController {
          return res.json(IpnUnknownError);
      }
     }
+
+    createOrder = async (req, res, next) => {
+        try {
+            const userId = (req as any).user.id;
+            const groupedCarts = req.body.groupedCart;
+            const shippingFees = req.body.shippingFees;
+            const opts = {
+                address_id: 1,
+                payment_method: req.body.paymentMethod,
+                notes: null
+            };
+    
+            const shopOrders = this.orderFormat(groupedCarts, shippingFees);
+            const orderIds = await orderService.addOrders(userId, shopOrders, opts);
+            console.log(orderIds);
+            
+            req.orderIds = orderIds;
+            
+            return next();
+        } catch (error) {
+            if(error && (error as any).status === 409) {
+                console.error("Controller: insufficient: " + JSON.stringify((error as any).details, null, 2));
+                return res.status(409).json({
+                    success: false,
+                    message: (error as any).message || 'Insufficient stock',
+                    details: (error as any).details
+                });
+            }
+
+            console.error(`createOrder middleware error: `, error);
+            return res.status((error as any).status || 500).json({
+                success: false,
+                message: (error as any).message || 'Internal server error'
+            });
+        }
+    };
+
+    orderFormat = (groupedCart: any[], shippingFees: any) => {
+        return groupedCart.map(group => ({
+            shop_id: group.shop_id,
+            shipping_fee: shippingFees[group.shop_id],
+            total_amount: group.items.reduce((acc, item) => {
+                acc += Number(item.sale_price ?? item.original_price) * Number(item.quantity);
+                return acc;
+            }, 0),
+            items: group.items.map((item) => ({
+                product_id: item.product_id,
+                variant_id: item.product_variant_id,
+                product_name: item.product_name,
+                quantity: item.quantity,
+                price_at_purchase: item.sale_price ?? item.original_price,
+            })),
+        }));
+    };
 }
 
 export default new PaymentController();
