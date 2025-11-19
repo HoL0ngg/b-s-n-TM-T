@@ -6,5 +6,5 @@ const router = Router();
 
 router.post('/vnpay', verifyToken, paymentController.createPayment_vnpay);
 router.post('/momo', verifyToken, paymentController.createPayment_momo);    
-
+router.get('/vnpay/ipn', paymentController.handleIpn_vnpay);
 export default router;

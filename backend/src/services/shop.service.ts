@@ -164,6 +164,62 @@ class shopService {
         const affectedRows = (result as any).affectedRows;
         return affectedRows > 0;
     };
+    createShopService = async (
+        name: string,
+        logo_url: string,
+        description: string,
+        status: number,
+        owner_id: string
+    ): Promise<number> => {
+        const [result] = await pool.query(
+            `
+            INSERT INTO shops (name, logo_url, description, status, created_at, owner_id)
+            VALUES (?, ?, ?, ?, NOW(), ?)
+            `,
+            [name, logo_url, description, status, owner_id]
+        ) as [any, any];
+
+        return result.insertId;
+    }
+    updateShopService = async (
+        id: number,
+        name: string,
+        logo_url: string,
+        description: string,
+        status: number
+    ): Promise<boolean> => {
+        const [result] = await pool.query(
+            `
+            UPDATE shops 
+            SET 
+                name = ?, 
+                logo_url = ?, 
+                description = ?, 
+                status = ?
+            WHERE 
+                id = ?
+            `,
+            [name, logo_url, description, status, id]
+        ) as [any, any];
+
+        return result.affectedRows > 0; // true nếu có bản ghi được cập nhật
+    }
+    deleteShopService = async (id: number): Promise<boolean> => {
+        const [result] = await pool.query(
+            `DELETE FROM shops WHERE id = ?`,
+            [id]
+        ) as [any, any];
+
+        return result.affectedRows > 0; // true nếu xóa thành công
+    }
+
+    getShopStreetAddress = async (shopId: number): Promise<string> => {
+        const [rows] = await pool.query(
+            `SELECT address FROM shop_info WHERE shop_id = ?`,
+            [shopId]
+        ) as [any[], any];
+        return rows[0]?.address || '';
+    }
 }
 
 export default new shopService();

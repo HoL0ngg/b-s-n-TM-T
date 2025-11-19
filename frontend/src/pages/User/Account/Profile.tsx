@@ -7,7 +7,6 @@ export default function Profile() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     const [name, setName] = useState('');
     const [birthday, setBirthday] = useState('');
@@ -67,7 +66,7 @@ export default function Profile() {
     }, [selectedFile]);
 
     const avatarSrc = preview || (user?.avatar_url
-        ? `${API_BASE_URL}${user?.avatar_url}` // <-- Mấu chốt là đây
+        ? `${user?.avatar_url}` // <-- Mấu chốt là đây
         : "/assets/panda.png");
 
     // 4. HÀM SUBMIT

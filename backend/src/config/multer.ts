@@ -3,40 +3,7 @@ import path from 'path';
 import { Request } from 'express';
 import fs from 'fs';
 
-// --- 1. Cấu hình nơi lưu file (Lưu vào ổ đĩa) ---
-const avatarStorage = multer.diskStorage({
-    destination: (req: Request, file: Express.Multer.File, cb) => {
-        cb(null, 'public/avatars');
-    },
-
-    // Quyết định tên file mới (duy nhất)
-    filename: (req: Request, file: Express.Multer.File, cb) => {
-        // Lấy user_id từ middleware 'checkAuth'
-        const userId = (req as any).user.id;
-        const extension = path.extname(file.originalname); // .png
-
-        // Tên file cuối cùng: ví dụ '0987654321-avatar.png'
-        // (Ghi đè avatar cũ nếu có)
-        const newFileName = `${userId}-avatar${extension}`;
-        cb(null, newFileName);
-    }
-});
-// --- 2. Bộ lọc (Chỉ nhận PNG/JPEG) ---
-const fileFilter = (req: Request, file: Express.Multer.File, cb: any) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
-        cb(null, true); // Chấp nhận
-    } else {
-        cb(new Error('Chỉ chấp nhận file PNG hoặc JPEG!'), false); // Từ chối
-    }
-};
-
-// --- 3. Export middleware 'upload' ---
-export const uploadAvatar = multer({
-    storage: avatarStorage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 1 * 1024 * 1024 } // Giới hạn 1MB
-});
-
+// --- HÀM HỖ TRỢ 1: Đảm bảo thư mục tồn tại ---
 const ensureDirectoryExistence = (dirPath: string) => {
     if (!fs.existsSync(dirPath)) {
         // 'recursive: true' sẽ tạo tất cả các thư mục cha cần thiết
@@ -45,43 +12,53 @@ const ensureDirectoryExistence = (dirPath: string) => {
     }
 };
 
-const promoBannerStorage = multer.diskStorage({
+// --- HÀM HỖ TRỢ 2: Bộ lọc file (Chỉ nhận PNG/JPEG) ---
+const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true); // Chấp nhận
+    } else {
+        // Từ chối file (và báo lỗi)
+        cb(new Error('Chỉ chấp nhận file PNG hoặc JPEG!'));
+    }
+};
 
-    /**
-     * Nơi lưu file:
-     * Dùng path.join và __dirname để có đường dẫn tuyệt đối,
-     * tránh lỗi "no such file or directory" (ENOENT).
-     */
+// -------------------------------------------------------------------
+// 1. CẤU HÌNH CHO AVATAR NGƯỜI DÙNG
+// -------------------------------------------------------------------
+const avatarStorage = multer.diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb) => {
-        // __dirname trỏ đến /backend/dist/config
-        // Chúng ta đi ngược ra 2 cấp để về gốc /backend
-        // Sau đó đi vào /public/uploads/promotions
-        const uploadPath = path.join(__dirname, '../../public/uploads/promotions');
-
-        // Đảm bảo thư mục này tồn tại
+        const uploadPath = path.join(__dirname, '../../public/uploads/avatars');
         ensureDirectoryExistence(uploadPath);
-
         cb(null, uploadPath);
     },
-
-    /**
-     * Tên file:
-     * Đặt tên file duy nhất để tránh bị ghi đè.
-     */
     filename: (req: Request, file: Express.Multer.File, cb) => {
-        // 1. Lấy shop_id từ 'req.user' (đã được middleware 'checkAuth' gán vào)
-        // (Chúng ta cần ép kiểu 'req' để TypeScript hiểu)
-        const shopId = (req as any).user?.shop_id || 'unknown';
-
-        // 2. Tạo phần đuôi duy nhất (timestamp)
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-
-        // 3. Lấy đuôi file gốc (ví dụ: ".png")
+        const userId = (req as any).user.id;
         const extension = path.extname(file.originalname);
+        const newFileName = `${userId}-avatar${extension}`;
+        cb(null, newFileName);
+    }
+});
 
-        // Tên file cuối cùng: ví dụ: "shop-1-promo-167888999000-12345.png"
+export const uploadAvatar = multer({
+    storage: avatarStorage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 1 * 1024 * 1024 }
+}).single('avatar');
+
+// -------------------------------------------------------------------
+// 2. CẤU HÌNH CHO BANNER SỰ KIỆN (PROMOTION)
+// -------------------------------------------------------------------
+const promoBannerStorage = multer.diskStorage({
+    destination: (req: Request, file: Express.Multer.File, cb) => {
+        const uploadPath = path.join(__dirname, '../../public/uploads/promotions');
+        ensureDirectoryExistence(uploadPath);
+        cb(null, uploadPath);
+    },
+    filename: (req: Request, file: Express.Multer.File, cb) => {
+        const shopId = (req as any).user?.shop_id || 'unknown';
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname);
         const newFileName = `shop-${shopId}-promo-${uniqueSuffix}${extension}`;
-
         cb(null, newFileName);
     }
 });
@@ -89,7 +66,30 @@ const promoBannerStorage = multer.diskStorage({
 export const uploadPromoBanner = multer({
     storage: promoBannerStorage,
     fileFilter: fileFilter,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // Giới hạn 5MB
-    }
+    limits: { fileSize: 5 * 1024 * 1024 }
 }).single('banner_image');
+
+// -------------------------------------------------------------------
+// 3. THÊM MỚI: CẤU HÌNH CHO TRÌNH SOẠN THẢO (TIPTAP)
+// -------------------------------------------------------------------
+const editorImageStorage = multer.diskStorage({
+    destination: (req: Request, file: Express.Multer.File, cb) => {
+        // Lưu vào thư mục chung cho các bài viết, mô tả...
+        const uploadPath = path.join(__dirname, '../../public/uploads/editor_images');
+        ensureDirectoryExistence(uploadPath);
+        cb(null, uploadPath);
+    },
+    filename: (req: Request, file: Express.Multer.File, cb) => {
+        // Tên file hoàn toàn ngẫu nhiên
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname);
+        const newFileName = `editor-${uniqueSuffix}${extension}`;
+        cb(null, newFileName);
+    }
+});
+
+export const uploadEditorImage = multer({
+    storage: editorImageStorage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 5 * 1024 * 1024 }
+}).single('image');

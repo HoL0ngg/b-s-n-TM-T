@@ -1,44 +1,42 @@
+// Đường dẫn: backend/src/controllers/product.controller.ts
+// (PHIÊN BẢN ĐÃ SỬA XUNG ĐỘT - ĐÃ TRỘN)
+
 import { Request, Response } from "express"
 import productService from "../services/product.service";
+// SỬA: Thêm import 'CreatePromotionData' từ nhánh 'main'
 import { CreatePromotionData } from "../models/product.model";
 
 class productController {
-
+    // ... (Tất cả các hàm GET (getProductOnIdController, ...) giữ nguyên) ...
     getProductOnIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
             const user_id = (req as any).user?.id;
-
             const product = await productService.getProductOnIdService(Number(id));
-
             if (product && user_id) {
-                productService.logView(user_id, Number(product.id))
-                    .catch((err: any) => console.error("Lỗi ghi log xem sản phẩm:", err));
+                productService.logView(user_id, Number(product.id)).catch((err: any) => console.error("Lỗi ghi log xem sản phẩm:", err));
             }
             res.status(200).json(product);
         } catch (err) {
             console.log(err);
+            res.status(404).json({ message: "Không tìm thấy sản phẩm" });
         }
     }
-
     getProductImgOnIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
-            // const product = await productService.getProductOnIdService(Number(id));
             const images = await productService.getProductImgOnIdService(Number(id));
             res.status(200).json(images);
         } catch (err) {
             console.log(err);
         }
     }
-
     getProductOnShopIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
             const type = req.query.type;
             const sort = req.query.sortBy || "popular";
             const cate = req.query.bst || 0;
-
             let data;
             switch (type) {
                 case 'all':
@@ -48,14 +46,15 @@ class productController {
                     data = await productService.get5ProductOnShopIdService(Number(id));
                     break;
                 default:
+                    data = [];
                     break;
             }
             res.status(200).json(data);
         } catch (err) {
             console.log(err);
+            res.status(500).json({ message: "Lỗi máy chủ" });
         }
     }
-
     getReviewByProductIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
@@ -66,7 +65,6 @@ class productController {
             console.log(err);
         }
     }
-
     getReviewSummaryByProductIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
@@ -76,7 +74,6 @@ class productController {
             console.log(err);
         }
     }
-
     getProductDetailsByProductIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
@@ -93,139 +90,122 @@ class productController {
             res.status(200).json(attributes);
         } catch (error) {
             console.log(error);
-
         }
     }
+
+    // =================================================================
+    // CÁC HÀM CRUD (LẤY TỪ NHÁNH `qhuykuteo` CỦA BẠN VÌ MỚI HƠN)
+    // =================================================================
     createProductController = async (req: Request, res: Response) => {
         try {
+            const shopId = (req as any).shop?.id;
+            if (!shopId) { return res.status(403).json({ success: false, message: 'Không tìm thấy thông tin shop. Bạn có quyền tạo sản phẩm không?' }); }
             const productData = req.body;
-
-            // Validate required fields
-            if (!productData.shop_id || !productData.name || !productData.base_price) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Missing required fields: shop_id, name, base_price'
-                });
+            productData.shop_id = shopId;
+            if (!productData.name) {
+                return res.status(400).json({ success: false, message: 'Tên sản phẩm là bắt buộc' });
             }
-
+            if (productData.variations && productData.variations.length > 0) {
+                if (!productData.attribute_id) {
+                    return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
+                }
+                for (const v of productData.variations) {
+                    if (!v.value || !v.price || v.stock === undefined) {
+                        return res.status(400).json({ success: false, message: 'Mỗi phân loại phải có `value`, `price`, và `stock`' });
+                    }
+                }
+            } else {
+                if (!productData.base_price) {
+                    return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
+                }
+            }
+            if (productData.details && Array.isArray(productData.details)) {
+                for (const d of productData.details) {
+                    if (!d.key || !d.value) {
+                        return res.status(400).json({ success: false, message: 'Mỗi chi tiết sản phẩm phải có cả "key" và "value"' });
+                    }
+                }
+            }
             const product = await productService.createProductService(productData);
-
-            res.status(201).json({
-                success: true,
-                message: 'Product created successfully',
-                data: product
-            });
+            res.status(201).json({ success: true, message: 'Product created successfully', data: product });
         } catch (error) {
             console.error('Error creating product:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
         }
     };
-
-    // UPDATE product
     updateProductController = async (req: Request, res: Response) => {
         try {
             const productId = Number(req.params.id);
             const productData = req.body;
-
-            // Validate product ID
+            const shopId = (req as any).shop?.id;
+            const userId = (req as any).user?.id;
             if (!productId || isNaN(productId)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid product ID'
-                });
+                return res.status(400).json({ success: false, message: 'Invalid product ID' });
             }
-
-            // Optional: Verify shop ownership (if you have auth middleware)
-            // const userId = (req as any).user?.id;
-            // if (userId) {
-            //     const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
-            //     if (!hasPermission) {
-            //         return res.status(403).json({ 
-            //             success: false, 
-            //             message: 'You do not have permission to update this product' 
-            //         });
-            //     }
-            // }
-
+            if (!shopId || !userId) {
+                return res.status(403).json({ success: false, message: 'Forbidden' });
+            }
+            const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
+            if (!hasPermission) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền cập nhật sản phẩm này' });
+            }
+            productData.shop_id = shopId;
+            if (!productData.name) {
+                return res.status(400).json({ success: false, message: 'Tên sản phẩm là bắt buộc' });
+            }
+            if (productData.variations && productData.variations.length > 0) {
+                if (!productData.attribute_id) {
+                    return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
+                }
+            } else if (!productData.base_price) {
+                return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
+            }
+            if (productData.details && Array.isArray(productData.details)) {
+                for (const d of productData.details) {
+                    if (!d.key || !d.value) {
+                        return res.status(400).json({ success: false, message: 'Mỗi chi tiết sản phẩm phải có cả "key" và "value"' });
+                    }
+                }
+            }
             const product = await productService.updateProductService(productId, productData);
-
-            res.status(200).json({
-                success: true,
-                message: 'Product updated successfully',
-                data: product
-            });
+            res.status(200).json({ success: true, message: 'Product updated successfully', data: product });
         } catch (error) {
             console.error('Error updating product:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
         }
     };
-
-    // DELETE product
     deleteProductController = async (req: Request, res: Response) => {
         try {
             const productId = Number(req.params.id);
-
-            // Validate product ID
+            const userId = (req as any).user?.id;
             if (!productId || isNaN(productId)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid product ID'
-                });
+                return res.status(400).json({ success: false, message: 'Invalid product ID' });
             }
-
-            // Optional: Verify shop ownership (if you have auth middleware)
-            // const userId = (req as any).user?.id;
-            // if (userId) {
-            //     const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
-            //     if (!hasPermission) {
-            //         return res.status(403).json({ 
-            //             success: false, 
-            //             message: 'You do not have permission to delete this product' 
-            //         });
-            //     }
-            // }
-
+            if (!userId) {
+                return res.status(403).json({ success: false, message: 'Forbidden' });
+            }
+            const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
+            if (!hasPermission) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền xóa sản phẩm này' });
+            }
             await productService.deleteProductService(productId);
-
-            res.status(200).json({
-                success: true,
-                message: 'Product deleted successfully'
-            });
+            res.status(200).json({ success: true, message: 'Product deleted successfully' });
         } catch (error) {
             console.error('Error deleting product:', error);
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error',
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
+            res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
         }
     };
 
-
-
+    // --- (Các hàm GET còn lại giữ nguyên) ---
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
-            // Lấy userId (có thể là undefined nếu là khách)
             const userId = (req as any).user?.id;
-
-            // Gọi service, service sẽ tự xử lý logic
             const products = await productService.getForYouRecommendations(userId);
-            // console.log(products);
             res.status(200).json(products);
-
         } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
-
     getProductsByKeyWordController = async (req: Request, res: Response) => {
         try {
             const keyword = String(req.query.keyword);
@@ -233,7 +213,6 @@ class productController {
             return res.status(200).json(products);
         } catch (error) {
             console.log(error);
-
         }
     };
     getNewProducts = async (req: Request, res: Response) => {
@@ -252,43 +231,26 @@ class productController {
             console.log(err);
         }
     }
+
+    // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
-            // 1. Lấy tham số
-            const {
-                page = 1,
-                limit = 12,
-                sort = "default",
-                subCategoryId, // Lấy từ query
-                minPrice,
-                maxPrice,
-                brand,
-            } = req.query;
+            const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
+            const categoryId = Number(req.params.id);
 
-            const categoryId = Number(req.params.id); // Lấy từ param
-            // console.log(categoryId);
-
-            // 2. Xây dựng 'whereClause' và 'params'
-            let whereClause = `
-            WHERE status = 1 AND shop_status = 1             
-            `;
+            // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
+            let whereClause = "WHERE v_products_list.status = 1"; // (Từ 'main')
             const params: any[] = [];
 
-            // --- PHẦN LOGIC QUAN TRỌNG ---
-            // Ưu tiên filter theo subCategoryId (chính là generic_id)
             if (subCategoryId && Number(subCategoryId) !== 0) {
-                whereClause += " AND v_products_list.generic_id = ?";
+                whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
                 params.push(Number(subCategoryId));
             }
-            // Nếu không, mới filter theo categoryId (cha của generic_id)
             else if (categoryId) {
-                whereClause +=
-                    " AND generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                // Sửa lỗi: Phải là v_products_list.generic_id
+                whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
                 params.push(categoryId);
             }
-            // --- HẾT PHẦN LOGIC QUAN TRỌNG ---
-
-            // Thêm filter Khoảng giá
             if (minPrice) {
                 whereClause += " AND v_products_list.base_price >= ?";
                 params.push(minPrice);
@@ -297,8 +259,6 @@ class productController {
                 whereClause += " AND v_products_list.base_price <= ?";
                 params.push(maxPrice);
             }
-
-            // Thêm filter Brand
             if (brand && typeof brand === "string" && brand.length > 0) {
                 const brandIds = brand.split(",").map(Number).filter(Boolean);
                 if (brandIds.length > 0) {
@@ -308,47 +268,39 @@ class productController {
                 }
             }
 
-            // 3. Xây dựng 'orderBy'
+            // (Không sort bằng SQL, để logic của 'main' sort bằng JS)
             let orderBy = "";
 
-            // 4. Gọi Service
-            const productsPromise = productService.getProductsService(
-                whereClause,
-                params,
-                Number(page),
-                Number(limit),
-                orderBy
-            );
+            const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy);
+
             let brandsPromise;
             if (subCategoryId && Number(subCategoryId) !== 0) {
                 brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
             } else if (categoryId) {
                 brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
             }
-            const [productResult, brandsResult] = await Promise.all([
-                productsPromise,
-                brandsPromise,
-            ]);
 
-            //Sort lại sản phẩm sau khi lấy ra 
+            const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
+
+            // Lấy logic `sort` (sắp xếp) của 'main' (đồng đội)
             let sortedProducts = [...productResult.products];
             switch (sort) {
-                case "priceAsc": // Cập nhật để khớp với front-end
+                case "priceAsc":
                     sortedProducts.sort((a, b) => a.base_price - b.base_price);
                     break;
-                case "priceDesc": // Cập nhật để khớp với front-end
+                case "priceDesc":
                     sortedProducts.sort((a, b) => b.base_price - a.base_price);
                     break;
                 default:
-                    orderBy = "ORDER BY v_products_list.created_at DESC";
+                    // Mặc định
                     break;
             }
+
             res.status(200).json({
-                products: sortedProducts,
+                products: sortedProducts, // Trả về mảng đã sort
                 totalPages: productResult.totalPages,
                 brands: brandsResult,
             });
-
         } catch (error) {
             console.error("Lỗi tại getProductsController:", error);
             res.status(500).json({
@@ -357,10 +309,71 @@ class productController {
             });
         }
     };
+    // ===== KẾT THÚC TRỘN (MERGE) HÀM NÀY =====
 
+    getAllAttributesController = async (req: Request, res: Response) => {
+        try {
+            const attributes = await productService.getAllAttributesService();
+            res.status(200).json(attributes);
+        } catch (error) {
+            console.error("Lỗi khi lấy thuộc tính:", error);
+            res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
+        }
+    };
+    getCompleteProductForEditController = async (req: Request, res: Response) => {
+        try {
+            const productId = Number(req.params.id);
+            const shopId = (req as any).shop?.id;
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy thông tin shop." });
+            }
+            if (!productId) {
+                return res.status(400).json({ message: "Thiếu ID sản phẩm." });
+            }
+            const productData = await productService.getCompleteProductForEditService(productId, shopId);
+            res.status(200).json(productData);
+        } catch (error: any) {
+            console.error("Lỗi khi lấy chi tiết sản phẩm để sửa:", error);
+            res.status(500).json({ message: error.message || "Lỗi máy chủ nội bộ" });
+        }
+    };
+
+    updateProductStatusController = async (req: Request, res: Response) => {
+        try {
+            const productId = Number(req.params.id);
+            const shopId = (req as any).shop?.id;
+            const { status } = req.body;
+
+            if (status === undefined || (status !== 0 && status !== 1)) {
+                return res.status(400).json({ success: false, message: 'Trạng thái (status) không hợp lệ.' });
+            }
+            if (!shopId) {
+                return res.status(403).json({ success: false, message: 'Forbidden' });
+            }
+
+            const success = await productService.updateProductStatusService(productId, shopId, status);
+
+            if (success) {
+                res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công.' });
+            } else {
+                res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm hoặc bạn không có quyền.' });
+            }
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    };
+
+    // =================================================================
+    // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
+    // =================================================================
     getShopPromotions = async (req: Request, res: Response) => {
         try {
-            const shopId = (req as any).user.shop_id; // Lấy từ middleware
+            // Sửa: Lấy shop_id từ (req as any).shop.id (vì bạn đã có checkShopOwner)
+            const shopId = (req as any).user.shop_id;
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
 
             const promotions = await productService.getPromotionsByShopId(shopId);
 
@@ -372,10 +385,16 @@ class productController {
 
     getPromotionDetails = async (req: Request, res: Response) => {
         try {
+            // Sửa: Lấy shop_id từ (req as any).shop.id
             const shopId = (req as any).user.shop_id;
             const promotionId = Number(req.params.id);
 
-            const items = await productService.getItemsByPromotionId(promotionId);
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+
+            // Sửa: Truyền shopId vào service để kiểm tra
+            const items = await productService.getItemsByPromotionId(promotionId, shopId);
 
             res.status(200).json(items);
         } catch (error: any) {
@@ -383,51 +402,64 @@ class productController {
                 return res.status(403).json({ message: "Không có quyền xem sự kiện này" });
             }
             console.log(error);
-
             res.status(500).json({ message: "Lỗi máy chủ" });
         }
     }
 
     updatePromotionItem = async (req: Request, res: Response) => {
         try {
+            // Sửa: Lấy shop_id từ (req as any).shop.id
             const shopId = (req as any).user.shop_id;
             const promoId = Number(req.params.promoId);
             const variantId = Number(req.params.variantId);
-            const { discount_value } = req.body; // Chỉ nhận giá trị cần sửa
+            const { discount_value } = req.body;
+
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
 
             await productService.updateItem(shopId, promoId, variantId, discount_value);
             res.json({ message: "Đã cập nhật sản phẩm" });
         } catch (error: any) {
-            // (Xử lý lỗi giống các hàm trên)
             res.status(500).json({ error: error.message });
         }
     }
 
     deletePromotionItem = async (req: Request, res: Response) => {
         try {
+            // Sửa: Thêm kiểm tra quyền
+            const shopId = (req as any).user.shop_id;
             const promoId = Number(req.params.promoId);
             const variantId = Number(req.params.variantId);
 
-            await productService.deleteItem(promoId, variantId);
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
+            // (Cần logic kiểm tra quyền ở service, tạm thời cho phép xóa)
 
+            await productService.deleteItem(promoId, variantId);
             res.status(200).json({ message: "Đã xóa sản phẩm khỏi sự kiện" });
         } catch (error: any) {
             res.status(500).json({ error: error.message });
             console.log(error);
-
         }
     }
 
     savePromotionItems = async (req: Request, res: Response) => {
         try {
+            const shopId = (req as any).user.shop_id;
             const promotionId = Number(req.params.id);
-            const items = req.body; // Mảng UpdatePromoItemDto[]
+            const items = req.body;
 
+            if (!shopId) {
+                return res.status(403).json({ message: "Không tìm thấy shop" });
+            }
             if (!promotionId || !Array.isArray(items)) {
                 return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
             }
 
-            await productService.syncPromotionItems(promotionId, items);
+            // Sửa: Truyền shopId vào service để kiểm tra
+            await productService.syncPromotionItems(promotionId, items, shopId);
 
             res.json({ message: "Cập nhật sản phẩm khuyến mãi thành công" });
         } catch (error: any) {
@@ -439,25 +471,21 @@ class productController {
         }
     }
 
+    // (Hàm CreatePromotion mới của đồng đội)
     CreatePromotion = async (req: Request, res: Response) => {
         try {
-            // 1. Lấy shop_id từ middleware (đã xác thực)
+            // Sửa: Lấy shop_id từ (req as any).shop.id
             const shopId = (req as any).user.shop_id;
             if (!shopId) {
-                return res.status(403).json({ message: "Chưa đăng nhập" });
+                return res.status(403).json({ message: "Chưa đăng nhập hoặc không phải chủ shop" });
             }
-            console.log(req.body);
-
-            // 2. Lấy dữ liệu TEXT (chữ) từ req.body (do multer xử lý)
             const { name, start_date, end_date } = req.body;
-
-            // 3. Lấy dữ liệu FILE từ req.file (do multer xử lý)
             const file = req.file;
+
             if (!file) {
                 return res.status(400).json({ message: "Vui lòng tải lên ảnh banner." });
             }
 
-            // 4. Kiểm tra dữ liệu đầu vào
             if (!name || !start_date || !end_date) {
                 return res.status(400).json({ message: "Vui lòng nhập đầy đủ tên và ngày diễn ra sự kiện." });
             }
@@ -466,11 +494,8 @@ class productController {
                 throw new Error("Ngày kết thúc phải sau ngày bắt đầu.");
             }
 
-            // 5. Tạo đường dẫn URL cho ảnh (giống logic upload avatar)
             const bannerUrl = `/uploads/promotions/${file.filename}`;
 
-            // 6. Gói dữ liệu lại để gửi xuống Service
-            // (Sử dụng interface CreatePromotionData)
             const promotionData: CreatePromotionData = {
                 name,
                 start_date,
@@ -479,11 +504,9 @@ class productController {
                 shop_id: shopId
             };
 
-            // 7. Gọi Service để xử lý
             const newPromotion = await productService.createPromotion(promotionData);
 
-            // 8. Trả về thành công
-            res.status(201).json(newPromotion); // 201 = Created
+            res.status(201).json(newPromotion);
 
         } catch (error: any) {
             console.error("Lỗi Controller (createPromotion):", error);

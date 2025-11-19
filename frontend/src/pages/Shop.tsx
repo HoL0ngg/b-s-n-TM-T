@@ -6,6 +6,7 @@ import type { ShopType, ShopCateType } from "../types/ShopType";
 import type { ProductType } from "../types/ProductType";
 import ProductCard from "../components/ProductCard";
 import { motion } from "framer-motion";
+import { formatTimeAgo } from "../utils/helper";
 
 const Shop = () => {
 
@@ -112,15 +113,23 @@ const Shop = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="col-4 d-flex justify-content-around flex-column px-4">
-                        <div>Sản phẩm</div>
-                        <div>Đang theo dõi</div>
-                        <div>Tỉ lệ phản hồi</div>
-                    </div>
-                    <div className="col-4 d-flex justify-content-around flex-column px-4">
-                        <div>Người theo dõi</div>
-                        <div>Đánh giá</div>
-                        <div>Tham gia</div>
+                    <div className="col-8">
+                        <div className="row p-3 text-center justify-content-center align-items-center h-100">
+                            <div className="col-4">
+                                <div className="text-muted mt-2">Sản phẩm</div>
+                                <div className="text-primary fw-semibold mt-2">{shop?.totalProduct ? shop.totalProduct : 0}</div>
+                            </div>
+                            <div className="col-4 ps-4 border-start">
+                                <div className="text-muted">Đánh giá </div>
+                                <div className="text-primary fw-semibold mt-2">{shop?.avgRating ? Number(shop.avgRating).toFixed(2) : 0} ⭐</div>
+                            </div>
+                            <div className="col-4 ps-4 border-start">
+                                <div className="text-muted">Tham gia</div>
+                                <div className="text-primary fw-semibold mt-2">
+                                    {formatTimeAgo(shop?.created_at)}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="row">

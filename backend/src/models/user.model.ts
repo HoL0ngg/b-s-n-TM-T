@@ -2,6 +2,10 @@ export interface User {
     phone_number: string;
     email: string;
     avatar_url: string;
+    shop_id: string;
+    role: string;
+    status: number;
+    created_at: string;
 }
 
 export interface Address {
