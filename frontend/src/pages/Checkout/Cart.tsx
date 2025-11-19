@@ -23,7 +23,7 @@ export default function Cart() {
 
     const selectedItemDetails: CartItem[] = useMemo(() => {
         return allItems.filter(item =>
-            selectedItems.includes(item.product_id)
+            selectedItems.includes(item.product_variant_id)
         );
     }, [allItems, selectedItems]);
 
@@ -75,7 +75,7 @@ export default function Cart() {
             return 0;
         }
         return allItems
-            .filter(item => selectedItems.includes(item.product_id))
+            .filter(item => selectedItems.includes(item.product_variant_id))
             .reduce((sum, item) => {
                 const price = item.sale_price || item.original_price || 0;
                 const quantity = item.quantity || 0;
@@ -99,7 +99,7 @@ export default function Cart() {
         setLoading(true);
 
         const itemsToCheckout = allItems.filter(item =>
-            selectedItems.includes(item.product_id)
+            selectedItems.includes(item.product_variant_id)
         );
         const total = calculateTotal(); // (Hàm của bạn)
 
@@ -148,7 +148,7 @@ export default function Cart() {
                     :
                     (<div className="container p-4">
                         {cart.map(shop => {
-                            const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
+                            const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_variant_id));
 
                             return (
                                 <div key={shop.shop_id} className="mb-4">
@@ -169,12 +169,12 @@ export default function Cart() {
                                     </div>
                                     <div className="container bg-white px-4 rounded border">
                                         {shop.items.map((item, ind) => (
-                                            <div key={item.product_id} className={`row mb-4 ${ind > 0 ? 'border-top' : ''} border-primary border-2 pt-4`} >
+                                            <div key={item.product_variant_id} className={`row mb-4 ${ind > 0 ? 'border-top' : ''} border-primary border-2 pt-4`} >
                                                 <div className="col-3">
                                                     <input
                                                         type="checkbox"
-                                                        checked={selectedItems.includes(item.product_id)}
-                                                        onChange={() => handleCheckboxChange(item.product_id)}
+                                                        checked={selectedItems.includes(item.product_variant_id)}
+                                                        onChange={() => handleCheckboxChange(item.product_variant_id)}
                                                     />
                                                     <img src={item.product_url} className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
                                                 </div>
