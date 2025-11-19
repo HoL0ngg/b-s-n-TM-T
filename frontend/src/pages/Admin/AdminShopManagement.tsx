@@ -213,7 +213,7 @@ const AdminShopManagement: React.FC = () => {
                                                 style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '1rem' }}
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
-                                                    target.src = "https://placehold.co/60x60/EFEFEF/AAAAAA?text=Lỗi";
+                                                    target.src = "https://placehold.co/60x60/EFEFEF/AAAAAA?text=NoImg";
                                                 }}
                                             />
                                         </td>

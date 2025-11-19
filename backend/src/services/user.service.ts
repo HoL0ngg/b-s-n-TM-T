@@ -220,7 +220,7 @@ class userService {
             FROM shops s
             JOIN users u ON u.phone_number = s.owner_id
             JOIN user_profile uf ON uf.phone_number = u.phone_number
-            WHERE s.shop_id = ?
+            WHERE s.id = ?
         `;
         const [rows] = await pool.query(query, [shopId]);
         return rows[0] as UserAdmin;

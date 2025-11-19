@@ -340,10 +340,10 @@ class productService {
     // =================================================================
     // NÂNG CẤP MỚI: Chỉ giữ 1 hàm updateProductStatusService (của bạn)
     // =================================================================
-    updateProductStatusService = async (productId: number, shopId: number, status: number) => {
+    updateProductStatusService = async (productId: number, status: number, reason?: string) => {
         const [result] = await pool.query<ResultSetHeader>(
-            "UPDATE products SET status = ? WHERE id = ? AND shop_id = ?",
-            [status, productId, shopId]
+            "UPDATE products SET status = ? WHERE id = ?",
+            [status, productId]
         );
         return result.affectedRows > 0;
     };
@@ -505,14 +505,12 @@ class productService {
         };
     }
 
-    getProductsOnShopId = async (shopId: number): Promise<Product[]> => {
+    getProductsOnShopId = async (shopId: number, page: number, limit: number): Promise<ProductResponse> => {
         let query = `
-            SELECT p.*
-            FROM products p
-            WHERE p.shop_id = ?
+            WHERE v_products_list.shop_id = ?
         `;
-        const [rows] = await pool.query(query, [shopId]);
-        return rows as Product[];
+        const parameters: any[] = [shopId];
+        return paginationProducts(query, parameters, page, limit);
     }
 
 }

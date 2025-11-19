@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import shopService from "../../services/shop.service";
 import userService from "../../services/user.service";
 import productService from "../../services/product.service";
+import { parse } from "path";
 class shopsAdminController {
     getShopsByStatusController = async (req: Request, res: Response) => {
         try {
@@ -46,19 +47,25 @@ class shopsAdminController {
     getShopDetailController = async (req: Request, res: Response) => {
         try {
             const id = parseInt(req.params.id, 10);
+            const page = parseInt(req.query.page as string, 10) || 1;
+            const limit = parseInt(req.query.limit as string, 10) || 10;
+            if (isNaN(id)) {
+                return res.status(400).json({ message: "Shop ID không hợp lệ." });
+            }
             const shopPromise = shopService.getShopOnIdService(id);
             const userPromise = userService.getShopOwnerInformation(id);
-            const productsPromise = productService.getProductsOnShopId(id);
-            const [shopResult, userResult, productsResult] = await Promise.all([
+            const productResponsePromise = productService.getProductsOnShopId(id, page, limit);
+            const [shopResult, userResult, productPromiseResult] = await Promise.all([
                 shopPromise,
                 userPromise,
-                productsPromise
+                productResponsePromise,
             ])
 
             res.status(200).json({
                 shop: shopResult,
                 userInfo: userResult,
-                products: productsResult
+                products: productPromiseResult.products,
+                totalPages: productPromiseResult.totalPages
             })
         } catch (error) {
             console.error("Lỗi trong getShopDetailController:", error);
