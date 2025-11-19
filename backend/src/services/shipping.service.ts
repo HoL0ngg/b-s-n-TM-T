@@ -7,7 +7,7 @@ async function getCoordinates(address: string): Promise<{ lon: string, lat: stri
         const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
 
         const response = await axios.get(url, {
-            headers: { 'User-Agent': 'MyApp (my-email@example.com)' } // Nominatim yêu cầu User-Agent
+            headers: { 'User-Agent': 'Basan (email2@gmail.com)' }
         });
 
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
@@ -33,12 +33,12 @@ async function getDrivingDistance(
         const response = await axios.get(url);
 
         // OSRM trả về khoảng cách tính bằng MÉT
-        // if (response.data && Array.isArray(response.data.routes) && response.data.routes.length > 0) {
+        if (response.data && Array.isArray(response.data.routes) && response.data.routes.length > 0) {
 
-        //     // 2. Nếu an toàn, MỚI lấy distance
-        //     const distanceInMeters = response.data.routes[0].distance;
-        //     return distanceInMeters;
-        // }
+            // 2. Nếu an toàn, MỚI lấy distance
+            const distanceInMeters = response.data.routes[0].distance;
+            return distanceInMeters;
+        }
         return null;
     } catch (error) {
         console.error("Lỗi OSRM Routing:", error);
@@ -48,17 +48,13 @@ async function getDrivingDistance(
 
 // --- Hàm 3: HÀM CHÍNH (Gộp lại) ---
 export async function calculateShippingFee(warehouseAddress: string, deliveryAddress: string) {
-    console.log("Đang lấy tọa độ kho...");
     const warehouseCoords = await getCoordinates(warehouseAddress);
-
-    console.log("Đang lấy tọa độ khách...");
     const deliveryCoords = await getCoordinates(deliveryAddress);
 
     if (!warehouseCoords || !deliveryCoords) {
         throw new Error("Không tìm thấy địa chỉ");
     }
 
-    console.log("Đang tính khoảng cách lái xe...");
     const distanceInMeters = await getDrivingDistance(warehouseCoords, deliveryCoords);
 
     if (distanceInMeters === null) {

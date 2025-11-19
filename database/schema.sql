@@ -660,7 +660,13 @@ CREATE TABLE `shop_info` (
 --
 
 INSERT INTO `shop_info` (`id`, `shop_id`, `user_id`, `address`, `email`, `phone`, `shipping_methods`, `business_type`, `invoice_email`, `tax_code`, `identity_type`, `identity_number`, `identity_full_name`, `updated_at`) VALUES
-(1, 7, '0917842142', '2312 áđâsđâsđâsđá, Phường Thục Phán, Cao Bằng', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14');
+(1, 1, '0338740832', '273 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(2, 2, '0987654333', '275 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(3, 3, '0987654222', '277 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(4, 4, '0987654111', '213 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(5, 5, '0987654000', '353 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(6, 6, '0987654444', '173 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(7, 7, '0917842142', '113 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14');
 
 -- --------------------------------------------------------
 

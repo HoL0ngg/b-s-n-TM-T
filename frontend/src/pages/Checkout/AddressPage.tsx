@@ -1,5 +1,4 @@
 import { GrRadialSelected } from "react-icons/gr";
-import { FaCcMastercard } from "react-icons/fa";
 import type { AddressType } from "../../types/UserType";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -12,8 +11,8 @@ import { FaAngleDown } from "react-icons/fa6";
 import { FaMoneyBillWave } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
-import { createVietQROrder } from "../../api/cart";
 import { createPayment_momo, createPayment_vnpay } from "../../api/payments";
+import { calculateShippingFee } from "../../api/shipping";
 
 export const AddressPage = () => {
     const location = useLocation();
@@ -30,6 +29,38 @@ export const AddressPage = () => {
     const [orderId, setOrderId] = useState("");
     const [selectedMethod, setSelectedMethod] = useState<string>('cod');
     const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
+    const [shippingFees, setShippingFees] = useState<{ [shopId: number]: number }>({});
+    const [isCalculatingShip, setIsCalculatingShip] = useState(false);
+
+    const groupedCart: CartType[] = useMemo(() => {
+        // Nếu không có giỏ hàng, trả về mảng rỗng
+        if (!items || items.length === 0) {
+            return [];
+        }
+
+        // Bắt đầu gom nhóm
+        const grouped = items.reduce((acc, item) => {
+            const shopId = item.shop_id;
+
+            if (!acc[shopId]) {
+                acc[shopId] = {
+                    shop_id: shopId,
+                    shop_name: item.shop_name,
+                    logo_url: item.logo_url,
+                    items: [], // Tạo một mảng rỗng cho các sản phẩm
+                };
+            }
+
+            // 2. Thêm 'item' hiện tại vào đúng nhóm shop của nó
+            acc[shopId].items.push(item);
+
+            // Trả về 'acc' cho lần lặp tiếp theo
+            return acc;
+        }, {} as { [key: number]: CartType }); // Bắt đầu với 1 object rỗng
+
+        return Object.values(grouped);
+
+    }, [items]);
 
     let [show, setShow] = useState(false);
     useEffect(() => {
@@ -64,6 +95,59 @@ export const AddressPage = () => {
         loadAddress();
     }, [user]);
 
+    useEffect(() => {
+        // 1. Nếu chưa chọn địa chỉ hoặc giỏ hàng rỗng -> Reset phí ship
+        if (!selectedAddress || groupedCart.length === 0) {
+            setShippingFees({});
+            return;
+        }
+
+        const calculateAllFees = async () => {
+            setIsCalculatingShip(true);
+
+            // Tạo chuỗi địa chỉ đầy đủ để gửi lên API
+            // (Tùy vào backend bạn yêu cầu format nào, ở đây mình ghép lại)
+            const fullAddress = `${selectedAddress.street}, ${selectedAddress.ward}, ${selectedAddress.city}`;
+
+            try {
+                // 2. Tạo một mảng các Promise (các lệnh gọi API chạy song song)
+                const promises = groupedCart.map(async (shopGroup) => {
+                    try {
+                        // Gọi hàm API của bạn
+                        const fee = await calculateShippingFee(fullAddress, shopGroup.shop_id);
+
+                        // Trả về kết quả dạng object để dễ gán
+                        return { shopId: shopGroup.shop_id, fee: fee };
+                    } catch (err) {
+                        console.error(`Lỗi tính ship shop ${shopGroup.shop_id}`, err);
+                        // Nếu lỗi, trả về -1 hoặc 0 để xử lý sau
+                        return { shopId: shopGroup.shop_id, fee: -1 };
+                    }
+                });
+
+                // 3. Chờ tất cả API chạy xong (Promise.all)
+                const results = await Promise.all(promises);
+
+                // 4. Chuyển mảng kết quả thành Object { shopId: fee }
+                const newFeesMap: { [key: number]: number } = {};
+                results.forEach(item => {
+                    newFeesMap[item.shopId] = item.fee;
+                });
+
+                // 5. Cập nhật State
+                setShippingFees(newFeesMap);
+
+            } catch (error) {
+                console.error("Lỗi hệ thống tính ship:", error);
+            } finally {
+                setIsCalculatingShip(false);
+            }
+        };
+
+        calculateAllFees();
+
+    }, [selectedAddress, groupedCart]); // <-- Chạy lại khi Địa chỉ hoặc Giỏ hàng đổi
+
     const loadAddress = async () => {
         try {
             if (user) {
@@ -78,36 +162,6 @@ export const AddressPage = () => {
 
         }
     }
-
-    const groupedCart: CartType[] = useMemo(() => {
-        // Nếu không có giỏ hàng, trả về mảng rỗng
-        if (!items || items.length === 0) {
-            return [];
-        }
-
-        // Bắt đầu gom nhóm
-        const grouped = items.reduce((acc, item) => {
-            const shopId = item.shop_id;
-
-            if (!acc[shopId]) {
-                acc[shopId] = {
-                    shop_id: shopId,
-                    shop_name: item.shop_name,
-                    logo_url: item.logo_url,
-                    items: [], // Tạo một mảng rỗng cho các sản phẩm
-                };
-            }
-
-            // 2. Thêm 'item' hiện tại vào đúng nhóm shop của nó
-            acc[shopId].items.push(item);
-
-            // Trả về 'acc' cho lần lặp tiếp theo
-            return acc;
-        }, {} as { [key: number]: CartType }); // Bắt đầu với 1 object rỗng
-
-        return Object.values(grouped);
-
-    }, [items]);
 
     const handleChangAddress = () => {
         setShow(!show);
@@ -176,6 +230,10 @@ export const AddressPage = () => {
             alert("Chưa xử lý phương thức COD");
             return;
         }
+        if (isCalculatingShip) {
+            alert("Vui lòng chờ tính phí vận chuyển xong trước khi thanh toán.");
+            return;
+        }
         const paymentUrl = await handleCreatePaymentUrl(selectedMethod);
         if (paymentUrl) {
             window.location.href = paymentUrl;
@@ -190,6 +248,9 @@ export const AddressPage = () => {
                     <div className="col-8">
                         <div className="container p-4">
                             {groupedCart.map((shopGroup) => {
+                                const fee = Number(shippingFees[shopGroup.shop_id]);
+                                console.log(fee);
+
                                 const subTotal = shopGroup.items.reduce((sum, item) => {
                                     return sum + (item.original_price * item.quantity);
                                 }, 0);
@@ -207,7 +268,7 @@ export const AddressPage = () => {
                                             {shopGroup.items.map((item) => (
 
                                                 <div key={item.product_variant_id} className="cart-item d-flex mb-3 p-3">
-                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="rounded" />
 
                                                     <div className="item-details ms-3 d-flex flex-column justify-content-between">
                                                         <div className="fw-bold mb-1">{item.product_name}</div>
@@ -230,7 +291,7 @@ export const AddressPage = () => {
                                                     <div>Tổng tiền: </div>
                                                 </div>
                                                 <div className="text-end">
-                                                    <div>20.000đ</div>
+                                                    <div>{fee ? `${fee.toLocaleString()}đ` : "---"}</div>
                                                     <div>{subTotal.toLocaleString('vi-VN')}đ</div>
                                                 </div>
                                             </div>

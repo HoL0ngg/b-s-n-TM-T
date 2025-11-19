@@ -21,6 +21,7 @@ import ShopsAdminRoute from "./routes/admin/shopsAdmin.route"; // <-- Từ nhán
 import UsersAdminRoute from "./routes/admin/usersAdmin.route"; // <-- Từ nhánh 'main'
 import AdminRouter from "./routes/admin.route";
 import UploadRouter from "./routes/upload.route";
+import shippingRouter from "./routes/shipping.route";
 
 const app = express();
 app.use(bodyParser.json());
@@ -44,7 +45,7 @@ app.use("/api/shops", ShopRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/cart", CartRouter);
 
-app.use("/api/auth", authRoutes); 
+app.use("/api/auth", authRoutes);
 app.use("/api/shop-categories", shopCategoryRoutes);
 
 // Routes của đồng đội (main)
@@ -57,6 +58,8 @@ app.use("/api/admin/shopsAdmin", ShopsAdminRoute);
 app.use("/api/admin/usersAdmin", UsersAdminRoute);
 
 app.use("/api/upload", UploadRouter);
+
+app.use("/api/shipping", shippingRouter);
 
 app.listen(5000, () => {
     console.log("🚀 Backend chạy tại http://localhost:5000");
