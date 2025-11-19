@@ -30,7 +30,7 @@ async function getDrivingDistance(
         const coordsString = `${coords1.lon},${coords1.lat};${coords2.lon},${coords2.lat}`;
         const url = `http://router.project-osrm.org/route/v1/driving/${coordsString}?overview=false`;
 
-        const response = await axios.get(url);
+        const response: any = await axios.get(url);
 
         // OSRM trả về khoảng cách tính bằng MÉT
         if (response.data && Array.isArray(response.data.routes) && response.data.routes.length > 0) {
