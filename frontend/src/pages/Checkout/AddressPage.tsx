@@ -11,7 +11,7 @@ import { FaAngleDown } from "react-icons/fa6";
 import { FaMoneyBillWave } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
-import { createPayment_momo, createPayment_vnpay } from "../../api/payments";
+import { createPayment_momo, createPayment_vnpay, handleShipCod } from "../../api/payments";
 import { calculateShippingFee } from "../../api/shipping";
 
 export const AddressPage = () => {
@@ -186,24 +186,16 @@ export const AddressPage = () => {
         loadAddress(); // Tải lại danh sách (để reload)
     };
 
-    const handleCreatePaymentUrl = async (provider: string): Promise<string | null> => {
-        const checkoutData = {
-            total: total
-        };
+    const handleCreatePaymentUrl = async (provider: string, checkoutData: any): Promise<string | null> => {
+        checkoutData.paymentMethod = provider;
         const processPayment = async (provider: string, data: typeof checkoutData) => {
-            try {
-                switch (provider) {
-                    case 'vnpay':
-                        return await createPayment_vnpay(data);
-                    case 'momo':
-                        return await createPayment_momo(data);
-                    default:
-                        throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
-                }
-
-            } catch (error) {
-                console.error('[ERROR] ', error);
-                throw new Error('Tạo URL thanh toán thất bại');
+            switch (provider) {
+                case 'vnpay':
+                    return await createPayment_vnpay(data);
+                case 'momo':
+                    return await createPayment_momo(data);
+                default:
+                    throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
             }
         };
 
@@ -219,22 +211,52 @@ export const AddressPage = () => {
                 return null;
             }
         } catch (error) {
-            console.error('[ERROR] ', error);
-            alert(error instanceof Error ? error.message : 'An unknown error occurred');
+            const errorData = (error as any).response.data;
+            console.error(errorData.message);
+            if((error as any).status === 409) {
+                if(errorData.details) {
+                    console.error(JSON.stringify(errorData.details, null, 2));
+                    alert(errorData.message + "\n" + JSON.stringify(errorData.details, null, 2));
+                }
+            } else {
+                alert(errorData.message);
+            }
             return null;
         }
     }
     const handlePlaceOrder = async () => {
-        console.log(selectedMethod);
+        const checkoutData = {
+            total: total,
+            shippingFees: shippingFees,
+            groupedCart: groupedCart,
+            paymentMethod: 'cod'
+        };
+
         if (selectedMethod === "cod") {
-            alert("Chưa xử lý phương thức COD");
+            try {
+                const response = await handleShipCod(checkoutData);
+                if(response.success) alert(response.message);
+            } catch (error) {
+                console.log(error);
+                
+                const errorData = (error as any).response.data;
+                console.error(errorData.message);
+                if((error as any).status === 409) {
+                    if(errorData.details) {
+                        console.error(JSON.stringify(errorData.details, null, 2));
+                        alert(errorData.message + "\n" + JSON.stringify(errorData.details, null, 2));
+                    }
+                } else {
+                    alert(errorData.message);
+                }
+            }
             return;
         }
         if (isCalculatingShip) {
             alert("Vui lòng chờ tính phí vận chuyển xong trước khi thanh toán.");
             return;
         }
-        const paymentUrl = await handleCreatePaymentUrl(selectedMethod);
+        const paymentUrl = await handleCreatePaymentUrl(selectedMethod, checkoutData);
         if (paymentUrl) {
             window.location.href = paymentUrl;
         }

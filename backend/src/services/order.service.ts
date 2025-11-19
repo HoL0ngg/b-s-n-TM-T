@@ -1,4 +1,4 @@
-import { RowDataPacket } from 'mysql2';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import * as OrderModel from '../models/order.model';
 import * as ShopModel from '../models/shop.model';
 import pool from '../config/db';
@@ -113,6 +113,114 @@ class OrderService {
         `, [orderId]);
 
         return { ...order, items };
+    }
+
+    addOrders = async (userId, shopOrders, opts) => {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const needed = new Map();
+            for(const shopOrder of shopOrders) {
+                for(const item of shopOrder.items) {
+                    const variant_id = Number(item.variant_id);
+                    const quantity = Number(item.quantity);
+                    needed.set(variant_id, (needed.get(variant_id) || 0) + quantity);
+                }
+            }
+
+            const variantIds = Array.from(needed.keys());
+
+            // Khoá productVariantRows
+            const placeholders = variantIds.map(() => '?').join(',');
+            
+            const [prodRows] = await connection.query<RowDataPacket[]>(
+                `SELECT id, stock FROM productvariants WHERE id IN (${placeholders}) FOR UPDATE`,
+                variantIds
+            );
+
+            const stockMap = new Map();
+            for (const row of prodRows) {
+                stockMap.set(Number(row.id), Number(row.stock));
+            }
+            
+            const insufficient: {
+                variantId: Number,
+                stock: Number,
+                needed: Number
+            }[] = [];
+            
+            for (const [variantId, needQuantity] of needed.entries()) {
+                const avail = stockMap.has(variantId) ? stockMap.get(variantId) : null;
+                if (avail === null || avail < needQuantity) {
+                    insufficient.push({
+                        variantId: variantId,
+                        stock: avail === null ? 0 : avail,
+                        needed: needQuantity
+                    })
+                }
+            }
+            
+            if (insufficient.length > 0) {
+                const error = new Error(`Không đủ sản phẩm`);
+                (error as any).status = 409;
+                (error as any).details = insufficient;
+                throw error;
+            }
+            
+            const orderIds: number[] = [];
+    
+            for (const shopOrder of shopOrders) {
+                const [orderResult]: any = await connection.execute(
+                    `
+                    INSERT INTO orders
+                    (user_id, shop_id, total_amount, address_id, shipping_fee, status, payment_method, payment_status, notes, order_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                    `,
+                    [userId, shopOrder.shop_id, shopOrder.total_amount, opts.address_id, shopOrder.shipping_fee, `Pending`, opts.payment_method ?? "cod", `Unpaid`, opts.notes ?? null]
+                );
+                    
+                const orderId = orderResult.insertId;
+                orderIds.push(orderId);
+    
+                for(const item of shopOrder.items) {
+                    const subTotal = item.price_at_purchase * item.quantity;
+                    await connection.execute(
+                        `
+                        INSERT INTO order_items
+                        (order_id, product_id, variant_id, product_name, quantity, price_at_purchase, subtotal)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        `,
+                        [orderId, item.product_id, item.variant_id, item.product_name, item.quantity, item.price_at_purchase, subTotal]
+                    );
+                }
+            }
+            
+            for (const [variantId, needQuantity] of needed.entries()) {
+                const prev = stockMap.get(variantId);
+                const newStock = prev - needQuantity;
+                await connection.execute(
+                    `UPDATE productvariants SET stock = ? WHERE id = ?`,
+                    [newStock, variantId]
+                );
+            }
+
+            await connection.commit();
+            return orderIds;
+        } catch (error) {
+            await connection.rollback();    
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    updateOrderPaymentStatus = async (orderId, newPaymentStatus) => {
+        const [result] = await pool.query<ResultSetHeader>(
+            `UPDATE orders SET payment_status = ? WHERE order_id = ?`,
+            [newPaymentStatus, orderId]
+        );
+        return result.affectedRows > 0;
     }
 }
 
