@@ -21,6 +21,10 @@ SET time_zone = "+00:00";
 -- Cơ sở dữ liệu: `basan`
 --
 
+DROP DATABASE basan;
+Create database basan;
+use basan;
+
 -- --------------------------------------------------------
 
 --
@@ -681,14 +685,17 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `status`, `created_at`, `role`) VALUES
 ('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0917842142', 'longnguyen210405@gmail.com', '$2b$10$DOxxYzLITFuc50bmC/YycuqkqpLQhSmPuttYKeie6Cn2a.8qf0ryG', '/assets/avatar/lion.png', 1, '2025-11-17 19:31:34', 'customer'),
-('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'admin');
+('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/panda.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'admin'),
+('0932137212', 'adu2@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-19 12:22:49', 'customer'),
+('0938231321', 'adu3@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/lion.png', 1, '2025-11-19 12:22:49', 'customer'),
+('0893218328', 'adu4@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bee.png', 1, '2025-11-19 12:22:49', 'customer');
 
 -- --------------------------------------------------------
 
@@ -827,17 +834,22 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `payment_status` varchar(50) DEFAULT 'Unpaid',
   `order_date` datetime NOT NULL DEFAULT current_timestamp(),
   `notes` text DEFAULT NULL,
+  `shop_id` int,
   PRIMARY KEY (`order_id`),
   KEY `user_id` (`user_id`),
-  KEY `address_id` (`address_id`)
+  KEY `address_id` (`address_id`),
+  Key `shop_id` (`shop_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`) VALUES
-(1, '0987654333', 1, 736000.00, 0.00, 'Shipped', 'COD', 'Unpaid', '2025-11-05 20:16:05', NULL);
+INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`, `shop_id`) VALUES
+(1, '0938231321', 1, 736000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-05 20:16:05', NULL, 3),
+(2, '0932137212', 1, 1232000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-06 20:16:05', NULL, 3),
+(3, '0932137212', 1, 200000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-07 20:16:05', NULL, 2),
+(4, '0938231321', 1, 7362000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-08 20:16:05', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1261,7 +1273,8 @@ COMMIT;
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`);
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`),
+  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`);
 
 --
 -- Các ràng buộc cho bảng `order_items`

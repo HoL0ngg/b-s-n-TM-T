@@ -6,7 +6,7 @@ const AdminFooter: React.FC = () => {
         <footer className="bg-white p-3 text-center border-top mt-auto">
             <div className="container-fluid">
                 <span className="text-muted">
-                    Copyright &copy; {currentYear} Market Platform. All rights reserved.
+                    Copyright &copy; {currentYear} BáSàn. All rights reserved.
                 </span>
             </div>
         </footer>

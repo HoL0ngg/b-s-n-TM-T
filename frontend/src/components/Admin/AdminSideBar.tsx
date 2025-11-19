@@ -88,10 +88,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
 
     return (
         <aside
-            className={`sidebar bg-dark text-white d-flex flex-column ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}
+            className={`sidebar bg-light text-white d-flex flex-column ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}
         >
             {/* Logo */}
-            <div className="d-flex align-items-center justify-content-center p-3 fs-5 fw-bold" style={{ height: '64px' }}>
+            <div className="d-flex align-items-center justify-content-center p-3 fs-5 fw-bold text-black border-bottom border-2" style={{ height: '64px' }}>
                 {isCollapsed ? 'AP' : 'ADMIN PAGE'}
             </div>
 
@@ -108,7 +108,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
                                     href={`#${item.key}-submenu`}
                                     data-bs-toggle="collapse"
                                     aria-expanded={isParentActive}
-                                    className={`nav-link d-flex justify-content-between align-items-center ${isParentActive ? 'active' : ''}`}
+                                    className={`nav-link d-flex justify-content-between align-items-center ${isParentActive ? 'bg-primary text-white' : 'text-primary'}`}
                                 >
                                     <div className="d-flex align-items-center">
                                         <span className="menu-icon">{item.icon}</span>
@@ -134,7 +134,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
                                             <li className="nav-item mt-2" key={child.key}>
                                                 <Link
                                                     to={child.path}
-                                                    className={`nav-link ${child.path === activeKey ? 'active' : ''}`}
+                                                    className={`nav-link ${child.path === activeKey ? 'bg-primary text-white' : 'text-primary'}`}
                                                 >
                                                     {!isCollapsed && child.label}
                                                 </Link>
@@ -151,7 +151,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isCollapsed }) => {
                         <li className="nav-item" key={item.key}>
                             <Link
                                 to={item.path!}
-                                className={`nav-link ${item.path === activeKey ? 'active' : ''}`}
+                                className={`nav-link ${item.path === activeKey ? 'text-white bg-primary' : 'text-primary'}`}
                             >
                                 <span className="menu-icon">{item.icon}</span>
                                 {!isCollapsed && <span className='ms-2'>{item.label}</span>}
