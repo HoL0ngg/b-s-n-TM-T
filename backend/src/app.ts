@@ -18,7 +18,8 @@ import shopCategoryRoutes from "./routes/shopCategory.route"; // <-- Từ nhánh
 import paymentRouter from "./routes/payment.route";
 import ProductsAdminRoute from "./routes/admin/productsAdmin.route"; // <-- Từ nhánh 'main'
 import ShopsAdminRoute from "./routes/admin/shopsAdmin.route"; // <-- Từ nhánh 'main'
-import UsersAdminRoute from "./routes/admin/usersAdmin.route"; // <-- Từ nhánh 'main'
+import UsersAdminRoute from "./routes/admin/usersAdmin.route";
+import OrdersAdminRoute from "./routes/admin/ordersAdmin.route";
 import AdminRouter from "./routes/admin.route";
 import UploadRouter from "./routes/upload.route";
 import shippingRouter from "./routes/shipping.route";
@@ -56,6 +57,7 @@ app.use("/api/admin", AdminRouter);
 app.use("/api", orderRoutes);
 app.use("/api/admin/shopsAdmin", ShopsAdminRoute);
 app.use("/api/admin/usersAdmin", UsersAdminRoute);
+app.use("/api/admin/ordersAdmin", OrdersAdminRoute);
 
 app.use("/api/upload", UploadRouter);
 

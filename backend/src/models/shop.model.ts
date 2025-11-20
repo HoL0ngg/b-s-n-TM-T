@@ -32,4 +32,10 @@ export const findShopIdByOwner = async (ownerPhone: string): Promise<number | nu
 export interface ShopAdmin extends Shop {
     username: string;
     phone_number: string;
-}   
+}
+
+export interface ShopDetailAdmin extends ShopAdmin {
+    productCount: number;
+    totalRevenue: number;
+    totalOrders: number;
+}

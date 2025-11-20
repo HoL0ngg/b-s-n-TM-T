@@ -239,7 +239,7 @@ class productController {
             const categoryId = Number(req.params.id);
 
             // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
-            let whereClause = "WHERE v_products_list.status = 1"; // (Từ 'main')
+            let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
             const params: any[] = [];
 
             if (subCategoryId && Number(subCategoryId) !== 0) {

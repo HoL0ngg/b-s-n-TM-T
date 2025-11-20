@@ -1,5 +1,7 @@
 import axios from "axios";
-import type { ShopAdminType } from "../../types/ShopType";
+import type { ShopAdminType, ShopDetailAdminType, ShopType } from "../../types/ShopType";
+import type { ProductType } from "../../types/ProductType";
+import type { UserAdminType } from "../../types/admin/UserTypeAdmin";
 
 const API_URL = "http://localhost:5000/api/admin/shopsAdmin";
 export const fetchShopsByStatusAdmin = async (
@@ -41,4 +43,9 @@ export const updateShopStatusAdmin = async (
         );
     }
 
+}
+
+export const fetchShopDetail = async (shopId: number, page: number = 1, limit: number): Promise<{ shop: ShopType, userInfo: UserAdminType, products: ProductType[], totalPages: number }> => {
+    const res = await axios.get(`${API_URL}/shops/${shopId}?page=${page}&limit=${limit}`);
+    return res.data;
 }

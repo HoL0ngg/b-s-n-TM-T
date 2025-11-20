@@ -214,8 +214,9 @@ const AdminProductApproval: React.FC = () => {
                     <div className="table-responsive">
                         <table className="table table-hover align-middle">
                             {/* Tiêu đề bảng */}
-                            <thead className="table-light">
+                            <thead className="table-light text-center">
                                 <tr>
+                                    <th>Hình ảnh</th>
                                     <th scope="col" style={{ minWidth: '300px' }}>Sản phẩm</th>
                                     <th scope="col">Cửa hàng</th>
                                     <th scope="col">Danh mục</th>
@@ -229,8 +230,8 @@ const AdminProductApproval: React.FC = () => {
                                 {products.map((product) => (
                                     <tr key={product.id}>
                                         {/* Cột sản phẩm (Ảnh + Tên) */}
-                                        <td>
-                                            <div className="d-flex align-items-center">
+                                        <td >
+                                            <div className="d-flex align-items-center justify-content-center">
                                                 <img
                                                     src={product.image_url}
                                                     alt={product.name}
@@ -241,15 +242,17 @@ const AdminProductApproval: React.FC = () => {
                                                         target.src = "https://placehold.co/60x60/EFEFEF/AAAAAA?text=Lỗi";
                                                     }}
                                                 />
-                                                <div>
-                                                    <div className="fw-bold">{product.name}</div>
-                                                    <small className="text-muted">ID: {product.id}</small>
-                                                </div>
                                             </div>
                                         </td>
-                                        <td>{product.shop_name}</td>
-                                        <td>{product.category_name}</td>
-                                        <td className="fw-bold">{product.base_price.toLocaleString()}</td>
+                                        <td>
+                                            <div>
+                                                <div className="fw-bold">{product.name}</div>
+                                                <small className="text-muted">ID: {product.id}</small>
+                                            </div>
+                                        </td>
+                                        <td className="text-center">{product.shop_name}</td>
+                                        <td className="text-center">{product.category_name}</td>
+                                        <td className="fw-bold text-center">{product.base_price.toLocaleString()}</td>
                                         <td>
                                             <span className={`badge ${getStatusBadge(product.status.toString())}`}>
                                                 {getStatusText(product.status.toString())}
