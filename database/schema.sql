@@ -483,7 +483,13 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `ima
 (38, 23, 184000, 1, 'hjhj', ''),
 (39, 24, 78000, 1, 'hjhj', ''),
 (40, 25, 2366000, 1, 'hjhj', ''),
-(41, 26, 2790000, 1, 'hjhj', '');
+(41, 26, 2790000, 1, 'hjhj', ''),
+(42, 27, 169000, 1, 'hjhj', ''),
+(43, 28, 289000, 1, 'hjhj', ''),
+(44, 29, 259000, 1, 'hjhj', ''),
+(45, 30, 209000, 1, 'hjhj', ''),
+(46, 31, 54000, 1, 'hjhj', ''),
+(47, 32, 144000, 1, 'hjhj', '');
 
 -- --------------------------------------------------------
 
@@ -904,6 +910,8 @@ CREATE TABLE `v_products_list` (
 ,`created_at` date
 ,`updated_at` date
 ,`sold_count` int(11)
+,`max_price` int(11)
+,`min_price` int(11)
 ,`shop_cate_id` int(11)
 ,`category_name` varchar(255)
 ,`base_price` int(11)
@@ -925,8 +933,92 @@ CREATE TABLE `v_products_list` (
 --
 DROP TABLE IF EXISTS `v_products_list`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, ifnull(`p`.`sold_count`,0) AS `sold_count`, `p`.`shop_cate_id` AS `shop_cate_id`, `g`.`name` AS `category_name`, `p`.`base_price` AS `base_price`, `p`.`brand_id` AS `brand_id`, `p`.`status` AS `status`, `s`.`name` AS `shop_name`, `s`.`status` AS `shop_status`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, ifnull(`p`.`sold_count`,0) * 0.6 + (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) * 0.4 AS `hot_score`, (select round(min(`pv`.`price` * (1 - `pi`.`discount_value` / 100)),0) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `sale_price`, (select max(`pi`.`discount_value`) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `discount_percentage` FROM ((`products` `p` left join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) join `shops` `s` on(`s`.`id` = `p`.`shop_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list` AS 
+SELECT 
+    `p`.`id` AS `id`, 
+    `p`.`name` AS `name`, 
+    `p`.`description` AS `description`, 
+    `p`.`shop_id` AS `shop_id`, 
+    `p`.`generic_id` AS `generic_id`, 
+    `p`.`created_at` AS `created_at`, 
+    `p`.`updated_at` AS `updated_at`, 
+    
+    -- Xử lý sold_count (mặc định 0 nếu null)
+    IFNULL(`p`.`sold_count`, 0) AS `sold_count`, 
+    
+    `p`.`shop_cate_id` AS `shop_cate_id`, 
+    `g`.`name` AS `category_name`, 
+    `p`.`base_price` AS `base_price`, 
+    `p`.`brand_id` AS `brand_id`, 
+    `p`.`status` AS `status`, 
+    `s`.`name` AS `shop_name`, 
+    `s`.`status` AS `shop_status`, 
 
+    -- Lấy 1 ảnh đại diện (is_main = 1)
+    (SELECT `pi`.`image_url` 
+     FROM `productimages` `pi` 
+     WHERE `pi`.`product_id` = `p`.`id` AND `pi`.`is_main` = 1 
+     LIMIT 1) AS `image_url`, 
+
+    -- Tính điểm đánh giá trung bình
+    (SELECT IFNULL(AVG(`pr`.`rating`), 0) 
+     FROM `productreviews` `pr` 
+     WHERE `pr`.`product_id` = `p`.`id`) AS `avg_rating`, 
+
+    -- Tính điểm "Hot" (60% sold_count + 40% rating)
+    (IFNULL(`p`.`sold_count`, 0) * 0.6 + 
+     (SELECT IFNULL(AVG(`pr`.`rating`), 0) FROM `productreviews` `pr` WHERE `pr`.`product_id` = `p`.`id`) * 0.4
+    ) AS `hot_score`, 
+
+    -- --- CÁC CỘT GIÁ (MỚI) ---
+
+    -- 1. Giá thấp nhất (Min Price) - Đã tính giảm giá
+    (SELECT MIN(
+        CASE 
+            -- Nếu có giảm giá -> Tính giá sau giảm
+            WHEN `promo`.`id` IS NOT NULL AND `pi`.`discount_value` IS NOT NULL 
+            THEN ROUND(`pv`.`price` * (1 - (`pi`.`discount_value` / 100)))
+            -- Nếu không -> Lấy giá gốc
+            ELSE `pv`.`price` 
+        END
+    ) 
+     FROM `productvariants` `pv`
+     LEFT JOIN `promotion_items` `pi` ON `pv`.`id` = `pi`.`product_variant_id`
+     LEFT JOIN `promotions` `promo` ON `pi`.`promotion_id` = `promo`.`id` 
+          AND `promo`.`is_active` = 1 
+          AND NOW() BETWEEN `promo`.`start_date` AND `promo`.`end_date`
+     WHERE `pv`.`product_id` = `p`.`id`
+    ) AS `min_price`,
+
+    -- 2. Giá cao nhất (Max Price) - Thường lấy giá gốc cao nhất
+    (SELECT MAX(`pv`.`price`) 
+     FROM `productvariants` `pv` 
+     WHERE `pv`.`product_id` = `p`.`id`
+    ) AS `max_price`,
+
+    -- 3. Giá Sale (Chỉ hiện nếu có giảm giá thấp nhất)
+    (SELECT MIN(ROUND(`pv`.`price` * (1 - (`pi`.`discount_value` / 100)))) 
+     FROM `productvariants` `pv` 
+     JOIN `promotion_items` `pi` ON `pv`.`id` = `pi`.`product_variant_id`
+     JOIN `promotions` `promo` ON `pi`.`promotion_id` = `promo`.`id`
+     WHERE `pv`.`product_id` = `p`.`id` 
+       AND `promo`.`is_active` = 1 
+       AND NOW() BETWEEN `promo`.`start_date` AND `promo`.`end_date`
+    ) AS `sale_price`, 
+
+    -- 4. % Giảm giá cao nhất (để hiển thị nhãn -50%)
+    (SELECT MAX(`pi`.`discount_value`) 
+     FROM `productvariants` `pv` 
+     JOIN `promotion_items` `pi` ON `pv`.`id` = `pi`.`product_variant_id` 
+     JOIN `promotions` `promo` ON `pi`.`promotion_id` = `promo`.`id`
+     WHERE `pv`.`product_id` = `p`.`id` 
+       AND `promo`.`is_active` = 1 
+       AND NOW() BETWEEN `promo`.`start_date` AND `promo`.`end_date`
+    ) AS `discount_percentage`
+
+FROM `products` `p` 
+LEFT JOIN `generic` `g` ON `g`.`id` = `p`.`generic_id`
+JOIN `shops` `s` ON `s`.`id` = `p`.`shop_id`;
 --
 -- Chỉ mục cho các bảng đã đổ
 --
@@ -1028,6 +1120,9 @@ ALTER TABLE `promotions`
 ALTER TABLE `promotion_items`
   ADD KEY `fk_promotion` (`promotion_id`),
   ADD KEY `FK_productvariants` (`product_variant_id`);
+
+ALTER TABLE promotion_items
+ADD PRIMARY KEY (promotion_id, product_variant_id);
 
 --
 -- Chỉ mục cho bảng `shops`

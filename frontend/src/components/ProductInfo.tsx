@@ -38,6 +38,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
             onVariantImageChange(currentVariant.image_url);
         }
         // (Không cần 'else', vì cha sẽ tự xử lý việc quay về ảnh chính)
+        console.log(currentVariant);
 
     }, [currentVariant, onVariantImageChange]);
 
@@ -83,8 +84,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;
     console.log(product);
-
-
+    const hasPriceRange = product.min_price !== product.max_price;
     return (
         <div className="container">
             <div className="nameOfProduct mt-2"><h2>{product.name}</h2></div>
@@ -97,14 +97,27 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
                     {/* Nếu tìm thấy biến thể thì hiển thị giá của nó, nếu không thì hiển thị giá gốc */}
                     {currentVariant
                         ? (
+
                             <div>
                                 {currentVariant.sale_price && currentVariant.discount_percentage ? (<span><span className="fw-semibold fs-3 text-primary">{Number(currentVariant.sale_price).toLocaleString('vi-VN')}đ</span>
                                     <small className="text-muted text text-decoration-line-through ms-2">{product.base_price.toLocaleString('vi-VN')}đ</small>
                                     <span className="ms-2 p-2 discount-hihi rounded">-{currentVariant.discount_percentage}%</span></span>) : (<span className="fw-semibold fs-3 text-primary"> {currentVariant.original_price.toLocaleString('vi-VN')}đ</span>)}
                             </div>)
-                        : (<span className="fw-semibold fs-3 text-primary">{product.base_price.toLocaleString('vi-VN')}đ</span>)}
+                        : (hasPriceRange ? (
+                            // TRƯỜNG HỢP 1: HIỂN THỊ KHOẢNG GIÁ (199k - 250k)
+                            <span className="fw-semibold fs-3 text-primary">
+                                {Number(product.min_price).toLocaleString('vi-VN')}₫ - {Number(product.max_price).toLocaleString('vi-VN')}₫
+                                {product.discount_percentage && (<span className="ms-2 p-2 discount-hihi rounded fs-6">-{product.discount_percentage}%</span>)}
+                            </span>
+                        ) : (
+                            // TRƯỜNG HỢP 2: CHỈ CÓ 1 GIÁ DUY NHẤT
+                            <span className="fw-semibold fs-3 text-primary">
+                                {Number(product.min_price).toLocaleString('vi-VN')}₫
+                                {product.discount_percentage && (<span className="ms-2 p-2 discount-hihi rounded fs-6">-{product.discount_percentage}%</span>)}
+                            </span>
+                        ))}
                 </span>
-            </div>
+            </div >
 
             <div>
                 {attributes.map((attr) => (

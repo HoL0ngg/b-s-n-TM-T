@@ -169,7 +169,8 @@ export default function Promotion() {
                                             <tbody>
                                                 {promoItems.map(item => (
                                                     <tr key={item.product_variant_id}>
-                                                        <td>{item.product_name}
+                                                        <td>
+                                                            {item.product_name}
                                                             <small className='ms-4 fst-italic text-primary'>{item.options_string}</small>
                                                         </td>
                                                         <td>

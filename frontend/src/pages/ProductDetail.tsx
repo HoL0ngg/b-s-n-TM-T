@@ -126,8 +126,6 @@ const ProductDetail = () => {
 
     console.log(product);
 
-
-
     const reloadReview = async (hihi: number) => {
         if (!product?.id) return;
         try {
@@ -177,6 +175,7 @@ const ProductDetail = () => {
     const handleThumbnailSelect = useCallback((image: string) => {
         setSelectedImage(image);
     }, []);
+
 
     if (!id) return <div><p>Thông tin sản phẩm không tồn tại</p></div>
     return (

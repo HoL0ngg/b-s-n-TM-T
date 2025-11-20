@@ -8,17 +8,14 @@ import { ResultSetHeader } from 'mysql2';
 import { paginationProducts } from "../helpers/pagination.helper";
 
 class productService {
-    // ... (Tất cả các hàm GET (getProductOnIdService, getProductImgOnIdService, ...) giữ nguyên) ...
-
-    // LẤY PHIÊN BẢN NÂNG CẤP CỦA `main` (có giá sale)
     getProductOnIdService = async (id: number): Promise<Product> => {
         // SỬA: Thêm 'AND status = 1'
         const [productRows] = await pool.query<Product[] & RowDataPacket[]>(
-            `SELECT id, name, description, base_price, shop_id, sold_count 
-             FROM products 
-             WHERE id = ? AND status = 1`,
+            `SELECT * FROM v_products_list 
+         WHERE id = ? AND status = 1`, // (Đảm bảo View của bạn có cột status)
             [id]
         );
+
         const product = productRows[0];
 
         if (!product) {
@@ -26,33 +23,38 @@ class productService {
         }
 
         const sql_variants = `
-                 SELECT 
+                SELECT 
                      pv.id, 
                      pv.price AS original_price,
                      pv.stock, 
                      pv.sku, 
                      pv.image_url,
                      
-                     pi.discount_value AS discount_percentage,
+                    MAX(CASE 
+                        WHEN promo.id IS NOT NULL THEN pi.discount_value 
+                        ELSE NULL 
+                    END) AS discount_percentage,
                      
-                     (CASE
+                    MAX(CASE
                         WHEN promo.id IS NOT NULL AND pi.discount_value IS NOT NULL 
                         THEN ROUND(pv.price * (1 - (pi.discount_value / 100)))
                         ELSE NULL 
                     END) AS sale_price
 
-                 FROM 
+                FROM 
                      productvariants pv
                  
-                 LEFT JOIN 
+                LEFT JOIN 
                      promotion_items pi ON pv.id = pi.product_variant_id
-                 LEFT JOIN 
+                LEFT JOIN 
                      promotions promo ON pi.promotion_id = promo.id
                          AND promo.is_active = 1
                          AND NOW() BETWEEN promo.start_date AND promo.end_date
                          
-                 WHERE 
+                WHERE 
                      pv.product_id = ?
+                GROUP BY 
+                    pv.id;
              `;
         const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
             sql_variants,

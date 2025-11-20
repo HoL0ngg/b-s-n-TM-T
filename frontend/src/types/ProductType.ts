@@ -12,6 +12,9 @@ export interface ProductType {
     images: ProductImageType[];
     avg_rating: number;
 
+    min_price: number;
+    max_price: number;
+
     // Giữ code của bạn (qhuykuteo)
     shop_cate_id?: number | null;
 

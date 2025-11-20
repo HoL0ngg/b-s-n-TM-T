@@ -16,6 +16,8 @@ export interface Product {
 
     original_price: number;
     sale_price: number | null;
+    min_price: number;
+    max_price: number;
     discount_percentage: number | null;
 }
 
