@@ -1,366 +1,460 @@
-// import React, { useState, useMemo } from 'react';
-// import { Search, Filter, Plus, ChevronDown, ChevronRight, Edit, Trash2, Tag, CheckCircle, XCircle } from 'lucide-react';
-
-// // --- MOCK DATA ---
-// const initialCategories = [
-//     {
-//         id: 1, name: "Thời Trang Nam", slug: "thoi-trang-nam", is_active: true, product_count: 1200, created_at: "2024-05-10", parent_id: null,
-//         subcategories: [
-//             { id: 11, name: "Áo Sơ Mi", slug: "ao-so-mi", is_active: true, product_count: 500, created_at: "2024-05-11", parent_id: 1, subcategories: [] },
-//             { id: 12, name: "Quần Jeans & Kaki", slug: "quan-jeans", is_active: true, product_count: 450, created_at: "2024-05-12", parent_id: 1, subcategories: [] },
-//             {
-//                 id: 13, name: "Phụ Kiện Nam", slug: "phu-kien-nam", is_active: false, product_count: 250, created_at: "2024-05-13", parent_id: 1,
-//                 subcategories: [
-//                     { id: 131, name: "Thắt Lưng", slug: "that-lung", is_active: true, product_count: 100, created_at: "2024-05-14", parent_id: 13, subcategories: [] },
-//                     { id: 132, name: "Ví Da", slug: "vi-da", is_active: true, product_count: 150, created_at: "2024-05-15", parent_id: 13, subcategories: [] },
-//                 ]
-//             },
-//         ]
-//     },
-//     {
-//         id: 2, name: "Sản Phẩm Công Nghệ", slug: "san-pham-cong-nghe", is_active: true, product_count: 500, created_at: "2024-05-01", parent_id: null,
-//         subcategories: [
-//             { id: 21, name: "Điện Thoại", slug: "dien-thoai", is_active: true, product_count: 300, created_at: "2024-05-02", parent_id: 2, subcategories: [] },
-//             { id: 22, name: "Phụ Kiện Máy Tính", slug: "phu-kien-may-tinh", is_active: false, product_count: 200, created_at: "2024-05-03", parent_id: 2, subcategories: [] },
-//         ]
-//     },
-//     { id: 3, name: "Đồ Gia Dụng", slug: "do-gia-dung", is_active: false, product_count: 800, created_at: "2024-04-20", parent_id: null, subcategories: [] },
-// ];
-
-// // --- HELPER FUNCTIONS ---
-// const getStatusBadge = (isActive) => isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-// const getStatusText = (isActive) => isActive ? 'Hoạt động' : 'Đã khóa';
-
-// // Recursive function to flatten and filter categories
-// const filterNestedCategories = (categories, searchTerm, isActiveFilter) => {
-//     const term = searchTerm.toLowerCase();
-//     const filterStatus = isActiveFilter === 'all' ? null : isActiveFilter === 'true';
-
-//     return categories.filter(category => {
-//         const matchesTerm = category.name.toLowerCase().includes(term) || category.slug.toLowerCase().includes(term);
-//         const matchesStatus = filterStatus === null || category.is_active === filterStatus;
-
-//         // If a parent category matches, include it (and its children)
-//         if (matchesTerm && matchesStatus) {
-//             return true;
-//         }
-
-//         // Check if any subcategory matches the criteria
-//         if (category.subcategories && category.subcategories.length > 0) {
-//             const hasMatchingChild = filterNestedCategories(category.subcategories, searchTerm, isActiveFilter).length > 0;
-//             // Include the parent if a child matches (to display the hierarchy)
-//             if (hasMatchingChild) {
-//                 return true;
-//             }
-//         }
-
-//         return false;
-//     }).map(category => ({
-//         ...category,
-//         // Recursively filter subcategories based on the criteria
-//         subcategories: category.subcategories ? filterNestedCategories(category.subcategories, searchTerm, isActiveFilter) : []
-//     }));
-// };
-
-// // --- CATEGORY ROW COMPONENT (Recursive) ---
-
-// const CategoryItem = ({ category, level = 0, expandedIds, onExpandToggle, onEdit, onDelete }) => {
-//     const isExpanded = expandedIds.includes(category.id);
-//     const hasSubcategories = category.subcategories && category.subcategories.length > 0;
-
-//     const paddingLeft = `${1 + level * 1.5}rem`; // Indentation for nesting
-
-//     const handleToggle = (e) => {
-//         e.stopPropagation();
-//         onExpandToggle(category.id);
-//     };
-
-//     return (
-//         <>
-//             {/* Main Category Row */}
-//             <tr className={`border-b hover:bg-gray-50 ${level > 0 ? 'bg-indigo-50/50' : 'bg-white'}`}>
-//                 {/* Tên Danh mục */}
-//                 <td className="py-3 px-4 text-sm font-medium text-gray-900 whitespace-nowrap" style={{ paddingLeft }}>
-//                     <div className="flex items-center space-x-2">
-//                         {/* Toggle Button */}
-//                         {hasSubcategories ? (
-//                             <button
-//                                 onClick={handleToggle}
-//                                 className="text-gray-500 hover:text-indigo-600 p-1 rounded-full hover:bg-indigo-100 transition duration-150"
-//                                 title={isExpanded ? "Thu gọn" : "Mở rộng"}
-//                             >
-//                                 {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-//                             </button>
-//                         ) : (
-//                             <Tag size={16} className="text-gray-400 opacity-50 ml-6" /> // Placeholder icon for no children
-//                         )}
-//                         <span className={level === 0 ? 'font-bold' : 'font-medium'}>{category.name}</span>
-//                     </div>
-//                 </td>
-
-//                 {/* Slug */}
-//                 <td className="py-3 px-4 text-sm text-gray-500">{category.slug}</td>
-
-//                 {/* Số lượng Sản phẩm */}
-//                 <td className="py-3 px-4 text-sm text-center font-semibold text-indigo-600">
-//                     {category.product_count.toLocaleString('vi-VN')}
-//                 </td>
-
-//                 {/* Trạng thái */}
-//                 <td className="py-3 px-4 text-sm">
-//                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(category.is_active)}`}>
-//                         {category.is_active ? <CheckCircle size={12} className="mr-1" /> : <XCircle size={12} className="mr-1" />}
-//                         {getStatusText(category.is_active)}
-//                     </span>
-//                 </td>
-
-//                 {/* Ngày tạo */}
-//                 <td className="py-3 px-4 text-sm text-gray-500">
-//                     {new Date(category.created_at).toLocaleDateString('vi-VN')}
-//                 </td>
-
-//                 {/* Hành động */}
-//                 <td className="py-3 px-4 text-sm text-center">
-//                     <div className="flex justify-center space-x-2">
-//                         <button
-//                             onClick={() => onEdit(category)}
-//                             className="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-100 transition duration-150"
-//                             title="Chỉnh sửa"
-//                         >
-//                             <Edit size={16} />
-//                         </button>
-//                         <button
-//                             onClick={() => onDelete(category.id)}
-//                             className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100 transition duration-150"
-//                             title="Xóa"
-//                         >
-//                             <Trash2 size={16} />
-//                         </button>
-//                     </div>
-//                 </td>
-//             </tr>
-
-//             {/* Render Subcategories if expanded and they exist */}
-//             {isExpanded && hasSubcategories && category.subcategories.map(subCategory => (
-//                 <CategoryItem
-//                     key={subCategory.id}
-//                     category={subCategory}
-//                     level={level + 1}
-//                     expandedIds={expandedIds}
-//                     onExpandToggle={onExpandToggle}
-//                     onEdit={onEdit}
-//                     onDelete={onDelete}
-//                 />
-//             ))}
-//         </>
-//     );
-// };
+import React, { useState, useMemo } from 'react';
+import {
+    FiSearch,
+    FiFilter,
+    FiPlus,
+    FiChevronDown,
+    FiChevronRight,
+    FiEdit,
+    FiTrash2,
+    FiTag,
+    FiCheckCircle,
+    FiXCircle
+} from "react-icons/fi";
 
 
-// // --- MAIN APP COMPONENT ---
+// --- INTERFACE/TYPE DEFINITIONS ---
 
-// const App = () => {
-//     const [searchTerm, setSearchTerm] = useState('');
-//     const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'true', 'false'
-//     const [categories, setCategories] = useState(initialCategories);
-//     const [expandedIds, setExpandedIds] = useState([1, 13]); // State to track expanded category IDs
+/**
+ * Định nghĩa cấu trúc dữ liệu cho một Danh mục (Category).
+ */
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    is_active: boolean; // Trạng thái: true (Hoạt động) / false (Đã khóa)
+    product_count: number;
+    created_at: string;
+    parent_id: number | null;
+    subcategories?: Category[]; // Danh mục con (Optional)
+}
 
-//     // --- LOGIC FUNCTIONS ---
+// --- MOCK DATA ---
+const initialCategories: Category[] = [
+    {
+        id: 1, name: "Thời Trang Nam", slug: "thoi-trang-nam", is_active: true, product_count: 1200, created_at: "2024-05-10", parent_id: null,
+        subcategories: [
+            { id: 11, name: "Áo Sơ Mi", slug: "ao-so-mi", is_active: true, product_count: 500, created_at: "2024-05-11", parent_id: 1, subcategories: [] },
+            { id: 12, name: "Quần Jeans & Kaki", slug: "quan-jeans", is_active: true, product_count: 450, created_at: "2024-05-12", parent_id: 1, subcategories: [] },
+            {
+                id: 13, name: "Phụ Kiện Nam", slug: "phu-kien-nam", is_active: false, product_count: 250, created_at: "2024-05-13", parent_id: 1,
+                subcategories: [
+                    { id: 131, name: "Thắt Lưng", slug: "that-lung", is_active: true, product_count: 100, created_at: "2024-05-14", parent_id: 13, subcategories: [] },
+                    { id: 132, name: "Ví Da", slug: "vi-da", is_active: true, product_count: 150, created_at: "2024-05-15", parent_id: 13, subcategories: [] },
+                ]
+            },
+        ]
+    },
+    {
+        id: 2, name: "Sản Phẩm Công Nghệ", slug: "san-pham-cong-nghe", is_active: true, product_count: 500, created_at: "2024-05-01", parent_id: null,
+        subcategories: [
+            { id: 21, name: "Điện Thoại", slug: "dien-thoai", is_active: true, product_count: 300, created_at: "2024-05-02", parent_id: 2, subcategories: [] },
+            { id: 22, name: "Phụ Kiện Máy Tính", slug: "phu-kien-may-tinh", is_active: false, product_count: 200, created_at: "2024-05-03", parent_id: 2, subcategories: [] },
+        ]
+    },
+    { id: 3, name: "Đồ Gia Dụng", slug: "do-gia-dung", is_active: false, product_count: 800, created_at: "2024-04-20", parent_id: null, subcategories: [] },
+];
 
-//     const handleExpandToggle = (id) => {
-//         setExpandedIds(prevIds =>
-//             prevIds.includes(id)
-//                 ? prevIds.filter(expandId => expandId !== id)
-//                 : [...prevIds, id]
-//         );
-//     };
+// --- HELPER FUNCTIONS ---
 
-//     const handleAdd = () => {
-//         // Implement logic to show a modal for adding a new category/subcategory
-//         console.log("Thêm danh mục mới: Mở Modal");
-//         alert("Thêm danh mục mới: Mở Modal");
-//     };
+/**
+ * Trả về Tailwind classes cho huy hiệu trạng thái.
+ * @param {boolean} isActive - Trạng thái hoạt động của danh mục.
+ * @returns {string} Chuỗi class CSS.
+ */
+const getStatusBadge = (isActive: boolean): string => isActive ? 'badge bg-success' : 'badge bg-danger';
 
-//     const handleEdit = (category) => {
-//         // Implement logic to show a modal for editing
-//         console.log(`Chỉnh sửa danh mục: ${category.name}`);
-//         alert(`Chỉnh sửa danh mục: ${category.name}`);
-//     };
+/**
+ * Trả về văn bản đại diện cho trạng thái.
+ * @param {boolean} isActive - Trạng thái hoạt động của danh mục.
+ * @returns {string} Văn bản trạng thái.
+ */
+const getStatusText = (isActive: boolean): string => isActive ? 'Hoạt động' : 'Đã khóa';
 
-//     const handleDelete = (id) => {
-//         // Implement logic for deletion confirmation
-//         console.log(`Xóa danh mục ID: ${id}`);
-//         // In a real app, use a custom modal for confirmation.
-//         if (window.confirm(`Bạn có chắc chắn muốn xóa danh mục ID ${id}?`)) {
-//             // Mock deletion: You would typically call an API here.
-//             setCategories(prev => prev.filter(cat => cat.id !== id));
-//             alert(`Danh mục ID ${id} đã được xóa (mock).`);
-//         }
-//     };
+/**
+ * Hàm đệ quy lọc danh mục dựa trên từ khóa tìm kiếm và trạng thái.
+ * @param {Category[]} categories - Mảng danh mục cần lọc.
+ * @param {string} searchTerm - Từ khóa tìm kiếm (tên hoặc slug).
+ * @param {('all' | 'true' | 'false')} isActiveFilter - Bộ lọc trạng thái.
+ * @returns {Category[]} Mảng danh mục đã lọc.
+ */
+const filterNestedCategories = (categories: Category[], searchTerm: string, isActiveFilter: 'all' | 'true' | 'false'): Category[] => {
+    const term = searchTerm.toLowerCase();
+    const filterStatus: boolean | null = isActiveFilter === 'all' ? null : isActiveFilter === 'true';
 
-//     // --- FILTERED DATA (Using useMemo for performance) ---
+    return categories.filter(category => {
+        const matchesTerm = category.name.toLowerCase().includes(term) || category.slug.toLowerCase().includes(term);
+        const matchesStatus = filterStatus === null || category.is_active === filterStatus;
 
-//     const filteredCategories = useMemo(() => {
-//         // Filter only the top-level categories, which contain the filtered subcategories
-//         return filterNestedCategories(initialCategories, searchTerm, statusFilter);
-//     }, [searchTerm, statusFilter]);
+        // Nếu danh mục cha khớp, bao gồm nó (và các danh mục con của nó)
+        if (matchesTerm && matchesStatus) {
+            return true;
+        }
 
-//     // --- PAGINATION MOCK ---
-//     // Since this is a nested structure, pagination logic is complex in a real app (often handled by the server).
-//     // For this UI mock, we will treat all filtered top-level items as the current page.
-//     const ITEMS_PER_PAGE = 10;
-//     const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
-//     const startIndex = 0; // Fixed for simplicity
-//     const endIndex = filteredCategories.length;
-//     const paginatedCategories = filteredCategories.slice(startIndex, endIndex);
+        // Kiểm tra xem bất kỳ danh mục con nào có khớp với tiêu chí không
+        if (category.subcategories && category.subcategories.length > 0) {
+            // Kiểm tra đệ quy
+            const hasMatchingChild = filterNestedCategories(category.subcategories, searchTerm, isActiveFilter).length > 0;
+            // Bao gồm danh mục cha nếu có danh mục con khớp (để hiển thị hệ thống phân cấp)
+            if (hasMatchingChild) {
+                return true;
+            }
+        }
+
+        return false;
+    }).map(category => ({
+        ...category,
+        // Đệ quy lọc các danh mục con dựa trên tiêu chí
+        subcategories: category.subcategories ? filterNestedCategories(category.subcategories, searchTerm, isActiveFilter) : []
+    }));
+};
+
+// --- CATEGORY ROW COMPONENT PROPS ---
+interface CategoryItemProps {
+    category: Category;
+    level?: number;
+    expandedIds: number[];
+    onExpandToggle: (id: number) => void;
+    onEdit: (category: Category) => void;
+    onDelete: (id: number) => void;
+}
+
+// --- CATEGORY ROW COMPONENT (Recursive) ---
+
+const CategoryItem: React.FC<CategoryItemProps> = ({ category, level = 0, expandedIds, onExpandToggle, onEdit, onDelete }) => {
+    const isExpanded = expandedIds.includes(category.id);
+    const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+
+    // Khoảng cách lề trái để tạo độ sâu phân cấp
+    const paddingLeft = `${1 + level * 1.5}rem`;
+    // Màu nền cho danh mục con
+    const rowClass = level > 0 ? 'table-secondary' : '';
+
+    const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        onExpandToggle(category.id);
+    };
+
+    return (
+        <>
+            {/* Hàng Danh mục chính */}
+            <tr className={`align-middle ${rowClass}`}>
+                {/* Tên Danh mục */}
+                <td className="py-3 px-4 text-sm fw-bold text-dark" style={{ paddingLeft }}>
+                    <div className="d-flex align-items-center">
+                        {/* Nút Mở rộng/Thu gọn */}
+                        {hasSubcategories ? (
+                            <button
+                                onClick={handleToggle}
+                                className="btn btn-sm btn-link p-0 text-decoration-none me-2"
+                                title={isExpanded ? "Thu gọn" : "Mở rộng"}
+                            >
+                                {isExpanded ? <FiChevronDown size={16} /> : <FiChevronRight size={16} />}
+                            </button>
+                        ) : (
+                            // Icon placeholder cho danh mục không có con
+                            <FiTag size={16} className="text-muted opacity-50 me-2" style={{ marginLeft: '1.75rem' }} />
+                        )}
+                        <span className={level === 0 ? 'fw-bold' : 'fw-normal'}>{category.name}</span>
+                    </div>
+                </td>
+
+                {/* Slug */}
+                <td className="text-muted">{category.slug}</td>
+
+                {/* Số lượng Sản phẩm */}
+                <td className="text-center text-primary fw-bold">
+                    {category.product_count.toLocaleString('vi-VN')}
+                </td>
+
+                {/* Trạng thái */}
+                <td>
+                    <span className={getStatusBadge(category.is_active)}>
+                        {category.is_active ? <FiCheckCircle size={12} className="me-1" /> : <FiXCircle size={12} className="me-1" />}
+                        {getStatusText(category.is_active)}
+                    </span>
+                </td>
+
+                {/* Ngày tạo */}
+                <td className="text-muted">
+                    {new Date(category.created_at).toLocaleDateString('vi-VN')}
+                </td>
+
+                {/* Hành động */}
+                <td className="text-center">
+                    <div className="btn-group" role="group">
+                        <button
+                            onClick={() => onEdit(category)}
+                            className="btn btn-sm btn-outline-primary"
+                            title="Chỉnh sửa"
+                        >
+                            <FiEdit size={16} />
+                        </button>
+                        <button
+                            onClick={() => onDelete(category.id)}
+                            className="btn btn-sm btn-outline-danger"
+                            title="Xóa"
+                        >
+                            <FiTrash2 size={16} />
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            {/* Render Subcategories if expanded and they exist */}
+            {isExpanded && hasSubcategories && category.subcategories!.map(subCategory => (
+                <CategoryItem
+                    key={subCategory.id}
+                    category={subCategory}
+                    level={level + 1}
+                    expandedIds={expandedIds}
+                    onExpandToggle={onExpandToggle}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                />
+            ))}
+        </>
+    );
+};
 
 
-//     return (
-//         <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
-//             <style>
-//                 {`
-//                 .input-group-text {
-//                     @apply px-4 py-2 bg-gray-100 border border-gray-300 rounded-l-lg text-gray-500;
-//                 }
-//                 .form-control, .form-select {
-//                     @apply block w-full px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150;
-//                 }
-//                 .form-label {
-//                     @apply block text-sm font-medium text-gray-700 mb-1;
-//                 }
-//                 .card {
-//                     @apply bg-white rounded-xl shadow-lg transition duration-300 hover:shadow-xl;
-//                 }
-//                 .table-light th {
-//                     @apply bg-indigo-50 text-indigo-700 uppercase tracking-wider text-xs font-semibold;
-//                 }
-//                 .btn-primary {
-//                     @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150;
-//                 }
-//                 .btn-sm {
-//                     @apply px-2 py-1 text-xs;
-//                 }
-//                 `}
-//             </style>
+// --- MAIN APP COMPONENT ---
 
-//             <h1 className="text-3xl font-bold mb-6 text-gray-800">Quản lý Danh mục Sản phẩm</h1>
+const AdminCategoriesManagement: React.FC = () => {
+    // State cho tìm kiếm và lọc
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'true' | 'false'>('all');
+    const [categories, setCategories] = useState<Category[]>(initialCategories);
+    const [expandedIds, setExpandedIds] = useState<number[]>([1, 13]); // State theo dõi ID danh mục đang mở rộng
 
-//             {/* --- 0. KHU VỰC THÊM MỚI --- */}
-//             <div className="flex justify-end mb-4">
-//                 <button
-//                     onClick={handleAdd}
-//                     className="btn-primary"
-//                 >
-//                     <Plus size={18} className="mr-2" />
-//                     Thêm Danh mục mới
-//                 </button>
-//             </div>
+    // --- LOGIC FUNCTIONS ---
 
-//             {/* --- 1. KHU VỰC LỌC VÀ TÌM KIẾM --- */}
-//             <div className="card mb-6">
-//                 <div className="p-6">
-//                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//                         {/* Input Tìm kiếm */}
-//                         <div className="col-span-1 md:col-span-2">
-//                             <label htmlFor="searchInput" className="form-label">Tìm kiếm theo tên</label>
-//                             <div className="flex">
-//                                 <span className="input-group-text"><Search size={18} /></span>
-//                                 <input
-//                                     type="text"
-//                                     className="form-control"
-//                                     id="searchInput"
-//                                     placeholder="Tìm theo tên danh mục, slug..."
-//                                     value={searchTerm}
-//                                     onChange={(e) => setSearchTerm(e.target.value)}
-//                                 />
-//                             </div>
-//                         </div>
+    const handleExpandToggle = (id: number) => {
+        setExpandedIds(prevIds =>
+            prevIds.includes(id)
+                ? prevIds.filter(expandId => expandId !== id)
+                : [...prevIds, id]
+        );
+    };
 
-//                         {/* Select Lọc theo trạng thái */}
-//                         <div className="col-span-1">
-//                             <label htmlFor="statusFilter" className="form-label">Lọc theo trạng thái</label>
-//                             <div className="flex">
-//                                 <span className="input-group-text"><Filter size={18} /></span>
-//                                 <select
-//                                     className="form-select"
-//                                     id="statusFilter"
-//                                     value={statusFilter}
-//                                     onChange={(e) => setStatusFilter(e.target.value)}
-//                                 >
-//                                     <option value="all">Tất cả</option>
-//                                     <option value="true">Hoạt động</option>
-//                                     <option value="false">Đã khóa</option>
-//                                 </select>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
+    const handleAdd = () => {
+        // Mock: Mở Modal thêm mới
+        console.log("Thêm danh mục mới: Mở Modal");
+        const mockAlert = document.getElementById('mock-alert');
+        if (mockAlert) {
+            mockAlert.innerHTML = 'Đã click Thêm Danh mục mới.';
+            mockAlert.style.display = 'block';
+            setTimeout(() => { mockAlert.style.display = 'none'; }, 3000);
+        }
+    };
 
-//             {/* --- 2. BẢNG DỮ LIỆU ĐA CẤP --- */}
-//             <div className="card overflow-hidden">
-//                 <div className="p-6">
-//                     <div className="overflow-x-auto">
-//                         <table className="min-w-full divide-y divide-gray-200">
-//                             {/* Tiêu đề bảng */}
-//                             <thead className="table-light">
-//                                 <tr>
-//                                     <th scope="col" className="py-3 px-4 text-left">Tên Danh mục</th>
-//                                     <th scope="col" className="py-3 px-4 text-left">Slug</th>
-//                                     <th scope="col" className="py-3 px-4 text-center">Sản phẩm</th>
-//                                     <th scope="col" className="py-3 px-4 text-left">Trạng thái</th>
-//                                     <th scope="col" className="py-3 px-4 text-left">Ngày tạo</th>
-//                                     <th scope="col" className="py-3 px-4 text-center">Hành động</th>
-//                                 </tr>
-//                             </thead>
+    const handleEdit = (category: Category) => {
+        // Mock: Mở Modal chỉnh sửa
+        console.log(`Chỉnh sửa danh mục: ${category.name}`);
+        const mockAlert = document.getElementById('mock-alert');
+        if (mockAlert) {
+            mockAlert.innerHTML = `Đã click Chỉnh sửa: ${category.name}`;
+            mockAlert.style.display = 'block';
+            setTimeout(() => { mockAlert.style.display = 'none'; }, 3000);
+        }
+    };
 
-//                             {/* Nội dung bảng */}
-//                             <tbody className="bg-white divide-y divide-gray-200">
-//                                 {paginatedCategories.length > 0 ? (
-//                                     paginatedCategories.map((category) => (
-//                                         <CategoryItem
-//                                             key={category.id}
-//                                             category={category}
-//                                             expandedIds={expandedIds}
-//                                             onExpandToggle={handleExpandToggle}
-//                                             onEdit={handleEdit}
-//                                             onDelete={handleDelete}
-//                                         />
-//                                     ))
-//                                 ) : (
-//                                     <tr>
-//                                         <td colSpan="6" className="py-10 text-center text-gray-500 text-lg">
-//                                             Không tìm thấy danh mục nào phù hợp.
-//                                         </td>
-//                                     </tr>
-//                                 )}
-//                             </tbody>
-//                         </table>
-//                     </div>
-//                 </div>
+    const handleDelete = (id: number) => {
+        console.log(`Xóa danh mục ID: ${id}`);
 
-//                 {/* --- 3. THANH PHÂN TRANG (Mocked) --- */}
-//                 <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
-//                     <span className="text-sm text-gray-700">
-//                         Hiển thị {paginatedCategories.length} danh mục (Tổng cộng {initialCategories.length} danh mục).
-//                     </span>
-//                     <div className="flex items-center space-x-1">
-//                         <button className="px-3 py-1 text-sm rounded-lg border bg-white text-gray-700 hover:bg-gray-100 cursor-not-allowed" disabled>
-//                             Trước
-//                         </button>
-//                         <span className="px-3 py-1 text-sm font-semibold bg-indigo-600 text-white rounded-lg">1</span>
-//                         {/* {totalPages > 1 && <span className="px-3 py-1 text-sm rounded-lg border bg-white text-gray-700 hover:bg-gray-100">2</span>} */}
-//                         <button className="px-3 py-1 text-sm rounded-lg border bg-white text-gray-700 hover:bg-gray-100 cursor-not-allowed" disabled>
-//                             Sau
-//                         </button>
-//                     </div>
-//                 </div>
-//             </div>
+        // Sử dụng window.prompt thay cho window.confirm/alert
+        const isConfirmed = window.prompt(`Xác nhận xóa danh mục ID ${id}? Nhập "Xóa" để tiếp tục:`);
 
-//             {/* Modal placeholder would go here */}
+        if (isConfirmed === 'Xóa') {
+            // Hàm đệ quy loại bỏ một danh mục bằng ID.
+            const recursiveDelete = (cats: Category[], targetId: number): Category[] => {
+                return cats
+                    .filter(cat => cat.id !== targetId)
+                    .map(cat => ({
+                        ...cat,
+                        subcategories: cat.subcategories ? recursiveDelete(cat.subcategories, targetId) : []
+                    }));
+            };
 
-//         </div>
-//     );
-// }
+            setCategories(prev => recursiveDelete(prev, id));
 
-// export default App;
+            const mockAlert = document.getElementById('mock-alert');
+            if (mockAlert) {
+                mockAlert.innerHTML = `Danh mục ID ${id} đã được xóa (mock).`;
+                mockAlert.style.display = 'block';
+                setTimeout(() => { mockAlert.style.display = 'none'; }, 3000);
+            }
+        }
+    };
+
+    // --- FILTERED DATA (Sử dụng useMemo để tối ưu hóa hiệu suất) ---
+
+    const filteredCategories = useMemo(() => {
+        // Lọc các danh mục cấp cao nhất (chúng sẽ chứa các danh mục con đã lọc)
+        return filterNestedCategories(initialCategories, searchTerm, statusFilter);
+    }, [searchTerm, statusFilter]);
+
+    // --- MOCK PHÂN TRANG (Giữ đơn giản) ---
+    const paginatedCategories = filteredCategories;
+
+
+    return (
+        <div className="container-fluid py-4 bg-light min-vh-100">
+
+            <style>
+                {`
+                /* Custom style for the fixed mock alert */
+                #mock-alert {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background-color: #198754; /* Success green from Bootstrap */
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: .25rem;
+                    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+                    z-index: 1080; /* Above typical Bootstrap modals/navbars */
+                    display: none;
+                }
+                .card {
+                    border-radius: 0.5rem;
+                }
+                .table td {
+                    padding-top: .75rem;
+                    padding-bottom: .75rem;
+                }
+                .btn-link {
+                    color: var(--bs-indigo); /* Ensuring link color matches primary color scheme */
+                }
+                `}
+            </style>
+
+            <h1 className="mb-4 text-dark">Quản lý Danh mục Sản phẩm</h1>
+
+            {/* Mock Alert for Feedback */}
+            <div id="mock-alert" className="alert alert-success p-3" role="alert"></div>
+
+            <div className="row">
+                <div className="col-12">
+                    {/* --- 0. KHU VỰC THÊM MỚI --- */}
+                    <div className="d-flex justify-content-end mb-4">
+                        <button
+                            onClick={handleAdd}
+                            className="btn btn-primary shadow-sm"
+                        >
+                            <FiPlus size={18} className="me-2" />
+                            Thêm Danh mục mới
+                        </button>
+                    </div>
+
+                    {/* --- 1. KHU VỰC LỌC VÀ TÌM KIẾM --- */}
+                    <div className="card shadow-sm mb-4">
+                        <div className="card-body">
+                            <div className="row g-3">
+                                {/* Input Tìm kiếm */}
+                                <div className="col-md-8">
+                                    <label htmlFor="searchInput" className="form-label">Tìm kiếm theo tên</label>
+                                    <div className="input-group">
+                                        <span className="input-group-text"><FiSearch size={18} /></span>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="searchInput"
+                                            placeholder="Tìm theo tên danh mục, slug..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Select Lọc theo trạng thái */}
+                                <div className="col-md-4">
+                                    <label htmlFor="statusFilter" className="form-label">Lọc theo trạng thái</label>
+                                    <div className="input-group">
+                                        <span className="input-group-text"><FiFilter size={18} /></span>
+                                        <select
+                                            className="form-select"
+                                            id="statusFilter"
+                                            value={statusFilter}
+                                            // TypeScript requires correct type assertion for event target value
+                                            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'true' | 'false')}
+                                        >
+                                            <option value="all">Tất cả</option>
+                                            <option value="true">Hoạt động</option>
+                                            <option value="false">Đã khóa</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- 2. BẢNG DỮ LIỆU ĐA CẤP --- */}
+                    <div className="card shadow-sm overflow-hidden">
+                        <div className="card-body p-0">
+                            <div className="table-responsive">
+                                <table className="table table-hover table-striped align-middle mb-0">
+                                    {/* Tiêu đề bảng */}
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th scope="col" className="py-3 px-4">Tên Danh mục</th>
+                                            <th scope="col" className="py-3 px-4">Slug</th>
+                                            <th scope="col" className="py-3 px-4 text-center">Sản phẩm</th>
+                                            <th scope="col" className="py-3 px-4">Trạng thái</th>
+                                            <th scope="col" className="py-3 px-4">Ngày tạo</th>
+                                            <th scope="col" className="py-3 px-4 text-center">Hành động</th>
+                                        </tr>
+                                    </thead>
+
+                                    {/* Nội dung bảng */}
+                                    <tbody>
+                                        {paginatedCategories.length > 0 ? (
+                                            paginatedCategories.map((category) => (
+                                                <CategoryItem
+                                                    key={category.id}
+                                                    category={category}
+                                                    expandedIds={expandedIds}
+                                                    onExpandToggle={handleExpandToggle}
+                                                    onEdit={handleEdit}
+                                                    onDelete={handleDelete}
+                                                />
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={6} className="py-5 text-center text-muted fs-5">
+                                                    Không tìm thấy danh mục nào phù hợp.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* --- 3. THANH PHÂN TRANG (Mocked) --- */}
+                        <div className="card-footer bg-light py-3 border-top d-flex justify-content-between align-items-center">
+                            <span className="text-muted small">
+                                Hiển thị {paginatedCategories.length} danh mục (Tổng cộng {initialCategories.length} danh mục).
+                            </span>
+                            <nav>
+                                <ul className="pagination pagination-sm mb-0">
+                                    <li className="page-item disabled">
+                                        <a className="page-link" href="#">Trước</a>
+                                    </li>
+                                    <li className="page-item active" aria-current="page">
+                                        <a className="page-link" href="#">1</a>
+                                    </li>
+                                    <li className="page-item disabled">
+                                        <a className="page-link" href="#">Sau</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default AdminCategoriesManagement;

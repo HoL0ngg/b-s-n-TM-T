@@ -67,9 +67,18 @@ class OrderService {
         const totalOrders = countRows[0].total;
         const totalPages = Math.ceil(totalOrders / limit);
 
+        const revenueSql = `
+            SELECT SUM(total_amount) as total_revenue
+            FROM orders             
+            WHERE shop_id = ?
+        `;
+        type TotalRevenue = { total_revenue: string | number };
+        const [revenueRows] = await pool.query<TotalRevenue[] & RowDataPacket[]>(revenueSql, [shopId]);
+        const totalRevenue = revenueRows[0].total_revenue || 0;
+
         // Truy vấn lấy dữ liệu
         const dataSql = `
-            SELECT 
+            SELECT                 
                 o.order_id, o.order_date, o.total_amount, o.status, o.payment_method,
                 u.phone_number as customer_phone, u.avatar_url, u.email as custmer_email,
                 s.name as shop_name
@@ -82,10 +91,9 @@ class OrderService {
         `;
 
         const [rows] = await pool.query<RowDataPacket[]>(dataSql, [...params, limit, offset]);
-
         return {
             data: rows,
-            pagination: { page, limit, totalOrders, totalPages }
+            pagination: { page, limit, totalOrders, totalPages, totalRevenue }
         };
     }
 
@@ -115,5 +123,4 @@ class OrderService {
         return { ...order, items };
     }
 }
-
 export default new OrderService();

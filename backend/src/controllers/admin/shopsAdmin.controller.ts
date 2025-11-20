@@ -55,7 +55,7 @@ class shopsAdminController {
             const shopPromise = shopService.getShopOnIdService(id);
             const userPromise = userService.getShopOwnerInformation(id);
             const productResponsePromise = productService.getProductsOnShopId(id, page, limit);
-            const [shopResult, userResult, productPromiseResult] = await Promise.all([
+            const [shopResult, userResult, productResponseResult] = await Promise.all([
                 shopPromise,
                 userPromise,
                 productResponsePromise,
@@ -64,8 +64,8 @@ class shopsAdminController {
             res.status(200).json({
                 shop: shopResult,
                 userInfo: userResult,
-                products: productPromiseResult.products,
-                totalPages: productPromiseResult.totalPages
+                products: productResponseResult.products,
+                totalPages: productResponseResult.totalPages,
             })
         } catch (error) {
             console.error("Lỗi trong getShopDetailController:", error);
