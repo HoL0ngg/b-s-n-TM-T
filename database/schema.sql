@@ -176,7 +176,7 @@ INSERT INTO `generic` (`id`, `name`, `category_id`) VALUES
 (3, 'Kem nền', 1),
 (4, 'Quần dài', 2),
 (5, 'Quần short', 2),
-(6, 'Quẩn thun', 2),
+(6, 'Quần thun', 2),
 (7, 'Áo sơ mi', 2),
 (8, 'Giày đá banh', 4),
 (9, 'Tivi', 5),

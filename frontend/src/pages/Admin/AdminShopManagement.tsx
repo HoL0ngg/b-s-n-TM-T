@@ -79,24 +79,24 @@ const AdminShopManagement: React.FC = () => {
     };
 
     const handleBan = async (shopId: number) => {
-        const { value: reason } = await Swal.fire({
-            title: "Nhập lý do cấm shop",
-            input: "text",
-            inputPlaceholder: "Ví dụ: Vi phạm quy định",
-            showCancelButton: true,
-            confirmButtonText: "Cấm shop",
-            cancelButtonText: "Hủy",
-        });
+        // const { value: reason } = await Swal.fire({
+        //     title: "Nhập lý do cấm shop",
+        //     input: "text",
+        //     inputPlaceholder: "Ví dụ: Vi phạm quy định",
+        //     showCancelButton: true,
+        //     confirmButtonText: "Cấm shop",
+        //     cancelButtonText: "Hủy",
+        // });
+        await handleUpdateStatus(
+            shopId,
+            -1,
+            `Xác nhận cấm shop?`,
+            `Shop ID ${shopId} đã bị cấm.`,
+            // reason
+        );
 
-        if (reason) {
-            await handleUpdateStatus(
-                shopId,
-                -1,
-                `Xác nhận cấm shop?`,
-                `Shop ID ${shopId} đã bị cấm.`,
-                reason
-            );
-        }
+        // if (reason) {
+        // }
     };
 
     const handleUnban = async (shopId: number) => {
@@ -145,10 +145,8 @@ const AdminShopManagement: React.FC = () => {
 
             {/* --- 1. KHU VỰC LỌC VÀ TÌM KIẾM (Không đổi) --- */}
             <div className="card shadow-sm mb-4">
-                {/* ... (Code JSX của Card Lọc/Tìm kiếm) ... */}
                 <div className="card-body">
                     <div className="row g-3">
-                        {/* Input Tìm kiếm */}
                         <div className="col-md-8">
                             <label htmlFor="searchInput" className="form-label">Tìm kiếm</label>
                             <div className="input-group">
@@ -157,7 +155,7 @@ const AdminShopManagement: React.FC = () => {
                                     type="text"
                                     className="form-control"
                                     id="searchInput"
-                                    placeholder="Tìm theo tên shop, chủ shop, email..."
+                                    placeholder="Tìm theo tên shop...."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -190,7 +188,6 @@ const AdminShopManagement: React.FC = () => {
                 <div className="card-body">
                     <div className="table-responsive">
                         <table className="table table-hover align-middle">
-                            {/* Tiêu đề bảng (Không đổi) */}
                             <thead className="table-light">
                                 <tr>
                                     <th scope="col">Hình ảnh</th>
@@ -213,7 +210,7 @@ const AdminShopManagement: React.FC = () => {
                                                 style={{ width: '60px', height: '60px', objectFit: 'cover', marginRight: '1rem' }}
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
-                                                    target.src = "https://placehold.co/60x60/EFEFEF/AAAAAA?text=Lỗi";
+                                                    target.src = "https://placehold.co/60x60/EFEFEF/AAAAAA?text=NoImg";
                                                 }}
                                             />
                                         </td>

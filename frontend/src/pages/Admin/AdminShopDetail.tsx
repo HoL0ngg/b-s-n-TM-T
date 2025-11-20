@@ -2,57 +2,92 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
     FiArrowLeft, FiCheckCircle, FiXCircle, FiDollarSign,
-    FiBox, FiShoppingCart, FiUser, FiHome, FiMail, FiPhone
+    FiBox, FiShoppingCart, FiUser, FiHome, FiMail, FiPhone,
+    FiEye
 } from 'react-icons/fi';
-
-// --- Dữ liệu mẫu (Tạm thời đặt ở đây) ---
-// (Bạn có thể tái sử dụng dữ liệu từ file trước hoặc fetch API thật)
-interface Shop {
-    id: string;
-    name: string;
-    ownerName: string;
-    email: string;
-    phone: string;
-    address: string;
-    description: string;
-    status: 'approved' | 'pending' | 'banned';
-    joinedDate: string;
-    productCount: number;
-    totalRevenue: number;
-    totalOrders: number;
-}
-const mockShops: Shop[] = [
-    { id: '1', name: 'Shop Cây Cảnh Mini', ownerName: 'Nguyễn Văn A', email: 'a.nguyen@example.com', phone: '0901234567', address: '123 Đường ABC, Q.1, TP.HCM', description: 'Chuyên cây cảnh mini, tiểu cảnh', status: 'approved', joinedDate: '2023-10-01', productCount: 45, totalRevenue: 15000000, totalOrders: 120 },
-    { id: '2', name: 'Thời Trang Trẻ Em', ownerName: 'Lê Văn C', email: 'c.le@example.com', phone: '0907654321', address: '456 Đường XYZ, Q.3, TP.HCM', description: 'Quần áo trẻ em nhập khẩu', status: 'pending', joinedDate: '2023-11-01', productCount: 0, totalRevenue: 0, totalOrders: 0 },
-    { id: '4', name: 'Đồ Ăn Vặt Nhanh', ownerName: 'Phạm Hùng D', email: 'd.pham@example.com', phone: '0908889999', address: '789 Đường DEF, Q.10, TP.HCM', description: 'Đồ ăn vặt các loại', status: 'banned', joinedDate: '2023-08-20', productCount: 15, totalRevenue: 2500000, totalOrders: 50 },
-    // ... (các shop khác)
-];
-// (Dữ liệu mẫu cho các tab, bạn sẽ fetch chúng dựa trên shop ID)
-const mockProducts = [{ id: 'P01', name: 'Cây Kim Tiền', price: 150000, status: 'approved' }, { id: 'P02', name: 'Sen Đá', price: 50000, status: 'pending' }];
-const mockOrders = [{ id: 'O901', customer: 'Khách A', total: 200000, status: 'completed' }, { id: 'O902', customer: 'Khách B', total: 50000, status: 'processing' }];
-// --- Kết thúc Dữ liệu mẫu ---
+import type { ProductType } from '../../types/ProductType';
+import type { ShopType } from '../../types/ShopType';
+import { fetchShopDetail } from '../../api/admin/shopsAdmin';
+import type { UserAdminType } from '../../types/admin/UserTypeAdmin';
+import Pagenum from '../../components/Admin/Pagenum';
+import type { OrderType } from '../../types/OrderType';
+import { fetchAllOrders } from '../../api/admin/ordersAdmin';
+import { set } from 'date-fns';
 
 
 const AdminShopDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const [shop, setShop] = useState<Shop | null>(null);
+    const [shop, setShop] = useState<ShopType | null>(null);
     const [activeTab, setActiveTab] = useState('overview'); // State cho tab
+    const [products, setProducts] = useState<ProductType[]>([]);
+    const [user, setUser] = useState<UserAdminType | null>(null);
+    const [totalPagesProducts, setTotalPagesProducts] = useState<number>(0);
+    const [totalPagesOrders, setTotalPagesOrders] = useState<number>(0);
+    const [totalOrders, setTotalOrders] = useState<number>(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [orders, setOrders] = useState<OrderType[]>([]);
+    const [totalRevenue, setTotalRevenue] = useState<number>(0);
+    const itemsPerPage = 7;
 
-    // Giả lập Fetch API lấy chi tiết shop
     useEffect(() => {
-        // Trong ứng dụng thật, bạn sẽ gọi API: fetch(`/api/admin/shops/${id}`)
-        const foundShop = mockShops.find(s => s.id === id) || null;
-        setShop(foundShop);
-    }, [id]);
+        loadInfo(Number(id));
+        fetchOrders();
+    }, [id, currentPage]);
+
+    const loadInfo = async (shopId: number) => {
+        try {
+            const data = await fetchShopDetail(shopId, currentPage, itemsPerPage);
+            setShop(data.shop);
+            setUser(data.userInfo);
+            setProducts(data.products);
+            setTotalPagesProducts(data.totalPages);
+            // console.log("Shop detail data:", data);
+        } catch (error) {
+            console.error("Lỗi tải thông tin shop:", error);
+        }
+    }
+    const fetchOrders = async () => {
+        try {
+
+            const data = await fetchAllOrders(Number(id), currentPage, itemsPerPage);
+
+            setOrders(data.data);
+            setTotalPagesOrders(data.pagination.totalPages);
+            setTotalOrders(data.pagination.totalOrders);
+            setTotalRevenue(data.pagination.totalRevenue);
+            // console.log("Orders", data.data);
+        } catch (error) {
+            console.error("Lỗi tải đơn hàng:", error);
+        }
+    };
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
 
     // Helper render badge
-    const getStatusBadge = (status: 'approved' | 'pending' | 'banned') => {
-        const map = {
-            approved: { class: 'bg-success', text: 'Đã duyệt' },
-            pending: { class: 'bg-warning text-dark', text: 'Chờ duyệt' },
-            banned: { class: 'bg-danger', text: 'Bị cấm' },
-        };
-        return <span className={`badge ${map[status].class}`}>{map[status].text}</span>;
+    const getStatusBadge = (status: number) => {
+        let className = 'badge ';
+        let text = '';
+
+        switch (status) {
+            case 1:
+                className += 'bg-success';
+                text = 'Đã duyệt';
+                break;
+            case 0:
+                className += 'bg-warning text-dark';
+                text = 'Chờ duyệt';
+                break;
+            case -1:
+                className += 'bg-danger';
+                text = 'Bị cấm';
+                break;
+            default:
+                className += 'bg-secondary';
+                text = 'Không xác định';
+        }
+
+        return <span className={className}>{text}</span>;
     };
 
     if (!shop) {
@@ -65,12 +100,37 @@ const AdminShopDetail: React.FC = () => {
         );
     }
 
-    // Xử lý sự kiện (placeholder)
-    const handleApprove = () => alert(`Duyệt shop ${shop.name}`);
-    const handleBan = () => alert(`Cấm shop ${shop.name}`);
-    const handleUnban = () => alert(`Mở khóa shop ${shop.name}`);
+    const renderStatusBadgeOrder = (status: string) => {
+        const config: any = {
+            pending: { label: 'Chờ xử lý', class: 'bg-warning-subtle text-warning border border-warning' },
+            confirmed: { label: 'Đã xác nhận', class: 'bg-primary-subtle text-primary border border-primary' },
+            shipping: { label: 'Đang giao', class: 'bg-info-subtle text-info border border-info' },
+            delivered: { label: 'Thành công', class: 'bg-success-subtle text-success border border-success' },
+            cancelled: { label: 'Đã hủy', class: 'bg-danger-subtle text-danger border border-danger' },
+        };
+        const style = config[status] || { label: status, class: 'bg-secondary text-white' };
 
+        return (
+            <span className={`badge rounded-pill fw-normal px-3 py-2 ${style.class}`}>
+                {style.label}
+            </span>
+        );
+    };
+    const formatVND = (amount: number | string): string => {
+        // Chuyển string thành number nếu cần, hoặc đảm bảo nó là number
+        const numberAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
+        if (isNaN(numberAmount)) {
+            return "0 ₫"; // Trả về giá trị mặc định nếu không phải số hợp lệ
+        }
+
+        return numberAmount.toLocaleString('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+    }
     return (
         <div>
             {/* --- 1. HEADER VÀ NÚT QUAY LẠI --- */}
@@ -85,29 +145,6 @@ const AdminShopDetail: React.FC = () => {
                 </Link>
             </div>
 
-            {/* --- 2. KHU VỰC HÀNH ĐỘNG --- */}
-            <div className="card shadow-sm mb-4">
-                <div className="card-body d-flex gap-2">
-                    {shop.status === 'pending' && (
-                        <button className="btn btn-success" onClick={handleApprove}>
-                            <FiCheckCircle className="me-1" /> Duyệt Shop
-                        </button>
-                    )}
-                    {shop.status === 'approved' && (
-                        <button className="btn btn-danger" onClick={handleBan}>
-                            <FiXCircle className="me-1" /> Cấm Shop
-                        </button>
-                    )}
-                    {shop.status === 'banned' && (
-                        <button className="btn btn-warning" onClick={handleUnban}>
-                            <FiCheckCircle className="me-1" /> Mở khóa Shop
-                        </button>
-                    )}
-                    <button className="btn btn-outline-primary ms-auto">
-                        <FiMail className="me-1" /> Gửi thông báo
-                    </button>
-                </div>
-            </div>
 
             {/* --- 3. THỐNG KÊ NHANH --- */}
             <div className="row g-4 mb-4">
@@ -117,7 +154,7 @@ const AdminShopDetail: React.FC = () => {
                             <FiDollarSign size={40} className="opacity-50 me-3" />
                             <div>
                                 <h6 className="card-subtitle mb-1">TỔNG DOANH THU</h6>
-                                <h4 className="card-title mb-0">{shop.totalRevenue.toLocaleString()} VNĐ</h4>
+                                <h4 className="card-title mb-0">{formatVND(totalRevenue)}</h4>
                             </div>
                         </div>
                     </div>
@@ -128,7 +165,7 @@ const AdminShopDetail: React.FC = () => {
                             <FiShoppingCart size={40} className="opacity-50 me-3" />
                             <div>
                                 <h6 className="card-subtitle mb-1">TỔNG ĐƠN HÀNG</h6>
-                                <h4 className="card-title mb-0">{shop.totalOrders}</h4>
+                                <h4 className="card-title mb-0">{totalOrders}</h4>
                             </div>
                         </div>
                     </div>
@@ -139,7 +176,7 @@ const AdminShopDetail: React.FC = () => {
                             <FiBox size={40} className="opacity-50 me-3" />
                             <div>
                                 <h6 className="card-subtitle mb-1">SỐ SẢN PHẨM</h6>
-                                <h4 className="card-title mb-0">{shop.productCount}</h4>
+                                <h4 className="card-title mb-0">{shop.totalProduct}</h4>
                             </div>
                         </div>
                     </div>
@@ -164,7 +201,7 @@ const AdminShopDetail: React.FC = () => {
                                 className={`nav-link ${activeTab === 'products' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('products')}
                             >
-                                Sản phẩm ({mockProducts.length})
+                                Sản phẩm ({shop.totalProduct})
                             </button>
                         </li>
                         <li className="nav-item">
@@ -172,7 +209,7 @@ const AdminShopDetail: React.FC = () => {
                                 className={`nav-link ${activeTab === 'orders' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('orders')}
                             >
-                                Đơn hàng ({mockOrders.length})
+                                Đơn hàng ({totalOrders})
                             </button>
                         </li>
                     </ul>
@@ -186,22 +223,22 @@ const AdminShopDetail: React.FC = () => {
                             <div className="col-md-6">
                                 <h5>Thông tin Chủ shop</h5>
                                 <ul className="list-group list-group-flush">
-                                    <li className="list-group-item d-flex align-items-center"><FiUser className="me-2 text-muted" /> {shop.ownerName}</li>
-                                    <li className="list-group-item d-flex align-items-center"><FiMail className="me-2 text-muted" /> {shop.email}</li>
-                                    <li className="list-group-item d-flex align-items-center"><FiPhone className="me-2 text-muted" /> {shop.phone}</li>
+                                    <li className="list-group-item d-flex align-items-center"><FiUser className="me-2 text-muted" /> {user?.name}</li>
+                                    <li className="list-group-item d-flex align-items-center"><FiMail className="me-2 text-muted" /> {user?.email}</li>
+                                    <li className="list-group-item d-flex align-items-center"><FiPhone className="me-2 text-muted" /> {user?.phone}</li>
                                 </ul>
                             </div>
                             <div className="col-md-6">
                                 <h5>Thông tin Cửa hàng</h5>
                                 <ul className="list-group list-group-flush">
-                                    <li className="list-group-item d-flex align-items-center"><FiHome className="me-2 text-muted" /> {shop.address}</li>
+                                    {/* <li className="list-group-item d-flex align-items-center"><FiHome className="me-2 text-muted" /> {shop.address}</li> */}
                                     <li className="list-group-item">
                                         <strong className="d-block mb-1">Mô tả:</strong>
                                         {shop.description}
                                     </li>
                                     <li className="list-group-item">
                                         <strong className="d-block mb-1">Ngày tham gia:</strong>
-                                        {shop.joinedDate}
+                                        {new Date(shop.created_at).toLocaleDateString()}
                                     </li>
                                 </ul>
                             </div>
@@ -211,8 +248,8 @@ const AdminShopDetail: React.FC = () => {
                     {/* --- Tab 2: Sản phẩm --- */}
                     {activeTab === 'products' && (
                         <div className="table-responsive">
-                            <table className="table table-hover">
-                                <thead className="table-light">
+                            <table className="table table-hover text-center">
+                                <thead className=" text-center table-light">
                                     <tr>
                                         <th scope="col">ID</th>
                                         <th scope="col">Tên Sản phẩm</th>
@@ -222,55 +259,65 @@ const AdminShopDetail: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {mockProducts.map(p => (
-                                        <tr key={p.id}>
+                                    {products.map(p => (
+                                        <tr className="text-center" key={p.id}>
                                             <td>{p.id}</td>
                                             <td>{p.name}</td>
-                                            <td>{p.price.toLocaleString()} VNĐ</td>
+                                            <td>{p.base_price.toLocaleString()} VNĐ</td>
                                             <td>
-                                                <span className={`badge ${p.status === 'approved' ? 'bg-success' : 'bg-warning text-dark'}`}>
-                                                    {p.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
+                                                <span className={`badge ${p.status === 1 ? 'bg-success' : 'bg-warning text-dark'}`}>
+                                                    {p.status === 1 ? 'Đã duyệt' : 'Chờ duyệt'}
                                                 </span>
                                             </td>
-                                            <td><button className="btn btn-sm btn-outline-primary">Xem</button></td>
+                                            <td>
+                                                <Link
+                                                    to={`/product/${p.id}`}
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    title="Xem chi tiết"
+                                                    target="_blank"
+                                                >
+                                                    <FiEye />
+                                                </Link>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+                            <Pagenum currentPage={currentPage} totalPages={totalPagesProducts} onPageChange={handlePageChange} />
                         </div>
                     )}
 
                     {/* --- Tab 3: Đơn hàng --- */}
                     {activeTab === 'orders' && (
                         <div className="table-responsive">
-                            <table className="table table-hover">
+                            <table className="table table-hover text-center">
                                 <thead className="table-light">
                                     <tr>
                                         <th scope="col">ID Đơn hàng</th>
-                                        <th scope="col">Khách hàng</th>
+                                        <th scope="col">SĐT Khách hàng</th>
                                         <th scope="col">Tổng tiền</th>
                                         <th scope="col">Trạng thái</th>
                                         <th scope="col">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {mockOrders.map(o => (
-                                        <tr key={o.id}>
-                                            <td>{o.id}</td>
-                                            <td>{o.customer}</td>
-                                            <td>{o.total.toLocaleString()} VNĐ</td>
+                                    {orders.map(o => (
+                                        <tr key={o.order_id}>
+                                            <td>{o.order_id}</td>
+                                            <td>{o.customer_phone}</td>
+                                            <td>{formatVND(o.total_amount)}</td>
                                             <td>
-                                                <span className={`badge ${o.status === 'completed' ? 'bg-success' : 'bg-info'}`}>
-                                                    {o.status === 'completed' ? 'Hoàn thành' : 'Đang xử lý'}
-                                                </span>
+                                                {renderStatusBadgeOrder(o.status)}
                                             </td>
-                                            <td><button className="btn btn-sm btn-outline-primary">Xem</button></td>
+                                            <td><button className="btn btn-sm btn-outline-primary">Chi tiết</button></td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+                            <Pagenum currentPage={currentPage} totalPages={totalPagesOrders} onPageChange={handlePageChange} />
                         </div>
                     )}
+
                 </div>
             </div>
         </div>
