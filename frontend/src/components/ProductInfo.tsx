@@ -2,7 +2,6 @@ import { useCart } from "../context/CartContext";
 // Giả sử ProductType của bạn có chứa 'product_variants'
 import type { ProductType, AttributeOfProductVariantsType } from "../types/ProductType";
 import { useState, useMemo, useEffect } from "react";
-import { FaRegHeart } from "react-icons/fa";
 
 interface ProductInfoProps {
     product: ProductType,
@@ -83,7 +82,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
     }
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;
-    console.log(product.product_variants);
+    console.log(product);
 
 
     return (

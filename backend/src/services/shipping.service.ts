@@ -61,6 +61,9 @@ export async function calculateShippingFee(warehouseAddress: string, deliveryAdd
         throw new Error("Không thể tính toán tuyến đường");
     }
 
+    console.log(distanceInMeters);
+
+
     // --- LOGIC TÍNH PHÍ CỦA BẠN ---
     const distanceInKm = distanceInMeters / 1000;
     let shippingFee = 0;

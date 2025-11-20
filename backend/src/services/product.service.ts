@@ -9,7 +9,7 @@ import { paginationProducts } from "../helpers/pagination.helper";
 
 class productService {
     // ... (Tất cả các hàm GET (getProductOnIdService, getProductImgOnIdService, ...) giữ nguyên) ...
-    
+
     // LẤY PHIÊN BẢN NÂNG CẤP CỦA `main` (có giá sale)
     getProductOnIdService = async (id: number): Promise<Product> => {
         const [productRows] = await pool.query<Product[] & RowDataPacket[]>(`SELECT id, name, description, base_price, shop_id, sold_count FROM products WHERE id = ?`, [id]);
@@ -30,17 +30,11 @@ class productService {
                      pi.discount_value AS discount_percentage,
                      
                      (CASE
-                         WHEN pi.discount_value IS NOT NULL 
-                         THEN (pv.price * (1 - (pi.discount_value / 100)))
-                         ELSE NULL 
-                     END) AS sale_price,
+                        WHEN promo.id IS NOT NULL AND pi.discount_value IS NOT NULL 
+                        THEN ROUND(pv.price * (1 - (pi.discount_value / 100)))
+                        ELSE NULL 
+                    END) AS sale_price
 
-                     (CASE
-                         WHEN pi.discount_value IS NOT NULL 
-                         THEN (pv.price * (1 - (pi.discount_value / 100)))
-                         ELSE pv.price
-                     END) AS price
-                     
                  FROM 
                      productvariants pv
                  
@@ -52,7 +46,7 @@ class productService {
                          AND NOW() BETWEEN promo.start_date AND promo.end_date
                          
                  WHERE 
-                     pv.product_id = ?;
+                     pv.product_id = ?
              `;
         const [variantRows] = await pool.query<ProductVariant[] & RowDataPacket[]>(
             sql_variants,
@@ -89,7 +83,7 @@ class productService {
         let whereClause = "WHERE shop_id = ?";
         const params: (string | number)[] = [shopId];
         if (cate && cate !== 0) {
-            whereClause += " AND shop_cate_id = ?"; 
+            whereClause += " AND shop_cate_id = ?";
             params.push(cate);
         }
         const [rows] = await pool.query(`SELECT * FROM v_products_list ${whereClause} ORDER BY ${orderBy}`, params);
@@ -123,7 +117,7 @@ class productService {
         let cnt = 0;
         for (const row of results) {
             if (summary.hasOwnProperty(row.rating)) {
-                summary[row.rating as keyof typeof summary] = row.count; 
+                summary[row.rating as keyof typeof summary] = row.count;
                 totalCount += row.count;
                 cnt += row.rating * row.count;
             }
@@ -157,7 +151,7 @@ class productService {
         }));
         return result as AttributeOfProductVariants[];
     }
-    
+
     // --- CÁC HÀM CRUD (CỦA BẠN - qhuykuteo) ---
     createProductService = async (productData: any) => {
         const { shop_id, name, description, category_id, shop_cate_id, image_url, status, attribute_id, variations, details } = productData;
@@ -336,7 +330,7 @@ class productService {
         }
         return product;
     };
-    
+
     // =================================================================
     // NÂNG CẤP MỚI: Chỉ giữ 1 hàm updateProductStatusService (của bạn)
     // =================================================================
@@ -356,12 +350,12 @@ class productService {
             "SELECT * FROM promotions WHERE shop_id = ? ORDER BY start_date DESC",
             [shopId]
         );
-        return rows; 
+        return rows;
     }
 
     getItemsByPromotionId = async (promotionId: number, shopId: number) => {
         const promo = await this.findById(promotionId);
-        if (!promo || promo.shop_id !== shopId) { 
+        if (!promo || promo.shop_id !== shopId) {
             throw new Error('FORBIDDEN');
         }
 
@@ -478,13 +472,13 @@ class productService {
             }
             await connection.commit();
         } catch (error) {
-            await connection.rollback(); 
+            await connection.rollback();
             throw error;
         } finally {
-            connection.release(); 
+            connection.release();
         }
     }
-    
+
     createPromotion = async (data: CreatePromotionData) => {
         const { name, start_date, end_date, banner_url, shop_id } = data;
 

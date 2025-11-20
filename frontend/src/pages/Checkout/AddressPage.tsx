@@ -21,7 +21,7 @@ export const AddressPage = () => {
     const [address, setAddress] = useState<AddressType[]>([]);
     const [selectedAddress, setSelectedAddress] = useState<AddressType>();
     const [items, setItems] = useState<CartItem[]>([]);
-    const [total, setTotal] = useState(0);
+    const [productTotal, setProductTotal] = useState(0);
     const [isShow, setIsShow] = useState(false);
     const { user } = useAuth();
     const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -89,7 +89,7 @@ export const AddressPage = () => {
         } else {
             // 4. Set state để render
             setItems(checkoutItems);
-            setTotal(checkoutTotal);
+            setProductTotal(checkoutTotal);
         }
 
         loadAddress();
@@ -188,7 +188,7 @@ export const AddressPage = () => {
 
     const handleCreatePaymentUrl = async (provider: string): Promise<string | null> => {
         const checkoutData = {
-            total: total
+            total: productTotal
         };
         const processPayment = async (provider: string, data: typeof checkoutData) => {
             try {
@@ -240,6 +240,15 @@ export const AddressPage = () => {
         }
     };
 
+    const totalShippingFee = useMemo(() => {
+        return Object.values(shippingFees).reduce((sum, fee) => {
+            // Chỉ cộng nếu phí > 0 (tránh cộng -1 lỗi)
+            return fee > 0 ? sum + fee : sum;
+        }, 0);
+    }, [shippingFees]);
+
+    const finalTotal = productTotal + totalShippingFee;
+
     return (
         <>
             <AddressModal isShow={isShow} onClose={() => setIsShow(false)} onSaveSuccess={handleSaveSuccess} address={null} />
@@ -249,11 +258,11 @@ export const AddressPage = () => {
                         <div className="container p-4">
                             {groupedCart.map((shopGroup) => {
                                 const fee = Number(shippingFees[shopGroup.shop_id]);
-                                console.log(fee);
 
                                 const subTotal = shopGroup.items.reduce((sum, item) => {
                                     return sum + (item.original_price * item.quantity);
                                 }, 0);
+                                const totall = (fee ? fee : 0) + subTotal;
                                 return (
                                     <div key={shopGroup.shop_id} className="shop-container mb-4">
                                         <div className="shop-header d-flex align-items-center mb-2">
@@ -267,10 +276,10 @@ export const AddressPage = () => {
                                             {/* 2. Vòng lặp TRONG: Lặp qua từng SẢN PHẨM của shop đó */}
                                             {shopGroup.items.map((item) => (
 
-                                                <div key={item.product_variant_id} className="cart-item d-flex mb-3 p-3">
-                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="rounded" />
+                                                <div key={item.product_variant_id} className="cart-item d-flex mb-1 p-3">
+                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '150px', height: '150px', objectFit: 'cover' }} className="rounded" />
 
-                                                    <div className="item-details ms-3 d-flex flex-column justify-content-between">
+                                                    <div className="item-details ms-3 d-flex flex-column justify-content-between py-2">
                                                         <div className="fw-bold mb-1">{item.product_name}</div>
                                                         {/* Hiển thị các thuộc tính (options) */}
                                                         <div className="item-options text-muted small">
@@ -281,18 +290,24 @@ export const AddressPage = () => {
                                                             ))}
                                                         </div>
                                                         <div>Số lượng: {item.quantity}</div>
-                                                        <div className="text-danger fw-bold">{Number(item.sale_price ? item.sale_price : item.original_price).toLocaleString('vi-VN')}đ</div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <div className="text-danger fw-bold">{Number(item.sale_price ? item.sale_price : item.original_price).toLocaleString('vi-VN')}đ</div>
+                                                            <div className="text-danger fw-bold">{(Number(item.sale_price ? item.sale_price : item.original_price) * item.quantity).toLocaleString('vi-VN')}đ</div>
+
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
                                             <div className="bg-light border border-top p-2 d-flex justify-content-end gap-4">
                                                 <div>
+                                                    <div>Thành tiền:</div>
                                                     <div>Tiền ship: </div>
                                                     <div>Tổng tiền: </div>
                                                 </div>
                                                 <div className="text-end">
-                                                    <div>{fee ? `${fee.toLocaleString()}đ` : "---"}</div>
-                                                    <div>{subTotal.toLocaleString('vi-VN')}đ</div>
+                                                    <div className="text-primary fw-semibold">{subTotal.toLocaleString('vi-VN')}đ</div>
+                                                    <div className="text-primary fw-semibold">{fee ? `${fee.toLocaleString()}đ` : "---"}</div>
+                                                    <div className="text-danger fw-bold">{totall.toLocaleString('vi-VN')}đ</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -444,7 +459,11 @@ export const AddressPage = () => {
                             </div>
 
                         </div>
-                        <div className="btn btn-primary w-100 mt-4 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
+                        <div className="d-flex justify-content-between my-4 p-4 rounded" style={{ border: '2px solid #ff7708', backgroundColor: '#FFE8D4', color: '#CC5200' }}>
+                            <div>Tổng cộng:</div>
+                            <div>{finalTotal.toLocaleString('vi-VN')}đ</div>
+                        </div>
+                        <div className="btn btn-primary w-100 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
                     </div>
                 </div>
                 {/* ... */}
