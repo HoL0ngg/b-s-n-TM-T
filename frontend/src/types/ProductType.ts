@@ -11,10 +11,10 @@ export interface ProductType {
     product_variants: ProductVariantType[];
     images: ProductImageType[];
     avg_rating: number;
-    
+
     // Giữ code của bạn (qhuykuteo)
     shop_cate_id?: number | null;
-    
+
     // Giữ code của đồng đội (main)
     original_price: number;
     sale_price: number | null;
@@ -48,8 +48,8 @@ export interface ProductReviewSummaryType {
 export interface ProductDetailsType {
     id: number,
     product_id: number,
-    attribute: string, 
-    value: string,     
+    attribute: string,
+    value: string,
 }
 
 export interface AttributeOfProductVariantsType {
@@ -57,23 +57,20 @@ export interface AttributeOfProductVariantsType {
     values: string[],
 }
 interface VariantOption {
-    attribute: string; 
-    value: string;     
+    attribute: string;
+    value: string;
 }
 export interface ProductVariantType {
-    id: number;       
-    stock: number;    
-    options: VariantOption[]; 
+    id: number;
+    stock: number;
+    options: VariantOption[];
     image_url: string;
 
-    // Giữ `price` (vì code của bạn cần)
-    price: number;
-    
     // Giữ các trường của đồng đội (main)
     original_price: number;
     sale_price: number | null;
     discount_percentage: number | null;
-    product_name?: string;    
+    product_name?: string;
     options_string?: string;
 }
 
@@ -92,8 +89,8 @@ export interface PromotionType {
     id: number;
     shop_id: number;
     name: string;
-    start_date: string; 
-    end_date: string;   
+    start_date: string;
+    end_date: string;
     is_active: boolean;
 }
 
@@ -108,8 +105,8 @@ export interface PromotionItem {
     discount_value: number;
     product_name: string;
     product_image: string;
-    original_price: number; 
-    stock: number; 
+    original_price: number;
+    stock: number;
     options_string?: string;
 }
 

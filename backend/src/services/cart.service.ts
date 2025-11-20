@@ -49,7 +49,7 @@ class CartService {
             
             -- Tính giá sale (nếu có)
             (CASE
-                WHEN pi.discount_value IS NOT NULL 
+                WHEN promo.id IS NOT NULL AND pi.discount_value IS NOT NULL 
                 THEN ROUND(pv.price * (1 - (pi.discount_value / 100)))
                 ELSE NULL 
             END) AS sale_price

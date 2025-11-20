@@ -50,7 +50,7 @@ export default function Cart() {
     };
 
     const handleShopCheckboxChange = (items: CartItem[]) => {
-        const shopItemIds = items.map(item => item.product_id);
+        const shopItemIds = items.map(item => item.product_variant_id);
 
         setSelectedItems(prevSelected => {
             const allSelected = shopItemIds.every(id => prevSelected.includes(id));
