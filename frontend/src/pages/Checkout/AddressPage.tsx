@@ -1,5 +1,4 @@
 import { GrRadialSelected } from "react-icons/gr";
-import { FaCcMastercard } from "react-icons/fa";
 import type { AddressType } from "../../types/UserType";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -12,8 +11,8 @@ import { FaAngleDown } from "react-icons/fa6";
 import { FaMoneyBillWave } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
-import { createVietQROrder } from "../../api/cart";
-import { createPayment_momo, createPayment_vnpay } from "../../api/payments";
+import { createPayment_momo, createPayment_vnpay, handleShipCod } from "../../api/payments";
+import { calculateShippingFee } from "../../api/shipping";
 
 export const AddressPage = () => {
     const location = useLocation();
@@ -22,7 +21,7 @@ export const AddressPage = () => {
     const [address, setAddress] = useState<AddressType[]>([]);
     const [selectedAddress, setSelectedAddress] = useState<AddressType>();
     const [items, setItems] = useState<CartItem[]>([]);
-    const [total, setTotal] = useState(0);
+    const [productTotal, setProductTotal] = useState(0);
     const [isShow, setIsShow] = useState(false);
     const { user } = useAuth();
     const [hoveredId, setHoveredId] = useState<number | null>(null);
@@ -30,54 +29,8 @@ export const AddressPage = () => {
     const [orderId, setOrderId] = useState("");
     const [selectedMethod, setSelectedMethod] = useState<string>('cod');
     const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
-
-    let [show, setShow] = useState(false);
-    useEffect(() => {
-        let checkoutItems: CartItem[] = [];
-        let checkoutTotal: number = 0;
-
-        if (location.state) {
-            checkoutItems = location.state.checkoutItems;
-            checkoutTotal = location.state.total;
-        }
-        // 2. NẾU KHÔNG CÓ (do F5), đọc từ 'sessionStorage'
-        else {
-            const storedItems = sessionStorage.getItem('checkoutItems');
-            const storedTotal = sessionStorage.getItem('checkoutTotal');
-
-            if (storedItems && storedTotal) {
-                // Phải dùng JSON.parse để chuyển chuỗi về lại mảng/số
-                checkoutItems = JSON.parse(storedItems);
-                checkoutTotal = JSON.parse(storedTotal);
-            }
-        }
-
-        if (checkoutItems.length === 0) {
-            alert("Không có sản phẩm nào để thanh toán.");
-            navigate('/cart', { replace: true }); // Đá về giỏ hàng
-        } else {
-            // 4. Set state để render
-            setItems(checkoutItems);
-            setTotal(checkoutTotal);
-        }
-
-        loadAddress();
-    }, [user]);
-
-    const loadAddress = async () => {
-        try {
-            if (user) {
-                const data = await fetchAddressByUserId(user.id.toString());
-                const hihi = await fetchDefaultAddressByUserId(user.id.toString());
-
-                setSelectedAddress(hihi);
-                setAddress(data);
-            }
-
-        } catch {
-
-        }
-    }
+    const [shippingFees, setShippingFees] = useState<{ [shopId: number]: number }>({});
+    const [isCalculatingShip, setIsCalculatingShip] = useState(false);
 
     const groupedCart: CartType[] = useMemo(() => {
         // Nếu không có giỏ hàng, trả về mảng rỗng
@@ -109,6 +62,107 @@ export const AddressPage = () => {
 
     }, [items]);
 
+    let [show, setShow] = useState(false);
+    useEffect(() => {
+        let checkoutItems: CartItem[] = [];
+        let checkoutTotal: number = 0;
+
+        if (location.state) {
+            checkoutItems = location.state.checkoutItems;
+            checkoutTotal = location.state.total;
+        }
+        // 2. NẾU KHÔNG CÓ (do F5), đọc từ 'sessionStorage'
+        else {
+            const storedItems = sessionStorage.getItem('checkoutItems');
+            const storedTotal = sessionStorage.getItem('checkoutTotal');
+
+            if (storedItems && storedTotal) {
+                // Phải dùng JSON.parse để chuyển chuỗi về lại mảng/số
+                checkoutItems = JSON.parse(storedItems);
+                checkoutTotal = JSON.parse(storedTotal);
+            }
+        }
+
+        if (checkoutItems.length === 0) {
+            alert("Không có sản phẩm nào để thanh toán.");
+            navigate('/cart', { replace: true }); // Đá về giỏ hàng
+        } else {
+            // 4. Set state để render
+            setItems(checkoutItems);
+            setProductTotal(checkoutTotal);
+        }
+
+        loadAddress();
+    }, [user]);
+
+    useEffect(() => {
+        // 1. Nếu chưa chọn địa chỉ hoặc giỏ hàng rỗng -> Reset phí ship
+        if (!selectedAddress || groupedCart.length === 0) {
+            setShippingFees({});
+            return;
+        }
+
+        const calculateAllFees = async () => {
+            setIsCalculatingShip(true);
+
+            // Tạo chuỗi địa chỉ đầy đủ để gửi lên API
+            // (Tùy vào backend bạn yêu cầu format nào, ở đây mình ghép lại)
+            const fullAddress = `${selectedAddress.street}, ${selectedAddress.ward}, ${selectedAddress.city}`;
+
+            try {
+                // 2. Tạo một mảng các Promise (các lệnh gọi API chạy song song)
+                const promises = groupedCart.map(async (shopGroup) => {
+                    try {
+                        // Gọi hàm API của bạn
+                        const fee = await calculateShippingFee(fullAddress, shopGroup.shop_id);
+
+                        // Trả về kết quả dạng object để dễ gán
+                        return { shopId: shopGroup.shop_id, fee: fee };
+                    } catch (err) {
+                        console.error(`Lỗi tính ship shop ${shopGroup.shop_id}`, err);
+                        // Nếu lỗi, trả về -1 hoặc 0 để xử lý sau
+                        return { shopId: shopGroup.shop_id, fee: -1 };
+                    }
+                });
+
+                // 3. Chờ tất cả API chạy xong (Promise.all)
+                const results = await Promise.all(promises);
+
+                // 4. Chuyển mảng kết quả thành Object { shopId: fee }
+                const newFeesMap: { [key: number]: number } = {};
+                results.forEach(item => {
+                    newFeesMap[item.shopId] = item.fee;
+                });
+
+                // 5. Cập nhật State
+                setShippingFees(newFeesMap);
+
+            } catch (error) {
+                console.error("Lỗi hệ thống tính ship:", error);
+            } finally {
+                setIsCalculatingShip(false);
+            }
+        };
+
+        calculateAllFees();
+
+    }, [selectedAddress, groupedCart]); // <-- Chạy lại khi Địa chỉ hoặc Giỏ hàng đổi
+
+    const loadAddress = async () => {
+        try {
+            if (user) {
+                const data = await fetchAddressByUserId(user.id.toString());
+                const hihi = await fetchDefaultAddressByUserId(user.id.toString());
+
+                setSelectedAddress(hihi);
+                setAddress(data);
+            }
+
+        } catch {
+
+        }
+    }
+
     const handleChangAddress = () => {
         setShow(!show);
     }
@@ -132,55 +186,93 @@ export const AddressPage = () => {
         loadAddress(); // Tải lại danh sách (để reload)
     };
 
-    const handleCreatePaymentUrl = async (provider: string): Promise<string | null> => {
-        const checkoutData = {
-            total: total
-        };
+    const handleCreatePaymentUrl = async (provider: string, checkoutData: any): Promise<string | null> => {
+        checkoutData.paymentMethod = provider;
         const processPayment = async (provider: string, data: typeof checkoutData) => {
-            try {
-                switch(provider){
-                    case 'vnpay':
-                        return await createPayment_vnpay(data);
-                    case 'momo':
-                        return await createPayment_momo(data);
-                    default:
-                        throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
-                }
-                
-            } catch (error) {
-                console.error('[ERROR] ', error);
-                throw new Error('Tạo URL thanh toán thất bại');
+            switch (provider) {
+                case 'vnpay':
+                    return await createPayment_vnpay(data);
+                case 'momo':
+                    return await createPayment_momo(data);
+                default:
+                    throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
             }
         };
 
         try {
             const response = await processPayment(provider, checkoutData);
 
-            if(response.success && response.paymentUrl){
+            if (response.success && response.paymentUrl) {
                 console.log(`URL thanh toán được tạo thành công: ${response.paymentUrl}`);
                 return response.paymentUrl;
-            } else{
+            } else {
                 console.error(response.message || '[ERROR] Lỗi tạo URL thanh toán');
                 alert(response.message || '[ERROR] Có lỗi khi tạo URL thanh toán');
                 return null;
             }
         } catch (error) {
-            console.error('[ERROR] ', error);
-            alert(error instanceof Error ? error.message : 'An unknown error occurred');
+            const errorData = (error as any).response.data;
+            console.error(errorData.message);
+            if ((error as any).status === 409) {
+                if (errorData.details) {
+                    console.error(JSON.stringify(errorData.details, null, 2));
+                    alert(errorData.message + "\n" + JSON.stringify(errorData.details, null, 2));
+                }
+            } else {
+                alert(errorData.message);
+            }
             return null;
         }
     }
     const handlePlaceOrder = async () => {
-        console.log(selectedMethod);
-        if(selectedMethod === "cod"){
-            alert("Chưa xử lý phương thức COD");
+        if (isCalculatingShip) {
+            alert("Vui lòng chờ tính phí vận chuyển xong trước khi thanh toán.");
             return;
         }
-        const paymentUrl = await handleCreatePaymentUrl(selectedMethod);
-        if(paymentUrl){
+        
+        const checkoutData = {
+            total: finalTotal,
+            shippingFees: shippingFees,
+            groupedCart: groupedCart,
+            paymentMethod: 'cod',
+            selectedAddress: selectedAddress
+        };
+
+        if (selectedMethod === "cod") {
+            try {
+                const response = await handleShipCod(checkoutData);
+                if (response.success) alert(response.message);
+            } catch (error) {
+                console.log(error);
+
+                const errorData = (error as any).response.data;
+                console.error(errorData.message);
+                if ((error as any).status === 409) {
+                    if (errorData.details) {
+                        console.error(JSON.stringify(errorData.details, null, 2));
+                        alert(errorData.message + "\n" + JSON.stringify(errorData.details, null, 2));
+                    }
+                } else {
+                    alert(errorData.message);
+                }
+            }
+            return;
+        }
+
+        const paymentUrl = await handleCreatePaymentUrl(selectedMethod, checkoutData);
+        if (paymentUrl) {
             window.location.href = paymentUrl;
         }
     };
+
+    const totalShippingFee = useMemo(() => {
+        return Object.values(shippingFees).reduce((sum, fee) => {
+            // Chỉ cộng nếu phí > 0 (tránh cộng -1 lỗi)
+            return fee > 0 ? sum + fee : sum;
+        }, 0);
+    }, [shippingFees]);
+
+    const finalTotal = productTotal + totalShippingFee;
 
     return (
         <>
@@ -190,9 +282,12 @@ export const AddressPage = () => {
                     <div className="col-8">
                         <div className="container p-4">
                             {groupedCart.map((shopGroup) => {
+                                const fee = Number(shippingFees[shopGroup.shop_id]);
+
                                 const subTotal = shopGroup.items.reduce((sum, item) => {
-                                    return sum + (item.product_price * item.quantity);
+                                    return sum + (item.original_price * item.quantity);
                                 }, 0);
+                                const totall = (fee ? fee : 0) + subTotal;
                                 return (
                                     <div key={shopGroup.shop_id} className="shop-container mb-4">
                                         <div className="shop-header d-flex align-items-center mb-2">
@@ -206,10 +301,10 @@ export const AddressPage = () => {
                                             {/* 2. Vòng lặp TRONG: Lặp qua từng SẢN PHẨM của shop đó */}
                                             {shopGroup.items.map((item) => (
 
-                                                <div key={item.product_variant_id} className="cart-item d-flex mb-3 p-3">
-                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                                                <div key={item.product_variant_id} className="cart-item d-flex mb-1 p-3">
+                                                    <img src={item.product_url} alt={item.product_name} style={{ width: '150px', height: '150px', objectFit: 'cover' }} className="rounded" />
 
-                                                    <div className="item-details ms-3 d-flex flex-column justify-content-between">
+                                                    <div className="item-details ms-3 d-flex flex-column justify-content-between py-2">
                                                         <div className="fw-bold mb-1">{item.product_name}</div>
                                                         {/* Hiển thị các thuộc tính (options) */}
                                                         <div className="item-options text-muted small">
@@ -220,18 +315,24 @@ export const AddressPage = () => {
                                                             ))}
                                                         </div>
                                                         <div>Số lượng: {item.quantity}</div>
-                                                        <div className="text-danger fw-bold">{Number(item.sale_price ? item.sale_price : item.original_price).toLocaleString('vi-VN')}đ</div>
+                                                        <div className="d-flex justify-content-between">
+                                                            <div className="text-danger fw-bold">{Number(item.sale_price ? item.sale_price : item.original_price).toLocaleString('vi-VN')}đ</div>
+                                                            <div className="text-danger fw-bold">{(Number(item.sale_price ? item.sale_price : item.original_price) * item.quantity).toLocaleString('vi-VN')}đ</div>
+
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
                                             <div className="bg-light border border-top p-2 d-flex justify-content-end gap-4">
                                                 <div>
+                                                    <div>Thành tiền:</div>
                                                     <div>Tiền ship: </div>
                                                     <div>Tổng tiền: </div>
                                                 </div>
                                                 <div className="text-end">
-                                                    <div>20.000đ</div>
-                                                    <div>{subTotal.toLocaleString('vi-VN')}đ</div>
+                                                    <div className="text-primary fw-semibold">{subTotal.toLocaleString('vi-VN')}đ</div>
+                                                    <div className="text-primary fw-semibold">{fee ? `${fee.toLocaleString()}đ` : "---"}</div>
+                                                    <div className="text-danger fw-bold">{totall.toLocaleString('vi-VN')}đ</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -383,7 +484,11 @@ export const AddressPage = () => {
                             </div>
 
                         </div>
-                        <div className="btn btn-primary w-100 mt-4 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
+                        <div className="d-flex justify-content-between my-4 p-4 rounded" style={{ border: '2px solid #ff7708', backgroundColor: '#FFE8D4', color: '#CC5200' }}>
+                            <div>Tổng cộng:</div>
+                            <div>{finalTotal.toLocaleString('vi-VN')}đ</div>
+                        </div>
+                        <div className="btn btn-primary w-100 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
                     </div>
                 </div>
                 {/* ... */}

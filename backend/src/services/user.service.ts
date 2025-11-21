@@ -113,9 +113,9 @@ class userService {
         );
         let hihi = false;
         if (countRows[0].count == 0) hihi = true;
-
+        hihi = data.isDefault || hihi;
         const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo, is_default) VALUES (?, ?, ?, ?, ?)';
-        await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, data.is_default || hihi]);
+        await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, hihi]);
     }
 
     updateAvatar = async (avatarPath: string, userId: string) => {
@@ -213,6 +213,17 @@ class userService {
         const [result] = await pool.query(query, [status, phone]);
         const affectedRows = (result as any).affectedRows;
         return affectedRows > 0;
+    }
+    getShopOwnerInformation = async (shopId: number): Promise<UserAdmin> => {
+        const query = `
+            SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name
+            FROM shops s
+            JOIN users u ON u.phone_number = s.owner_id
+            JOIN user_profile uf ON uf.phone_number = u.phone_number
+            WHERE s.id = ?
+        `;
+        const [rows] = await pool.query(query, [shopId]);
+        return rows[0] as UserAdmin;
     }
 }
 export default new userService();

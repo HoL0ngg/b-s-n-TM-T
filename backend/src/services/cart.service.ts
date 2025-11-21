@@ -42,14 +42,17 @@ class CartService {
              WHERE pi.product_id = p.id AND pi.is_main = 1 LIMIT 1) AS product_url,
             
             -- Lấy giá gốc
-            pv.price AS original_price,
+            MAX(pv.price) AS original_price,
             
             -- Lấy % giảm giá (nếu có)
-            pi.discount_value AS discount_percentage,
+            MAX(CASE 
+                WHEN promo.id IS NOT NULL THEN pi.discount_value 
+                ELSE NULL 
+            END) AS discount_percentage,
             
             -- Tính giá sale (nếu có)
-            (CASE
-                WHEN pi.discount_value IS NOT NULL 
+            MAX(CASE
+                WHEN promo.id IS NOT NULL AND pi.discount_value IS NOT NULL 
                 THEN ROUND(pv.price * (1 - (pi.discount_value / 100)))
                 ELSE NULL 
             END) AS sale_price
@@ -71,7 +74,9 @@ class CartService {
                              AND promo.is_active = 1
                              AND NOW() BETWEEN promo.start_date AND promo.end_date
         WHERE 
-            ci.user_id = ?;
+            ci.user_id = ?
+        GROUP BY
+            pv.id;
     `;
 
         // 'flatItems' bây giờ là mảng CartItem[] (đã có giá/sale, nhưng chưa có options)

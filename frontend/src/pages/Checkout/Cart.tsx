@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { TiDeleteOutline } from "react-icons/ti";
 import { BsCartXFill } from "react-icons/bs";
 import VariantEditModal from "../../components/VariantEditModal";
+import { handleSwalAlert } from "../../utils/helper";
 
 export default function Cart() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -22,7 +23,7 @@ export default function Cart() {
 
     const selectedItemDetails: CartItem[] = useMemo(() => {
         return allItems.filter(item =>
-            selectedItems.includes(item.product_id)
+            selectedItems.includes(item.product_variant_id)
         );
     }, [allItems, selectedItems]);
 
@@ -49,7 +50,7 @@ export default function Cart() {
     };
 
     const handleShopCheckboxChange = (items: CartItem[]) => {
-        const shopItemIds = items.map(item => item.product_id);
+        const shopItemIds = items.map(item => item.product_variant_id);
 
         setSelectedItems(prevSelected => {
             const allSelected = shopItemIds.every(id => prevSelected.includes(id));
@@ -74,7 +75,7 @@ export default function Cart() {
             return 0;
         }
         return allItems
-            .filter(item => selectedItems.includes(item.product_id))
+            .filter(item => selectedItems.includes(item.product_variant_id))
             .reduce((sum, item) => {
                 const price = item.sale_price || item.original_price || 0;
                 const quantity = item.quantity || 0;
@@ -98,9 +99,15 @@ export default function Cart() {
         setLoading(true);
 
         const itemsToCheckout = allItems.filter(item =>
-            selectedItems.includes(item.product_id)
+            selectedItems.includes(item.product_variant_id)
         );
         const total = calculateTotal(); // (Hàm của bạn)
+
+        if (itemsToCheckout.length === 0) {
+            handleSwalAlert("Thông báo báo", "Vui lòng chọn sản phẩm để thanh toán.");
+            setLoading(false);
+            return;
+        }
 
         sessionStorage.setItem('checkoutItems', JSON.stringify(itemsToCheckout));
         sessionStorage.setItem('checkoutTotal', JSON.stringify(total));
@@ -141,7 +148,7 @@ export default function Cart() {
                     :
                     (<div className="container p-4">
                         {cart.map(shop => {
-                            const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_id));
+                            const allShopItemsSelected = shop.items.every(item => selectedItems.includes(item.product_variant_id));
 
                             return (
                                 <div key={shop.shop_id} className="mb-4">
@@ -162,12 +169,12 @@ export default function Cart() {
                                     </div>
                                     <div className="container bg-white px-4 rounded border">
                                         {shop.items.map((item, ind) => (
-                                            <div key={item.product_id} className={`row mb-4 ${ind > 0 ? 'border-top' : ''} border-primary border-2 pt-4`} >
+                                            <div key={item.product_variant_id} className={`row mb-4 ${ind > 0 ? 'border-top' : ''} border-primary border-2 pt-4`} >
                                                 <div className="col-3">
                                                     <input
                                                         type="checkbox"
-                                                        checked={selectedItems.includes(item.product_id)}
-                                                        onChange={() => handleCheckboxChange(item.product_id)}
+                                                        checked={selectedItems.includes(item.product_variant_id)}
+                                                        onChange={() => handleCheckboxChange(item.product_variant_id)}
                                                     />
                                                     <img src={item.product_url} className="rounded ms-2" alt="" style={{ height: '150px', width: '150px' }} />
                                                 </div>

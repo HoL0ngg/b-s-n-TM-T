@@ -37,7 +37,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                             <span className="fw-bold text-primary">{Number(product.sale_price).toLocaleString('vi-VN')}<small>đ</small></span>
                             <small className="ms-2 text-muted text-decoration-line-through">{product.base_price.toLocaleString('vi-VN')}đ</small>
                         </div>) :
-                        (<span className="fw-bold text-primary">{product.base_price.toLocaleString('vi-VN')}<small>đ</small></span>)}
+                        (<span className="fw-bold text-primary">{Number(product.min_price).toLocaleString('vi-VN')}<small>đ</small></span>)}
 
                 </div>
                 <div className="text-muted ms-1 d-flex justify-content-between align-items-center">

@@ -1,6 +1,7 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../config/db";
 import type { Shop, ShopAdmin, ShopCategories } from "../models/shop.model";
+import { Product } from "../models/product.model";
 
 class shopService {
     getShopOnIdService = async (id: number): Promise<Shop> => {
@@ -164,12 +165,12 @@ class shopService {
         return affectedRows > 0;
     };
     createShopService = async (
-            name: string,
-            logo_url: string,
-            description: string,
-            status: number,
-            owner_id: string
-        ): Promise<number> => {
+        name: string,
+        logo_url: string,
+        description: string,
+        status: number,
+        owner_id: string
+    ): Promise<number> => {
         const [result] = await pool.query(
             `
             INSERT INTO shops (name, logo_url, description, status, created_at, owner_id)
@@ -178,7 +179,7 @@ class shopService {
             [name, logo_url, description, status, owner_id]
         ) as [any, any];
 
-        return result.insertId; 
+        return result.insertId;
     }
     updateShopService = async (
         id: number,
@@ -212,6 +213,13 @@ class shopService {
         return result.affectedRows > 0; // true nếu xóa thành công
     }
 
+    getShopStreetAddress = async (shopId: number): Promise<string> => {
+        const [rows] = await pool.query(
+            `SELECT address FROM shop_info WHERE shop_id = ?`,
+            [shopId]
+        ) as [any[], any];
+        return rows[0]?.address || '';
+    }
 }
 
 export default new shopService();

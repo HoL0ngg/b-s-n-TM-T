@@ -1,3 +1,6 @@
+drop database basan;
+CREATE database basan;
+use basan;
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
@@ -20,6 +23,10 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `basan`
 --
+
+DROP DATABASE basan;
+Create database basan;
+use basan;
 
 -- --------------------------------------------------------
 
@@ -138,14 +145,14 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `description`, `img_url`) VALUES
-(1, 'Mỹ phẩm', 'Danh mục Mỹ phẩm bao gồm các sản phẩm chăm sóc da, trang điểm và làm đẹp dành cho mọi lứa tuổi. Tất cả sản phẩm đều được chọn lọc kỹ lưỡng, đảm bảo chất lượng, an toàn cho người dùng và giúp bạn tỏa sáng tự nhiên mỗi ngày.', '/assets/categories/my pham.jpg'),
-(2, 'Quần', 'Danh mục Quần mang đến nhiều kiểu dáng hiện đại và thoải mái như quần jeans, quần tây, quần kaki, legging và jogger. Chất liệu đa dạng, form dáng chuẩn, phù hợp cho cả đi làm, đi học và dạo phố, giúp bạn tự tin thể hiện phong cách riêng.', '/assets/categories/quan.jpg'),
-(3, 'Áo', 'Danh mục Áo gồm nhiều lựa chọn thời trang như áo thun, áo sơ mi, áo khoác, áo len và áo polo. Các sản phẩm được thiết kế tinh tế, chất liệu thoáng mát, dễ phối đồ và phù hợp cho mọi hoàn cảnh — từ công sở đến đi chơi.', '/assets/categories/ao.jpg'),
-(4, 'Giày', 'Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.', '/assets/categories/giay.webp'),
-(5, 'Laptop', 'Adudu', '/assets/categories/laptop.jpg'),
-(6, 'Sức khỏe', 'adudu', '/assets/categories/suckhoe.png'),
-(7, 'Đồ điện tử', 'adudu', '/assets/categories/dodientu.png'),
-(8, 'Trang sức', 'adudu', '/assets/categories/trangsuc.png');
+(1, 'Sức khỏe & Làm đẹp', 'Danh mục Mỹ phẩm bao gồm các sản phẩm chăm sóc da, trang điểm và làm đẹp dành cho mọi lứa tuổi. Tất cả sản phẩm đều được chọn lọc kỹ lưỡng, đảm bảo chất lượng, an toàn cho người dùng và giúp bạn tỏa sáng tự nhiên mỗi ngày.', '/assets/categories/suc khoe.png'),
+(2, 'Thời trang & Phụ kiện', 'Danh mục Quần mang đến nhiều kiểu dáng hiện đại và thoải mái như quần jeans, quần tây, quần kaki, legging và jogger. Chất liệu đa dạng, form dáng chuẩn, phù hợp cho cả đi làm, đi học và dạo phố, giúp bạn tự tin thể hiện phong cách riêng.', '/assets/categories/thoi trang.png'),
+(3, 'Nhà cửa & Đời sống', 'Danh mục Áo gồm nhiều lựa chọn thời trang như áo thun, áo sơ mi, áo khoác, áo len và áo polo. Các sản phẩm được thiết kế tinh tế, chất liệu thoáng mát, dễ phối đồ và phù hợp cho mọi hoàn cảnh — từ công sở đến đi chơi.', '/assets/categories/nha cua.png'),
+(4, 'Thể thao & Du lịch', 'Danh mục Giày cung cấp các mẫu giày thời trang, năng động và thoải mái như giày thể thao, giày da, giày cao gót và dép sandal. Với thiết kế hiện đại, bền đẹp và êm ái, sản phẩm giúp bạn di chuyển tự tin và hoàn thiện phong cách thời trang cá nhân.', '/assets/categories/the thao.png'),
+(5, 'Điện tử & Công nghệ', 'Adudu', '/assets/categories/dien tu.png'),
+(6, 'Sách & Văn phòng phẩm', 'adudu', '/assets/categories/van phong pham.png'),
+(7, 'Thú cưng', 'adudu', '/assets/categories/thu cung.png'),
+(8, 'Trang sức', 'adudu', '/assets/categories/trang suc.png');
 
 -- --------------------------------------------------------
 
@@ -169,18 +176,18 @@ INSERT INTO `generic` (`id`, `name`, `category_id`) VALUES
 (3, 'Kem nền', 1),
 (4, 'Quần dài', 2),
 (5, 'Quần short', 2),
-(6, 'Quẩn thun', 2),
-(7, 'Áo sơ mi', 3),
+(6, 'Quần thun', 2),
+(7, 'Áo sơ mi', 2),
 (8, 'Giày đá banh', 4),
-(9, 'Tivi', 7),
-(10, 'Tủ lạnh', 7),
-(11, 'Máy lạnh', 7),
-(12, 'Máy giặt', 7),
-(13, 'Máy sấy', 7),
+(9, 'Tivi', 5),
+(10, 'Tủ lạnh', 5),
+(11, 'Máy lạnh', 5),
+(12, 'Máy giặt', 5),
+(13, 'Máy sấy', 5),
 (14, 'Gel trị mụn', 1),
 (15, 'Tẩy tế bào chết', 1),
-(16, 'Sữa rửa mặt', 6),
-(17, 'Dầu gội đầu', 6),
+(16, 'Sữa rửa mặt', 1),
+(17, 'Dầu gội đầu', 1),
 (18, 'Vòng tay', 8);
 
 -- --------------------------------------------------------
@@ -476,7 +483,13 @@ INSERT INTO `productvariants` (`id`, `product_id`, `price`, `stock`, `sku`, `ima
 (38, 23, 184000, 1, 'hjhj', ''),
 (39, 24, 78000, 1, 'hjhj', ''),
 (40, 25, 2366000, 1, 'hjhj', ''),
-(41, 26, 2790000, 1, 'hjhj', '');
+(41, 26, 2790000, 1, 'hjhj', ''),
+(42, 27, 169000, 1, 'hjhj', ''),
+(43, 28, 289000, 1, 'hjhj', ''),
+(44, 29, 259000, 1, 'hjhj', ''),
+(45, 30, 209000, 1, 'hjhj', ''),
+(46, 31, 54000, 1, 'hjhj', ''),
+(47, 32, 144000, 1, 'hjhj', '');
 
 -- --------------------------------------------------------
 
@@ -656,7 +669,13 @@ CREATE TABLE `shop_info` (
 --
 
 INSERT INTO `shop_info` (`id`, `shop_id`, `user_id`, `address`, `email`, `phone`, `shipping_methods`, `business_type`, `invoice_email`, `tax_code`, `identity_type`, `identity_number`, `identity_full_name`, `updated_at`) VALUES
-(1, 7, '0917842142', '2312 áđâsđâsđâsđá, Phường Thục Phán, Cao Bằng', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14');
+(1, 1, '0338740832', '273 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(2, 2, '0987654333', '275 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(3, 3, '0987654222', '277 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(4, 4, '0987654111', '213 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(5, 5, '0987654000', '353 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(6, 6, '0987654444', '173 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14'),
+(7, 7, '0917842142', '113 An Dương Vương phường CHợ quán Thành phố Hồ Chí Minh', 'longnguyen210405@gmail.com', '0917842142', '[\"SPX\",\"GHN\",\"GHTK\",\"J&T\",\"ViettelPost\"]', 'personal', 'áđâsd', 'adsađấ', 'cccd', '080205013802', 'Nguyễn Kim Long', '2025-11-17 12:42:14');
 
 -- --------------------------------------------------------
 
@@ -681,14 +700,17 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`phone_number`, `email`, `password`, `avatar_url`, `status`, `created_at`, `role`) VALUES
 ('0338740832', 'n.kimlong205@gmail.com', '$2b$10$kSAas5zHXia9rNmbNI4xIeJE6hrmrZvlQOLo/48KTr7XaFlx2wwHC', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
 ('0917842142', 'longnguyen210405@gmail.com', '$2b$10$DOxxYzLITFuc50bmC/YycuqkqpLQhSmPuttYKeie6Cn2a.8qf0ryG', '/assets/avatar/lion.png', 1, '2025-11-17 19:31:34', 'customer'),
-('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/panda.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
-('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/bear.png', 1, '2025-11-17 12:22:49', 'admin');
+('0987654000', 'unilever@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654111', 'murad@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654222', 'casper@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654321', 'hihi@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/panda.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654333', 'coolmate@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654444', 'pandora@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0987654555', 'thewhoo@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'shop_owner'),
+('0999999999', 'adu@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-17 12:22:49', 'admin'),
+('0932137212', 'adu2@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bear.png', 1, '2025-11-19 12:22:49', 'customer'),
+('0938231321', 'adu3@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/lion.png', 1, '2025-11-19 12:22:49', 'customer'),
+('0893218328', 'adu4@gmail.com', '$2a$10$bxZ7vYc6Y/zuv2PPwx9tA.lfFw4acWXpoFv7oNJ77ZTUk1/AVk9TW', '/assets/avatar/bee.png', 1, '2025-11-19 12:22:49', 'customer');
 
 -- --------------------------------------------------------
 
@@ -809,6 +831,72 @@ INSERT INTO `variantoptionvalues` (`id`, `variant_id`, `attribute_id`, `value`) 
 
 -- --------------------------------------------------------
 
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `orders`
+--
+
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE IF NOT EXISTS `orders` (
+  `order_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(10) NOT NULL,
+  `address_id` int(11) DEFAULT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  `shipping_fee` decimal(10,2) DEFAULT 0.00,
+  `status` varchar(50) NOT NULL DEFAULT 'Pending',
+  `payment_method` varchar(50) NOT NULL,
+  `payment_status` varchar(50) DEFAULT 'Unpaid',
+  `order_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `notes` text DEFAULT NULL,
+  `shop_id` int,
+  PRIMARY KEY (`order_id`),
+  KEY `user_id` (`user_id`),
+  KEY `address_id` (`address_id`),
+  Key `shop_id` (`shop_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `orders`
+--
+
+INSERT INTO `orders` (`order_id`, `user_id`, `address_id`, `total_amount`, `shipping_fee`, `status`, `payment_method`, `payment_status`, `order_date`, `notes`, `shop_id`) VALUES
+(1, '0938231321', 1, 736000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-05 20:16:05', NULL, 3),
+(2, '0932137212', 1, 1232000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-06 20:16:05', NULL, 3),
+(3, '0932137212', 1, 200000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-07 20:16:05', NULL, 2),
+(4, '0938231321', 1, 7362000, 0, 'delivered', 'COD', 'Unpaid', '2025-11-08 20:16:05', NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `order_items`
+--
+
+DROP TABLE IF EXISTS `order_items`;
+CREATE TABLE IF NOT EXISTS `order_items` (
+  `item_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `variant_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price_at_purchase` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`item_id`),
+  KEY `order_id` (`order_id`),
+  KEY `product_id` (`product_id`),
+  KEY `variant_id` (`variant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `order_items`
+--
+
+INSERT INTO `order_items` (`item_id`, `order_id`, `product_id`, `variant_id`, `product_name`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
+(1, 1, 1, 1, 'Son Kem Bóng Maybelline', 2, 228000.00, 456000.00),
+(2, 1, 4, 19, 'Quần Tây Nam Owen', 1, 280000.00, 280000.00);
+
+
 --
 -- Cấu trúc đóng vai cho view `v_products_list`
 -- (See below for the actual view)
@@ -822,6 +910,8 @@ CREATE TABLE `v_products_list` (
 ,`created_at` date
 ,`updated_at` date
 ,`sold_count` int(11)
+,`max_price` int(11)
+,`min_price` int(11)
 ,`shop_cate_id` int(11)
 ,`category_name` varchar(255)
 ,`base_price` int(11)
@@ -843,8 +933,92 @@ CREATE TABLE `v_products_list` (
 --
 DROP TABLE IF EXISTS `v_products_list`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, ifnull(`p`.`sold_count`,0) AS `sold_count`, `p`.`shop_cate_id` AS `shop_cate_id`, `g`.`name` AS `category_name`, `p`.`base_price` AS `base_price`, `p`.`brand_id` AS `brand_id`, `p`.`status` AS `status`, `s`.`name` AS `shop_name`, `s`.`status` AS `shop_status`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, ifnull(`p`.`sold_count`,0) * 0.6 + (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) * 0.4 AS `hot_score`, (select round(min(`pv`.`price` * (1 - `pi`.`discount_value` / 100)),0) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `sale_price`, (select max(`pi`.`discount_value`) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `discount_percentage` FROM ((`products` `p` left join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) join `shops` `s` on(`s`.`id` = `p`.`shop_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list` AS 
+SELECT 
+    `p`.`id` AS `id`, 
+    `p`.`name` AS `name`, 
+    `p`.`description` AS `description`, 
+    `p`.`shop_id` AS `shop_id`, 
+    `p`.`generic_id` AS `generic_id`, 
+    `p`.`created_at` AS `created_at`, 
+    `p`.`updated_at` AS `updated_at`, 
+    
+    -- Xử lý sold_count (mặc định 0 nếu null)
+    IFNULL(`p`.`sold_count`, 0) AS `sold_count`, 
+    
+    `p`.`shop_cate_id` AS `shop_cate_id`, 
+    `g`.`name` AS `category_name`, 
+    `p`.`base_price` AS `base_price`, 
+    `p`.`brand_id` AS `brand_id`, 
+    `p`.`status` AS `status`, 
+    `s`.`name` AS `shop_name`, 
+    `s`.`status` AS `shop_status`, 
 
+    -- Lấy 1 ảnh đại diện (is_main = 1)
+    (SELECT `pi`.`image_url` 
+     FROM `productimages` `pi` 
+     WHERE `pi`.`product_id` = `p`.`id` AND `pi`.`is_main` = 1 
+     LIMIT 1) AS `image_url`, 
+
+    -- Tính điểm đánh giá trung bình
+    (SELECT IFNULL(AVG(`pr`.`rating`), 0) 
+     FROM `productreviews` `pr` 
+     WHERE `pr`.`product_id` = `p`.`id`) AS `avg_rating`, 
+
+    -- Tính điểm "Hot" (60% sold_count + 40% rating)
+    (IFNULL(`p`.`sold_count`, 0) * 0.6 + 
+     (SELECT IFNULL(AVG(`pr`.`rating`), 0) FROM `productreviews` `pr` WHERE `pr`.`product_id` = `p`.`id`) * 0.4
+    ) AS `hot_score`, 
+
+    -- --- CÁC CỘT GIÁ (MỚI) ---
+
+    -- 1. Giá thấp nhất (Min Price) - Đã tính giảm giá
+    (SELECT MIN(
+        CASE 
+            -- Nếu có giảm giá -> Tính giá sau giảm
+            WHEN `promo`.`id` IS NOT NULL AND `pi`.`discount_value` IS NOT NULL 
+            THEN ROUND(`pv`.`price` * (1 - (`pi`.`discount_value` / 100)))
+            -- Nếu không -> Lấy giá gốc
+            ELSE `pv`.`price` 
+        END
+    ) 
+     FROM `productvariants` `pv`
+     LEFT JOIN `promotion_items` `pi` ON `pv`.`id` = `pi`.`product_variant_id`
+     LEFT JOIN `promotions` `promo` ON `pi`.`promotion_id` = `promo`.`id` 
+          AND `promo`.`is_active` = 1 
+          AND NOW() BETWEEN `promo`.`start_date` AND `promo`.`end_date`
+     WHERE `pv`.`product_id` = `p`.`id`
+    ) AS `min_price`,
+
+    -- 2. Giá cao nhất (Max Price) - Thường lấy giá gốc cao nhất
+    (SELECT MAX(`pv`.`price`) 
+     FROM `productvariants` `pv` 
+     WHERE `pv`.`product_id` = `p`.`id`
+    ) AS `max_price`,
+
+    -- 3. Giá Sale (Chỉ hiện nếu có giảm giá thấp nhất)
+    (SELECT MIN(ROUND(`pv`.`price` * (1 - (`pi`.`discount_value` / 100)))) 
+     FROM `productvariants` `pv` 
+     JOIN `promotion_items` `pi` ON `pv`.`id` = `pi`.`product_variant_id`
+     JOIN `promotions` `promo` ON `pi`.`promotion_id` = `promo`.`id`
+     WHERE `pv`.`product_id` = `p`.`id` 
+       AND `promo`.`is_active` = 1 
+       AND NOW() BETWEEN `promo`.`start_date` AND `promo`.`end_date`
+    ) AS `sale_price`, 
+
+    -- 4. % Giảm giá cao nhất (để hiển thị nhãn -50%)
+    (SELECT MAX(`pi`.`discount_value`) 
+     FROM `productvariants` `pv` 
+     JOIN `promotion_items` `pi` ON `pv`.`id` = `pi`.`product_variant_id` 
+     JOIN `promotions` `promo` ON `pi`.`promotion_id` = `promo`.`id`
+     WHERE `pv`.`product_id` = `p`.`id` 
+       AND `promo`.`is_active` = 1 
+       AND NOW() BETWEEN `promo`.`start_date` AND `promo`.`end_date`
+    ) AS `discount_percentage`
+
+FROM `products` `p` 
+LEFT JOIN `generic` `g` ON `g`.`id` = `p`.`generic_id`
+JOIN `shops` `s` ON `s`.`id` = `p`.`shop_id`;
 --
 -- Chỉ mục cho các bảng đã đổ
 --
@@ -946,6 +1120,9 @@ ALTER TABLE `promotions`
 ALTER TABLE `promotion_items`
   ADD KEY `fk_promotion` (`promotion_id`),
   ADD KEY `FK_productvariants` (`product_variant_id`);
+
+ALTER TABLE promotion_items
+ADD PRIMARY KEY (promotion_id, product_variant_id);
 
 --
 -- Chỉ mục cho bảng `shops`
@@ -1193,6 +1370,25 @@ ALTER TABLE `variantoptionvalues`
   ADD CONSTRAINT `variantoptionvalues_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`),
   ADD CONSTRAINT `variantoptionvalues_ibfk_2` FOREIGN KEY (`attribute_id`) REFERENCES `product_attributes` (`id`);
 COMMIT;
+
+
+--
+-- Các ràng buộc cho bảng `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`phone_number`),
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`id`),
+  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`);
+
+--
+-- Các ràng buộc cho bảng `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  ADD CONSTRAINT `order_items_ibfk_3` FOREIGN KEY (`variant_id`) REFERENCES `productvariants` (`id`);
+
+--
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

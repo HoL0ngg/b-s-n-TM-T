@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useMemo, useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchProductsByKeyWord } from "../api/products";
-import { fetchShopByOwnerId } from "../api/shop"; 
+import { fetchShopByOwnerId } from "../api/shop";
 import debounce from "lodash.debounce";
 import type { ProductType } from "../types/ProductType";
 
@@ -133,7 +133,7 @@ export default function Navbar() {
                 <div className="container">
                     <Link to="/" className="navbar-brand">
                         <img
-                            src={"/assets/avatar/logo.jpg"}
+                            src={"/assets/avatar/logo.png"}
                             alt=""
                             style={{ width: "60px", height: "60px", borderRadius: "50%" }}
                         />

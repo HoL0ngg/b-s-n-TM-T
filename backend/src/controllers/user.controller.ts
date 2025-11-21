@@ -79,6 +79,7 @@ class userController {
     postAddressUserController = async (req: Request, res: Response) => {
         try {
             const data = req.body;
+            console.log(data);
 
             const userPhone = req.params.id;
             await userService.postAddressUserService(userPhone, data);
