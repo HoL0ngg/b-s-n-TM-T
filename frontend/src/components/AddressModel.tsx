@@ -125,6 +125,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
         }
         if (!validateData()) return false;
         try {
+            console.log(isDefault);
             const newData = {
                 user_name: name,
                 phone_number_jdo: phone,
@@ -133,7 +134,6 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
                 street: street,
                 isDefault: isDefault
             };
-            console.log(isDefault);
 
             console.log(newData);
             if (user)

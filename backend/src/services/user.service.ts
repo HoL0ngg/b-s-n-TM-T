@@ -113,9 +113,7 @@ class userService {
         );
         let hihi = false;
         if (countRows[0].count == 0) hihi = true;
-        hihi = data.is_default || hihi;
-        console.log(hihi);
-
+        hihi = data.isDefault || hihi;
         const query = 'INSERT INTO address_user (phone_number, address_id, user_name, phone_number_jdo, is_default) VALUES (?, ?, ?, ?, ?)';
         await connection.query(query, [id, newAddressId, data.user_name, data.phone_number_jdo, hihi]);
     }
