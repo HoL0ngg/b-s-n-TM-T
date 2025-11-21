@@ -225,11 +225,17 @@ export const AddressPage = () => {
         }
     }
     const handlePlaceOrder = async () => {
+        if (isCalculatingShip) {
+            alert("Vui lòng chờ tính phí vận chuyển xong trước khi thanh toán.");
+            return;
+        }
+        
         const checkoutData = {
             total: finalTotal,
             shippingFees: shippingFees,
             groupedCart: groupedCart,
-            paymentMethod: 'cod'
+            paymentMethod: 'cod',
+            selectedAddress: selectedAddress
         };
 
         if (selectedMethod === "cod") {
@@ -252,10 +258,7 @@ export const AddressPage = () => {
             }
             return;
         }
-        if (isCalculatingShip) {
-            alert("Vui lòng chờ tính phí vận chuyển xong trước khi thanh toán.");
-            return;
-        }
+
         const paymentUrl = await handleCreatePaymentUrl(selectedMethod, checkoutData);
         if (paymentUrl) {
             window.location.href = paymentUrl;

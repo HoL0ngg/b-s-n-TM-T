@@ -165,8 +165,9 @@ class PaymentController {
             const userId = (req as any).user.id;
             const groupedCarts = req.body.groupedCart;
             const shippingFees = req.body.shippingFees;
+            const selectedAddress = req.body.selectedAddress;
             const opts = {
-                address_id: 1,
+                address_id: selectedAddress.id,
                 payment_method: req.body.paymentMethod,
                 notes: null
             };
@@ -180,7 +181,7 @@ class PaymentController {
             return next();
         } catch (error) {
             if(error && (error as any).status === 409) {
-                console.error("Controller: insufficient: " + JSON.stringify((error as any).details, null, 2));
+                console.error("paymentController: insufficient: " + JSON.stringify((error as any).details, null, 2));
                 return res.status(409).json({
                     success: false,
                     message: (error as any).message || 'Insufficient stock',
