@@ -133,6 +133,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
                 street: street,
                 isDefault: isDefault
             };
+            console.log(isDefault);
 
             console.log(newData);
             if (user)
@@ -250,7 +251,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
                             />
                         </div>
                         <div className="form-check">
-                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" onChange={() => setIsDefault(!isDefault)} />
+                            <input className="form-check-input" type="checkbox" value="" id="flexCheckChecked" onChange={(e) => setIsDefault(e.target.checked)} checked={isDefault} />
                             <label className="form-check-label user-select-none" htmlFor="flexCheckChecked">
                                 Đặt làm địa chỉ mặc định
                             </label>

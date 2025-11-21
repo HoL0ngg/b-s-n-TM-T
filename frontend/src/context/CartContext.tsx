@@ -78,6 +78,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             const flatItems: CartItem[] = await getCartByUserId();
+            console.log(flatItems);
+
 
             //DÙNG REDUCE ĐỂ GOM NHÓM DỮ LIỆU LẠI
             const groupedData = flatItems.reduce((acc, item) => {
