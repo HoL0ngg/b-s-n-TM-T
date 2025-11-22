@@ -88,7 +88,7 @@ class productService {
         );
         return rows as Product[];
     }
-    g// Đường dẫn: backend/src/services/product.service.ts
+    // Đường dẫn: backend/src/services/product.service.ts
 
     getProductOnShopIdService = async (shopId: number, sort: string, cate: number) => {
         let orderBy = "id DESC";

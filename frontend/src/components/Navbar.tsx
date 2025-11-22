@@ -181,19 +181,31 @@ export default function Navbar() {
                                                 setKeyWord("");
                                             }}
                                         >
-                                            {pro.image_url && (
-                                                <img
-                                                    src={pro.image_url}
-                                                    alt=""
-                                                    className="search-thumb"
-                                                    style={{
-                                                        width: "40px",
-                                                        height: "40px",
-                                                        objectFit: "cover",
-                                                        borderRadius: "4px",
-                                                    }}
-                                                />
-                                            )}
+{pro.image_url && (
+    <img
+    src={
+        // 1. Link online hoặc base64 -> Giữ nguyên
+        pro.image_url.startsWith('http') || pro.image_url.startsWith('data:')
+            ? pro.image_url
+            : pro.image_url.startsWith('/uploads') 
+                // 2. Ảnh upload mới (backend) -> Thêm localhost:5000
+                ? `http://localhost:5000${pro.image_url}`
+                // 3. Ảnh cũ (/assets hoặc khác) -> Giữ nguyên (để frontend tự load)
+                : pro.image_url
+    }
+        alt=""
+        className="search-thumb"
+        style={{
+            width: "40px",
+            height: "40px",
+            objectFit: "cover",
+            borderRadius: "4px",
+        }}
+        onError={(e) => {
+            e.currentTarget.src = 'https://via.placeholder.com/40?text=X';
+        }}
+    />
+)}
                                             <div className="search-info">
                                                 <div className="search-name">{pro.name}</div>
                                                 <div className="search-price">{pro.base_price.toLocaleString()}</div>

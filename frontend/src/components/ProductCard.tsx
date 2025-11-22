@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { ProductType } from "../types/ProductType";
 import { FaStar } from "react-icons/fa";
+
 type ProductCardProps = {
     product: ProductType;
 };
@@ -11,21 +12,47 @@ const ProductCard = ({ product }: ProductCardProps) => {
         navigate(`/product/${product.id}`);
     };
 
+    // ===== LOGIC XỬ LÝ ẢNH THÔNG MINH =====
+    const getImageUrl = (url: string | undefined) => {
+        if (!url) return 'https://via.placeholder.com/220x200?text=No+Image';
+        
+        // 1. Link tuyệt đối (http/https) hoặc base64 -> Giữ nguyên
+        if (url.startsWith('http') || url.startsWith('data:')) {
+            return url;
+        }
+        
+        // 2. Ảnh Upload (Backend) -> Thêm localhost:5000
+        if (url.startsWith('/uploads')) {
+            return `http://localhost:5000${url}`;
+        }
+
+        // 3. Ảnh cũ (Frontend Assets) -> Giữ nguyên (để nó load từ localhost:5173)
+        return url; 
+    };
+    // =======================================
+
     return (
         <div
             className="card shadow-sm position-relative"
             onClick={goToDetailProduct}
             style={{ cursor: "pointer", height: "340px", width: '220px' }}
         >
-            {product.discount_percentage && (<div className="position-absolute top-0 start-0 m-1 p-2 rounded discount-hihi">
-                -{product.discount_percentage}%
-            </div>)}
+            {product.discount_percentage && (
+                <div className="position-absolute top-0 start-0 m-1 p-2 rounded discount-hihi">
+                    -{product.discount_percentage}%
+                </div>
+            )}
+            
             <img
-                src={product.image_url}
+                src={getImageUrl(product.image_url)}
                 alt={product.name}
                 className="card-img-top"
-                style={{ height: "200px" }}
+                style={{ height: "200px", objectFit: "cover" }} 
+                onError={(e) => {
+                    e.currentTarget.src = 'https://via.placeholder.com/220x200?text=Image+Error';
+                }}
             />
+
             <div className="d-flex flex-column mt-1 p-1">
                 <span className="product-name cart-title text-start ms-1 fs fw-semibold">{product.name}</span>
                 <small className="text-muted ms-1">
@@ -37,7 +64,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                             <span className="fw-bold text-primary">{Number(product.sale_price).toLocaleString('vi-VN')}<small>đ</small></span>
                             <small className="ms-2 text-muted text-decoration-line-through">{product.base_price.toLocaleString('vi-VN')}đ</small>
                         </div>) :
-                        (<span className="fw-bold text-primary">{Number(product.min_price).toLocaleString('vi-VN')}<small>đ</small></span>)}
+                        (<span className="fw-bold text-primary">{Number(product.base_price).toLocaleString('vi-VN')}<small>đ</small></span>)}
 
                 </div>
                 <div className="text-muted ms-1 d-flex justify-content-between align-items-center">

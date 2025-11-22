@@ -93,85 +93,91 @@ class productController {
         }
     }
 
-    // =================================================================
-    // CÁC HÀM CRUD (LẤY TỪ NHÁNH `qhuykuteo` CỦA BẠN VÌ MỚI HƠN)
-    // =================================================================
+    // (Trong product.controller.ts)
+
+    // === HÀM PHỤ: Xử lý file upload cho Main và Variations ===
+    private processUploadedFiles = (req: Request, productData: any) => {
+        const files = req.files as Express.Multer.File[]; // Lấy tất cả file
+        if (!files || files.length === 0) return;
+
+        // 1. Tìm ảnh chính (field: 'product_image')
+        const mainImage = files.find(f => f.fieldname === 'product_image');
+        if (mainImage) {
+            productData.image_url = `/uploads/products/${mainImage.filename}`;
+        }
+
+        // 2. Tìm ảnh cho từng biến thể (field: 'variation_image_INDEX')
+        if (productData.variations && Array.isArray(productData.variations)) {
+            productData.variations = productData.variations.map((v: any, index: number) => {
+                // Tìm file có tên 'variation_image_0', 'variation_image_1'...
+                const vFile = files.find(f => f.fieldname === `variation_image_${index}`);
+                if (vFile) {
+                    // Nếu có file mới -> Cập nhật URL
+                    return { ...v, image_url: `/uploads/products/${vFile.filename}` };
+                }
+                // Nếu không có file mới -> Giữ nguyên (nếu là update) hoặc rỗng
+                return v;
+            });
+        }
+    }
+
+    // === 1. CREATE ===
     createProductController = async (req: Request, res: Response) => {
         try {
             const shopId = (req as any).shop?.id;
-            if (!shopId) { return res.status(403).json({ success: false, message: 'Không tìm thấy thông tin shop. Bạn có quyền tạo sản phẩm không?' }); }
+            if (!shopId) return res.status(403).json({ message: 'Không tìm thấy shop' });
+            
             const productData = req.body;
             productData.shop_id = shopId;
-            if (!productData.name) {
-                return res.status(400).json({ success: false, message: 'Tên sản phẩm là bắt buộc' });
-            }
-            if (productData.variations && productData.variations.length > 0) {
-                if (!productData.attribute_id) {
-                    return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
-                }
-                for (const v of productData.variations) {
-                    if (!v.value || !v.price || v.stock === undefined) {
-                        return res.status(400).json({ success: false, message: 'Mỗi phân loại phải có `value`, `price`, và `stock`' });
-                    }
-                }
-            } else {
-                if (!productData.base_price) {
-                    return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
-                }
-            }
-            if (productData.details && Array.isArray(productData.details)) {
-                for (const d of productData.details) {
-                    if (!d.key || !d.value) {
-                        return res.status(400).json({ success: false, message: 'Mỗi chi tiết sản phẩm phải có cả "key" và "value"' });
-                    }
-                }
-            }
+
+            // Parse JSON từ FormData
+            if (typeof productData.variations === 'string') try { productData.variations = JSON.parse(productData.variations); } catch (e) {}
+            if (typeof productData.details === 'string') try { productData.details = JSON.parse(productData.details); } catch (e) {}
+
+            // GỌI HÀM XỬ LÝ FILE (MỚI)
+            this.processUploadedFiles(req, productData);
+
+            // Validate
+            if (!productData.name) return res.status(400).json({ message: 'Tên sản phẩm là bắt buộc' });
+            if (!productData.image_url) return res.status(400).json({ message: 'Thiếu ảnh chính sản phẩm' });
+
             const product = await productService.createProductService(productData);
-            res.status(201).json({ success: true, message: 'Product created successfully', data: product });
-        } catch (error) {
-            console.error('Error creating product:', error);
-            res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
+            res.status(201).json({ success: true, message: 'Tạo thành công', data: product });
+        } catch (error: any) {
+            console.error(error);
+            res.status(500).json({ message: error.message || 'Lỗi server' });
         }
     };
+
+    // === 2. UPDATE ===
     updateProductController = async (req: Request, res: Response) => {
         try {
             const productId = Number(req.params.id);
-            const productData = req.body;
             const shopId = (req as any).shop?.id;
             const userId = (req as any).user?.id;
-            if (!productId || isNaN(productId)) {
-                return res.status(400).json({ success: false, message: 'Invalid product ID' });
-            }
-            if (!shopId || !userId) {
-                return res.status(403).json({ success: false, message: 'Forbidden' });
-            }
+
+            if (isNaN(productId)) return res.status(400).json({ message: 'ID không hợp lệ' });
+            if (!shopId || !userId) return res.status(403).json({ message: 'Forbidden' });
+
             const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
-            if (!hasPermission) {
-                return res.status(403).json({ success: false, message: 'Bạn không có quyền cập nhật sản phẩm này' });
-            }
+            if (!hasPermission) return res.status(403).json({ message: 'Không có quyền sửa' });
+
+            const productData = req.body;
             productData.shop_id = shopId;
-            if (!productData.name) {
-                return res.status(400).json({ success: false, message: 'Tên sản phẩm là bắt buộc' });
-            }
-            if (productData.variations && productData.variations.length > 0) {
-                if (!productData.attribute_id) {
-                    return res.status(400).json({ success: false, message: 'Cần có `attribute_id` khi tạo phân loại' });
-                }
-            } else if (!productData.base_price) {
-                return res.status(400).json({ success: false, message: 'Sản phẩm đơn phải có `base_price`' });
-            }
-            if (productData.details && Array.isArray(productData.details)) {
-                for (const d of productData.details) {
-                    if (!d.key || !d.value) {
-                        return res.status(400).json({ success: false, message: 'Mỗi chi tiết sản phẩm phải có cả "key" và "value"' });
-                    }
-                }
-            }
+
+             // Parse JSON
+            if (typeof productData.variations === 'string') try { productData.variations = JSON.parse(productData.variations); } catch (e) {}
+            if (typeof productData.details === 'string') try { productData.details = JSON.parse(productData.details); } catch (e) {}
+            if (typeof productData.shop_cate_id === 'string' && (productData.shop_cate_id === 'null' || productData.shop_cate_id === '')) productData.shop_cate_id = null;
+
+            // GỌI HÀM XỬ LÝ FILE (MỚI)
+            this.processUploadedFiles(req, productData);
+
             const product = await productService.updateProductService(productId, productData);
-            res.status(200).json({ success: true, message: 'Product updated successfully', data: product });
-        } catch (error) {
-            console.error('Error updating product:', error);
-            res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
+            res.status(200).json({ success: true, message: 'Cập nhật thành công', data: product });
+        } catch (error: any) {
+            console.error(error);
+            res.status(500).json({ message: error.message || 'Lỗi server' });
         }
     };
     deleteProductController = async (req: Request, res: Response) => {

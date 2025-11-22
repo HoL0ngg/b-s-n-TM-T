@@ -1,6 +1,3 @@
-// Đường dẫn: frontend/src/pages/ProductDetail.tsx
-// (PHIÊN BẢN SỬA LỖI MÀN HÌNH TRẮNG HOÀN CHỈNH)
-
 import { useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
@@ -83,13 +80,28 @@ const ProductDetail = () => {
         const loadProductImg = async () => {
             if (!id) return;
             try {
-                const data = await fetchProductImg(id); // (Đã sửa lỗi gõ chữ)
-                setImages(data);
+                const data = await fetchProductImg(id);
+                
+                // ===== BẮT ĐẦU SỬA LỖI ẢNH VỠ =====
+                const processedImages = data.map(img => {
+                    // Nếu ảnh bắt đầu bằng /uploads (ảnh mới upload) -> thêm localhost
+                    if (img.image_url && img.image_url.startsWith('/uploads')) {
+                        return { ...img, image_url: `http://localhost:5000${img.image_url}` };
+                    }
+                    // Nếu ảnh bắt đầu bằng /assets (ảnh cũ local) -> giữ nguyên (hoặc thêm localhost:5173 tùy cấu hình)
+                    // Nếu ảnh là link online (http) -> giữ nguyên
+                    return img;
+                });
+                
+                setImages(processedImages);
+                
                 // Tự động set ảnh đầu tiên (hoặc ảnh main) làm ảnh được chọn
-                if (data.length > 0) {
-                    const mainImg = data.find(img => img.is_main === 1);
-                    setSelectedImage(mainImg ? mainImg.image_url : data[0].image_url);
+                if (processedImages.length > 0) {
+                    const mainImg = processedImages.find(img => img.is_main === 1);
+                    setSelectedImage(mainImg ? mainImg.image_url : processedImages[0].image_url);
                 }
+                // ===== KẾT THÚC SỬA LỖI =====
+                
             } catch (err) {
                 console.error("Failed to fetch product images:", err);
             }
