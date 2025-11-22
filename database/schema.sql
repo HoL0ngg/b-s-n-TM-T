@@ -379,7 +379,9 @@ CREATE TABLE `products` (
   `sold_count` int(11) DEFAULT NULL,
   `shop_id` int(11) DEFAULT NULL,
   `shop_cate_id` int(11) DEFAULT NULL,
-  `brand_id` int(11) DEFAULT NULL
+  `brand_id` int(11) DEFAULT NULL,
+  `reject_reason` TEXT NULL,
+  `ban_reason` TEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -913,6 +915,8 @@ CREATE TABLE `v_products_list` (
 ,`hot_score` decimal(17,5)
 ,`sale_price` decimal(22,0)
 ,`discount_percentage` int(11)
+,`reject_reason` TEXT
+,`ban_reason` TEXT
 );
 
 -- --------------------------------------------------------
@@ -922,7 +926,31 @@ CREATE TABLE `v_products_list` (
 --
 DROP TABLE IF EXISTS `v_products_list`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products_list`  AS SELECT `p`.`id` AS `id`, `p`.`name` AS `name`, `p`.`description` AS `description`, `p`.`shop_id` AS `shop_id`, `p`.`generic_id` AS `generic_id`, `p`.`created_at` AS `created_at`, `p`.`updated_at` AS `updated_at`, ifnull(`p`.`sold_count`,0) AS `sold_count`, `p`.`shop_cate_id` AS `shop_cate_id`, `g`.`name` AS `category_name`, `p`.`base_price` AS `base_price`, `p`.`brand_id` AS `brand_id`, `p`.`status` AS `status`, `s`.`name` AS `shop_name`, `s`.`status` AS `shop_status`, (select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, ifnull(`p`.`sold_count`,0) * 0.6 + (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) * 0.4 AS `hot_score`, (select round(min(`pv`.`price` * (1 - `pi`.`discount_value` / 100)),0) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `sale_price`, (select max(`pi`.`discount_value`) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `discount_percentage` FROM ((`products` `p` left join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) join `shops` `s` on(`s`.`id` = `p`.`shop_id`)) ;
+CREATE ALGORITHM=UNDEFINED 
+DEFINER=`root`@`localhost` SQL SECURITY 
+DEFINER VIEW `v_products_list`  AS 
+SELECT `p`.`id` AS `id`, 
+`p`.`name` AS `name`, 
+`p`.`description` AS `description`, 
+`p`.`shop_id` AS `shop_id`, 
+`p`.`generic_id` AS `generic_id`, 
+`p`.`created_at` AS `created_at`, 
+`p`.`updated_at` AS `updated_at`, 
+ifnull(`p`.`sold_count`,0) AS `sold_count`, 
+`p`.`shop_cate_id` AS `shop_cate_id`, 
+`g`.`name` AS `category_name`, 
+`p`.`base_price` AS `base_price`, 
+`p`.`brand_id` AS `brand_id`, 
+`p`.`status` AS `status`, 
+`s`.`name` AS `shop_name`, 
+`s`.`status` AS `shop_status`, 
+`p`.`ban_reason`,
+`p`.`reject_reason`,
+(select `pi`.`image_url` from `productimages` `pi` where `pi`.`product_id` = `p`.`id` and `pi`.`is_main` = 1 limit 1) AS `image_url`, 
+(select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) AS `avg_rating`, 
+ifnull(`p`.`sold_count`,0) * 0.6 + (select ifnull(avg(`pr`.`rating`),0) from `productreviews` `pr` where `pr`.`product_id` = `p`.`id`) * 0.4 AS `hot_score`, 
+(select round(min(`pv`.`price` * (1 - `pi`.`discount_value` / 100)),0) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `sale_price`, 
+(select max(`pi`.`discount_value`) from ((`productvariants` `pv` join `promotion_items` `pi` on(`pv`.`id` = `pi`.`product_variant_id`)) join `promotions` `promo` on(`pi`.`promotion_id` = `promo`.`id`)) where `pv`.`product_id` = `p`.`id` and `promo`.`is_active` = 1 and current_timestamp() between `promo`.`start_date` and `promo`.`end_date`) AS `discount_percentage` FROM ((`products` `p` left join `generic` `g` on(`g`.`id` = `p`.`generic_id`)) join `shops` `s` on(`s`.`id` = `p`.`shop_id`)) ;
 
 --
 -- Chỉ mục cho các bảng đã đổ

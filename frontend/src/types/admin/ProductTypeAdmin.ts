@@ -7,4 +7,6 @@ export interface ProductTypeAdmin {
     category_name: string;
     shop_name: number;
     image_url: string;
+    reject_reason: string;
+    ban_reason: string;
 }

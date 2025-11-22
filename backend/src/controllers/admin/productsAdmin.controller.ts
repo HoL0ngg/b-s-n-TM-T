@@ -43,16 +43,23 @@ class ProductsAdminController {
             const { id } = req.params;
             const productId = parseInt(id, 10);
             const { status, reason } = req.body;
-            console.log(reason);
 
             if (isNaN(productId)) {
                 return res.status(400).json({ message: "Product ID không hợp lệ." });
             }
-            if (![1, -1].includes(status)) {
-                return res.status(400).json({ message: "Trạng thái không hợp lệ. Chỉ chấp nhận 1 hoặc -1." });
+
+            // Cho phép các trạng thái: approved(1), rejected(-1), banned(-2)
+            if (![1, -1, -2].includes(status)) {
+                return res.status(400).json({
+                    message: "Trạng thái không hợp lệ. Chỉ chấp nhận 1, -1 hoặc -2."
+                });
             }
-            if (status === -1 && (!reason || reason.trim() === '')) {
-                return res.status(400).json({ message: "Cần phải có lý do (reason) khi từ chối." });
+
+            // Validate lý do tùy trạng thái
+            if ((status === -1 || status === -2) && (!reason || reason.trim() === "")) {
+                return res.status(400).json({
+                    message: `Cần phải có lý do khi ${status === -1 ? "từ chối" : "banned"}.`
+                });
             }
 
             const success = await productService.updateProductStatusService(productId, status, reason);
@@ -61,13 +68,15 @@ class ProductsAdminController {
                 return res.status(404).json({ message: "Không tìm thấy sản phẩm." });
             }
 
-            res.status(200).json({
-                message: `Sản phẩm (ID: ${productId}) đã được cập nhật trạng thái thành công.`
+            return res.status(200).json({
+                message: `Sản phẩm (ID: ${productId})`,
+                productId,
+                status
             });
 
         } catch (error) {
             console.error("Lỗi khi cập nhật trạng thái sản phẩm:", error);
-            res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+            return res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
         }
     };
 

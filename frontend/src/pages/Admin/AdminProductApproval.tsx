@@ -5,13 +5,16 @@ import {
     FiXCircle,
     FiSearch,
     FiFilter,
-    FiRotateCcw // Dùng lại cho việc "Duyệt lại"
+    FiRotateCcw,
+    FiLock, // Dùng lại cho việc "Duyệt lại"
+    FiMail
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { fetchProductsByStatusAdmin, updateProductStatusAdmin } from '../../api/admin/productsAdmin';
 import type { ProductTypeAdmin } from '../../types/admin/ProductTypeAdmin';
 import Swal from 'sweetalert2';
 import Pagenum from '../../components/Admin/Pagenum';
+import ReasonPopup from '../../components/Admin/ReasonPopup';
 const AdminProductApproval: React.FC = () => {
     // --- State ---
     const [products, setProducts] = useState<ProductTypeAdmin[]>([]);
@@ -25,12 +28,16 @@ const AdminProductApproval: React.FC = () => {
     const [totalPages, setTotalPages] = useState(0); // CHANGED: Thêm state cho tổng số trang
     const itemsPerPage = 10; // Vẫn dùng để truyền cho API
 
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [popupTitle, setPopupTitle] = useState("");
+    const [popupReason, setPopupReason] = useState("");
     // --- Helpers ---
     const getStatusBadge = (status: string | number) => { // CHANGED
         switch (String(status)) { // CHANGED
             case '1': return 'bg-success';
             case '0': return 'bg-warning text-dark';
             case '-1': return 'bg-danger';
+            case '-2': return 'bg-danger';
             default: return 'bg-secondary';
         }
     };
@@ -39,19 +46,17 @@ const AdminProductApproval: React.FC = () => {
             case '1': return 'Đã duyệt';
             case '0': return 'Chờ duyệt';
             case '-1': return 'Bị từ chối';
+            case '-2': return 'Bị cấm';
             default: return 'Không rõ';
         }
     };
     // ...
 
     const handlePageChange = (page: number) => {
-        // Check này vẫn đúng
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
-    // --- Kết thúc Logic Lọc ---
-    ;
 
     const handleApprove = async (productId: number) => {
         try {
@@ -77,7 +82,7 @@ const AdminProductApproval: React.FC = () => {
             Swal.fire({
                 icon: 'success',
                 title: 'Thành công!',
-                text: data.message || `Đã duyệt thành công sản phẩm ID: ${productId}`,
+                text: `Đã duyệt thành công sản phẩm ID: ${productId}`,
                 timer: 2000,
                 showConfirmButton: false
             });
@@ -94,8 +99,13 @@ const AdminProductApproval: React.FC = () => {
     const handleReject = async (productId: number) => {
         const { value: reason } = await Swal.fire({
             title: "Nhập lý do từ chối",
-            input: "text",
+            input: "textarea",
             inputPlaceholder: "Ví dụ: Hình ảnh không hợp lệ",
+            inputAttributes: {
+                'aria-label': 'Nhập lý do từ chối',
+                rows: '5', // số dòng hiển thị mặc định
+                style: 'resize:vertical' // cho phép thay đổi chiều cao
+            },
             showCancelButton: true,
             confirmButtonText: "Xác nhận từ chối",
             cancelButtonText: "Hủy",
@@ -114,7 +124,7 @@ const AdminProductApproval: React.FC = () => {
                 const response = await updateProductStatusAdmin(productId, -1, reason);
 
                 // response là { message: string }
-                Swal.fire("Thành công!", response.message, "success");
+                Swal.fire("Thành công!", response.message + ` đã bị từ chối`, "success");
 
                 // Xóa sản phẩm vừa từ chối khỏi UI
                 setProducts(prevProducts =>
@@ -127,6 +137,66 @@ const AdminProductApproval: React.FC = () => {
         }
     };
 
+    const handleBanned = async (productId: number) => {
+        const { value: reason } = await Swal.fire({
+            title: "Nhập lý do từ chối",
+            html: `
+            <textarea id="swal-reason" 
+                      placeholder="Ví dụ: Hình ảnh không hợp lệ" 
+                      style="
+                        width: 100%; 
+                        min-height: 120px; 
+                        max-height: 250px; 
+                        padding: 8px; 
+                        resize: vertical; 
+                        overflow-y: auto;
+                        font-size: 14px;
+                      "></textarea>
+        `,
+            showCancelButton: true,
+            confirmButtonText: "Xác nhận từ chối",
+            cancelButtonText: "Hủy",
+            preConfirm: () => {
+                const value = (document.getElementById("swal-reason") as HTMLTextAreaElement).value;
+                if (!value.trim()) {
+                    Swal.showValidationMessage("Bạn cần nhập lý do!");
+                }
+                return value;
+            },
+            focusConfirm: false,
+            width: "500px", // tăng chiều rộng popup cho dễ nhập
+        });
+
+        if (reason) {
+            // console.log(reason);
+
+            try {
+                const response = await updateProductStatusAdmin(productId, -2, reason);
+
+                // response là { message: string }
+                Swal.fire("Thành công!", response.message + ` đã bị cấm`, "success");
+
+                // Xóa sản phẩm vừa cấm khỏi UI
+                setProducts(prevProducts =>
+                    prevProducts.filter(product => product.id !== productId)
+                );
+
+            } catch (err: any) {
+                Swal.fire("Lỗi!", err.message || "Không thể cập nhật trạng thái sản phẩm.", "error");
+            }
+        }
+    };
+
+    const openRejectReasonPopup = (reason: string) => {
+        setPopupTitle("Lý do từ chối sản phẩm");
+        setPopupReason(reason);
+        setIsPopupOpen(true);
+    };
+    const openBanReasonPopup = (reason: string) => {
+        setPopupTitle("Lý do cấm sản phẩm");
+        setPopupReason(reason);
+        setIsPopupOpen(true);
+    }
     const scrollToTop = () => {
         window.scrollTo({
             top: 0,
@@ -200,6 +270,7 @@ const AdminProductApproval: React.FC = () => {
                                     <option value="0">Chờ duyệt</option>
                                     <option value="1">Đã duyệt</option>
                                     <option value="-1">Bị từ chối</option>
+                                    <option value="-2">Bị cấm</option>
                                     <option value="all">Tất cả</option>
                                 </select>
                             </div>
@@ -274,25 +345,55 @@ const AdminProductApproval: React.FC = () => {
                                                 </Link>
 
                                                 {/* Nút "Duyệt" */}
-                                                {(product.status.toString() === '0' || product.status.toString() === '-1') && (
+                                                {(product.status.toString() === '0') && (
                                                     <button
                                                         className="btn btn-sm btn-outline-success"
                                                         title={product.status.toString() === '0' ? 'Duyệt' : 'Duyệt lại'}
                                                         onClick={() => handleApprove(product.id)}
                                                     >
                                                         {/* Nếu đang từ chối -> Dùng icon "Duyệt lại" */}
-                                                        {product.status.toString() === '-1' ? <FiRotateCcw /> : <FiCheckCircle />}
+                                                        <FiCheckCircle />
                                                     </button>
                                                 )}
 
                                                 {/* Nút "Từ chối" */}
-                                                {(product.status.toString() === '0' || product.status.toString() === '1') && (
+                                                {(product.status.toString() === '0') && (
                                                     <button
                                                         className="btn btn-sm btn-outline-danger"
                                                         title="Từ chối"
                                                         onClick={() => handleReject(product.id)}
                                                     >
                                                         <FiXCircle />
+                                                    </button>
+                                                )}
+                                                {/* Nút "Banned" */}
+                                                {(product.status.toString() === '1') && (
+                                                    <button
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        title="Từ chối"
+                                                        onClick={() => handleBanned(product.id)}
+                                                    >
+                                                        <FiLock />
+                                                    </button>
+                                                )}
+                                                {/* Nút "Lý do từ chối" */}
+                                                {(product.status.toString() === '-1') && (
+                                                    <button
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        title="Lý do"
+                                                        onClick={() => openRejectReasonPopup(product.reject_reason)}
+                                                    >
+                                                        <FiMail />
+                                                    </button>
+                                                )}
+                                                {/* Nút "Lý do cấm" */}
+                                                {(product.status.toString() === '-2') && (
+                                                    <button
+                                                        className="btn btn-sm btn-outline-danger"
+                                                        title="Lý do"
+                                                        onClick={() => openBanReasonPopup(product.ban_reason)}
+                                                    >
+                                                        <FiMail />
                                                     </button>
                                                 )}
 
@@ -310,7 +411,14 @@ const AdminProductApproval: React.FC = () => {
 
                 </div>
             </div>
+            <ReasonPopup
+                isOpen={isPopupOpen}
+                onClose={() => setIsPopupOpen(false)}
+                reason={popupReason}
+                title={popupTitle}
+            />
         </div>
+
     );
 };
 

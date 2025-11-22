@@ -230,10 +230,10 @@ const ProductDetail = () => {
                                 <p>Khong co chi tiet sp</p>
                             </div>
                         )}
-                    <div className="fw-bold fs-4">Mô tả sản phẩm</div>
-                    <div className="product-description"> {/* <-- 1. Đặt một class cha ở đây */}
+                    {/* <div className="fw-bold fs-4">Mô tả sản phẩm</div>
+                    <div className="product-description"> 
                         <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
-                    </div>
+                    </div> */}
                 </div>
                 <div className="col-5">
                     <div className="p-4 border rounded">
@@ -267,7 +267,9 @@ const ProductDetail = () => {
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <div className="fw-bold fs-4">Mô tả sản phẩm</div>
-                <div>{product?.description}</div>
+                <div className="product-description"> {/* <-- 1. Đặt một class cha ở đây */}
+                    <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
+                </div>
             </div>
 
             <div className="container mt-4 bg-light p-4">
