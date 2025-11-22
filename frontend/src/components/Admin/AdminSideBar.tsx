@@ -66,12 +66,6 @@ const menuItems: MenuItem[] = [
         path: '/admin/payouts'
     },
     {
-        key: 'categories',
-        label: 'Quản lý danh mục',
-        icon: <FiBox />,
-        path: '/admin/categories'
-    },
-    {
         key: 'orders',
         label: 'Quản lý đơn hàng',
         icon: <LiaShippingFastSolid />,

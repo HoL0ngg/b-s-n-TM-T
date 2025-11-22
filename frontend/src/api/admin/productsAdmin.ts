@@ -31,18 +31,17 @@ export const fetchProductsByStatusAdmin = async (
 }
 
 export const updateProductStatusAdmin = async (
-    producId: number,
+    productId: number,
     status: number,
     reason?: string
 ): Promise<{ message: string }> => {
-    const res = await axios.patch(`${API_URL}/${producId}`, {
-        status,
-        reason
-    }, {
-        // --- FIX: THÊM DÒNG NÀY ---
-        withCredentials: true
-        // ---------------------------
-    });
-    return res.data;
+    const body: any = { status };
+    if (reason) body.reason = reason;
 
+    const res = await axios.patch(`${API_URL}/${productId}`, body, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" }
+    });
+
+    return res.data;
 }

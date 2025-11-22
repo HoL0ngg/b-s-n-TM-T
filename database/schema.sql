@@ -382,7 +382,9 @@ CREATE TABLE `products` (
   `sold_count` int(11) DEFAULT NULL,
   `shop_id` int(11) DEFAULT NULL,
   `shop_cate_id` int(11) DEFAULT NULL,
-  `brand_id` int(11) DEFAULT NULL
+  `brand_id` int(11) DEFAULT NULL,
+  `reject_reason` TEXT NULL,
+  `ban_reason` TEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -924,6 +926,8 @@ CREATE TABLE `v_products_list` (
 ,`hot_score` decimal(17,5)
 ,`sale_price` decimal(22,0)
 ,`discount_percentage` int(11)
+,`reject_reason` TEXT
+,`ban_reason` TEXT
 );
 
 -- --------------------------------------------------------
@@ -941,7 +945,8 @@ SELECT
     `p`.`shop_id` AS `shop_id`, 
     `p`.`generic_id` AS `generic_id`, 
     `p`.`created_at` AS `created_at`, 
-    `p`.`updated_at` AS `updated_at`, 
+    `p`.`updated_at` AS `updated_at`,
+    
     
     -- Xử lý sold_count (mặc định 0 nếu null)
     IFNULL(`p`.`sold_count`, 0) AS `sold_count`, 
@@ -953,6 +958,8 @@ SELECT
     `p`.`status` AS `status`, 
     `s`.`name` AS `shop_name`, 
     `s`.`status` AS `shop_status`, 
+    `p`.`ban_reason`,
+    `p`.`reject_reason`,
 
     -- Lấy 1 ảnh đại diện (is_main = 1)
     (SELECT `pi`.`image_url` 

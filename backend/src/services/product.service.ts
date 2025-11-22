@@ -440,16 +440,47 @@ class productService {
         return product;
     };
 
-    // =================================================================
-    // NÂNG CẤP MỚI: Chỉ giữ 1 hàm updateProductStatusService (của bạn)
-    // =================================================================
     updateProductStatusService = async (productId: number, status: number, reason?: string) => {
-        const [result] = await pool.query<ResultSetHeader>(
-            "UPDATE products SET status = ? WHERE id = ?",
-            [status, productId]
-        );
+        let sql = "";
+        let params: any[] = [];
+
+        switch (status) {
+
+            case -1: // rejected
+                sql = `
+                UPDATE products
+                SET status = ?, reject_reason = ?, ban_reason = NULL
+                WHERE id = ?
+            `;
+                params = [status, reason, productId];
+                break;
+
+            case -2: // banned
+                sql = `
+                UPDATE products
+                SET status = ?, ban_reason = ?, reject_reason = NULL
+                WHERE id = ?
+            `;
+                params = [status, reason, productId];
+                break;
+
+            case 1: // approved
+                sql = `
+                UPDATE products
+                SET status = ?, reject_reason = NULL, ban_reason = NULL
+                WHERE id = ?
+            `;
+                params = [status, productId];
+                break;
+
+            default:
+                return false;
+        }
+
+        const [result] = await pool.query<ResultSetHeader>(sql, params);
         return result.affectedRows > 0;
     };
+
 
     // =================================================================
     // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
