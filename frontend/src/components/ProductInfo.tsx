@@ -1,5 +1,4 @@
 import { useCart } from "../context/CartContext";
-// Giả sử ProductType của bạn có chứa 'product_variants'
 import type { ProductType, AttributeOfProductVariantsType } from "../types/ProductType";
 import { useState, useMemo, useEffect } from "react";
 
@@ -14,37 +13,42 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
     const [count, setCount] = useState(1);
     const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string }>({});
 
-    // --- THÊM MỚI: Logic cốt lõi để tìm biến thể ---
+    // ===== HÀM XỬ LÝ ẢNH (MỚI) =====
+    const getImageUrl = (url: string | undefined) => {
+        if (!url) return '';
+        if (url.startsWith('http') || url.startsWith('data:')) {
+            return url;
+        }
+        // Nếu là ảnh upload (backend) -> thêm localhost
+        if (url.startsWith('/uploads')) {
+            return `http://localhost:5000${url}`;
+        }
+        // Ảnh cũ -> Giữ nguyên
+        return url;
+    };
+    // ==============================
+
     const currentVariant = useMemo(() => {
-        // Nếu chưa chọn đủ thuộc tính, không tìm
         if (!attributes || Object.keys(selectedAttributes).length !== attributes.length) {
             return undefined;
         }
-
-        // Tìm trong danh sách biến thể của sản phẩm
         return product.product_variants?.find(variant =>
-            // Kiểm tra xem MỌI tùy chọn của biến thể này
             variant.options.every(option =>
-                // Có khớp với state 'selectedAttributes' không
                 selectedAttributes[option.attribute] === option.value
             )
         );
-    }, [selectedAttributes, product.product_variants, attributes]); // Tính toán lại khi 1 trong 3 thay đổi
+    }, [selectedAttributes, product.product_variants, attributes]); 
 
     useEffect(() => {
         if (currentVariant && currentVariant.image_url) {
-            // NẾU: tìm thấy biến thể VÀ có ảnh riêng
-            // HÃY: Báo cho cha biết URL ảnh mới
-            onVariantImageChange(currentVariant.image_url);
+            // SỬA: Dùng getImageUrl để đảm bảo đường dẫn đúng
+            onVariantImageChange(getImageUrl(currentVariant.image_url));
         }
-        // (Không cần 'else', vì cha sẽ tự xử lý việc quay về ảnh chính)
         console.log(currentVariant);
-
     }, [currentVariant, onVariantImageChange]);
 
     const increment = () => {
-        // --- SỬA LẠI: Kiểm tra tồn kho của biến thể ---
-        const maxStock = currentVariant ? currentVariant.stock : 100; // Lấy tồn kho của biến thể
+        const maxStock = currentVariant ? currentVariant.stock : 100; 
         if (count < maxStock) {
             setCount(prev => prev + 1);
         }
@@ -60,13 +64,10 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
             alert("Vui lòng chọn đầy đủ tùy chọn sản phẩm.");
             return;
         }
-
-        // 2. Kiểm tra lại tồn kho (cho chắc)
         if (count > currentVariant.stock) {
             alert(`Rất tiếc, số lượng tồn kho cho tùy chọn này chỉ còn ${currentVariant.stock}.`);
             return;
         }
-
         const res = await AddToCart(currentVariant.id, count);
         console.log(res);
     }
@@ -76,41 +77,35 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
             ...prev,
             [attrName]: val
         }));
-        // Tùy chọn: Reset số lượng về 1 khi đổi tùy chọn
         setCount(1);
         console.log(currentVariant);
-
     }
 
     if (!product) return <div>Đang tải chi tiết sản phẩm</div>;
     console.log(product);
     const hasPriceRange = product.min_price !== product.max_price;
+
     return (
         <div className="container">
             <div className="nameOfProduct mt-2"><h2>{product.name}</h2></div>
             <div className="">
             </div>
 
-            {/* --- SỬA LẠI: Hiển thị giá động --- */}
             <div className="priceOfProduct ">
                 <span>
-                    {/* Nếu tìm thấy biến thể thì hiển thị giá của nó, nếu không thì hiển thị giá gốc */}
                     {currentVariant
                         ? (
-
                             <div>
                                 {currentVariant.sale_price && currentVariant.discount_percentage ? (<span><span className="fw-semibold fs-3 text-primary">{Number(currentVariant.sale_price).toLocaleString('vi-VN')}đ</span>
                                     <small className="text-muted text text-decoration-line-through ms-2">{product.base_price.toLocaleString('vi-VN')}đ</small>
                                     <span className="ms-2 p-2 discount-hihi rounded">-{currentVariant.discount_percentage}%</span></span>) : (<span className="fw-semibold fs-3 text-primary"> {currentVariant.original_price.toLocaleString('vi-VN')}đ</span>)}
                             </div>)
                         : (hasPriceRange ? (
-                            // TRƯỜNG HỢP 1: HIỂN THỊ KHOẢNG GIÁ (199k - 250k)
                             <span className="fw-semibold fs-3 text-primary">
                                 {Number(product.min_price).toLocaleString('vi-VN')}₫ - {Number(product.max_price).toLocaleString('vi-VN')}₫
                                 {product.discount_percentage && (<span className="ms-2 p-2 discount-hihi rounded fs-6">-{product.discount_percentage}%</span>)}
                             </span>
                         ) : (
-                            // TRƯỜNG HỢP 2: CHỈ CÓ 1 GIÁ DUY NHẤT
                             <span className="fw-semibold fs-3 text-primary">
                                 {Number(product.min_price).toLocaleString('vi-VN')}₫
                                 {product.discount_percentage && (<span className="ms-2 p-2 discount-hihi rounded fs-6">-{product.discount_percentage}%</span>)}
@@ -124,15 +119,38 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
                     <div key={attr.attribute}>
                         <div className="mb-1 fw-semibold fs-5">{attr.attribute}</div>
                         <div className="d-flex align-items-center gap-2">
-                            {attr.values.map((val) => (
-                                <div
-                                    className={`rounded py-1 px-3 pointer ${selectedAttributes[attr.attribute] === val ? "border-product-attribute" : "bg-secondary-subtle"}`}
-                                    key={val}
-                                    onClick={() => handleSelectAttribute(attr.attribute, val)}
-                                >
-                                    {val}
-                                </div>
-                            ))}
+                            {attr.values.map((val) => {
+                                // --- TÌM ẢNH CỦA BIẾN THỂ (NẾU CÓ) ---
+                                // Logic: Tìm biến thể nào có (attribute=attr.attribute & value=val)
+                                // Lưu ý: Logic này chỉ đúng nếu 1 thuộc tính đại diện cho 1 ảnh (ví dụ Màu Sắc).
+                                // Nếu kết hợp nhiều thuộc tính thì phức tạp hơn.
+                                // Ở đây ta tạm thời tìm biến thể ĐẦU TIÊN khớp với giá trị này để lấy ảnh.
+                                const variantForImage = product.product_variants?.find(v => 
+                                    v.options.some(opt => opt.attribute === attr.attribute && opt.value === val)
+                                    && v.image_url // Chỉ lấy nếu có ảnh
+                                );
+                                const imgUrl = variantForImage ? getImageUrl(variantForImage.image_url) : null;
+                                // -------------------------------------
+
+                                return (
+                                    <div
+                                        className={`rounded py-1 px-3 pointer d-flex align-items-center gap-2 ${selectedAttributes[attr.attribute] === val ? "border-product-attribute" : "bg-secondary-subtle"}`}
+                                        key={val}
+                                        onClick={() => handleSelectAttribute(attr.attribute, val)}
+                                    >
+                                        {/* HIỂN THỊ ẢNH BIẾN THỂ NHỎ (NẾU CÓ) */}
+                                        {imgUrl && (
+                                            <img 
+                                                src={imgUrl} 
+                                                alt={val} 
+                                                style={{width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px'}}
+                                                onError={(e) => e.currentTarget.style.display = 'none'}
+                                            />
+                                        )}
+                                        {val}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 ))}

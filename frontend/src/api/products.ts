@@ -46,9 +46,10 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
     return res.data;
 }
 
-// (Lấy các hàm CRUD từ code của bạn (qhuykuteo) vì đã nâng cấp)
-export const createProduct = async (productData: any) => {
-    try {
+
+
+export const createProduct = async (productData: FormData) => { 
+    try {  
         const response = await axios.post(API_URL, productData, getAuthHeaders());
         return response.data;
     } catch (error) {

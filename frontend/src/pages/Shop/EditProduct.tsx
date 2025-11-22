@@ -5,14 +5,16 @@ import type { ShopCategoryType } from '../../api/shopCategory';
 import { fetchProductAttributes, updateProduct, fetchProductForEdit } from '../../api/products';
 import type { AttributeType } from '../../api/products';
 import TiptapEditor from '../../components/TipTapEditor';
+import { useAuth } from '../../context/AuthContext'; 
 
 interface Variation {
     value: string;
     price: number;
     stock: number;
     image_url?: string;
+    file?: File;      // <--- MỚI: Lưu file gốc
+    preview?: string; // <--- MỚI: Lưu link preview
 }
-// NÂNG CẤP: Thêm kiểu (Type) cho Chi tiết
 interface DetailItem {
     key: string;
     value: string;
@@ -21,6 +23,7 @@ interface DetailItem {
 export default function EditProduct() {
     const { id: productId } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { } = useAuth();
 
     const [loading, setLoading] = useState(false);
     const [pageLoading, setPageLoading] = useState(true);
@@ -31,7 +34,12 @@ export default function EditProduct() {
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [imageUrl, setImageUrl] = useState('');
+    
+    // ===== STATE CHO ẢNH CHÍNH =====
+    const [imageFile, setImageFile] = useState<File | null>(null); 
+    const [imagePreview, setImagePreview] = useState<string>('');   
+    // ===============================
+
     const [shopCateId, setShopCateId] = useState<number | null>(null);
     const [status, setStatus] = useState(1);
     const [hasVariation, setHasVariation] = useState(false);
@@ -42,12 +50,19 @@ export default function EditProduct() {
     const [basePrice, setBasePrice] = useState(0);
     const [baseStock, setBaseStock] = useState(0);
 
-    // NÂNG CẤP: State cho "Chi tiết sản phẩm"
     const [details, setDetails] = useState<DetailItem[]>([
         { key: '', value: '' }
     ]);
 
-    // (useEffect loadInitialData giữ nguyên)
+    // Hàm xử lý URL ảnh thông minh (Dùng chung cho cả ảnh chính và biến thể)
+    const getImageUrl = (url: string | undefined) => {
+        if (!url) return '';
+        if (url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:')) {
+            return url;
+        }
+        return `http://localhost:5000${url}`;
+    };
+
     useEffect(() => {
         const loadInitialData = async () => {
             try {
@@ -64,7 +79,6 @@ export default function EditProduct() {
         loadInitialData();
     }, []);
 
-    // NÂNG CẤP: loadProductData (để lấy 'details')
     useEffect(() => {
         if (!productId) {
             setError("Không tìm thấy ID sản phẩm.");
@@ -78,25 +92,32 @@ export default function EditProduct() {
 
                 setName(data.name);
                 setDescription(data.description || '');
-                setImageUrl(data.image_url || '');
+                
+                // Gán ảnh chính cũ vào preview
+                if (data.image_url) {
+                    setImagePreview(getImageUrl(data.image_url));
+                }
+
                 setShopCateId(data.shop_cate_id);
                 setStatus(data.status);
 
-                // NÂNG CẤP: Điền dữ liệu "Chi tiết"
                 if (data.details && data.details.length > 0) {
                     setDetails(data.details);
                 } else {
-                    setDetails([{ key: '', value: '' }]); // Để lại 1 dòng trống
+                    setDetails([{ key: '', value: '' }]);
                 }
 
                 if (data.variations && data.variations.length > 0) {
                     setHasVariation(true);
                     setSelectedAttributeId(data.attribute_id);
+                    
+                    // Gán dữ liệu biến thể (bao gồm ảnh cũ)
                     setVariations(data.variations.map((v: any) => ({
                         value: v.value,
                         price: v.price,
                         stock: v.stock,
-                        image_url: v.image_url || ''
+                        image_url: v.image_url || '',
+                        preview: v.image_url ? getImageUrl(v.image_url) : '' // Tạo preview từ ảnh cũ
                     })));
                 } else {
                     setHasVariation(false);
@@ -113,7 +134,51 @@ export default function EditProduct() {
         loadProductData();
     }, [productId]);
 
-    // (Hàm xử lý Phân loại... giữ nguyên)
+    // ===== 1. XỬ LÝ CHỌN ẢNH CHÍNH =====
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (!file.type.startsWith('image/')) return alert('Vui lòng chọn file ảnh!');
+            if (file.size > 5 * 1024 * 1024) return alert('Ảnh quá lớn (Max 5MB)!');
+
+            setImageFile(file);
+            const objectUrl = URL.createObjectURL(file);
+            setImagePreview(objectUrl);
+        }
+    };
+
+    // ===== 2. XỬ LÝ CHỌN ẢNH BIẾN THỂ (MỚI) =====
+    const handleVariationImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (!file.type.startsWith('image/')) return alert('Vui lòng chọn file ảnh!');
+            if (file.size > 5 * 1024 * 1024) return alert('Ảnh quá lớn (Max 5MB)!');
+
+            const objectUrl = URL.createObjectURL(file);
+            
+            const newVariations = [...variations];
+            newVariations[index] = { 
+                ...newVariations[index], 
+                file: file, 
+                preview: objectUrl 
+            };
+            setVariations(newVariations);
+        }
+    };
+    // =========================================
+
+    // Cleanup preview url
+    useEffect(() => {
+        return () => {
+            if (imagePreview && imagePreview.startsWith('blob:')) {
+                URL.revokeObjectURL(imagePreview);
+            }
+            variations.forEach(v => {
+                if (v.preview && v.preview.startsWith('blob:')) URL.revokeObjectURL(v.preview);
+            });
+        }
+    }, [imagePreview, variations]);
+
     const handleVariationChange = (index: number, field: keyof Variation, value: string | number) => {
         const newVariations = [...variations];
         (newVariations[index] as any)[field] = value;
@@ -128,7 +193,6 @@ export default function EditProduct() {
         setVariations(newVariations);
     };
 
-    // NÂNG CẤP: Hàm xử lý "Chi tiết sản phẩm"
     const handleDetailChange = (index: number, field: keyof DetailItem, value: string) => {
         const newDetails = [...details];
         newDetails[index][field] = value;
@@ -146,54 +210,70 @@ export default function EditProduct() {
         setDetails(newDetails);
     };
 
-    // NÂNG CẤP: Gửi 'details' lên backend
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!productId) {
-            setError("Lỗi: Không tìm thấy ID sản phẩm để cập nhật.");
-            return;
-        }
+        if (!productId) return;
         setLoading(true);
         setError('');
 
         const filteredDetails = details.filter(d => d.key.trim() !== '' && d.value.trim() !== '');
 
-        let productData: any = {
-            name,
-            description,
-            image_url: imageUrl,
-            shop_cate_id: shopCateId,
-            status,
-            details: filteredDetails // <-- NÂNG CẤP
-        };
-
-        if (hasVariation) {
-            if (!selectedAttributeId) {
-                setError("Vui lòng chọn tên nhóm phân loại.");
-                setLoading(false);
-                return;
-            }
-            productData = {
-                ...productData,
-                attribute_id: selectedAttributeId,
-                variations: variations.map(v => ({
-                    ...v,
-                    price: Number(v.price),
-                    stock: Number(v.stock)
-                }))
-            };
-        } else {
-            productData = {
-                ...productData,
-                base_price: basePrice,
-                stock: baseStock
-            };
-        }
-
         try {
-            await updateProduct(Number(productId), productData);
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('description', description);
+            formData.append('status', status.toString());
+            
+            if (shopCateId) {
+                formData.append('shop_cate_id', shopCateId.toString());
+            } else {
+                formData.append('shop_cate_id', 'null');
+            }
+
+            if (imageFile) {
+                formData.append('product_image', imageFile);
+            }
+
+            if (filteredDetails.length > 0) {
+                formData.append('details', JSON.stringify(filteredDetails));
+            }
+
+            if (hasVariation) {
+                if (!selectedAttributeId) {
+                    setError("Vui lòng chọn tên nhóm phân loại.");
+                    setLoading(false);
+                    return;
+                }
+                formData.append('attribute_id', selectedAttributeId.toString());
+                
+                // 1. Gửi JSON thông tin (LOẠI BỎ FILE KHỎI JSON)
+                // QUAN TRỌNG: Với ảnh biến thể, nếu không có file mới, ta cần giữ lại image_url cũ
+                const validVariations = variations.map(v => ({
+                    value: v.value,
+                    price: Number(v.price),
+                    stock: Number(v.stock),
+                    image_url: v.image_url // Gửi lại URL cũ để backend biết giữ nguyên nếu không có file mới
+                    // Không gửi 'file' hay 'preview' trong JSON này
+                }));
+                formData.append('variations', JSON.stringify(validVariations));
+
+                // 2. Gửi CÁC FILE ẢNH BIẾN THỂ MỚI
+                variations.forEach((v, index) => {
+                    if (v.file) {
+                        // Key: variation_image_0, variation_image_1 ...
+                        formData.append(`variation_image_${index}`, v.file);
+                    }
+                });
+            } else {
+                formData.append('base_price', basePrice.toString());
+                formData.append('stock', baseStock.toString());
+            }
+
+            await updateProduct(Number(productId), formData);
+            
             setLoading(false);
             navigate('/seller/products');
+
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || "Đã xảy ra lỗi khi cập nhật sản phẩm.");
@@ -202,19 +282,12 @@ export default function EditProduct() {
     };
 
     if (pageLoading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
-                <div className="spinner-border text-warning" role="status">
-                    <span className="visually-hidden">Đang tải dữ liệu sản phẩm...</span>
-                </div>
-            </div>
-        );
+        return <div className="text-center mt-5">Đang tải dữ liệu...</div>;
     }
 
     return (
         <div className="container mt-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
             <form onSubmit={handleSubmit}>
-                {/* (Phần Header giữ nguyên) */}
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h3>Sửa sản phẩm</h3>
                     <div>
@@ -226,7 +299,7 @@ export default function EditProduct() {
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
 
-                {/* (Thẻ Thông tin cơ bản giữ nguyên) */}
+                {/* Thông tin cơ bản */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header">Thông tin cơ bản</div>
                     <div className="card-body">
@@ -236,16 +309,29 @@ export default function EditProduct() {
                         </div>
                         <div className="mb-3">
                             <label className="form-label">Mô tả sản phẩm</label>
-                            <TiptapEditor
-                                value={description}
-                                onChange={setDescription}
-                            />
-                            {/* <textarea className="form-control" rows={5} value={description} onChange={(e) => setDescription(e.target.value)}></textarea> */}
+                            <TiptapEditor value={description} onChange={setDescription} />
                         </div>
                         <div className="row">
                             <div className="col-md-6 mb-3">
-                                <label className="form-label">Link ảnh chính</label>
-                                <input type="text" className="form-control" placeholder="https://example.com/image.jpg" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                                <label className="form-label">Ảnh chính sản phẩm</label>
+                                <input 
+                                    type="file" 
+                                    className="form-control" 
+                                    accept="image/png, image/jpeg, image/webp"
+                                    onChange={handleImageChange}
+                                />
+                                {imagePreview && (
+                                    <div className="mt-2 p-2 border rounded bg-light text-center">
+                                        <img 
+                                            src={imagePreview} 
+                                            alt="Preview" 
+                                            style={{maxHeight: '200px', maxWidth: '100%', objectFit: 'contain'}}
+                                            onError={(e) => {
+                                                e.currentTarget.src = 'https://via.placeholder.com/200x200?text=No+Image';
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                             <div className="col-md-6 mb-3">
                                 <label className="form-label">Loại sản phẩm (Kệ hàng)</label>
@@ -260,47 +346,28 @@ export default function EditProduct() {
                     </div>
                 </div>
 
-                {/* ===== NÂNG CẤP: THÊM THẺ "CHI TIẾT SẢN PHẨM" ===== */}
+                {/* Chi tiết sản phẩm */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header">Chi tiết sản phẩm</div>
                     <div className="card-body">
                         {details.map((detail, index) => (
-                            <div key={index} className="row align-items-center mb-2">
+                             <div key={index} className="row align-items-center mb-2">
                                 <div className="col-md-5">
-                                    <label className="form-label">Thuộc tính</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="ví dụ: Thương hiệu"
-                                        value={detail.key}
-                                        onChange={(e) => handleDetailChange(index, 'key', e.target.value)}
-                                    />
+                                    <input type="text" className="form-control" placeholder="Thuộc tính" value={detail.key} onChange={(e) => handleDetailChange(index, 'key', e.target.value)} />
                                 </div>
                                 <div className="col-md-5">
-                                    <label className="form-label">Giá trị</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="ví dụ: Maybelline"
-                                        value={detail.value}
-                                        onChange={(e) => handleDetailChange(index, 'value', e.target.value)}
-                                    />
+                                    <input type="text" className="form-control" placeholder="Giá trị" value={detail.value} onChange={(e) => handleDetailChange(index, 'value', e.target.value)} />
                                 </div>
-                                <div className="col-md-2 d-flex align-items-end">
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-danger btn-sm"
-                                        onClick={() => handleRemoveDetail(index)}
-                                    >Xóa</button>
+                                <div className="col-md-2">
+                                    <button type="button" className="btn btn-outline-danger btn-sm w-100" onClick={() => handleRemoveDetail(index)}>Xóa</button>
                                 </div>
                             </div>
                         ))}
                         <button type="button" className="btn btn-link" onClick={handleAddDetail}>+ Thêm chi tiết</button>
                     </div>
                 </div>
-                {/* =================================================== */}
 
-                {/* (Thẻ Thông tin bán hàng giữ nguyên) */}
+                {/* Thông tin bán hàng */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header d-flex justify-content-between align-items-center">
                         Thông tin bán hàng
@@ -315,20 +382,19 @@ export default function EditProduct() {
                                 <div className="mb-3">
                                     <label className="form-label">Tên nhóm phân loại <span className="text-danger">*</span></label>
                                     <select className="form-select" value={selectedAttributeId || ''} onChange={(e) => setSelectedAttributeId(Number(e.target.value) || null)}>
-                                        <option value="">-- Chọn thuộc tính (ví dụ: Màu sắc) --</option>
+                                        <option value="">-- Chọn thuộc tính --</option>
                                         {attributes.map(attr => (
                                             <option key={attr.id} value={attr.id}>{attr.name}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <hr />
                                 {variations.map((variation, index) => (
                                     <div key={index} className="row align-items-center mb-2 p-2 border rounded">
                                         <div className="col-md-3">
                                             <label className="form-label">Tên phân loại <span className="text-danger">*</span></label>
                                             <input type="text" className="form-control" placeholder="ví dụ: Đỏ" value={variation.value} onChange={(e) => handleVariationChange(index, 'value', e.target.value)} required />
                                         </div>
-                                        <div className="col-md-3">
+                                        <div className="col-md-2">
                                             <label className="form-label">Giá <span className="text-danger">*</span></label>
                                             <input type="number" className="form-control" value={variation.price} onChange={(e) => handleVariationChange(index, 'price', Number(e.target.value))} required />
                                         </div>
@@ -336,16 +402,37 @@ export default function EditProduct() {
                                             <label className="form-label">Kho <span className="text-danger">*</span></label>
                                             <input type="number" className="form-control" value={variation.stock} onChange={(e) => handleVariationChange(index, 'stock', Number(e.target.value))} required />
                                         </div>
-                                        <div className="col-md-3">
-                                            <label className="form-label">Link ảnh (nếu có)</label>
-                                            <input type="text" className="form-control" placeholder="Link ảnh cho màu này" value={variation.image_url || ''} onChange={(e) => handleVariationChange(index, 'image_url', e.target.value)} />
+                                        
+                                        {/* ===== INPUT FILE CHO BIẾN THỂ ===== */}
+                                        <div className="col-md-4">
+                                            <label className="form-label">Ảnh (Tùy chọn)</label>
+                                            <div className="d-flex align-items-center gap-2">
+                                                <input 
+                                                    type="file" 
+                                                    className="form-control form-control-sm" 
+                                                    accept="image/*"
+                                                    onChange={(e) => handleVariationImageChange(index, e)} 
+                                                />
+                                                {variation.preview && (
+                                                    <img 
+                                                        src={variation.preview} 
+                                                        alt="Var" 
+                                                        style={{height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd'}} 
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = 'https://via.placeholder.com/40?text=X';
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
                                         </div>
+                                        {/* =================================== */}
+
                                         <div className="col-md-1 d-flex align-items-end">
-                                            <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveVariation(index)} disabled={variations.length <= 1}>Xóa</button>
+                                            <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveVariation(index)} disabled={variations.length <= 1}>X</button>
                                         </div>
                                     </div>
                                 ))}
-                                <button type="button" className="btn btn-link" onClick={handleAddVariation}>+ Thêm phân loại (ví dụ: Xanh)</button>
+                                <button type="button" className="btn btn-link" onClick={handleAddVariation}>+ Thêm phân loại</button>
                             </div>
                         ) : (
                             <div className="row">
@@ -362,20 +449,20 @@ export default function EditProduct() {
                     </div>
                 </div>
 
-                {/* (Thẻ Trạng thái và Nút bấm giữ nguyên) */}
                 <div className="card shadow-sm mb-3">
-                    <div className="card-header">Trạng thái đăng bán</div>
-                    <div className="card-body">
-                        <div className="form-check">
-                            <input className="form-check-input" type="radio" name="statusRadio" id="statusPublish" value={1} checked={status === 1} onChange={(e) => setStatus(Number(e.target.value))} />
-                            <label className="form-check-label" htmlFor="statusPublish">Đăng bán (Công khai)</label>
+                      <div className="card-header">Trạng thái đăng bán</div>
+                      <div className="card-body">
+                        <div className="form-check form-check-inline">
+                            <input className="form-check-input" type="radio" name="status" id="status1" value={1} checked={status === 1} onChange={() => setStatus(1)} />
+                            <label className="form-check-label" htmlFor="status1">Hoạt động</label>
                         </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="radio" name="statusRadio" id="statusDraft" value={0} checked={status === 0} onChange={(e) => setStatus(Number(e.target.value))} />
-                            <label className="form-check-label" htmlFor="statusDraft">Lưu nháp (Ẩn)</label>
+                        <div className="form-check form-check-inline">
+                            <input className="form-check-input" type="radio" name="status" id="status0" value={0} checked={status === 0} onChange={() => setStatus(0)} />
+                            <label className="form-check-label" htmlFor="status0">Tạm dừng</label>
                         </div>
-                    </div>
+                      </div>
                 </div>
+
                 <div className="d-flex justify-content-end mb-5">
                     <button type="button" className="btn btn-outline-secondary me-2" onClick={() => navigate('/seller/products')}>Hủy</button>
                     <button type="submit" className="btn btn-primary" disabled={loading}>

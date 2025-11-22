@@ -12,13 +12,14 @@ const ensureDirectoryExistence = (dirPath: string) => {
     }
 };
 
-// --- HÀM HỖ TRỢ 2: Bộ lọc file (Chỉ nhận PNG/JPEG) ---
+// --- HÀM HỖ TRỢ 2: Bộ lọc file (Chỉ nhận PNG/JPEG/WEBP) ---
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    // Thêm 'image/webp' vì webp nhẹ và tốt cho web
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp') {
         cb(null, true); // Chấp nhận
     } else {
         // Từ chối file (và báo lỗi)
-        cb(new Error('Chỉ chấp nhận file PNG hoặc JPEG!'));
+        cb(new Error('Chỉ chấp nhận file ảnh (PNG, JPEG, WEBP)!'));
     }
 };
 
@@ -42,7 +43,7 @@ const avatarStorage = multer.diskStorage({
 export const uploadAvatar = multer({
     storage: avatarStorage,
     fileFilter: fileFilter,
-    limits: { fileSize: 1 * 1024 * 1024 }
+    limits: { fileSize: 2 * 1024 * 1024 } // Tăng nhẹ lên 2MB cho thoải mái
 }).single('avatar');
 
 // -------------------------------------------------------------------
@@ -70,17 +71,15 @@ export const uploadPromoBanner = multer({
 }).single('banner_image');
 
 // -------------------------------------------------------------------
-// 3. THÊM MỚI: CẤU HÌNH CHO TRÌNH SOẠN THẢO (TIPTAP)
+// 3. CẤU HÌNH CHO TRÌNH SOẠN THẢO (TIPTAP)
 // -------------------------------------------------------------------
 const editorImageStorage = multer.diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb) => {
-        // Lưu vào thư mục chung cho các bài viết, mô tả...
         const uploadPath = path.join(__dirname, '../../public/uploads/editor_images');
         ensureDirectoryExistence(uploadPath);
         cb(null, uploadPath);
     },
     filename: (req: Request, file: Express.Multer.File, cb) => {
-        // Tên file hoàn toàn ngẫu nhiên
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const extension = path.extname(file.originalname);
         const newFileName = `editor-${uniqueSuffix}${extension}`;
@@ -93,3 +92,32 @@ export const uploadEditorImage = multer({
     fileFilter: fileFilter,
     limits: { fileSize: 5 * 1024 * 1024 }
 }).single('image');
+
+// Đường dẫn: backend/src/config/multer.ts
+
+// ... (Phần 1, 2, 3 giữ nguyên) ...
+
+// -------------------------------------------------------------------
+// 4. CẤU HÌNH CHO ẢNH SẢN PHẨM (MAIN + VARIATIONS)
+// -------------------------------------------------------------------
+const productStorage = multer.diskStorage({
+    destination: (req: Request, file: Express.Multer.File, cb) => {
+        const uploadPath = path.join(__dirname, '../../public/uploads/products');
+        ensureDirectoryExistence(uploadPath);
+        cb(null, uploadPath);
+    },
+    filename: (req: Request, file: Express.Multer.File, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname);
+        // Đặt tên file
+        const newFileName = `product-${uniqueSuffix}${extension}`;
+        cb(null, newFileName);
+    }
+});
+
+// SỬA: Dùng .any() để chấp nhận cả 'product_image' và 'variation_image_0', 'variation_image_1'...
+export const uploadProductImage = multer({ 
+    storage: productStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, 
+    fileFilter: fileFilter
+}).any();

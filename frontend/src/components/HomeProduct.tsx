@@ -28,7 +28,15 @@ export default function HomeProduct() {
                         break;
                 }
                 if (isActive) {
-                    setProducts(data);
+                    // Dữ liệu trả về có thể là mảng hoặc object { products: [...] } tùy API
+                    // Nếu API trả về mảng trực tiếp thì gán luôn
+                    if (Array.isArray(data)) {
+                        setProducts(data);
+                    } else if (data && Array.isArray(data.products)) {
+                         setProducts(data.products);
+                    } else {
+                        setProducts([]);
+                    }
                 }
             } catch (err) {
                 console.log(err);
@@ -37,21 +45,17 @@ export default function HomeProduct() {
                     setLoading(false);
                 }
             }
-
         }
 
         loadProduct();
 
         return () => {
-            // Khi 'selectedList' thay đổi, effect cũ sẽ bị hủy
-            // và hàm này chạy, tắt cờ 'isActive'
             isActive = false;
         }
     }, [selectedList])
 
     const handleChangeMenu = (id: number) => {
         if (id == selectedList) return;
-
         setSelectedList(id);
     }
     return (
@@ -65,7 +69,7 @@ export default function HomeProduct() {
             </div>
             <div className="d-flex justify-content-center gap-4">
                 {menuList.map((item, ind) => (
-                    <div className={ind == selectedList ? "text-primary fs-5 pointer user-select-none position-relative p-3 category-component" : "text-muted fs-5 pointer user-select-none position-relative p-3 category-component"} onClick={() => handleChangeMenu(ind)}>
+                    <div key={ind} className={ind == selectedList ? "text-primary fs-5 pointer user-select-none position-relative p-3 category-component" : "text-muted fs-5 pointer user-select-none position-relative p-3 category-component"} onClick={() => handleChangeMenu(ind)}>
                         {item}
                         {selectedList === ind && (
                             <motion.div
