@@ -1,5 +1,5 @@
 // Đường dẫn: frontend/src/pages/Shop/Products.tsx
-// (PHIÊN BẢN CẢI TIẾN: Thêm Modal xác nhận bật/tắt)
+// (PHIÊN BẢN CẢI TIẾN: Full width + Màu sắc hài hòa + Modal xác nhận bật/tắt)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom'; 
@@ -8,7 +8,6 @@ import { fetchProductsByShopId, deleteProduct, updateProductStatus } from '../..
 import { fetchShopCategories } from '../../api/shopCategory'; 
 import type { ShopCategoryType } from '../../api/shopCategory'; 
 import type { ProductType } from '../../types/ProductType';
-// Import thêm Button và Modal từ react-bootstrap
 import { Form, Modal, Button } from 'react-bootstrap'; 
 
 type SortOption = 'popular' | 'new' | 'hot';
@@ -26,21 +25,16 @@ export default function ShopProductsManager() {
   const [shopCategories, setShopCategories] = useState<ShopCategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryIdFromUrl || 'all'); 
   
-  // State cho Modal Xóa
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState<ProductType | null>(null);
   
-  // ===== 1. STATE MỚI CHO MODAL TRẠNG THÁI =====
   const [showStatusModal, setShowStatusModal] = useState(false);
-  // Lưu thông tin hành động đang chờ (ID sản phẩm, trạng thái muốn đổi thành, tên SP)
   const [pendingToggle, setPendingToggle] = useState<{ id: number, newStatus: number, name: string } | null>(null);
-  // ============================================
 
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [shopId, setShopId] = useState<number | null>(null);
 
-  // (useEffect fetchShopIdAndCategories giữ nguyên)
   useEffect(() => {
     const fetchShopIdAndCategories = async () => {
         if (!user?.id) {
@@ -75,7 +69,6 @@ export default function ShopProductsManager() {
     fetchShopIdAndCategories();
   }, [user]);
 
-  // (loadProducts giữ nguyên)
   const loadProducts = useCallback(async () => {
     if (!shopId) return;
     try {
@@ -130,6 +123,7 @@ export default function ShopProductsManager() {
     setProductToDelete(product);
     setShowDeleteConfirm(true);
   };
+
   const confirmDelete = async () => {
     if (!productToDelete?.id) return;
     try {
@@ -148,24 +142,19 @@ export default function ShopProductsManager() {
     return new Intl.NumberFormat('vi-VN').format(price) + ' ₫';
   };
 
-  // ===== 2. HÀM KÍCH HOẠT MODAL (Khi bấm nút gạt) =====
   const initiateToggle = (product: ProductType, checked: boolean) => {
-      const newStatus = checked ? 1 : 0; // 1 là Bật, 0 là Tắt
-      // Lưu thông tin vào state tạm để hiển thị lên Modal
+      const newStatus = checked ? 1 : 0;
       setPendingToggle({
           id: product.id,
           newStatus: newStatus,
           name: product.name
       });
-      setShowStatusModal(true); // Mở modal
+      setShowStatusModal(true);
   };
-  // ====================================================
 
-  // ===== 3. HÀM THỰC HIỆN (Khi bấm "Đồng ý" trên Modal) =====
   const confirmToggle = async () => {
     if (!pendingToggle) return;
 
-    // 1. Cập nhật UI ngay lập tức (Optimistic Update)
     const originalProducts = [...products];
     setProducts(prevProducts => 
         prevProducts.map(p => 
@@ -174,20 +163,16 @@ export default function ShopProductsManager() {
     );
 
     try {
-        // 2. Gọi API thật
         await updateProductStatus(pendingToggle.id, pendingToggle.newStatus);
-        // Thành công -> Đóng modal, xóa state tạm
         setShowStatusModal(false);
         setPendingToggle(null);
     } catch (err) {
-        // 3. Nếu thất bại -> Rollback
         console.error("Lỗi cập nhật trạng thái:", err);
         setError("Không thể cập nhật trạng thái. Vui lòng thử lại.");
         setProducts(originalProducts);
-        setShowStatusModal(false); // Vẫn đóng modal
+        setShowStatusModal(false);
     }
   };
-  // ==========================================================
 
   if (!shopId && !loading) {
     return (
@@ -199,9 +184,10 @@ export default function ShopProductsManager() {
         </div>
     );
   }
+
   if (loading) {
     return (
-        <div className="d-flex justify-content-center align-items-center" style={{height: '100vh'}}>
+        <div className="d-flex justify-content-center align-items-center" style={{height: '100vh', backgroundColor: '#F5F5F5'}}>
             <div className="spinner-border text-warning" role="status" style={{width: '3rem', height: '3rem'}}>
                 <span className="visually-hidden">Loading...</span>
             </div>
@@ -210,57 +196,78 @@ export default function ShopProductsManager() {
   }
 
   return (
-    <div style={{backgroundColor: '#FAFAFA', minHeight: '100vh', paddingBottom: '40px'}}>
+    <div style={{backgroundColor: '#F5F5F5', minHeight: '100vh'}}>
       {/* Header */}
-      <div style={{background: 'linear-gradient(135deg, #FFD43B 0%, #FFC107 100%)', padding: '32px 0', boxShadow: '0 2px 8px rgba(0,0,0,0.08)'}}>
-        <div className="container">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center gap-3">
-                <div style={{
-                    backgroundColor: 'rgba(255,255,255,0.95)', 
-                    width: '56px', height: '56px', borderRadius: '12px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
-                    <i className="bi bi-box-seam" style={{fontSize: '28px', color: '#FF9800'}}></i>
-                </div>
-                <div>
-                    <h1 className="mb-1" style={{fontSize: '28px', fontWeight: '700', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.1)'}}>
-                        Quản lý Sản phẩm
-                    </h1>
-                    <p className="mb-0" style={{color: 'rgba(255,255,255,0.9)', fontSize: '13px', fontWeight: '500'}}>
-                        {filteredProducts.length} / {products.length} sản phẩm
-                    </p>
-                </div>
-            </div>
-            <button
-              onClick={handleAdd} 
-              className="btn d-flex align-items-center gap-2"
-              style={{
-                  backgroundColor: '#fff', color: '#FF9800', padding: '10px 20px',
-                  borderRadius: '8px', border: 'none', fontWeight: '600',
-                  fontSize: '13px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
-              }}
-              onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-              }}
-            >
-              <i className="bi bi-plus-circle-fill"></i>
-              Thêm sản phẩm
-            </button>
+      <div style={{
+        background: 'linear-gradient(135deg, #B7CCFF 0%, #8FB0FF 100%)',
+        padding: '24px 32px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex align-items-center gap-3">
+              <div style={{
+                  backgroundColor: 'rgba(255,255,255,0.95)', 
+                  width: '56px', height: '56px', borderRadius: '12px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}>
+                  <i className="bi bi-box-seam" style={{fontSize: '28px', color: '#FF9800'}}></i>
+              </div>
+              <div>
+                  <h1 className="mb-1" style={{
+                    fontSize: '28px', 
+                    fontWeight: '700', 
+                    color: '#fff', 
+                    textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}>
+                      Quản lý Sản phẩm
+                  </h1>
+                  <p className="mb-0" style={{
+                    color: 'rgba(255,255,255,0.95)', 
+                    fontSize: '14px', 
+                    fontWeight: '500'
+                  }}>
+                      {filteredProducts.length} / {products.length} sản phẩm
+                  </p>
+              </div>
           </div>
+          <button
+            onClick={handleAdd} 
+            className="btn d-flex align-items-center gap-2"
+            style={{
+                backgroundColor: '#fff', 
+                color: '#FF9800', 
+                padding: '12px 24px',
+                borderRadius: '8px', 
+                border: 'none', 
+                fontWeight: '600',
+                fontSize: '14px', 
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            }}
+          >
+            <i className="bi bi-plus-circle-fill"></i>
+            Thêm sản phẩm
+          </button>
         </div>
       </div>
 
-      <div className="container mt-4">
+      {/* Main Content - FULL WIDTH */}
+      <div style={{padding: '24px 32px'}}>
         {error && (
-            <div className="alert alert-danger mb-3" role="alert">
+            <div className="alert alert-danger mb-3" role="alert" style={{
+              borderRadius: '8px',
+              border: '1px solid #ffcdd2',
+              backgroundColor: '#ffebee'
+            }}>
                 <i className="bi bi-exclamation-triangle-fill me-2"></i> {error}
             </div>
         )}
@@ -268,27 +275,68 @@ export default function ShopProductsManager() {
         {/* Filter Row */}
         <div className="row g-3 mb-3">
             <div className="col-md-6">
-                <div className="input-group" style={{backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)'}}>
-                    <span className="input-group-text bg-white border-0 ps-3" style={{color: '#999'}}><i className="bi bi-search"></i></span>
-                    <input type="text" className="form-control border-0" placeholder="Tìm kiếm sản phẩm..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{boxShadow: 'none', fontSize: '14px'}}/>
+                <div className="input-group" style={{
+                  backgroundColor: '#fff', 
+                  borderRadius: '8px', 
+                  overflow: 'hidden', 
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                  border: '1px solid #E0E0E0'
+                }}>
+                    <span className="input-group-text bg-white border-0 ps-3" style={{color: '#999'}}>
+                      <i className="bi bi-search"></i>
+                    </span>
+                    <input 
+                      type="text" 
+                      className="form-control border-0" 
+                      placeholder="Tìm kiếm sản phẩm..." 
+                      value={searchTerm} 
+                      onChange={(e) => setSearchTerm(e.target.value)} 
+                      style={{boxShadow: 'none', fontSize: '14px', padding: '12px 16px'}}
+                    />
                 </div>
             </div>
             <div className="col-md-3">
-                <div style={{backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #FFE0B2'}}>
+                <div style={{
+                  backgroundColor: '#fff', 
+                  borderRadius: '8px', 
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)', 
+                  border: '1px solid #E0E0E0'
+                }}>
                     <div className="input-group">
-                        <span className="input-group-text bg-white border-0 ps-3"><i className="bi bi-funnel-fill" style={{color: '#FF9800', fontSize: '14px'}}></i></span>
-                        <select className="form-select border-0" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={{boxShadow: 'none', fontSize: '14px', color: '#333'}}>
-                            <option value="all">Tất cả danh mục shop</option>
-                            {shopCategories.map(cate => (<option key={cate.id} value={cate.id}>{cate.name}</option>))}
+                        <span className="input-group-text bg-white border-0 ps-3">
+                          <i className="bi bi-funnel-fill" style={{color: '#FF9800', fontSize: '14px'}}></i>
+                        </span>
+                        <select 
+                          className="form-select border-0" 
+                          value={selectedCategory} 
+                          onChange={(e) => setSelectedCategory(e.target.value)} 
+                          style={{boxShadow: 'none', fontSize: '14px', color: '#333', padding: '12px 16px'}}
+                        >
+                            <option value="all">Tất cả danh mục</option>
+                            {shopCategories.map(cate => (
+                              <option key={cate.id} value={cate.id}>{cate.name}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
             </div>
             <div className="col-md-3">
-                <div style={{backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #FFE0B2'}}>
+                <div style={{
+                  backgroundColor: '#fff', 
+                  borderRadius: '8px', 
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)', 
+                  border: '1px solid #E0E0E0'
+                }}>
                     <div className="input-group">
-                        <span className="input-group-text bg-white border-0 ps-3"><i className="bi bi-sort-down" style={{color: '#FF9800', fontSize: '14px'}}></i></span>
-                        <select className="form-select border-0" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortOption)} style={{boxShadow: 'none', fontSize: '14px', color: '#333'}}>
+                        <span className="input-group-text bg-white border-0 ps-3">
+                          <i className="bi bi-sort-down" style={{color: '#FF9800', fontSize: '14px'}}></i>
+                        </span>
+                        <select 
+                          className="form-select border-0" 
+                          value={sortBy} 
+                          onChange={(e) => setSortBy(e.target.value as SortOption)} 
+                          style={{boxShadow: 'none', fontSize: '14px', color: '#333', padding: '12px 16px'}}
+                        >
                             <option value="popular">Phổ biến</option>
                             <option value="new">Mới nhất</option>
                             <option value="hot">Bán chạy</option>
@@ -298,72 +346,291 @@ export default function ShopProductsManager() {
             </div>
         </div>
 
-        {/* Products Table */}
-        <div style={{backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)'}}>
+        {/* Products Table - FULL WIDTH */}
+        <div style={{
+          backgroundColor: '#fff', 
+          borderRadius: '12px', 
+          overflow: 'hidden', 
+          boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+        }}>
           <table className="table mb-0" style={{verticalAlign: 'middle'}}>
             <thead>
-                <tr style={{borderBottom: '1px solid #f0f0f0'}}>
-                    <th style={{fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA'}}>Sản phẩm</th>
-                    <th style={{fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA'}}>Mô tả</th>
-                    <th style={{fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA'}}>Giá</th>
-                    <th style={{fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA'}}>Đã bán</th>
-                    <th style={{fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA'}}>Trạng thái</th>
-                    <th style={{fontSize: '11px', fontWeight: '600', color: '#999', textTransform: 'uppercase', padding: '16px 20px', backgroundColor: '#FAFAFA', textAlign: 'right'}}>Thao tác</th>
+                <tr style={{borderBottom: '2px solid #F5F5F5'}}>
+                    <th style={{
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      color: '#666', 
+                      textTransform: 'uppercase', 
+                      padding: '18px 24px', 
+                      backgroundColor: '#FAFAFA',
+                      letterSpacing: '0.5px'
+                    }}>
+                      Sản phẩm
+                    </th>
+                    <th style={{
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      color: '#666', 
+                      textTransform: 'uppercase', 
+                      padding: '18px 24px', 
+                      backgroundColor: '#FAFAFA',
+                      letterSpacing: '0.5px'
+                    }}>
+                      Mô tả
+                    </th>
+                    <th style={{
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      color: '#666', 
+                      textTransform: 'uppercase', 
+                      padding: '18px 24px', 
+                      backgroundColor: '#FAFAFA',
+                      letterSpacing: '0.5px'
+                    }}>
+                      Giá
+                    </th>
+                    <th style={{
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      color: '#666', 
+                      textTransform: 'uppercase', 
+                      padding: '18px 24px', 
+                      backgroundColor: '#FAFAFA',
+                      letterSpacing: '0.5px',
+                      textAlign: 'center'
+                    }}>
+                      Đã bán
+                    </th>
+                    <th style={{
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      color: '#666', 
+                      textTransform: 'uppercase', 
+                      padding: '18px 24px', 
+                      backgroundColor: '#FAFAFA',
+                      letterSpacing: '0.5px'
+                    }}>
+                      Trạng thái
+                    </th>
+                    <th style={{
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      color: '#666', 
+                      textTransform: 'uppercase', 
+                      padding: '18px 24px', 
+                      backgroundColor: '#FAFAFA',
+                      letterSpacing: '0.5px',
+                      textAlign: 'right'
+                    }}>
+                      Thao tác
+                    </th>
                 </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => (
-                <tr key={product.id} style={{borderBottom: '1px solid #f5f5f5'}}>
-                  <td style={{padding: '16px 20px'}}>
+              {filteredProducts.map((product, index) => (
+                <tr 
+                  key={product.id} 
+                  style={{
+                    borderBottom: index === filteredProducts.length - 1 ? 'none' : '1px solid #F5F5F5',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FAFAFA'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td style={{padding: '18px 24px'}}>
                     <div className="d-flex align-items-center gap-3">
-                      <div style={{width: '56px', height: '56px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f8f8f8', flexShrink: 0, border: '1px solid #f0f0f0'}}>
-                        {product.image_url ? (<img src={product.image_url} alt={product.name || ''} style={{width: '100%', height: '100%', objectFit: 'cover'}}/>) : (<div className="d-flex align-items-center justify-content-center h-100"><i className="bi bi-image text-muted" style={{fontSize: '20px'}}></i></div>)}
+                      <div style={{
+                        width: '64px', 
+                        height: '64px', 
+                        borderRadius: '8px', 
+                        overflow: 'hidden', 
+                        backgroundColor: '#f8f8f8', 
+                        flexShrink: 0, 
+                        border: '1px solid #E0E0E0'
+                      }}>
+                        {product.image_url ? (
+                          <img 
+                            src={product.image_url} 
+                            alt={product.name || ''} 
+                            style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                          />
+                        ) : (
+                          <div className="d-flex align-items-center justify-content-center h-100">
+                            <i className="bi bi-image text-muted" style={{fontSize: '24px'}}></i>
+                          </div>
+                        )}
                       </div>
                       <div>
-                        <div style={{fontWeight: '600', fontSize: '14px', color: '#333', marginBottom: '2px'}}>{product.name || 'N/A'}</div>
-                        <small style={{color: '#999', fontSize: '12px'}}>ID: {product.id}</small>
+                        <div style={{
+                          fontWeight: '600', 
+                          fontSize: '15px', 
+                          color: '#333', 
+                          marginBottom: '4px'
+                        }}>
+                          {product.name || 'N/A'}
+                        </div>
+                        <small style={{
+                          color: '#999', 
+                          fontSize: '13px',
+                          fontWeight: '500'
+                        }}>
+                          ID: #{product.id}
+                        </small>
                       </div>
                     </div>
                   </td>
-                  <td style={{padding: '16px 20px', maxWidth: '280px'}}>
-                    <div style={{fontSize: '13px', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'}}>
+                  <td style={{padding: '18px 24px', maxWidth: '300px'}}>
+                    <div style={{
+                      fontSize: '14px', 
+                      color: '#666', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis', 
+                      display: '-webkit-box', 
+                      WebkitLineClamp: 2, 
+                      WebkitBoxOrient: 'vertical',
+                      lineHeight: '1.5'
+                    }}>
                       {product.description || 'Chưa có mô tả'}
                     </div>
                   </td>
-                  <td style={{padding: '16px 20px'}}>
-                    <span style={{backgroundColor: '#FFF3E0', color: '#E65100', padding: '5px 12px', borderRadius: '4px', fontSize: '13px', fontWeight: '600', display: 'inline-block'}}>
+                  <td style={{padding: '18px 24px'}}>
+                    <span style={{
+                      backgroundColor: '#FFF3E0', 
+                      color: '#E65100', 
+                      padding: '6px 14px', 
+                      borderRadius: '6px', 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      display: 'inline-block'
+                    }}>
                       {formatPrice(product.base_price)}
                     </span>
                   </td>
-                  <td style={{padding: '16px 20px'}}>
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-cart-fill" style={{color: '#52c41a', fontSize: '14px'}}></i>
-                      <span style={{fontWeight: '500', fontSize: '14px', color: '#333'}}>{product.sold_count || 0}</span>
-                    </div>
+                  <td style={{padding: '18px 24px', textAlign: 'center'}}>
+                    <span style={{
+                      display: 'inline-block',
+                      backgroundColor: '#E8F5E9',
+                      color: '#2E7D32',
+                      fontWeight: '600', 
+                      fontSize: '14px',
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      minWidth: '50px'
+                    }}>
+                      {product.sold_count || 0}
+                    </span>
                   </td>
                   
-                  {/* ===== 4. SỬA: GỌI HÀM initiateToggle ===== */}
-                  <td style={{padding: '16px 20px'}}>
-                    <Form.Check 
-                        type="switch"
-                        id={`product-switch-${product.id}`}
-                        checked={product.status === 1}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => initiateToggle(product, e.target.checked)} // Gọi hàm mở modal
-                        label={product.status === 1 ? 'Hoạt động' : 'Tạm dừng'}
-                    />
+                  <td style={{padding: '18px 24px'}}>
+                    <div className="d-flex align-items-center gap-2">
+                      <Form.Check 
+                          type="switch"
+                          id={`product-switch-${product.id}`}
+                          checked={product.status === 1}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => initiateToggle(product, e.target.checked)}
+                          style={{fontSize: '14px'}}
+                      />
+                      <span style={{
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        color: product.status === 1 ? '#2E7D32' : '#D32F2F'
+                      }}>
+                        {product.status === 1 ? 'Hoạt động' : 'Tạm dừng'}
+                      </span>
+                    </div>
                   </td>
-                  {/* ========================================== */}
 
-                  <td style={{padding: '16px 20px'}}>
+                  <td style={{padding: '18px 24px'}}>
                     <div className="d-flex gap-2 justify-content-end">
-                      <button onClick={() => handleView(product)} className="btn btn-sm p-0" title="Xem chi tiết" style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #FFE0B2', backgroundColor: '#FFF8E1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className="bi bi-eye-fill" style={{color: '#FF9800', fontSize: '14px'}}></i>
+                      <button 
+                        onClick={() => handleView(product)} 
+                        className="btn btn-sm p-0" 
+                        title="Xem chi tiết" 
+                        style={{
+                          width: '36px', 
+                          height: '36px', 
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: '#E3F2FD',
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#2196F3';
+                          e.currentTarget.querySelector('i')!.style.color = '#fff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#E3F2FD';
+                          e.currentTarget.querySelector('i')!.style.color = '#1976D2';
+                        }}
+                      >
+                        <i className="bi bi-eye-fill" style={{
+                          color: '#1976D2', 
+                          fontSize: '15px',
+                          transition: 'color 0.2s ease'
+                        }}></i>
                       </button>
-                      <button onClick={() => handleEdit(product)} className="btn btn-sm p-0" title="Chỉnh sửa" style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #FFE0B2', backgroundColor: '#FFF8E1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className="bi bi-pencil-fill" style={{color: '#F57C00', fontSize: '14px'}}></i>
+                      <button 
+                        onClick={() => handleEdit(product)} 
+                        className="btn btn-sm p-0" 
+                        title="Chỉnh sửa" 
+                        style={{
+                          width: '36px', 
+                          height: '36px', 
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: '#FFF3E0',
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#FF9800';
+                          e.currentTarget.querySelector('i')!.style.color = '#fff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#FFF3E0';
+                          e.currentTarget.querySelector('i')!.style.color = '#F57C00';
+                        }}
+                      >
+                        <i className="bi bi-pencil-fill" style={{
+                          color: '#F57C00', 
+                          fontSize: '15px',
+                          transition: 'color 0.2s ease'
+                        }}></i>
                       </button>
-                      <button onClick={() => handleDelete(product)} className="btn btn-sm p-0" title="Xóa" style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #FFCDD2', backgroundColor: '#FFEBEE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <i className="bi bi-trash-fill" style={{color: '#D32F2F', fontSize: '14px'}}></i>
+                      <button 
+                        onClick={() => handleDelete(product)} 
+                        className="btn btn-sm p-0" 
+                        title="Xóa" 
+                        style={{
+                          width: '36px', 
+                          height: '36px', 
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: '#FFEBEE',
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#F44336';
+                          e.currentTarget.querySelector('i')!.style.color = '#fff';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#FFEBEE';
+                          e.currentTarget.querySelector('i')!.style.color = '#D32F2F';
+                        }}
+                      >
+                        <i className="bi bi-trash-fill" style={{
+                          color: '#D32F2F', 
+                          fontSize: '15px',
+                          transition: 'color 0.2s ease'
+                        }}></i>
                       </button>
                     </div>
                   </td>
@@ -373,9 +640,13 @@ export default function ShopProductsManager() {
           </table>
           {filteredProducts.length === 0 && (
             <div className="text-center py-5">
-              <i className="bi bi-inbox" style={{fontSize: '48px', color: '#d9d9d9'}}></i>
-              <p className="text-muted mt-3 mb-1" style={{fontWeight: '500', fontSize: '14px'}}>Không tìm thấy sản phẩm nào</p>
-              <small style={{color: '#999', fontSize: '13px'}}>Thử điều chỉnh bộ lọc hoặc thêm sản phẩm mới</small>
+              <i className="bi bi-inbox" style={{fontSize: '64px', color: '#E0E0E0'}}></i>
+              <p className="text-muted mt-3 mb-1" style={{fontWeight: '600', fontSize: '16px', color: '#666'}}>
+                Không tìm thấy sản phẩm nào
+              </p>
+              <small style={{color: '#999', fontSize: '14px'}}>
+                Thử điều chỉnh bộ lọc hoặc thêm sản phẩm mới
+              </small>
             </div>
           )}
         </div>
@@ -383,55 +654,184 @@ export default function ShopProductsManager() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && productToDelete && (
-        <div className="modal show d-block" tabIndex={-1} style={{backgroundColor: 'rgba(0,0,0,0.45)'}}>
+        <div className="modal show d-block" tabIndex={-1} style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content" style={{borderRadius: '8px', border: 'none'}}>
-              <div className="modal-body text-center" style={{padding: '32px'}}>
-                <div className="mb-3"><i className="bi bi-exclamation-circle-fill" style={{fontSize: '56px', color: '#ff4d4f'}}></i></div>
-                <h5 style={{fontWeight: '600', marginBottom: '12px', fontSize: '16px'}}>Xác nhận xóa sản phẩm</h5>
-                <p className="text-muted mb-2" style={{fontSize: '14px'}}>Bạn có chắc chắn muốn xóa sản phẩm</p>
-                <p style={{color: '#333', fontWeight: '600', fontSize: '15px', marginBottom: '8px'}}>"{productToDelete.name}"</p>
-                <small className="text-danger" style={{fontSize: '12px'}}>Hành động này không thể hoàn tác</small>
+            <div className="modal-content" style={{borderRadius: '12px', border: 'none'}}>
+              <div className="modal-body text-center" style={{padding: '40px'}}>
+                <div className="mb-3">
+                  <i className="bi bi-exclamation-circle-fill" style={{fontSize: '64px', color: '#F44336'}}></i>
+                </div>
+                <h5 style={{fontWeight: '600', marginBottom: '12px', fontSize: '18px', color: '#333'}}>
+                  Xác nhận xóa sản phẩm
+                </h5>
+                <p className="text-muted mb-2" style={{fontSize: '14px'}}>
+                  Bạn có chắc chắn muốn xóa sản phẩm
+                </p>
+                <p style={{
+                  color: '#333', 
+                  fontWeight: '600', 
+                  fontSize: '16px', 
+                  marginBottom: '12px',
+                  backgroundColor: '#F5F5F5',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  display: 'inline-block'
+                }}>
+                  "{productToDelete.name}"
+                </p>
+                <div style={{
+                  backgroundColor: '#FFEBEE',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  marginTop: '16px'
+                }}>
+                  <small className="text-danger" style={{fontSize: '13px', fontWeight: '500'}}>
+                    <i className="bi bi-info-circle-fill me-1"></i>
+                    Hành động này không thể hoàn tác
+                  </small>
+                </div>
               </div>
-              <div className="modal-footer" style={{borderTop: '1px solid #f0f0f0', padding: '16px 24px', justifyContent: 'center', gap: '12px'}}>
-                <button onClick={() => setShowDeleteConfirm(false)} className="btn" style={{ backgroundColor: '#fff', color: '#666', padding: '8px 24px', borderRadius: '6px', border: '1px solid #d9d9d9', fontWeight: '500', fontSize: '14px' }}>Hủy</button>
-                <button onClick={confirmDelete} className="btn" style={{ backgroundColor: '#ff4d4f', color: '#fff', padding: '8px 24px', borderRadius: '6px', border: 'none', fontWeight: '500', fontSize: '14px' }}>Xác nhận xóa</button>
+              <div className="modal-footer" style={{
+                borderTop: '1px solid #f0f0f0', 
+                padding: '16px 24px', 
+                justifyContent: 'center', 
+                gap: '12px',
+                backgroundColor: '#FAFAFA'
+              }}>
+                <button 
+                  onClick={() => setShowDeleteConfirm(false)} 
+                  className="btn" 
+                  style={{
+                    backgroundColor: '#fff', 
+                    color: '#666', 
+                    padding: '10px 24px', 
+                    borderRadius: '8px', 
+                    border: '1px solid #E0E0E0', 
+                    fontWeight: '500', 
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F5'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={confirmDelete} 
+                  className="btn" 
+                  style={{
+                    backgroundColor: '#F44336', 
+                    color: '#fff', 
+                    padding: '10px 24px', 
+                    borderRadius: '8px', 
+                    border: 'none', 
+                    fontWeight: '600', 
+                    fontSize: '14px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D32F2F'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F44336'}
+                >
+                  <i className="bi bi-trash-fill me-2"></i>
+                  Xác nhận xóa
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ===== 5. MODAL XÁC NHẬN TRẠNG THÁI ===== */}
+      {/* Status Toggle Confirmation Modal */}
       <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)} centered>
-        <Modal.Header closeButton>
-            <Modal.Title style={{fontSize: '18px', fontWeight: '600'}}>Xác nhận thay đổi trạng thái</Modal.Title>
+        <Modal.Header 
+          closeButton 
+          style={{
+            background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+            borderBottom: 'none',
+            padding: '20px 24px'
+          }}
+        >
+            <Modal.Title style={{
+              fontSize: '18px', 
+              fontWeight: '600',
+              color: '#fff'
+            }}>
+              <i className="bi bi-toggle-on me-2"></i>
+              Xác nhận thay đổi trạng thái
+            </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-            Bạn có chắc chắn muốn 
-            <span className={`fw-bold ${pendingToggle?.newStatus === 1 ? 'text-success' : 'text-danger'} mx-1`}>
-                {pendingToggle?.newStatus === 1 ? 'BẬT (Hiển thị)' : 'TẮT (Ẩn)'}
-            </span>
-            sản phẩm <strong>"{pendingToggle?.name}"</strong> không?
-            <div className="text-muted small mt-2">
+        <Modal.Body style={{padding: '24px'}}>
+            <div style={{fontSize: '15px', color: '#333', lineHeight: '1.6'}}>
+              Bạn có chắc chắn muốn 
+              <span className={`fw-bold mx-1`} style={{
+                color: pendingToggle?.newStatus === 1 ? '#2E7D32' : '#D32F2F'
+              }}>
+                  {pendingToggle?.newStatus === 1 ? 'BẬT (Hiển thị)' : 'TẮT (Ẩn)'}
+              </span>
+              sản phẩm
+            </div>
+            <div style={{
+              backgroundColor: '#F5F5F5',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              margin: '16px 0',
+              fontWeight: '600',
+              fontSize: '15px',
+              color: '#333'
+            }}>
+              "{pendingToggle?.name}"
+            </div>
+            <div style={{
+              backgroundColor: pendingToggle?.newStatus === 0 ? '#FFEBEE' : '#E8F5E9',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              color: '#666',
+              lineHeight: '1.5'
+            }}>
+                <i className={`bi ${pendingToggle?.newStatus === 0 ? 'bi-exclamation-circle-fill text-danger' : 'bi-check-circle-fill text-success'} me-2`}></i>
                 {pendingToggle?.newStatus === 0 
                     ? "Sản phẩm sẽ bị ẩn khỏi khách hàng và không thể mua được." 
                     : "Sản phẩm sẽ hiển thị trở lại trên cửa hàng."}
             </div>
         </Modal.Body>
-        <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowStatusModal(false)}>
+        <Modal.Footer style={{
+          borderTop: '1px solid #f0f0f0',
+          padding: '16px 24px',
+          backgroundColor: '#FAFAFA'
+        }}>
+            <Button 
+              variant="secondary" 
+              onClick={() => setShowStatusModal(false)}
+              style={{
+                backgroundColor: '#fff',
+                color: '#666',
+                border: '1px solid #E0E0E0',
+                padding: '10px 24px',
+                borderRadius: '8px',
+                fontWeight: '500',
+                fontSize: '14px'
+              }}
+            >
                 Hủy
             </Button>
             <Button 
                 variant={pendingToggle?.newStatus === 1 ? "success" : "danger"} 
                 onClick={confirmToggle}
+                style={{
+                  backgroundColor: pendingToggle?.newStatus === 1 ? '#4CAF50' : '#F44336',
+                  border: 'none',
+                  padding: '10px 24px',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '14px'
+                }}
             >
+                <i className={`bi ${pendingToggle?.newStatus === 1 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
                 Đồng ý
             </Button>
         </Modal.Footer>
       </Modal>
-      {/* ======================================== */}
 
     </div>
   );
