@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { getShopOrderDetail } from '../../api/order';
-import { type IOrder, type IApiError } from '../../types/OrderType'; // Import các kiểu
+import { type OrderType, type IApiError } from '../../types/OrderType'; // Import các kiểu
 
 // Mở rộng IOrder để bao gồm 'items' (chi tiết sản phẩm)
-interface IOrderDetail extends IOrder {
+interface IOrderDetail extends OrderType {
     items: any[]; // Bạn nên tạo interface IOrderItem sau
 }
 

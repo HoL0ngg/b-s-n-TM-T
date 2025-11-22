@@ -1,143 +1,25 @@
-// import React, { useState, useEffect } from 'react';
-// import { AxiosError } from 'axios';
-// import { useSearchParams } from 'react-router-dom';
-// import { getShopOrders, updateShopOrderStatus } from '../../api/order'; 
-// import { type IOrder, type OrderStatus, type IApiError } from '../../types/OrderType';
-// import 'bootstrap-icons/font/bootstrap-icons.css';
-
-// export default function Orders() {
-//     const [orders, setOrders] = useState<IOrder[]>([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState<string | null>(null);
-
-//     const [searchParams] = useSearchParams();
-//     const statusFilter = searchParams.get('status');
-
-// const fetchOrders = async () => {
-//         try {
-//             setLoading(true);
-//             setError(null);
-//             const data: IOrder[] = await getShopOrders(statusFilter);
-//             setOrders(data);
-//         } catch (err) {
-//             const axiosError = err as AxiosError<IApiError>;
-//             setError(axiosError.response?.data?.message || 'Lỗi khi tải đơn hàng.');
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-//     useEffect(() => {
-//         fetchOrders();
-//     }, [statusFilter]);
-
-//     const handleStatusChange = async (orderId: number, newStatus: OrderStatus) => {
-//         if (!window.confirm(`Bạn có chắc muốn chuyển đơn hàng #${orderId} sang "${newStatus}"?`)) {
-//             return;
-//         }
-//         try {
-//             await updateShopOrderStatus(orderId, newStatus);
-//             alert('Cập nhật trạng thái thành công!');
-//             fetchOrders();
-//         } catch (err) {
-//             const axiosError = err as AxiosError<IApiError>;
-//             alert('Lỗi khi cập nhật: ' + (axiosError.response?.data?.message || 'Lỗi không xác định'));
-//         }
-//     };
-
-//     if (loading) return <div className="container mt-4">Đang tải dữ liệu đơn hàng của Shop...</div>;
-//     if (error) return <div className="container mt-4" style={{ color: 'red' }}>Lỗi: {error}</div>;
-
-//     return (
-//         <div className="container mt-4">
-//             <h2>Quản lý Đơn hàng</h2>
-
-//             <table className="table table-striped table-bordered">
-//                 <thead className="thead-dark">
-//                     <tr>
-//                         <th>Mã Đơn</th>
-//                         <th>Ngày đặt</th>
-//                         <th>Tổng tiền</th>
-//                         <th>Trạng thái</th>
-//                         <th>Hành động</th>
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//                     {orders.length === 0 ? (
-//                         <tr>
-//                             <td colSpan={5} className="text-center">Bạn chưa có đơn hàng nào.</td>
-//                         </tr>
-//                     ) : (
-//                         orders.map(order => (
-//                             <tr key={order.order_id}>
-//                                 <td>#{order.order_id}</td>
-//                                 <td>{new Date(order.order_date).toLocaleDateString('vi-VN')}</td>
-//                                 <td>{order.total_amount.toLocaleString('vi-VN')} VNĐ</td>
-//                                 <td>
-//                                     <span className={`badge ${getStatusColor(order.status)}`}>
-//                                         {order.status}
-//                                     </span>
-//                                 </td>
-//                                 <td>
-//                                     {order.status === 'Pending' && (
-//                                         <button 
-//                                             className="btn btn-primary btn-sm"
-//                                             onClick={() => handleStatusChange(order.order_id, 'Processing')}
-//                                         >
-//                                             Xác nhận đơn
-//                                         </button>
-//                                     )}
-//                                     {order.status === 'Processing' && (
-//                                         <button 
-//                                             className="btn btn-success btn-sm"
-//                                             onClick={() => handleStatusChange(order.order_id, 'Shipped')}
-//                                         >
-//                                             Giao hàng
-//                                         </button>
-//                                     )}
-//                                 </td>
-//                             </tr>
-//                         ))
-//                     )}
-//                 </tbody>
-//             </table>
-//         </div>
-//     );
-// }
-
-// // Hàm tiện ích đổi màu trạng thái (dùng Bootstrap 5)
-// const getStatusColor = (status: OrderStatus) => {
-//     switch (status) {
-//         case 'Pending': return 'bg-warning text-dark';
-//         case 'Processing': return 'bg-info text-white';
-//         case 'Shipped': return 'bg-primary text-white';
-//         case 'Delivered': return 'bg-success text-white';
-//         case 'Cancelled': return 'bg-danger text-white';
-//         default: return 'bg-secondary text-white';
-//     }
-// };
-
 import React, { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
-import { useSearchParams, Link } from 'react-router-dom'; // 1. Import thêm 'Link'
+import { useSearchParams, Link } from 'react-router-dom';
 import { getShopOrders, updateShopOrderStatus } from '../../api/order';
-import { type IOrder, type OrderStatus, type IApiError } from '../../types/OrderType';
-// 2. Import Bootstrap Icons (giả sử bạn đã setup, nếu chưa hãy npm install bootstrap-icons)
-// import 'bootstrap-icons/font/bootstrap-icons.css'; 
+import { type OrderType, type OrderStatus, type IApiError } from '../../types/OrderType';
 
 export default function Orders() {
-    const [orders, setOrders] = useState<IOrder[]>([]);
+    const [allOrders, setAllOrders] = useState<OrderType[]>([]); // Lưu toàn bộ orders
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const statusFilter = searchParams.get('status');
 
+    // Fetch toàn bộ orders một lần duy nhất
     const fetchOrders = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data: IOrder[] = await getShopOrders(statusFilter);
-            setOrders(data);
+            // Fetch tất cả orders (không truyền statusFilter)
+            const data: OrderType[] = await getShopOrders(null);
+            setAllOrders(data);
         } catch (err) {
             const axiosError = err as AxiosError<IApiError>;
             setError(axiosError.response?.data?.message || 'Lỗi khi tải đơn hàng.');
@@ -148,7 +30,7 @@ export default function Orders() {
 
     useEffect(() => {
         fetchOrders();
-    }, [statusFilter]);
+    }, []); // Chỉ fetch một lần khi component mount
 
     const handleStatusChange = async (orderId: number, newStatus: OrderStatus) => {
         if (!window.confirm(`Bạn có chắc muốn chuyển đơn hàng #${orderId} sang "${newStatus}"?`)) {
@@ -157,132 +39,410 @@ export default function Orders() {
         try {
             await updateShopOrderStatus(orderId, newStatus);
             alert('Cập nhật trạng thái thành công!');
-            fetchOrders();
+            fetchOrders(); // Refresh data
         } catch (err) {
             const axiosError = err as AxiosError<IApiError>;
             alert('Lỗi khi cập nhật: ' + (axiosError.response?.data?.message || 'Lỗi không xác định'));
         }
     };
 
-    if (loading) return <div className="container mt-4">Đang tải dữ liệu đơn hàng của Shop...</div>;
-    if (error) return <div className="container mt-4" style={{ color: 'red' }}>Lỗi: {error}</div>;
+    const handleFilterChange = (status: string | null) => {
+        if (status) {
+            setSearchParams({ status });
+        } else {
+            setSearchParams({});
+        }
+    };
 
-    // 3. --- GIAO DIỆN NÂNG CẤP BẮT ĐẦU TỪ ĐÂY ---
+    // Filter orders based on selected status (client-side filtering)
+    const filteredOrders = statusFilter 
+        ? allOrders.filter(order => order.status.toLowerCase() === statusFilter.toLowerCase())
+        : allOrders;
+
+    // Count orders by status (from all orders)
+    const statusCounts = {
+        all: allOrders.length,
+        pending: allOrders.filter(o => o.status.toLowerCase() === 'pending').length,
+        processing: allOrders.filter(o => o.status.toLowerCase() === 'processing').length,
+        shipped: allOrders.filter(o => o.status.toLowerCase() === 'shipped').length,
+        delivered: allOrders.filter(o => o.status.toLowerCase() === 'delivered').length,
+        cancelled: allOrders.filter(o => o.status.toLowerCase() === 'cancelled').length,
+    };
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh', backgroundColor: '#F5F5F5' }}>
+                <div className="spinner-border text-warning" role="status" style={{ width: '3rem', height: '3rem' }}>
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ backgroundColor: '#F5F5F5', minHeight: '100vh', padding: '24px' }}>
+                <div className="alert alert-danger" role="alert">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    Lỗi: {error}
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="container mt-4">
-            <h2 className="mb-4">Quản lý Đơn hàng</h2>
+        <div style={{ backgroundColor: '#F5F5F5', minHeight: '100vh' }}>
+            {/* Header */}
+            <div style={{
+                background: 'linear-gradient(135deg, #B7CCFF 0%, #8FB0FF 100%)',
+                padding: '24px 32px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+            }}>
+                <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center gap-3">
+                        <div style={{
+                            backgroundColor: 'rgba(255,255,255,0.95)',
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                        }}>
+                            <i className="bi bi-receipt-cutoff" style={{ fontSize: '28px', color: '#FF9800' }}></i>
+                        </div>
+                        <div>
+                            <h1 className="mb-1" style={{
+                                fontSize: '28px',
+                                fontWeight: '700',
+                                color: '#fff',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }}>
+                                Quản lý đơn hàng
+                            </h1>
+                            <p className="mb-0" style={{
+                                color: 'rgba(255,255,255,0.95)',
+                                fontSize: '14px',
+                                fontWeight: '500'
+                            }}>
+                                Theo dõi và xử lý đơn hàng của cửa hàng
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            {/* Bọc bảng trong 1 card để chuyên nghiệp hơn */}
-            <div className="card shadow-sm border-0">
-                <div className="card-body">
-                    <table className="table table-hover align-middle">
-                        <thead className="table-light">
-                            <tr>
-                                <th scope="col">Mã Đơn</th>
-                                <th scope="col">Ngày đặt</th>
-                                <th scope="col" className="text-end">Tổng tiền</th>
-                                <th scope="col">Phương thức TT</th>
-                                <th scope="col" className="text-center">Trạng thái TT</th>
-                                <th scope="col" className="text-center">Trạng thái ĐH</th>
-                                <th scope="col" className="text-center">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orders.length === 0 ? (
+            {/* Main Content */}
+            <div style={{ padding: '24px 32px' }}>
+                {/* Filter Tabs */}
+                <div style={{
+                    backgroundColor: '#fff',
+                    borderRadius: '12px',
+                    padding: '16px 24px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    marginBottom: '20px'
+                }}>
+                    <div className="d-flex gap-2 flex-wrap">
+                        <button
+                            onClick={() => handleFilterChange(null)}
+                            style={{
+                                backgroundColor: !statusFilter ? '#2196F3' : '#F5F5F5',
+                                color: !statusFilter ? '#fff' : '#333',
+                                border: 'none',
+                                padding: '8px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Tất cả ({statusCounts.all})
+                        </button>
+                        <button
+                            onClick={() => handleFilterChange('pending')}
+                            style={{
+                                backgroundColor: statusFilter === 'pending' ? '#FF9800' : '#F5F5F5',
+                                color: statusFilter === 'pending' ? '#fff' : '#333',
+                                border: 'none',
+                                padding: '8px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Chờ xử lý ({statusCounts.pending})
+                        </button>
+                        <button
+                            onClick={() => handleFilterChange('processing')}
+                            style={{
+                                backgroundColor: statusFilter === 'processing' ? '#2196F3' : '#F5F5F5',
+                                color: statusFilter === 'processing' ? '#fff' : '#333',
+                                border: 'none',
+                                padding: '8px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Đang xử lý ({statusCounts.processing})
+                        </button>
+                        <button
+                            onClick={() => handleFilterChange('shipped')}
+                            style={{
+                                backgroundColor: statusFilter === 'shipped' ? '#9C27B0' : '#F5F5F5',
+                                color: statusFilter === 'shipped' ? '#fff' : '#333',
+                                border: 'none',
+                                padding: '8px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Đang giao ({statusCounts.shipped})
+                        </button>
+                        <button
+                            onClick={() => handleFilterChange('delivered')}
+                            style={{
+                                backgroundColor: statusFilter === 'delivered' ? '#4CAF50' : '#F5F5F5',
+                                color: statusFilter === 'delivered' ? '#fff' : '#333',
+                                border: 'none',
+                                padding: '8px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Đã giao ({statusCounts.delivered})
+                        </button>
+                        <button
+                            onClick={() => handleFilterChange('cancelled')}
+                            style={{
+                                backgroundColor: statusFilter === 'cancelled' ? '#F44336' : '#F5F5F5',
+                                color: statusFilter === 'cancelled' ? '#fff' : '#333',
+                                border: 'none',
+                                padding: '8px 20px',
+                                borderRadius: '8px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            Đã hủy ({statusCounts.cancelled})
+                        </button>
+                    </div>
+                </div>
+
+                {/* Orders Table */}
+                <div style={{
+                    backgroundColor: '#fff',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        overflowX: 'auto',
+                        maxHeight: '600px',
+                        overflowY: 'auto'
+                    }}>
+                        <table className="table table-hover mb-0">
+                            <thead style={{
+                                backgroundColor: '#FAFAFA',
+                                position: 'sticky',
+                                top: 0,
+                                zIndex: 1
+                            }}>
                                 <tr>
-                                    <td colSpan={7} className="text-center p-4">Bạn chưa có đơn hàng nào.</td>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', minWidth: '100px' }}>Mã đơn</th>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', minWidth: '120px' }}>Ngày đặt</th>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', textAlign: 'right', minWidth: '140px' }}>Tổng tiền</th>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', minWidth: '140px' }}>Phương thức TT</th>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', textAlign: 'center', minWidth: '120px' }}>Trạng thái TT</th>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', textAlign: 'center', minWidth: '140px' }}>Trạng thái ĐH</th>
+                                    <th style={{ fontSize: '13px', fontWeight: '600', color: '#666', padding: '16px', textAlign: 'center', minWidth: '160px' }}>Hành động</th>
                                 </tr>
-                            ) : (
-                                orders.map(order => (
-                                    <tr key={order.order_id}>
-                                        {/* Mã Đơn */}
-                                        <td>
-                                            <strong className="text-primary">#{order.order_id}</strong>
-                                        </td>
-
-                                        {/* Ngày đặt */}
-                                        <td>{new Date(order.order_date).toLocaleDateString('vi-VN')}</td>
-
-                                        {/* Tổng tiền (Căn phải) */}
-                                        <td className="text-end fw-bold">
-                                            {order.total_amount.toLocaleString('vi-VN')} VNĐ
-                                        </td>
-
-                                        {/* Phương thức TT */}
-                                        <td>{order.payment_method}</td>
-
-                                        {/* Trạng thái TT (Căn giữa) */}
-                                        <td className="text-center">
-                                            <span className={`badge ${order.payment_status === 'Paid' ? 'bg-success' : 'bg-secondary'}`}>
-                                                {order.payment_status}
-                                            </span>
-                                        </td>
-
-                                        {/* Trạng thái ĐH (Căn giữa, có Icon) */}
-                                        <td className="text-center">
-                                            <span className={`badge ${getStatusColor(order.status)}`}>
-                                                <i className={`bi ${getStatusIcon(order.status)} me-1`}></i>
-                                                {order.status}
-                                            </span>
-                                        </td>
-
-                                        {/* Hành động (Căn giữa) */}
-                                        <td className="text-center">
-                                            {/* Nút Xem chi tiết (ví dụ) */}
-                                            <Link
-                                                to={`/seller/orders/${order.order_id}`}
-                                                className="btn btn-sm btn-outline-primary me-2"
-                                                title="Xem chi tiết"
-                                            >
-                                                <i className="bi bi-eye"></i>
-                                            </Link>
-
-                                            {/* Các nút hành động */}
-                                            {order.status === 'Pending' && (
-                                                <button
-                                                    className="btn btn-sm btn-primary"
-                                                    title="Xác nhận đơn"
-                                                    onClick={() => handleStatusChange(order.order_id, 'Processing')}
-                                                >
-                                                    <i className="bi bi-check-lg"></i>
-                                                </button>
-                                            )}
-                                            {order.status === 'Processing' && (
-                                                <button
-                                                    className="btn btn-sm btn-success"
-                                                    title="Giao hàng"
-                                                    onClick={() => handleStatusChange(order.order_id, 'Shipped')}
-                                                >
-                                                    <i className="bi bi-truck"></i>
-                                                </button>
-                                            )}
+                            </thead>
+                            <tbody>
+                                {filteredOrders.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} style={{ textAlign: 'center', padding: '60px', color: '#999' }}>
+                                            <i className="bi bi-inbox" style={{ fontSize: '48px', marginBottom: '16px', display: 'block' }}></i>
+                                            <p style={{ fontSize: '14px', marginBottom: '0' }}>
+                                                {statusFilter ? `Không có đơn hàng nào với trạng thái "${statusFilter}"` : 'Bạn chưa có đơn hàng nào'}
+                                            </p>
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    filteredOrders.map(order => (
+                                        <tr key={order.order_id}>
+                                            {/* Mã đơn */}
+                                            <td style={{ padding: '16px' }}>
+                                                <strong style={{ color: '#2196F3', fontSize: '14px' }}>#{order.order_id}</strong>
+                                            </td>
+
+                                            {/* Ngày đặt */}
+                                            <td style={{ padding: '16px', fontSize: '14px', color: '#666' }}>
+                                                {new Date(order.order_date).toLocaleDateString('vi-VN')}
+                                            </td>
+
+                                            {/* Tổng tiền */}
+                                            <td style={{ padding: '16px', textAlign: 'right' }}>
+                                                <span style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                                                    {order.total_amount.toLocaleString('vi-VN')} ₫
+                                                </span>
+                                            </td>
+
+                                            {/* Phương thức TT */}
+                                            <td style={{ padding: '16px', fontSize: '14px', color: '#666' }}>
+                                                {order.payment_method}
+                                            </td>
+
+                                            {/* Trạng thái TT */}
+                                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                                                <span style={{
+                                                    backgroundColor: order.payment_status === 'Paid' ? '#E8F5E9' : '#F5F5F5',
+                                                    color: order.payment_status === 'Paid' ? '#4CAF50' : '#999',
+                                                    padding: '6px 12px',
+                                                    borderRadius: '6px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    display: 'inline-block'
+                                                }}>
+                                                    {order.payment_status}
+                                                </span>
+                                            </td>
+
+                                            {/* Trạng thái ĐH */}
+                                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                                                <span style={{
+                                                    ...getStatusStyle(order.status),
+                                                    padding: '6px 12px',
+                                                    borderRadius: '6px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    <i className={`bi ${getStatusIcon(order.status)}`}></i>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+
+                                            {/* Hành động */}
+                                            <td style={{ padding: '16px', textAlign: 'center' }}>
+                                                <div className="d-flex gap-2 justify-content-center">
+                                                    {/* Nút Xem chi tiết */}
+                                                    <Link
+                                                        to={`/seller/orders/${order.order_id}`}
+                                                        style={{
+                                                            backgroundColor: '#E3F2FD',
+                                                            color: '#2196F3',
+                                                            border: 'none',
+                                                            padding: '6px 12px',
+                                                            borderRadius: '6px',
+                                                            fontSize: '13px',
+                                                            textDecoration: 'none',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px'
+                                                        }}
+                                                        title="Xem chi tiết"
+                                                    >
+                                                        <i className="bi bi-eye"></i>
+                                                        Chi tiết
+                                                    </Link>
+
+                                                    {/* Các nút hành động */}
+                                                    {order.status.toLowerCase() === 'pending' && (
+                                                        <button
+                                                            onClick={() => handleStatusChange(order.order_id, 'Processing')}
+                                                            style={{
+                                                                backgroundColor: '#E3F2FD',
+                                                                color: '#2196F3',
+                                                                border: 'none',
+                                                                padding: '6px 12px',
+                                                                borderRadius: '6px',
+                                                                fontSize: '13px',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px'
+                                                            }}
+                                                            title="Xác nhận đơn"
+                                                        >
+                                                            <i className="bi bi-check-lg"></i>
+                                                            Xác nhận
+                                                        </button>
+                                                    )}
+                                                    {order.status.toLowerCase() === 'processing' && (
+                                                        <button
+                                                            onClick={() => handleStatusChange(order.order_id, 'Shipped')}
+                                                            style={{
+                                                                backgroundColor: '#E8F5E9',
+                                                                color: '#4CAF50',
+                                                                border: 'none',
+                                                                padding: '6px 12px',
+                                                                borderRadius: '6px',
+                                                                fontSize: '13px',
+                                                                cursor: 'pointer',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px'
+                                                            }}
+                                                            title="Giao hàng"
+                                                        >
+                                                            <i className="bi bi-truck"></i>
+                                                            Giao hàng
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-// Hàm tiện ích đổi màu trạng thái (dùng Bootstrap 5)
-const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-        case 'Pending': return 'bg-warning text-dark';
-        case 'Processing': return 'bg-info text-white';
-        case 'Shipped': return 'bg-primary text-white';
-        case 'Delivered': return 'bg-success text-white';
-        case 'Cancelled': return 'bg-danger text-white';
-        default: return 'bg-secondary text-white';
+// Hàm tiện ích đổi style trạng thái
+const getStatusStyle = (status: OrderStatus) => {
+    const lowerStatus = status.toLowerCase();
+    switch (lowerStatus) {
+        case 'Pending':
+            return { backgroundColor: '#FFF3E0', color: '#FF9800' };
+        case 'Processing':
+            return { backgroundColor: '#E3F2FD', color: '#2196F3' };
+        case 'Shipped':
+            return { backgroundColor: '#F3E5F5', color: '#9C27B0' };
+        case 'Delivered':
+            return { backgroundColor: '#E8F5E9', color: '#4CAF50' };
+        case 'Cancelled':
+            return { backgroundColor: '#FFEBEE', color: '#F44336' };
+        default:
+            return { backgroundColor: '#F5F5F5', color: '#999' };
     }
 };
 
-// 4. HÀM MỚI: Lấy Icon dựa trên trạng thái
+// Hàm lấy Icon dựa trên trạng thái
 const getStatusIcon = (status: OrderStatus) => {
-    switch (status) {
+    const lowerStatus = status.toLowerCase();
+    switch (lowerStatus) {
         case 'Pending': return 'bi-clock-history';
         case 'Processing': return 'bi-box-seam';
         case 'Shipped': return 'bi-truck';
