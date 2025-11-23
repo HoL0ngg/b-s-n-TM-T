@@ -38,16 +38,7 @@ const AdminUserManagement: React.FC = () => {
             u.email.toLowerCase().includes(search.toLowerCase())
     );
 
-    const openAddUserModal = () => {
 
-        setModalType("add");
-        setFormData({
-            name: "",
-            email: "",
-            phone: "",
-            role: "customer",
-        });
-    }
 
     const openEditUserModal = (user: UserAdminType) => {
         setModalType("edit");
@@ -135,15 +126,6 @@ const AdminUserManagement: React.FC = () => {
 
             <div className="card shadow-sm">
                 <div className="card-body">
-                    <div className="d-flex justify-content-end align-items-center mb-3">
-                        <button className="btn btn-primary d-flex align-items-center gap-2"
-                            onClick={openAddUserModal}
-                            data-bs-toggle="modal"
-                            data-bs-target="#userModal">
-                            <FiUserPlus size={16} />
-                            Thêm người dùng mới
-                        </button>
-                    </div>
 
 
                     <div className="mb-3 d-flex gap-3 justify-content-between align-items-end">

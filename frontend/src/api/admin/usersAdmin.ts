@@ -33,7 +33,7 @@ export const updateUserStatusAdmin = async (
     status: number,
 ): Promise<{ message: string }> => {
     try {
-        const res = await axios.patch(`${API_URL}/users/${phone}`, {
+        const res = await axios.patch(`${API_URL}/usersStatus/${phone}`, {
             status
         }, {
             withCredentials: true
@@ -46,3 +46,48 @@ export const updateUserStatusAdmin = async (
         );
     }
 }
+
+export const createUserAdmin = async (data: {
+    phone: string;
+    name: string;
+    email: string;
+    password: string;
+    status: number;
+    role: string;
+    gender: number;
+    dob: string;
+}): Promise<{ message: string, success: boolean }> => {
+    try {
+        const res = await axios.post(`${API_URL}/users`, data, {
+            withCredentials: true
+        });
+        return res.data;
+    } catch (error: any) {
+        console.log("Lỗi createUserAdmin:", error);
+        throw new Error(error.response?.data?.message || "Không thể tạo người dùng");
+    }
+};
+
+export const updateUserAdmin = async (
+    phone: string,
+    data: {
+        name: string;
+        email: string;
+        password: string;
+        status: number;
+        role: string;
+        gender: number;
+        dob: string;
+    }
+): Promise<{ message: string }> => {
+    try {
+        const res = await axios.patch(`${API_URL}/users/${phone}`, data, {
+            withCredentials: true
+        });
+
+        return res.data;
+    } catch (error: any) {
+        console.log("Lỗi updateUserAdmin:", error);
+        throw new Error(error.response?.data?.message || "Không thể cập nhật người dùng");
+    }
+};
