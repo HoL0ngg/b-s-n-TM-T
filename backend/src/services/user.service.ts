@@ -225,5 +225,37 @@ class userService {
         const [rows] = await pool.query(query, [shopId]);
         return rows[0] as UserAdmin;
     }
+
+    submitReviewService = async (userPhone: string, orderId: number, reviewText: string, rating: number) => {
+        // Get all products from the order
+        const [orderItems] = await pool.query(
+            `SELECT product_id FROM order_items WHERE order_id = ?`,
+            [orderId]
+        ) as [any[], any];
+
+        // Insert a review for each product in the order
+        for (const item of orderItems) {
+            const query = `
+                INSERT INTO productreviews (user_id, comment, rating, created_at, product_id)
+                VALUES (?, ?, ?, NOW(), ?)
+            `;
+            await pool.query(query, [userPhone, reviewText, rating, item.product_id]);
+        }
+
+        // Mark the order as reviewed to prevent duplicate reviews
+        await pool.query(
+            `UPDATE orders SET is_reviewed = 1 WHERE order_id = ?`,
+            [orderId]
+        );
+    }
+
+    checkOrderReviewedService = async (orderId: number): Promise<boolean> => {
+        const [rows] = await pool.query(
+            `SELECT is_reviewed FROM orders WHERE order_id = ?`,
+            [orderId]
+        ) as [any[], any];
+
+        return rows.length > 0 && rows[0].is_reviewed === 1;
+    }
 }
 export default new userService();

@@ -90,6 +90,30 @@ class userController {
         }
     }
 
+    submitReviewController = async (req: Request, res: Response) => {
+        try {
+            const userPhone = (req as any).user.id;
+            const orderId = req.params.orderId;
+            const { reviewText, rating } = req.body;
+            await userService.submitReviewService(userPhone, Number(orderId), reviewText, rating);
+            res.status(200).json({ message: 'Đánh giá đã được gửi thành công!' });
+        } catch (Err) {
+            console.log(Err);
+            res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
+    }
+
+    checkOrderReviewedController = async (req: Request, res: Response) => {
+        try {
+            const orderId = req.params.orderId;
+            const isReviewed = await userService.checkOrderReviewedService(Number(orderId));
+            res.status(200).json({ isReviewed });
+        } catch (Err) {
+            console.log(Err);
+            res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
+    }
+
 }
 
 export default new userController();

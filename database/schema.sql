@@ -852,6 +852,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `order_date` datetime NOT NULL DEFAULT current_timestamp(),
   `notes` text DEFAULT NULL,
   `shop_id` int,
+  `is_reviewed` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`order_id`),
   KEY `user_id` (`user_id`),
   KEY `address_id` (`address_id`),

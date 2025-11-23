@@ -45,3 +45,16 @@ export async function createAndLinkAddress(userId: string, newData: any) {
         throw error;
     }
 }
+
+export const submitReview = async (orderId: number, reviewText: string, rating: number) => {
+    const res = await axios.post(`${API_URL}/orders/${orderId}/review`, {
+        reviewText,
+        rating
+    });
+    return res.data;
+}
+
+export const checkOrderReviewed = async (orderId: number): Promise<boolean> => {
+    const res = await axios.get(`${API_URL}/orders/${orderId}/check-reviewed`);
+    return res.data.isReviewed;
+}

@@ -12,6 +12,8 @@ UserRouter.post("/:id/address", userController.postAddressUserController)
 UserRouter.put("/:id/address/change-default", verifyToken, userController.postChangeAddressDefault)
 UserRouter.get("/:id/profile", userController.getUserProfileController);
 UserRouter.patch("/profile", verifyToken, uploadAvatar, userController.updateProfileController);
+UserRouter.post("/orders/:orderId/review", verifyToken, userController.submitReviewController);
+UserRouter.get("/orders/:orderId/check-reviewed", userController.checkOrderReviewedController);
 // UserRouter.patch('/avatar', verifyToken, uploadAvatar.single('avatar'), userController.updateAvatar);
 
 export default UserRouter;

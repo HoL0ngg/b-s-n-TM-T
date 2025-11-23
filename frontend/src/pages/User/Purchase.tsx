@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiGetOrderDetail, apiGetUserOrders } from "../../api/order";
 import type { OrderType, OrderDetailType } from "../../types/OrderType";
+import { submitReview, checkOrderReviewed } from "../../api/user";
 
 export default function Purchase() {
     const [orders, setOrders] = useState<OrderType[]>([]);
@@ -13,6 +14,12 @@ export default function Purchase() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const itemsPerPage = 10;
+    const [reviewModal, setReviewModal] = useState(false);
+    const [reviewOrderId, setReviewOrderId] = useState<number | null>(null);
+    const [reviewText, setReviewText] = useState("");
+    const [reviewRating, setReviewRating] = useState(5);
+    const [confirmedOrders, setConfirmedOrders] = useState<Set<number>>(new Set());
+    const [reviewedOrders, setReviewedOrders] = useState<Set<number>>(new Set());
 
     // Load orders based on active tab, page, and sort
     useEffect(() => {
@@ -36,6 +43,20 @@ export default function Purchase() {
 
             setOrders(ordersList);
 
+            // Check which orders have been reviewed
+            const reviewedSet = new Set<number>();
+            for (const order of ordersList) {
+                try {
+                    const isReviewed = await checkOrderReviewed(order.order_id);
+                    if (isReviewed) {
+                        reviewedSet.add(order.order_id);
+                    }
+                } catch (err) {
+                    console.error(`Failed to check review status for order ${order.order_id}`);
+                }
+            }
+            setReviewedOrders(reviewedSet);
+
             const total = data.total || ordersList.length;
             setTotalPages(Math.ceil(total / itemsPerPage));
         } catch (err: any) {
@@ -58,6 +79,33 @@ export default function Purchase() {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+    };
+
+    const handleConfirmReceived = (orderId: number) => {
+        // Add order to confirmed set
+        setConfirmedOrders(prev => new Set(prev).add(orderId));
+        alert("Đã xác nhận nhận hàng thành công!");
+    };
+
+    const handleOpenReview = (orderId: number) => {
+        setReviewOrderId(orderId);
+        setReviewModal(true);
+        setReviewText("");
+        setReviewRating(5);
+    };
+
+    const handleSubmitReview = async () => {
+        if (!reviewOrderId) return;
+
+        try {
+            await submitReview(reviewOrderId, reviewText, reviewRating);
+
+            setReviewedOrders(prev => new Set(prev).add(reviewOrderId));
+            setReviewModal(false);
+            alert("Cảm ơn bạn đã đánh giá!");
+        } catch (err) {
+            alert("Không thể gửi đánh giá. Vui lòng thử lại.");
+        }
     };
 
     const handleViewDetails = async (orderId: number) => {
@@ -205,12 +253,33 @@ export default function Purchase() {
                                         Phương thức: <span className="fw-semibold">{order.payment_method}</span>
                                     </small>
                                 </div>
-                                <button
-                                    className="btn btn-outline-primary btn-sm"
-                                    onClick={() => handleViewDetails(order.order_id)}
-                                >
-                                    Xem chi tiết
-                                </button>
+                                <div className="d-flex gap-2">
+                                    <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        onClick={() => handleViewDetails(order.order_id)}
+                                    >
+                                        Xem chi tiết
+                                    </button>
+                                    {order.status.toLowerCase() === "shipping" && !confirmedOrders.has(order.order_id) && (
+                                        <button
+                                            className="btn btn-success btn-sm"
+                                            onClick={() => handleConfirmReceived(order.order_id)}
+                                        >
+                                            Đã nhận hàng
+                                        </button>
+                                    )}
+                                    {(order.status.toLowerCase() === "delivered" || confirmedOrders.has(order.order_id)) && !reviewedOrders.has(order.order_id) && (
+                                        <button
+                                            className="btn btn-warning btn-sm"
+                                            onClick={() => handleOpenReview(order.order_id)}
+                                        >
+                                            Viết đánh giá
+                                        </button>
+                                    )}
+                                    {reviewedOrders.has(order.order_id) && (
+                                        <span className="badge bg-success align-self-center">Đã đánh giá</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -406,6 +475,77 @@ export default function Purchase() {
                                     onClick={() => setShowModal(false)}
                                 >
                                     Đóng
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Review Modal */}
+            {reviewModal && (
+                <div
+                    className="modal show d-block"
+                    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+                    onClick={() => setReviewModal(false)}
+                >
+                    <div
+                        className="modal-dialog modal-dialog-centered"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Đánh giá đơn hàng #{reviewOrderId}</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setReviewModal(false)}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label">Đánh giá của bạn</label>
+                                    <div className="d-flex gap-2 mb-3">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <i
+                                                key={star}
+                                                className={`fa${star <= reviewRating ? "s" : "r"} fa-star fa-2x`}
+                                                style={{
+                                                    cursor: "pointer",
+                                                    color: star <= reviewRating ? "#ffc107" : "#e0e0e0"
+                                                }}
+                                                onClick={() => setReviewRating(star)}
+                                            ></i>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Nhận xét (tối thiểu 10 ký tự)</label>
+                                    <textarea
+                                        className="form-control"
+                                        rows={4}
+                                        value={reviewText}
+                                        onChange={(e) => setReviewText(e.target.value)}
+                                        placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
+                                        maxLength={500}
+                                    ></textarea>
+                                    <small className="text-muted">{reviewText.length}/500 ký tự</small>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setReviewModal(false)}
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handleSubmitReview}
+                                >
+                                    Gửi đánh giá
                                 </button>
                             </div>
                         </div>
