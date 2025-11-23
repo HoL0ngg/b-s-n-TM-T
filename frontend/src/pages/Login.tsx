@@ -35,9 +35,15 @@ export default function Login() {
             handleSuccess();
         } catch (err: any) {
             console.log(err);
-
-            alert(err.response?.data?.message || "Login thất bại");
             setLoading(false);
+
+            Swal.fire({
+                icon: 'error',           // Icon dấu X đỏ
+                title: 'Đăng nhập thất bại',
+                text: err.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại sau.",
+                confirmButtonText: 'Thử lại',
+                confirmButtonColor: '#d33', // Màu đỏ cho nút
+            });
         }
     };
 

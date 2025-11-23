@@ -8,6 +8,7 @@ UsersAdminRoute.get("/users/sellers", verifyToken, usersAdminController.getSelle
 UsersAdminRoute.get("/users/buyers", verifyToken, usersAdminController.getBuyersController);
 
 UsersAdminRoute.post("/users", verifyToken, usersAdminController.createUserController);
+UsersAdminRoute.patch("/usersstatus/:phone", verifyToken, usersAdminController.updateUserStatusController);
 UsersAdminRoute.patch("/users/:phone", verifyToken, usersAdminController.updateUserController);
 
 export default UsersAdminRoute;

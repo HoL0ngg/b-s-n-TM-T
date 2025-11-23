@@ -33,7 +33,7 @@ export const updateUserStatusAdmin = async (
     status: number,
 ): Promise<{ message: string }> => {
     try {
-        const res = await axios.patch(`${API_URL}/users/${phone}`, {
+        const res = await axios.patch(`${API_URL}/usersStatus/${phone}`, {
             status
         }, {
             withCredentials: true
@@ -55,7 +55,8 @@ export const createUserAdmin = async (data: {
     status: number;
     role: string;
     gender: number;
-}): Promise<{ message: string }> => {
+    dob: string;
+}): Promise<{ message: string, success: boolean }> => {
     try {
         const res = await axios.post(`${API_URL}/users`, data, {
             withCredentials: true
@@ -76,6 +77,7 @@ export const updateUserAdmin = async (
         status: number;
         role: string;
         gender: number;
+        dob: string;
     }
 ): Promise<{ message: string }> => {
     try {

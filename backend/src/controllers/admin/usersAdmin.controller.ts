@@ -39,7 +39,11 @@ class usersAdminController {
             if (!success) {
                 return res.status(404).json({ message: "Người dùng không tồn tại." });
             }
-            res.status(200).json({ message: 'Cập nhật trạng thái người dùng thành công' });
+            if (status === 1) {
+                return res.status(200).json({ message: "Mở khóa người dùng thành công." });
+            } else {
+                return res.status(200).json({ message: "Khóa người dùng thành công." });
+            }
         } catch (error) {
             log("Lỗi trong updateUserStatusController:", error);
             res.status(500).json({ message: 'Internal server error' });

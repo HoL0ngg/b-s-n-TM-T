@@ -190,7 +190,12 @@ class userService {
             const total = countResult[0]?.total || 0;
             const totalPage = Math.ceil(total / limit);
             let query = `
-            SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name, uf.gender, u.avatar_url
+            SELECT u.phone_number as phone, 
+            u.email, u.status, 
+            u.created_at, 
+            uf.username AS name, 
+            uf.gender, 
+            DATE_FORMAT(uf.dob, '%Y-%m-%d') as dob
             FROM users u
             JOIN user_profile uf ON u.phone_number = uf.phone_number                        
             ${whereClause}
@@ -237,9 +242,15 @@ class userService {
                 email,
                 password,
                 role,
+                dob,
                 name,
                 gender
             } = data;
+            const [existingUser] = await connection.query<RowDataPacket[]>(`SELECT phone_number FROM users WHERE phone_number = ?`, [phone]);
+            if (existingUser.length > 0) {
+                return { message: "Số điện thoại đã tồn tại!", success: false };
+            }
+            // console.log(dob);
 
             const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -249,17 +260,16 @@ class userService {
              VALUES (?, ?, ?, ?)`,
                 [phone, email, hashedPassword, role || "customer"]
             );
-
             // Insert user_profile
             await connection.query(
-                `INSERT INTO user_profile (phone_number, username, gender, updated_at)
-             VALUES (?, ?, ?, NOW())`,
-                [phone, name || null, gender || null]
+                `INSERT INTO user_profile (phone_number, username, gender, dob,updated_at)
+             VALUES (?, ?, ?, ?, NOW())`,
+                [phone, name || null, gender || null, dob || null]
             );
 
             await connection.commit();
 
-            return { message: "User created successfully" };
+            return { message: "Thêm người dùng mới thành công!", success: true };
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -278,7 +288,7 @@ class userService {
                 status,
                 role,
                 name,
-                // dob,
+                dob,
                 gender
             } = data;
 
@@ -320,10 +330,10 @@ class userService {
                 profileFields.push("username = ?");
                 profileValues.push(name);
             }
-            // if (dob !== undefined) {
-            //     profileFields.push("dob = ?");
-            //     profileValues.push(dob);
-            // }
+            if (dob !== undefined) {
+                profileFields.push("dob = ?");
+                profileValues.push(dob);
+            }
             if (gender !== undefined) {
                 profileFields.push("gender = ?");
                 profileValues.push(gender);
