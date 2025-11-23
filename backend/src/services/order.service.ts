@@ -129,8 +129,8 @@ class OrderService {
             await connection.beginTransaction();
 
             const needed = new Map();
-            for(const shopOrder of shopOrders) {
-                for(const item of shopOrder.items) {
+            for (const shopOrder of shopOrders) {
+                for (const item of shopOrder.items) {
                     const variant_id = Number(item.variant_id);
                     const quantity = Number(item.quantity);
                     needed.set(variant_id, (needed.get(variant_id) || 0) + quantity);
@@ -141,7 +141,7 @@ class OrderService {
 
             // Khoá productVariantRows
             const placeholders = variantIds.map(() => '?').join(',');
-            
+
             const [prodRows] = await connection.query<RowDataPacket[]>(
                 `SELECT id, stock FROM productvariants WHERE id IN (${placeholders}) FOR UPDATE`,
                 variantIds
@@ -151,13 +151,13 @@ class OrderService {
             for (const row of prodRows) {
                 stockMap.set(Number(row.id), Number(row.stock));
             }
-            
+
             const insufficient: {
                 variantId: Number,
                 stock: Number,
                 needed: Number
             }[] = [];
-            
+
             for (const [variantId, needQuantity] of needed.entries()) {
                 const avail = stockMap.has(variantId) ? stockMap.get(variantId) : null;
                 if (avail === null || avail < needQuantity) {
@@ -168,16 +168,16 @@ class OrderService {
                     })
                 }
             }
-            
+
             if (insufficient.length > 0) {
                 const error = new Error(`Không đủ sản phẩm`);
                 (error as any).status = 409;
                 (error as any).details = insufficient;
                 throw error;
             }
-            
+
             const orderIds: number[] = [];
-    
+
             for (const shopOrder of shopOrders) {
                 const [orderResult]: any = await connection.execute(
                     `
@@ -187,11 +187,11 @@ class OrderService {
                     `,
                     [userId, shopOrder.shop_id, shopOrder.total_amount, opts.address_id, shopOrder.shipping_fee, `Pending`, opts.payment_method ?? "cod", `Unpaid`, opts.notes ?? null]
                 );
-                    
+
                 const orderId = orderResult.insertId;
                 orderIds.push(orderId);
-    
-                for(const item of shopOrder.items) {
+
+                for (const item of shopOrder.items) {
                     const subTotal = item.price_at_purchase * item.quantity;
                     await connection.execute(
                         `
@@ -203,7 +203,7 @@ class OrderService {
                     );
                 }
             }
-            
+
             for (const [variantId, needQuantity] of needed.entries()) {
                 const prev = stockMap.get(variantId);
                 const newStock = prev - needQuantity;
@@ -216,7 +216,7 @@ class OrderService {
             await connection.commit();
             return orderIds;
         } catch (error) {
-            await connection.rollback();    
+            await connection.rollback();
             throw error;
         } finally {
             connection.release();
@@ -229,6 +229,45 @@ class OrderService {
             [newPaymentStatus, orderId]
         );
         return result.affectedRows > 0;
+    }
+
+    getUserOrder = async (userId: string, page: number, limit: number, status?: string) => {
+        const offset = (page - 1) * limit;
+
+        const params: any[] = [userId];
+        let whereSql = "WHERE o.user_id = ?";
+
+        // Lọc theo trạng thái
+        if (status && status !== 'all') {
+            whereSql += " AND o.status = ?";
+            params.push(status);
+        }
+        // Truy vấn đếm tổng (cho phân trang)
+        const countSql = `
+            SELECT COUNT(*) as total
+            FROM orders o
+            ${whereSql}
+        `;
+        const [countRows] = await pool.query<RowDataPacket[]>(countSql, params);
+        const totalOrders = countRows[0].total;
+        const totalPages = Math.ceil(totalOrders / limit);
+        // Truy vấn lấy dữ liệu
+        const dataSql = `
+            SELECT
+                o.order_id, o.order_date, o.total_amount, o.status, o.payment_method,
+                s.name as shop_name
+            FROM orders o
+            JOIN shops s ON o.shop_id = s.id
+            ${whereSql}
+            ORDER BY o.order_date DESC
+            LIMIT ? OFFSET ?
+        `;
+        const [rows] = await pool.query<RowDataPacket[]>(dataSql, [...params, limit, offset]);
+        const result = {
+            orders: rows,
+            pagination: { page, limit, totalOrders, totalPages }
+        };
+        return result;
     }
 }
 export default new OrderService();

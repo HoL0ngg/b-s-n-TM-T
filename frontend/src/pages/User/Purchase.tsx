@@ -1,34 +1,417 @@
+import { useEffect, useState } from "react";
+import { apiGetOrderDetail, apiGetUserOrders } from "../../api/order";
+import type { OrderType, OrderDetailType } from "../../types/OrderType";
+
 export default function Purchase() {
+    const [orders, setOrders] = useState<OrderType[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [activeTab, setActiveTab] = useState("all");
+    const [selectedOrder, setSelectedOrder] = useState<OrderDetailType | null>(null);
+    const [showModal, setShowModal] = useState(false);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // Sort order for date
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 10;
+
+    // Load orders based on active tab, page, and sort
+    useEffect(() => {
+        loadOrders(activeTab, currentPage);
+    }, [activeTab, currentPage]);
+
+    const loadOrders = async (status: string, page: number = 1) => {
+        setLoading(true);
+        setError("");
+        try {
+            const data = await apiGetUserOrders(page, itemsPerPage, status);
+            console.log(data);
+
+            let ordersList = data.orders || data || [];
+
+            ordersList = ordersList.sort((a: OrderType, b: OrderType) => {
+                const dateA = new Date(a.order_date).getTime();
+                const dateB = new Date(b.order_date).getTime();
+                return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+            });
+
+            setOrders(ordersList);
+
+            const total = data.total || ordersList.length;
+            setTotalPages(Math.ceil(total / itemsPerPage));
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Không thể tải đơn hàng");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSortToggle = () => {
+        setSortOrder(sortOrder === "desc" ? "asc" : "desc");
+        // Re-sort current orders
+        const sorted = [...orders].sort((a, b) => {
+            const dateA = new Date(a.order_date).getTime();
+            const dateB = new Date(b.order_date).getTime();
+            return sortOrder === "desc" ? dateA - dateB : dateB - dateA;
+        });
+        setOrders(sorted);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handleViewDetails = async (orderId: number) => {
+        try {
+            const data = await apiGetOrderDetail(orderId);
+            setSelectedOrder(data);
+            setShowModal(true);
+        } catch (err: any) {
+            alert("Không thể tải chi tiết đơn hàng");
+        }
+    };
+
+    const getStatusBadge = (status: string) => {
+        const statusMap: { [key: string]: { class: string; text: string } } = {
+            pending: { class: "bg-warning text-dark", text: "Chờ xác nhận" },
+            confirmed: { class: "bg-info text-white", text: "Đã xác nhận" },
+            shipping: { class: "bg-primary", text: "Đang giao" },
+            delivered: { class: "bg-success", text: "Hoàn thành" },
+            cancelled: { class: "bg-danger", text: "Đã hủy" },
+        };
+        const s = statusMap[status.toLowerCase()] || { class: "bg-secondary", text: status };
+        return <span className={`badge ${s.class}`}>{s.text}</span>;
+    };
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("vi-VN");
+    };
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+        }).format(amount);
+    };
+
+
     return (
-        <div>
-            <h5 className="mb-4">Đơn hàng của tôi</h5>
-
-            {/* Ví dụ danh sách đơn hàng */}
-            <div className="list-group">
-                <div className="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Đơn hàng #12345</strong> <br />
-                        <small className="text-muted">Ngày đặt: 01/10/2025</small>
-                    </div>
-                    <span className="badge bg-warning text-dark">Đang xử lý</span>
-                </div>
-
-                <div className="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Đơn hàng #12344</strong> <br />
-                        <small className="text-muted">Ngày đặt: 20/09/2025</small>
-                    </div>
-                    <span className="badge bg-success">Hoàn thành</span>
-                </div>
-
-                <div className="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>Đơn hàng #12343</strong> <br />
-                        <small className="text-muted">Ngày đặt: 15/09/2025</small>
-                    </div>
-                    <span className="badge bg-danger">Đã hủy</span>
-                </div>
+        <div className="container mt-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">Đơn hàng của tôi</h4>
+                <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={handleSortToggle}
+                >
+                    <i className={`fas fa-sort-amount-${sortOrder === "desc" ? "down" : "up"}`}></i>
+                    {" "}
+                    Ngày đặt: {sortOrder === "desc" ? "Mới nhất" : "Cũ nhất"}
+                </button>
             </div>
+
+            {/* Tabs for filtering orders */}
+            <ul className="nav nav-tabs mb-4">
+                <li className="nav-item">
+                    <button
+                        className={`nav-link ${activeTab === "all" ? "active text-primary fw-semibold" : "text-muted"}`}
+                        onClick={() => setActiveTab("all")}
+                    >
+                        Tất cả
+                    </button>
+                </li>
+                <li className="nav-item">
+                    <button
+                        className={`nav-link ${activeTab === "pending" ? "active text-primary fw-semibold" : "text-muted"}`}
+                        onClick={() => setActiveTab("pending")}
+                    >
+                        Chờ xác nhận
+                    </button>
+                </li>
+                <li className="nav-item">
+                    <button
+                        className={`nav-link ${activeTab === "shipping" ? "active text-primary fw-semibold" : "text-muted"}`}
+                        onClick={() => setActiveTab("shipping")}
+                    >
+                        Đang giao
+                    </button>
+                </li>
+                <li className="nav-item">
+                    <button
+                        className={`nav-link ${activeTab === "delivered" ? "active text-primary fw-semibold" : "text-muted"}`}
+                        onClick={() => setActiveTab("delivered")}
+                    >
+                        Hoàn thành
+                    </button>
+                </li>
+                <li className="nav-item">
+                    <button
+                        className={`nav-link ${activeTab === "cancelled" ? "active text-primary fw-semibold" : "text-muted"}`}
+                        onClick={() => setActiveTab("cancelled")}
+                    >
+                        Đã hủy
+                    </button>
+                </li>
+            </ul>
+
+            {/* Loading state */}
+            {loading && (
+                <div className="text-center py-5">
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Error state */}
+            {error && <div className="alert alert-danger">{error}</div>}
+
+            {/* Orders list */}
+            {!loading && !error && orders.length === 0 && (
+                <div className="text-center py-5">
+                    <p className="text-muted">Chưa có đơn hàng nào</p>
+                </div>
+            )}
+
+            {!loading && !error && orders.length > 0 && (
+                <div className="list-group">
+                    {orders.map((order) => (
+                        <div
+                            key={order.order_id}
+                            className="list-group-item list-group-item-action mb-3"
+                        >
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong>Đơn hàng #{order.order_id}</strong>
+                                    <br />
+                                    <small className="text-muted">
+                                        Ngày đặt: <span className="fw-semibold">{formatDate(order.order_date)}</span>
+                                    </small>
+                                    {order.shop_name && (
+                                        <>
+                                            <br />
+                                            <small className="text-muted">
+                                                Cửa hàng: <span className="fw-semibold">{order.shop_name}</span>
+                                            </small>
+                                        </>
+                                    )}
+                                </div>
+                                {getStatusBadge(order.status)}
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong className="text-primary">Tổng tiền: {formatCurrency(order.total_amount)}</strong>
+                                    <br />
+                                    <small className="text-muted">
+                                        Phương thức: <span className="fw-semibold">{order.payment_method}</span>
+                                    </small>
+                                </div>
+                                <button
+                                    className="btn btn-outline-primary btn-sm"
+                                    onClick={() => handleViewDetails(order.order_id)}
+                                >
+                                    Xem chi tiết
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && !error && orders.length > 0 && totalPages > 1 && (
+                <nav className="mt-4">
+                    <ul className="pagination justify-content-center">
+                        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                            <button
+                                className="page-link"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                Trước
+                            </button>
+                        </li>
+                        {[...Array(totalPages)].map((_, index) => {
+                            const page = index + 1;
+                            // Show first page, last page, current page, and pages around current
+                            if (
+                                page === 1 ||
+                                page === totalPages ||
+                                (page >= currentPage - 1 && page <= currentPage + 1)
+                            ) {
+                                return (
+                                    <li
+                                        key={page}
+                                        className={`page-item ${currentPage === page ? "active" : ""}`}
+                                    >
+                                        <button
+                                            className="page-link"
+                                            onClick={() => handlePageChange(page)}
+                                        >
+                                            {page}
+                                        </button>
+                                    </li>
+                                );
+                            } else if (
+                                page === currentPage - 2 ||
+                                page === currentPage + 2
+                            ) {
+                                return (
+                                    <li key={page} className="page-item disabled">
+                                        <span className="page-link">...</span>
+                                    </li>
+                                );
+                            }
+                            return null;
+                        })}
+                        <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                            <button
+                                className="page-link"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                Sau
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            )}
+
+            {/* Order Details Modal */}
+            {showModal && selectedOrder && (
+                <div
+                    className="modal show d-block"
+                    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+                    onClick={() => setShowModal(false)}
+                >
+                    <div
+                        className="modal-dialog modal-lg modal-dialog-scrollable"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">
+                                    Chi tiết đơn hàng #{selectedOrder.id}
+                                </h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setShowModal(false)}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                {/* Order Info */}
+                                <div className="mb-3">
+                                    <h6>Thông tin đơn hàng</h6>
+                                    <p className="mb-1">
+                                        <strong>Ngày đặt:</strong>{" "}
+                                        {formatDate(selectedOrder.order_date)}
+                                    </p>
+                                    <p className="mb-1">
+                                        <strong>Trạng thái:</strong>{" "}
+                                        {getStatusBadge(selectedOrder.status)}
+                                    </p>
+                                    <p className="mb-1">
+                                        <strong>Phương thức thanh toán:</strong>{" "}
+                                        {selectedOrder.payment_method}
+                                    </p>
+                                    {selectedOrder.note && (
+                                        <p className="mb-1">
+                                            <strong>Ghi chú:</strong> {selectedOrder.note}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Shipping Info */}
+                                <div className="mb-3">
+                                    <h6>Thông tin giao hàng</h6>
+                                    <p className="mb-1">
+                                        <strong>Địa chỉ:</strong> {selectedOrder.shipping_address}
+                                    </p>
+                                    <p className="mb-1">
+                                        <strong>Số điện thoại:</strong> {selectedOrder.phone_number}
+                                    </p>
+                                </div>
+
+                                {/* Shop Info */}
+                                {selectedOrder.shop_name && (
+                                    <div className="mb-3">
+                                        <h6>Thông tin cửa hàng</h6>
+                                        <p className="mb-1">
+                                            <strong>Tên:</strong> {selectedOrder.shop_name}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Order Items */}
+                                <div className="mb-3">
+                                    <h6>Sản phẩm</h6>
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sản phẩm</th>
+                                                    <th>Số lượng</th>
+                                                    <th>Đơn giá</th>
+                                                    <th>Thành tiền</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {selectedOrder.items?.map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <div className="d-flex align-items-center">
+                                                                {item.image_url && (
+                                                                    <img
+                                                                        src={item.image_url}
+                                                                        alt={item.product_name}
+                                                                        style={{
+                                                                            width: "50px",
+                                                                            height: "50px",
+                                                                            objectFit: "cover",
+                                                                            marginRight: "10px",
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                                <div>
+                                                                    {item.product_name}
+                                                                    {item.options_string && (
+                                                                        <small className="text-muted d-block">
+                                                                            {item.options_string}
+                                                                        </small>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>{item.quantity}</td>
+                                                        <td>{formatCurrency(item.price_at_purchase)}</td>
+                                                        <td>{formatCurrency(item.subtotal)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* Total */}
+                                <div className="text-end">
+                                    <h5>
+                                        Tổng cộng: {formatCurrency(selectedOrder.total_amount)}
+                                    </h5>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowModal(false)}
+                                >
+                                    Đóng
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import path from "path"; 
+import path from "path";
 
 // Tất cả các routes
 import chatRoutes from "./routes/chat.route";
@@ -28,7 +28,7 @@ const app = express();
 
 // Cấu hình Parser (Để đọc JSON và Form Data)
 app.use(bodyParser.json());
-app.use(express.json()); 
+app.use(express.json());
 
 // ===== 1. CẤU HÌNH THƯ MỤC TĨNH (PUBLIC) =====
 app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
@@ -55,9 +55,9 @@ app.use("/api/shop-categories", shopCategoryRoutes);
 
 app.use('/api/payments', paymentRouter);
 app.use("/api/admin/productsAdmin", ProductsAdminRoute);
-app.use('/api/shopinfo', shopInfoRoutes); 
+app.use('/api/shopinfo', shopInfoRoutes);
 app.use("/api/admin", AdminRouter);
-app.use("/api", orderRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/api/admin/shopsAdmin", ShopsAdminRoute);
 app.use("/api/admin/usersAdmin", UsersAdminRoute);
 app.use("/api/admin/ordersAdmin", OrdersAdminRoute);

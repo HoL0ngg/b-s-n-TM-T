@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verifyToken as authenticateToken } from '../middleware/auth.middleware';
+import { verifyToken as authenticateToken, verifyToken } from '../middleware/auth.middleware';
 import orderController from '../controllers/order.controller';
 
 const router = Router();
@@ -10,17 +10,18 @@ router.use(authenticateToken);
  * ======================================== */
 
 // 2. ROUTE CỤ THỂ (returns) PHẢI NẰM TRƯỚC
-router.get('/shop/orders/returns', orderController.getShopReturnsController);
+router.get('/shop/returns', orderController.getShopReturnsController);
 
 // Route cho danh sách chung
-router.get('/shop/orders', orderController.getShopOrdersController);
+router.get('/shop', orderController.getShopOrdersController);
 
 // Route cho cập nhật status
-router.put('/shop/orders/:orderId/status', orderController.updateShopOrderStatusController);
+router.put('/shop/:orderId/status', orderController.updateShopOrderStatusController);
 
 // 3. ROUTE ĐỘNG (với :orderId) PHẢI NẰM CUỐI CÙNG
-router.get('/shop/orders/:orderId', orderController.getShopOrderDetailController);
+router.get('/shop/:orderId', orderController.getShopOrderDetailController);
 
-router.get('/orders', orderController.getAllOrder);
-router.get('/orders/:id', orderController.getDetailOrder);
+router.get('/', orderController.getAllOrder);
+router.get('/user', verifyToken, orderController.getUserOrder);
+router.get('/:id', orderController.getDetailOrder);
 export default router;

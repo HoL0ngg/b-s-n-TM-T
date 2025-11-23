@@ -89,6 +89,22 @@ class OrderController {
             res.status(404).json({ message: error.message || "Lỗi lấy chi tiết đơn hàng" });
         }
     }
+
+    getUserOrder = async (req: Request, res: Response) => {
+        try {
+
+            const userId = (req as any).user.id;
+            const status = req.query.status as string | undefined;
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 10;
+            const result = await orderService.getUserOrder(userId, page, limit, status);
+
+            res.json(result);
+        } catch (error: any) {
+            console.error(error);
+            res.status(404).json({ message: error.message || "Lỗi lấy đơn hàng của người dùng" });
+        }
+    }
 }
 
 export default new OrderController();
