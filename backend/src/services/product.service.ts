@@ -7,6 +7,8 @@ import { Product, ProductReview, ProductDetails, AttributeOfProductVariants, Bra
 import { ResultSetHeader } from 'mysql2';
 import { paginationProducts } from "../helpers/pagination.helper";
 
+type CategoryCount = { id: number; name: string; match_count: number };
+
 class productService {
     getProductOnIdService = async (id: number): Promise<Product> => {
         // SỬA: Thêm 'AND status = 1'
@@ -406,9 +408,38 @@ class productService {
         const [rows] = await pool.query(sql);
         return rows;
     }
-    getProductsService = async (whereClause: string, params: any[], page: number = 1, limit: number = 12, orderBy: string = ""): Promise<ProductResponse> => {
-        return paginationProducts(whereClause, params, page, limit, orderBy);
-    }
+    getProductsService = async (
+        whereClause: string,
+        params: any[],
+        page: number = 1,
+        limit: number = 12,
+        orderBy: string = "",
+        orderParams: any[] = []
+      ) => {
+        return paginationProducts(whereClause, params, page, limit, orderBy, orderParams);
+        };
+
+    getRelatedCategoriesByKeyword = async (keyword: string): Promise<CategoryCount[]> => {
+        if (!keyword || keyword.trim().length === 0) return [];
+        
+        const like = `%${keyword.trim()}%`;
+
+        const sql = `
+            SELECT c.id, c.name, COUNT(DISTINCT p.id) AS match_count
+            FROM categories c
+            JOIN generic gen ON gen.category_id = c.id
+            JOIN v_products_list p ON p.generic_id = gen.id
+            WHERE p.status = 1
+            AND p.shop_status = 1
+            AND (p.name LIKE ? OR p.description LIKE ?)
+            GROUP BY c.id
+            ORDER BY match_count DESC
+            LIMIT 20
+        `;
+        const params = [like, like];
+        const [rows] = await pool.query<RowDataPacket[] & CategoryCount[]>(sql, params);
+        return (rows as CategoryCount[]).map(r => ({ id: Number(r.id), name: r.name, match_count: Number(r.match_count) }));
+    };
     getAllAttributesService = async () => {
         const [rows] = await pool.query("SELECT id, name FROM product_attributes");
         return rows;

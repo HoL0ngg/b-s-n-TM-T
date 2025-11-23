@@ -882,3 +882,44 @@
   margin-bottom: 1rem;
   /* Thêm khoảng cách giữa các đoạn văn */
 }
+.sort-tabs {
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sort-tab {
+  border-radius: 0;
+  padding: 0.35rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #ee4d2d;
+  background: transparent;
+  border: 1px solid rgba(238,77,45,0.6);
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.sort-tab:not(.active):hover {
+  background: rgba(238,77,45,0.08);
+}
+
+.sort-tab.active {
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a2b, #ee4d2d);
+  border-color: #ee4d2d;
+  box-shadow: 0 0 0 0 rgba(0,0,0,0);
+}
+
+.sort-tab:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(238,77,45,0.2);
+}
+
+@media (max-width: 480px) {
+  .sort-tabs {
+    gap: 0.4rem;
+  }
+  .sort-tab {
+    padding: 0.2rem 0.7rem;
+    font-size: 0.825rem;
+  }
+}

@@ -241,82 +241,131 @@ class productController {
     // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
-            const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
-            const categoryId = Number(req.params.id);
-
+          const {
+            page = 1,
+            limit = 12,
+            sort = "default",
+            subCategoryId,
+            minPrice,
+            maxPrice,
+            brand,
+            q,
+          } = req.query as any;
+      
+          const categoryId = req.params.id ? Number(req.params.id) : undefined;
+      
             // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
-            let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
-            const params: any[] = [];
+          let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
+          const params: any[] = [];
 
+          // Search mode (q) OR Category mode
+          let isSearch = false;
+          if (q && String(q).trim().length > 0) {
+            isSearch = true;
+            const keyword = String(q).trim();
+            whereClause += ` AND (v_products_list.name LIKE ? OR v_products_list.description LIKE ?)`;
+            const like = `%${keyword}%`;
+            params.push(like, like);
+          } else {
+            // Category logic
             if (subCategoryId && Number(subCategoryId) !== 0) {
-                whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
-                params.push(Number(subCategoryId));
-            }
-            else if (categoryId) {
+              whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
+              params.push(Number(subCategoryId));
+            } else
+            if (categoryId) {
                 // Sửa lỗi: Phải là v_products_list.generic_id
-                whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
-                params.push(categoryId);
+              whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+              params.push(categoryId);
             }
-            if (minPrice) {
-                whereClause += " AND v_products_list.base_price >= ?";
-                params.push(minPrice);
+          }
+      
+          if (minPrice) {
+            whereClause += " AND v_products_list.base_price >= ?";
+            params.push(minPrice);
+          }
+          if (maxPrice) {
+            whereClause += " AND v_products_list.base_price <= ?";
+            params.push(maxPrice);
+          }
+          if (brand && typeof brand === "string" && brand.length > 0) {
+            const brandIds = brand.split(",").map(Number).filter(Boolean);
+            if (brandIds.length > 0) {
+              const placeholders = brandIds.map(() => "?").join(",");
+              whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
+              params.push(...brandIds);
             }
-            if (maxPrice) {
-                whereClause += " AND v_products_list.base_price <= ?";
-                params.push(maxPrice);
-            }
-            if (brand && typeof brand === "string" && brand.length > 0) {
-                const brandIds = brand.split(",").map(Number).filter(Boolean);
-                if (brandIds.length > 0) {
-                    const placeholders = brandIds.map(() => "?").join(",");
-                    whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
-                    params.push(...brandIds);
-                }
-            }
+          }
+          let orderBy = "";
+          let orderParams: any[] = [];
+          switch (sort) {
+            case "priceAsc":
+            case "priceAsc".toLowerCase():
+              orderBy = "ORDER BY v_products_list.base_price ASC";
+              break;
+            case "priceDesc":
+            case "priceDesc".toLowerCase():
+              orderBy = "ORDER BY v_products_list.base_price DESC";
+              break;
+            case "newest":
+              orderBy = "ORDER BY v_products_list.created_at DESC";
+              break;
+            case "best_seller":
+              orderBy = "ORDER BY IFNULL(v_products_list.sold_count,0) DESC";
+              break;
+            case "relevance":
+              if (isSearch) {
+                // approximate relevance: name matches weighted higher than description
+                // We need placeholders for the LIKE checks (we'll re-use keyword)
+                orderBy = `ORDER BY ((v_products_list.name LIKE ?) * 2 + (v_products_list.description LIKE ?)) DESC`;
+                const keyword = `%${String(q).trim()}%`;
+                orderParams = [keyword, keyword];
+              } else {
+                // if no q and user asked relevance, fallback to newest
+                orderBy = "ORDER BY v_products_list.created_at DESC";
+              }
+              break;
+            default:
+              orderBy = "";
+          }
+      
+          const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy, orderParams);
+      
+          let brandsPromise;
+          if (subCategoryId && Number(subCategoryId) !== 0) {
+            brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
+          } else if (categoryId) {
+            brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
+          } else {
+            brandsPromise = Promise.resolve([]);
+          }
 
-            // (Không sort bằng SQL, để logic của 'main' sort bằng JS)
-            let orderBy = "";
+          const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
 
-            const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy);
-
-            let brandsPromise;
-            if (subCategoryId && Number(subCategoryId) !== 0) {
-                brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
-            } else if (categoryId) {
-                brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
-            }
-
-            const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
-
-            // Lấy logic `sort` (sắp xếp) của 'main' (đồng đội)
-            let sortedProducts = [...productResult.products];
-            switch (sort) {
-                case "priceAsc":
-                    sortedProducts.sort((a, b) => a.base_price - b.base_price);
-                    break;
-                case "priceDesc":
-                    sortedProducts.sort((a, b) => b.base_price - a.base_price);
-                    break;
-                default:
-                    // Mặc định
-                    break;
-            }
-
-            res.status(200).json({
-                products: sortedProducts, // Trả về mảng đã sort
-                totalPages: productResult.totalPages,
-                brands: brandsResult,
-            });
+          res.status(200).json({
+            products: productResult.products,
+            totalPages: productResult.totalPages,
+            brands: brandsResult,
+          });
         } catch (error) {
-            console.error("Lỗi tại getProductsController:", error);
-            res.status(500).json({
-                message: "Lỗi máy chủ nội bộ",
-                error: error instanceof Error ? error.message : "Lỗi không xác định",
-            });
+          console.error("Lỗi tại getProductsController:", error);
+          res.status(500).json({
+            message: "Lỗi máy chủ nội bộ",
+            error: error instanceof Error ? error.message : "Lỗi không xác định",
+          });
+        }
+      };
+    // ===== KẾT THÚC TRỘN (MERGE) HÀM NÀY =====
+    getRelatedCategoriesController = async (req: Request, res: Response) => {
+        try {
+          const q = String(req.query.q || "").trim();
+          if (!q) return res.status(200).json([]);
+          const cats = await productService.getRelatedCategoriesByKeyword(q);
+          return res.status(200).json(cats);
+        } catch (err) {
+          console.error("getRelatedCategoriesController error:", err);
+          return res.status(500).json({ message: "Lỗi server", error: (err as Error).message ?? err });
         }
     };
-    // ===== KẾT THÚC TRỘN (MERGE) HÀM NÀY =====
-
     getAllAttributesController = async (req: Request, res: Response) => {
         try {
             const attributes = await productService.getAllAttributesService();

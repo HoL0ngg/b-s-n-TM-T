@@ -49,6 +49,7 @@ import AdminPayouts from "./pages/Admin/AdminPayouts";
 import AdminShopDetail from "./pages/Admin/AdminShopDetail";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import AdminOrders from "./pages/Admin/AdminOrders";
+import SearchPage from "./pages/SearchPage";
 
 function App() {
   return (
@@ -62,6 +63,7 @@ function App() {
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/category/:id" element={<Category />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />
           <Route path="/shop/:id" element={<Shop />} />

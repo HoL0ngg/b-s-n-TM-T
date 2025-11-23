@@ -56,6 +56,8 @@ ProductRouter.get("/recommend/new", productController.getNewProducts);
 ProductRouter.get("/recommend/hot", productController.getHotProducts);
 ProductRouter.get("/attributes/all", productController.getAllAttributesController);
 ProductRouter.get("/category/:id", productController.getProductsController);
+ProductRouter.get("/search", productController.getProductsController);
+ProductRouter.get("/related-categories", productController.getRelatedCategoriesController);
 ProductRouter.get("/shop/:id", productController.getProductOnShopIdController);
 ProductRouter.get("/:id/images", productController.getProductImgOnIdController);
 ProductRouter.get("/:id/reviews", productController.getReviewByProductIdController);

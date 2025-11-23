@@ -92,7 +92,7 @@ export const fetchProductsByKeyWord = async (keyword: string): Promise<ProductTy
     const res = await axios.get(`${API_URL}/product/search?keyword=${keyword}`);
     return res.data;
 }
-export const fetchProducts = async (query: any, category_id: number): Promise<ProductResponseType> => {
+export const fetchProducts = async (query: any, category_id?: number): Promise<ProductResponseType> => {
     const params = new URLSearchParams();
     params.append("page", query.page);
     params.append("limit", query.limit);
@@ -102,19 +102,39 @@ export const fetchProducts = async (query: any, category_id: number): Promise<Pr
     if (query.sort && query.sort !== "default") {
         params.append('sort', query.sort);
     }
-    if (query.minPrice !== null) {
-        params.append('minPrice', query.minPrice);
+    if (query.minPrice !== null && query.minPrice !== undefined) {
+        params.append('minPrice', String(query.minPrice));
     }
-    if (query.maxPrice !== null) {
-        params.append('maxPrice', query.maxPrice);
+    if (query.maxPrice !== null && query.maxPrice !== undefined) {
+        params.append('maxPrice', String(query.maxPrice));
     }
     if (query.brand && query.brand.length > 0) {
         params.append('brand', query.brand.join(','));
     }
-    const res = await axios.get(`${API_URL}/category/${category_id}?${params.toString()}`);
-    return res.data;
-}
+    // Search mode
+    if (query.q) {
+        console.log("Query");
+        params.append('q', query.q);
+        const res = await axios.get(`${API_URL}/search?${params.toString()}`);
+        return res.data;
+    }
 
+    // Category mode
+    if (category_id) {
+        const res = await axios.get(`${API_URL}/category/${category_id}?${params.toString()}`);
+        return res.data;
+    }
+
+    // Chỗ này có thể hiện tất cả. *** Chưa xử lý ***. Note: Chắc cũng không xảy ra.
+    const res = await axios.get(`${API_URL}/products?${params.toString()}`);
+    return res.data;
+};
+export const fetchRelatedCategories = async (keyword: string) => {
+    if (!keyword) return [];
+    const params = new URLSearchParams({ q: keyword });
+    const res = await axios.get(`${API_URL}/related-categories?${params.toString()}`);
+    return res.data;
+};
 // (Hàm lấy thuộc tính - của bạn (qhuykuteo))
 export interface AttributeType {
     id: number;

@@ -32,6 +32,8 @@ export default function Navbar() {
     const [checkingShop, setCheckingShop] = useState(false);
     const [keyword, setKeyWord] = useState<string>("");
     const [products, setProducts] = useState<ProductType[]>([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+
     console.log(user);
 
 
@@ -100,6 +102,19 @@ export default function Navbar() {
         }
     };
 
+    const handleNavigateToSearch = (kw?: string) => {
+        const q = (kw ?? keyword ?? "").trim();
+        if (!q) return;
+        // Điều hướng tới SearchPage với query param 'q'
+        setShowDropdown(false);
+        navigate(`/search?q=${encodeURIComponent(q)}`);
+      };
+      
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setShowDropdown(false);
+        handleNavigateToSearch();
+    };
 
     //  Hàm fetch và debounce tìm kiếm
     const fetchProducts = async (val: string) => {
@@ -141,80 +156,113 @@ export default function Navbar() {
 
                     {/* 🔍 Thanh tìm kiếm */}
                     <form
-                        onSubmit={(e) => e.preventDefault()}
-                        className="d-flex mx-auto"
+                    onSubmit={handleSubmit}
+                    className="d-flex mx-auto"
+                    style={{
+                        maxWidth: "600px",
+                        width: "100%",
+                        position: "relative",
+                        height: "46px",
+                    }}
+                    >
+                    <input
+                        className="form-control shadow"
+                        placeholder="Tìm sản phẩm..."
+                        aria-label="Search"
+                        value={keyword}
+                        onChange={(e) => { 
+                            setKeyWord(e.target.value);
+                            setShowDropdown(true);
+                        }}
+                    />
+
+                    {/* Biến icon thành nút submit để click cũng tìm */}
+                    <button
+                        type="submit"
+                        aria-label="Tìm"
+                        className="btn p-2 rounded-circle"
                         style={{
-                            maxWidth: "600px",
-                            width: "100%",
-                            position: "relative",
-                            height: "46px",
+                        position: "absolute",
+                        right: "14px",
+                        top: "50%",
+                        translate: "0 -50%",
+                        color: "white",
+                        background: "transparent",
+                        border: "none",
                         }}
                     >
-                        <input
-                            className="form-control shadow"
-                            placeholder="Tìm sản phẩm..."
-                            aria-label="Search"
-                            value={keyword}
-                            onChange={(e) => setKeyWord(e.target.value)}
-                        />
-                        <i
-                            className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle align-middle"
-                            style={{
-                                position: "absolute",
-                                right: "14px",
-                                top: "50%",
-                                translate: "0 -50%",
-                                color: "white",
-                            }}
-                        ></i>
+                        <i className="fa-solid fa-magnifying-glass bg-primary p-2 rounded-circle" style={{ color: "white" }} />
+                    </button>
 
-                        {/* Dropdown kết quả tìm kiếm */}
-                        {products.length > 0 && (
-                            <div className="search-dropdown bg-white w-100 position-absolute top-100 start-0 shadow">
-                                <ul className="search-list m-0 p-2">
-                                    {products.map((pro) => (
-                                        <li
-                                            key={pro.id}
-                                            className="search-item d-flex align-items-center gap-2 p-1"
-                                            onClick={() => {
-                                                navigate(`/product/${pro.id}`);
-                                                setKeyWord("");
-                                            }}
-                                        >
-{pro.image_url && (
-    <img
-    src={
-        // 1. Link online hoặc base64 -> Giữ nguyên
-        pro.image_url.startsWith('http') || pro.image_url.startsWith('data:')
-            ? pro.image_url
-            : pro.image_url.startsWith('/uploads') 
-                // 2. Ảnh upload mới (backend) -> Thêm localhost:5000
-                ? `http://localhost:5000${pro.image_url}`
-                // 3. Ảnh cũ (/assets hoặc khác) -> Giữ nguyên (để frontend tự load)
-                : pro.image_url
-    }
-        alt=""
-        className="search-thumb"
-        style={{
-            width: "40px",
-            height: "40px",
-            objectFit: "cover",
-            borderRadius: "4px",
-        }}
-        onError={(e) => {
-            e.currentTarget.src = 'https://via.placeholder.com/40?text=X';
-        }}
-    />
-)}
-                                            <div className="search-info">
-                                                <div className="search-name">{pro.name}</div>
-                                                <div className="search-price">{pro.base_price.toLocaleString()}</div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
+                    {/* Dropdown kết quả tìm kiếm */}
+                    {showDropdown && keyword.trim() && products.length > 0 && (
+                        <div className="search-dropdown bg-white w-100 position-absolute top-100 start-0 shadow" style={{ zIndex: 999 }}>
+                            <ul className="search-list m-0 p-2" role="list">
+                                {products.map((pro) => (
+                                <li
+                                    key={pro.id}
+                                    className="search-item d-flex align-items-center gap-2 p-1"
+                                    onClick={() => {
+                                        navigate(`/product/${pro.id}`);
+                                        setKeyWord("");
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            navigate(`/product/${pro.id}`);
+                                        } 
+                                    }}
+                                >
+                                    {pro.image_url && (
+                                    <img
+                                        src={
+                                        // 1. Link online hoặc base64 -> Giữ nguyên
+                                        pro.image_url.startsWith('http') || pro.image_url.startsWith('data:')
+                                            ? pro.image_url
+                                            : pro.image_url.startsWith('/uploads')
+                                            // 2. Ảnh upload mới (backend) -> Thêm localhost:5000
+                                            ? `http://localhost:5000${pro.image_url}`
+                                            // 3. Ảnh cũ (/assets hoặc khác) -> Giữ nguyên (để frontend tự load)
+                                            : pro.image_url
+                                        }
+                                        alt={pro.name ?? "thumb"}
+                                        className="search-thumb"
+                                        style={{
+                                        width: "40px",
+                                        height: "40px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px",
+                                        }}
+                                        onError={(e) => {
+                                            e.currentTarget.src = 'https://via.placeholder.com/40?text=X';
+                                        }}
+                                    />
+                                    )}
+                                    <div className="search-info">
+                                        <div className="search-name">{pro.name}</div>
+                                        <div className="search-price">{pro.base_price.toLocaleString()}</div>
+                                    </div>
+                                </li>
+                                ))}
+
+                                {showDropdown && keyword.trim() && products.length >= 6 && (
+                                <li
+                                    className="search-item search-more d-flex flex-column gap-1 p-2 mt-1 border-top"
+                                    onClick={() => handleNavigateToSearch()}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => { if (e.key === "Enter") handleNavigateToSearch(); }}
+                                    style={{ cursor: "pointer", background: "#fff" }}
+                                >
+                                    <div style={{ fontWeight: 600 }}>
+                                      Xem thêm kết quả cho “{keyword}”
+                                    </div>
+                                </li>
+                                )}
+                            </ul>
+                        </div>
+                    )}
                     </form>
 
                     {/* 🧭 Menu bên phải */}

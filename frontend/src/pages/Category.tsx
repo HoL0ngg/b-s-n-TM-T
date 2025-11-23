@@ -30,7 +30,7 @@ const Category = () => {
     subCategoryId: 0,
     page: 1,
     limit: 12,
-    sort: "default",
+    sort: "default", // default | priceAsc | priceDesc | newest | best_seller | relevance
     minPrice: null as number | null,
     maxPrice: null as number | null,
     brand: [] as number[],
@@ -38,8 +38,8 @@ const Category = () => {
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      // Gọi một hàm API duy nhất, truyền toàn bộ object query
-      const res = await fetchProducts(query, Number(id));
+      const effectiveSort = query.sort === "relevance" ? "newest" : query.sort;
+      const res = await fetchProducts({ ...query, sort: effectiveSort }, Number(id));
       setProducts(res.products);
       setTotalPages(res.totalPages);
       setBrands(res.brands ?? []);
@@ -49,9 +49,8 @@ const Category = () => {
     } finally {
       setLoading(false);
     }
-  }, [query]); // Chỉ phụ thuộc vào `query`
+  }, [query, id]);
 
-  //  Khi query thay đổi → tự load lại sản phẩm
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
@@ -76,7 +75,7 @@ const Category = () => {
     } else {
       setSearchParams(params, { replace: true }); //REPLACE khi auto sync
     }
-  }, [query]);
+  }, [query, setSearchParams, isUserAction]);
 
 
   useEffect(() => {
@@ -309,26 +308,42 @@ const Category = () => {
 
           {/* Product list */}
           <div className="col-lg-9 col-md-8 col-12" ref={scrollableContentRef}>
-            <div className="row row-cols-1 row-cols-md-2 g-4">
-              <div className="d-flex justify-content-between w-100">
+            <div className="mb-3">
+              <h2 className="mb-2">{filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}</h2>
 
-                <h2 className="mb-4 text-left">
-                  {filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}
-                </h2>
+              <div className="d-flex justify-content-between align-items-center flex-wrap">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="me-3 fw-semibold">Sắp xếp theo:</div>
+                  <div className="sort-tabs d-flex align-items-center" role="tablist" aria-label="Sort tabs">
+                    <button
+                      className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`}
+                      onClick={() => handleSort("newest")}
+                    >
+                      Mới nhất
+                    </button>
 
-                <div className="mb-3">
-                  <span className="fs-5 text-right me-3">Sắp xếp theo: </span>
+                    <button
+                      className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`}
+                      onClick={() => handleSort("best_seller")}
+                    >
+                      Bán chạy
+                    </button>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center mb-2">
+                  <label htmlFor="priceSort" className="me-2 mb-0 fw-semibold">Giá</label>
                   <select
-                    name="sortBy"
-                    id="sortBy"
-                    className="custom-select"
-                    style={{ width: '150px' }}
+                    id="priceSort"
+                    name="priceSort"
+                    className="form-select form-select-sm"
                     value={query.sort}
+                    style={{ width: 220 }}
                     onChange={(e) => handleSort(e.target.value)}
                   >
                     <option value="default">Mặc định</option>
-                    <option value="priceDesc">Giá giảm dần</option>
-                    <option value="priceAsc">Giá tăng dần</option>
+                    <option value="priceDesc">Cao đến thấp</option>
+                    <option value="priceAsc">Thấp đến cao</option>
                   </select>
                 </div>
               </div>
