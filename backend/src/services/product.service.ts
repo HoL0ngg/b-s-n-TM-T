@@ -88,24 +88,28 @@ class productService {
         );
         return rows as Product[];
     }
-    // Đường dẫn: backend/src/services/product.service.ts
-
-    getProductOnShopIdService = async (shopId: number, sort: string, cate: number) => {
+  
+ 
+    getProductOnShopIdService = async (shopId: number, sort: string, cate: number, isManager: boolean = false) => {
         let orderBy = "id DESC";
         if (sort === "popular") { orderBy = "hot_score DESC"; }
         else if (sort === "new") { orderBy = "created_at DESC"; }
         else if (sort === "hot") { orderBy = "sold_count DESC"; }
 
-        // === SỬA LẠI DÒNG NÀY ===
-        // Bỏ "AND status = 1" đi để Chủ shop có thể nhìn thấy sản phẩm tạm dừng
+    
         let whereClause = "WHERE shop_id = ?";
-        // ========================
+        
+ 
+        if (!isManager) {
+            whereClause += " AND status = 1";
+        }
 
         const params: (string | number)[] = [shopId];
         if (cate && cate !== 0) {
             whereClause += " AND shop_cate_id = ?";
             params.push(cate);
         }
+        
         const [rows] = await pool.query(`SELECT * FROM v_products_list ${whereClause} ORDER BY ${orderBy}`, params);
         return rows;
     };
@@ -708,8 +712,11 @@ class productService {
 
     getProductsOnShopId = async (shopId: number, page: number, limit: number): Promise<ProductResponse> => {
         let query = `
-            WHERE v_products_list.shop_id = ?
-        `;
+            WHERE v_products_list.shop_id = ? 
+            AND v_products_list.status = 1
+        `; 
+        // (Nếu view của bạn có cột shop_status để check shop có bị khóa không thì thêm: AND v_products_list.shop_status = 1)
+
         const parameters: any[] = [shopId];
         return paginationProducts(query, parameters, page, limit);
     }
