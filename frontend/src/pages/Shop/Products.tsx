@@ -29,28 +29,25 @@ export default function ShopProductsManager() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [pendingToggle, setPendingToggle] = useState<{ id: number, newStatus: number, name: string } | null>(null);
 
+  // State cho Modal hiển thị lý do (Từ chối / Vi phạm)
+  const [showReasonModal, setShowReasonModal] = useState(false);
+  const [currentReason, setCurrentReason] = useState<{ title: string, content: string } | null>(null);
+
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [shopId, setShopId] = useState<number | null>(null);
 
-  // ===== HÀM XỬ LÝ ẢNH THÔNG MINH (THÊM VÀO ĐÂY) =====
+  // ===== HÀM XỬ LÝ ẢNH THÔNG MINH =====
   const getImageUrl = (url: string | undefined) => {
     if (!url) return 'https://via.placeholder.com/150?text=No+Image';
-
-    // 1. Nếu url đã có http/https hoặc data: (ảnh online/base64) -> Giữ nguyên
     if (url.startsWith('http') || url.startsWith('data:')) {
         return url;
     }
-
-    // 2. Nếu url bắt đầu bằng /uploads (ảnh backend) -> Thêm localhost:5000
     if (url.startsWith('/uploads')) {
         return `http://localhost:5000${url}`;
     }
-
-    // 3. Trường hợp còn lại (ảnh cũ dạng /assets/...) -> Giữ nguyên để frontend tự load
     return url;
   };
-  // ====================================================
 
   useEffect(() => {
     const fetchShopIdAndCategories = async () => {
@@ -159,8 +156,14 @@ export default function ShopProductsManager() {
     return new Intl.NumberFormat('vi-VN').format(price) + ' ₫';
   };
 
-  const initiateToggle = (product: ProductType, checked: boolean) => {
-    const newStatus = checked ? 1 : 0;
+  // --- LOGIC BẬT/TẮT TRẠNG THÁI ---
+  const initiateToggle = (product: ProductType) => {
+    // Nếu đang chờ duyệt (0), từ chối (-1), hoặc bị khóa (-2) thì không cho thao tác switch
+    if (product.status === 0 || product.status === -1 || product.status === -2) return;
+
+    // Chỉ cho phép chuyển đổi giữa: 1 (Active) <-> 3 (Hidden/Tạm dừng)
+    const newStatus = product.status === 1 ? 3 : 1;
+    
     setPendingToggle({
       id: product.id,
       newStatus: newStatus,
@@ -189,6 +192,22 @@ export default function ShopProductsManager() {
       setProducts(originalProducts);
       setShowStatusModal(false);
     }
+  };
+
+  // --- LOGIC HIỂN THỊ LÝ DO ---
+  const handleShowReason = (product: ProductType) => {
+    if (product.status === -1) {
+      setCurrentReason({
+        title: 'Lý do từ chối',
+        content: product.reject_reason || 'Không có lý do cụ thể. Vui lòng kiểm tra lại quy định đăng bán.'
+      });
+    } else if (product.status === -2) {
+      setCurrentReason({
+        title: 'Lý do vi phạm (Khóa)',
+        content: product.ban_reason || 'Vi phạm chính sách cộng đồng nghiêm trọng.'
+      });
+    }
+    setShowReasonModal(true);
   };
 
   if (!shopId && !loading) {
@@ -374,70 +393,44 @@ export default function ShopProductsManager() {
             <thead>
               <tr style={{ borderBottom: '2px solid #F5F5F5' }}>
                 <th style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  padding: '18px 24px',
-                  backgroundColor: '#FAFAFA',
-                  letterSpacing: '0.5px'
+                  fontSize: '12px', fontWeight: '700', color: '#666',
+                  textTransform: 'uppercase', padding: '18px 24px',
+                  backgroundColor: '#FAFAFA', letterSpacing: '0.5px'
                 }}>
                   Sản phẩm
                 </th>
                 <th style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  padding: '18px 24px',
-                  backgroundColor: '#FAFAFA',
-                  letterSpacing: '0.5px'
+                  fontSize: '12px', fontWeight: '700', color: '#666',
+                  textTransform: 'uppercase', padding: '18px 24px',
+                  backgroundColor: '#FAFAFA', letterSpacing: '0.5px'
                 }}>
                   Mô tả
                 </th>
                 <th style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  padding: '18px 24px',
-                  backgroundColor: '#FAFAFA',
-                  letterSpacing: '0.5px'
+                  fontSize: '12px', fontWeight: '700', color: '#666',
+                  textTransform: 'uppercase', padding: '18px 24px',
+                  backgroundColor: '#FAFAFA', letterSpacing: '0.5px'
                 }}>
                   Giá
                 </th>
                 <th style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  padding: '18px 24px',
-                  backgroundColor: '#FAFAFA',
-                  letterSpacing: '0.5px',
-                  textAlign: 'center'
+                  fontSize: '12px', fontWeight: '700', color: '#666',
+                  textTransform: 'uppercase', padding: '18px 24px',
+                  backgroundColor: '#FAFAFA', letterSpacing: '0.5px', textAlign: 'center'
                 }}>
                   Đã bán
                 </th>
                 <th style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  padding: '18px 24px',
-                  backgroundColor: '#FAFAFA',
-                  letterSpacing: '0.5px'
+                  fontSize: '12px', fontWeight: '700', color: '#666',
+                  textTransform: 'uppercase', padding: '18px 24px',
+                  backgroundColor: '#FAFAFA', letterSpacing: '0.5px'
                 }}>
                   Trạng thái
                 </th>
                 <th style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#666',
-                  textTransform: 'uppercase',
-                  padding: '18px 24px',
-                  backgroundColor: '#FAFAFA',
-                  letterSpacing: '0.5px',
-                  textAlign: 'right'
+                  fontSize: '12px', fontWeight: '700', color: '#666',
+                  textTransform: 'uppercase', padding: '18px 24px',
+                  backgroundColor: '#FAFAFA', letterSpacing: '0.5px', textAlign: 'right'
                 }}>
                   Thao tác
                 </th>
@@ -457,22 +450,16 @@ export default function ShopProductsManager() {
                   <td style={{ padding: '18px 24px' }}>
                     <div className="d-flex align-items-center gap-3">
                       <div style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        backgroundColor: '#f8f8f8',
-                        flexShrink: 0,
+                        width: '64px', height: '64px', borderRadius: '8px',
+                        overflow: 'hidden', backgroundColor: '#f8f8f8', flexShrink: 0,
                         border: '1px solid #E0E0E0'
                       }}>
-                        {/* ===== THAY THẾ ĐOẠN HIỂN THỊ ẢNH ===== */}
                         {product.image_url ? (
                           <img
                             src={getImageUrl(product.image_url)}
                             alt={product.name || ''}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             onError={(e) => {
-                              console.log("Lỗi ảnh:", product.image_url, "->", e.currentTarget.src);
                               e.currentTarget.src = 'https://via.placeholder.com/150?text=Error';
                             }}
                           />
@@ -481,22 +468,14 @@ export default function ShopProductsManager() {
                             <i className="bi bi-image text-muted" style={{ fontSize: '24px' }}></i>
                           </div>
                         )}
-                        {/* ====================================== */}
                       </div>
                       <div>
                         <div style={{
-                          fontWeight: '600',
-                          fontSize: '15px',
-                          color: '#333',
-                          marginBottom: '4px'
+                          fontWeight: '600', fontSize: '15px', color: '#333', marginBottom: '4px'
                         }}>
                           {product.name || 'N/A'}
                         </div>
-                        <small style={{
-                          color: '#999',
-                          fontSize: '13px',
-                          fontWeight: '500'
-                        }}>
+                        <small style={{ color: '#999', fontSize: '13px', fontWeight: '500' }}>
                           ID: #{product.id}
                         </small>
                       </div>
@@ -504,80 +483,107 @@ export default function ShopProductsManager() {
                   </td>
                   <td style={{ padding: '18px 24px', maxWidth: '300px' }}>
                     <div style={{
-                      fontSize: '14px',
-                      color: '#666',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: '1.5'
+                      fontSize: '14px', color: '#666', overflow: 'hidden',
+                      textOverflow: 'ellipsis', display: '-webkit-box',
+                      WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.5'
                     }}>
                       {product.description || 'Chưa có mô tả'}
                     </div>
                   </td>
                   <td style={{ padding: '18px 24px' }}>
                     <span style={{
-                      backgroundColor: '#FFF3E0',
-                      color: '#E65100',
-                      padding: '6px 14px',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      display: 'inline-block'
+                      backgroundColor: '#FFF3E0', color: '#E65100',
+                      padding: '6px 14px', borderRadius: '6px',
+                      fontSize: '14px', fontWeight: '600', display: 'inline-block'
                     }}>
                       {formatPrice(product.base_price)}
                     </span>
                   </td>
                   <td style={{ padding: '18px 24px', textAlign: 'center' }}>
                     <span style={{
-                      display: 'inline-block',
-                      backgroundColor: '#E8F5E9',
-                      color: '#2E7D32',
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      padding: '6px 14px',
-                      borderRadius: '6px',
-                      minWidth: '50px'
+                      display: 'inline-block', backgroundColor: '#E8F5E9', color: '#2E7D32',
+                      fontWeight: '600', fontSize: '14px', padding: '6px 14px',
+                      borderRadius: '6px', minWidth: '50px'
                     }}>
                       {product.sold_count || 0}
                     </span>
                   </td>
 
+                  {/* === CỘT TRẠNG THÁI (ĐÃ CẬP NHẬT) === */}
                   <td style={{ padding: '18px 24px' }}>
-                    <div className="d-flex align-items-center gap-2">
-                      <Form.Check
-                        type="switch"
-                        id={`product-switch-${product.id}`}
-                        checked={product.status === 1}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => initiateToggle(product, e.target.checked)}
-                        style={{ fontSize: '14px' }}
-                      />
-                      <span style={{
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        color: product.status === 1 ? '#2E7D32' : '#D32F2F'
-                      }}>
-                        {product.status === 1 ? 'Hoạt động' : 'Tạm dừng'}
-                      </span>
+                    <div className="d-flex flex-column gap-2">
+                      
+                      {/* 1. Case: Pending (0) - Chờ duyệt */}
+                      {product.status === 0 && (
+                         <div className="badge bg-warning text-dark border border-warning bg-opacity-25 p-2">
+                            <i className="bi bi-hourglass-split me-1"></i> Đang chờ duyệt
+                         </div>
+                      )}
+
+                      {/* 2. Case: Active (1) hoặc Hidden (3) -> Cho phép Toggle */}
+                      {(product.status === 1 || product.status === 3) && (
+                        <div className="d-flex align-items-center gap-2">
+                          <Form.Check
+                            type="switch"
+                            id={`product-switch-${product.id}`}
+                            checked={product.status === 1}
+                            onChange={() => initiateToggle(product)}
+                            style={{ fontSize: '14px', cursor: 'pointer' }}
+                          />
+                          <span style={{
+                            fontSize: '13px', fontWeight: '500',
+                            color: product.status === 1 ? '#2E7D32' : '#757575'
+                          }}>
+                            {product.status === 1 ? 'Đang bán' : 'Đã ẩn'}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* 3. Case: Rejected (-1) - Từ chối */}
+                      {product.status === -1 && (
+                        <div className="d-flex align-items-center gap-2">
+                            <span className="badge bg-danger bg-opacity-10 text-danger border border-danger p-2">
+                                <i className="bi bi-x-circle me-1"></i> Bị từ chối
+                            </span>
+                            <button 
+                                className="btn btn-sm btn-outline-danger py-0 px-2 ms-1" 
+                                style={{fontSize: '12px', height: '24px'}}
+                                onClick={() => handleShowReason(product)}
+                            >
+                                Xem lý do
+                            </button>
+                        </div>
+                      )}
+
+                      {/* 4. Case: Banned (-2) - Khóa */}
+                      {product.status === -2 && (
+                         <div className="d-flex align-items-center gap-2">
+                            <span className="badge bg-dark text-white p-2">
+                                <i className="bi bi-ban me-1"></i> Vi phạm
+                            </span>
+                            <button 
+                                className="btn btn-sm btn-outline-dark py-0 px-2 ms-1" 
+                                style={{fontSize: '12px', height: '24px'}}
+                                onClick={() => handleShowReason(product)}
+                            >
+                                Chi tiết
+                            </button>
+                        </div>
+                      )}
                     </div>
                   </td>
 
+                  {/* === CỘT THAO TÁC (ĐÃ CẬP NHẬT) === */}
                   <td style={{ padding: '18px 24px' }}>
                     <div className="d-flex gap-2 justify-content-end">
+                      {/* Nút Xem */}
                       <button
                         onClick={() => handleView(product)}
                         className="btn btn-sm p-0"
                         title="Xem chi tiết"
                         style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          backgroundColor: '#E3F2FD',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          width: '36px', height: '36px', borderRadius: '8px', border: 'none',
+                          backgroundColor: '#E3F2FD', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -589,65 +595,47 @@ export default function ShopProductsManager() {
                           e.currentTarget.querySelector('i')!.style.color = '#1976D2';
                         }}
                       >
-                        <i className="bi bi-eye-fill" style={{
-                          color: '#1976D2',
-                          fontSize: '15px',
-                          transition: 'color 0.2s ease'
-                        }}></i>
+                        <i className="bi bi-eye-fill" style={{ color: '#1976D2', fontSize: '15px' }}></i>
                       </button>
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="btn btn-sm p-0"
-                        title="Chỉnh sửa"
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          backgroundColor: '#FFF3E0',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#FF9800';
-                          e.currentTarget.querySelector('i')!.style.color = '#fff';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#FFF3E0';
-                          e.currentTarget.querySelector('i')!.style.color = '#F57C00';
-                        }}
-                      >
-                        <i className="bi bi-pencil-fill" style={{
-                          color: '#F57C00',
-                          fontSize: '15px',
-                          transition: 'color 0.2s ease'
-                        }}></i>
-                      </button>
+
+                      {/* Nút Sửa: ẨN KHI BỊ KHÓA (-2) */}
+                      {product.status !== -2 && (
+                        <button
+                            onClick={() => handleEdit(product)}
+                            className="btn btn-sm p-0"
+                            title="Chỉnh sửa"
+                            style={{
+                            width: '36px', height: '36px', borderRadius: '8px', border: 'none',
+                            backgroundColor: '#FFF3E0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#FF9800';
+                            e.currentTarget.querySelector('i')!.style.color = '#fff';
+                            }}
+                            onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#FFF3E0';
+                            e.currentTarget.querySelector('i')!.style.color = '#F57C00';
+                            }}
+                        >
+                            <i className="bi bi-pencil-fill" style={{ color: '#F57C00', fontSize: '15px' }}></i>
+                        </button>
+                      )}
+
+                      {/* Nút Xóa */}
                       <button
                         onClick={() => handleDelete(product)}
                         className="btn btn-sm p-0"
                         title="Xóa"
                         style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '8px',
-                          border: 'none',
-                          backgroundColor: '#FFEBEE',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          width: '36px', height: '36px', borderRadius: '8px', border: 'none',
+                          backgroundColor: '#FFEBEE', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F44336'}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFEBEE'}
                       >
-                        <i className="bi bi-trash-fill" style={{
-                          color: '#D32F2F',
-                          fontSize: '15px',
-                          transition: 'color 0.2s ease'
-                        }}></i>
+                        <i className="bi bi-trash-fill" style={{ color: '#D32F2F', fontSize: '15px' }}></i>
                       </button>
                     </div>
                   </td>
@@ -685,22 +673,15 @@ export default function ShopProductsManager() {
                   Bạn có chắc chắn muốn xóa sản phẩm
                 </p>
                 <p style={{
-                  color: '#333',
-                  fontWeight: '600',
-                  fontSize: '16px',
-                  marginBottom: '12px',
-                  backgroundColor: '#F5F5F5',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  display: 'inline-block'
+                  color: '#333', fontWeight: '600', fontSize: '16px',
+                  marginBottom: '12px', backgroundColor: '#F5F5F5',
+                  padding: '8px 16px', borderRadius: '8px', display: 'inline-block'
                 }}>
                   "{productToDelete.name}"
                 </p>
                 <div style={{
-                  backgroundColor: '#FFEBEE',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  marginTop: '16px'
+                  backgroundColor: '#FFEBEE', padding: '12px',
+                  borderRadius: '8px', marginTop: '16px'
                 }}>
                   <small className="text-danger" style={{ fontSize: '13px', fontWeight: '500' }}>
                     <i className="bi bi-info-circle-fill me-1"></i>
@@ -709,24 +690,16 @@ export default function ShopProductsManager() {
                 </div>
               </div>
               <div className="modal-footer" style={{
-                borderTop: '1px solid #f0f0f0',
-                padding: '16px 24px',
-                justifyContent: 'center',
-                gap: '12px',
-                backgroundColor: '#FAFAFA'
+                borderTop: '1px solid #f0f0f0', padding: '16px 24px',
+                justifyContent: 'center', gap: '12px', backgroundColor: '#FAFAFA'
               }}>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   className="btn"
                   style={{
-                    backgroundColor: '#fff',
-                    color: '#666',
-                    padding: '10px 24px',
-                    borderRadius: '8px',
-                    border: '1px solid #E0E0E0',
-                    fontWeight: '500',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
+                    backgroundColor: '#fff', color: '#666', padding: '10px 24px',
+                    borderRadius: '8px', border: '1px solid #E0E0E0', fontWeight: '500',
+                    fontSize: '14px', transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F5'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
@@ -737,14 +710,9 @@ export default function ShopProductsManager() {
                   onClick={confirmDelete}
                   className="btn"
                   style={{
-                    backgroundColor: '#F44336',
-                    color: '#fff',
-                    padding: '10px 24px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
+                    backgroundColor: '#F44336', color: '#fff', padding: '10px 24px',
+                    borderRadius: '8px', border: 'none', fontWeight: '600',
+                    fontSize: '14px', transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D32F2F'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#F44336'}
@@ -764,15 +732,10 @@ export default function ShopProductsManager() {
           closeButton
           style={{
             background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-            borderBottom: 'none',
-            padding: '20px 24px'
+            borderBottom: 'none', padding: '20px 24px'
           }}
         >
-          <Modal.Title style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            color: '#fff'
-          }}>
+          <Modal.Title style={{ fontSize: '18px', fontWeight: '600', color: '#fff' }}>
             <i className="bi bi-toggle-on me-2"></i>
             Xác nhận thay đổi trạng thái
           </Modal.Title>
@@ -781,76 +744,91 @@ export default function ShopProductsManager() {
           <div style={{ fontSize: '15px', color: '#333', lineHeight: '1.6' }}>
             Bạn có chắc chắn muốn
             <span className={`fw-bold mx-1`} style={{
-              color: pendingToggle?.newStatus === 1 ? '#2E7D32' : '#D32F2F'
+              color: pendingToggle?.newStatus === 1 ? '#2E7D32' : '#757575'
             }}>
-              {pendingToggle?.newStatus === 1 ? 'BẬT (Hiển thị)' : 'TẮT (Ẩn)'}
+              {pendingToggle?.newStatus === 1 ? 'HIỂN THỊ (Bán lại)' : 'ẨN (Tạm ngưng bán)'}
             </span>
             sản phẩm
           </div>
           <div style={{
-            backgroundColor: '#F5F5F5',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            margin: '16px 0',
-            fontWeight: '600',
-            fontSize: '15px',
-            color: '#333'
+            backgroundColor: '#F5F5F5', padding: '12px 16px', borderRadius: '8px',
+            margin: '16px 0', fontWeight: '600', fontSize: '15px', color: '#333'
           }}>
             "{pendingToggle?.name}"
           </div>
           <div style={{
-            backgroundColor: pendingToggle?.newStatus === 0 ? '#FFEBEE' : '#E8F5E9',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            color: '#666',
-            lineHeight: '1.5'
+            backgroundColor: pendingToggle?.newStatus === 3 ? '#EEEEEE' : '#E8F5E9',
+            padding: '12px 16px', borderRadius: '8px', fontSize: '13px',
+            color: '#666', lineHeight: '1.5'
           }}>
-            <i className={`bi ${pendingToggle?.newStatus === 0 ? 'bi-exclamation-circle-fill text-danger' : 'bi-check-circle-fill text-success'} me-2`}></i>
-            {pendingToggle?.newStatus === 0
-              ? "Sản phẩm sẽ bị ẩn khỏi khách hàng và không thể mua được."
-              : "Sản phẩm sẽ hiển thị trở lại trên cửa hàng."}
+            <i className={`bi ${pendingToggle?.newStatus === 3 ? 'bi-eye-slash-fill text-secondary' : 'bi-check-circle-fill text-success'} me-2`}></i>
+            {pendingToggle?.newStatus === 3
+              ? "Sản phẩm sẽ bị ẩn khỏi danh sách dạo, khách hàng không tìm thấy."
+              : "Sản phẩm sẽ hiển thị công khai cho khách hàng mua sắm."}
           </div>
         </Modal.Body>
         <Modal.Footer style={{
-          borderTop: '1px solid #f0f0f0',
-          padding: '16px 24px',
-          backgroundColor: '#FAFAFA'
+          borderTop: '1px solid #f0f0f0', padding: '16px 24px', backgroundColor: '#FAFAFA'
         }}>
           <Button
             variant="secondary"
             onClick={() => setShowStatusModal(false)}
             style={{
-              backgroundColor: '#fff',
-              color: '#666',
-              border: '1px solid #E0E0E0',
-              padding: '10px 24px',
-              borderRadius: '8px',
-              fontWeight: '500',
-              fontSize: '14px'
+              backgroundColor: '#fff', color: '#666', border: '1px solid #E0E0E0',
+              padding: '10px 24px', borderRadius: '8px', fontWeight: '500', fontSize: '14px'
             }}
           >
             Hủy
           </Button>
           <Button
-            variant={pendingToggle?.newStatus === 1 ? "success" : "danger"}
+            variant={pendingToggle?.newStatus === 1 ? "success" : "secondary"}
             onClick={confirmToggle}
             style={{
-              backgroundColor: pendingToggle?.newStatus === 1 ? '#4CAF50' : '#F44336',
-              border: 'none',
-              padding: '10px 24px',
-              borderRadius: '8px',
-              fontWeight: '600',
-              fontSize: '14px'
+              backgroundColor: pendingToggle?.newStatus === 1 ? '#4CAF50' : '#757575',
+              border: 'none', padding: '10px 24px', borderRadius: '8px',
+              fontWeight: '600', fontSize: '14px'
             }}
           >
-            <i className={`bi ${pendingToggle?.newStatus === 1 ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-2`}></i>
+            <i className={`bi ${pendingToggle?.newStatus === 1 ? 'bi-check-circle-fill' : 'bi-eye-slash-fill'} me-2`}></i>
             Đồng ý
           </Button>
         </Modal.Footer>
       </Modal>
 
+      {/* MODAL HIỂN THỊ LÝ DO (TỪ CHỐI / KHÓA) */}
+      <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)} centered>
+        <Modal.Header closeButton className="bg-white border-0 pb-0">
+            <Modal.Title className="fs-5 text-danger fw-bold">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                {currentReason?.title}
+            </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-3">
+            <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark">
+                {currentReason?.content}
+            </div>
+            <div className="mt-3 text-muted small fst-italic">
+                * Nếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ người bán.
+            </div>
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0">
+            <Button variant="secondary" onClick={() => setShowReasonModal(false)}>Đóng</Button>
+            {currentReason?.title.includes('từ chối') && (
+               <Button 
+                    variant="primary" 
+                    onClick={() => { 
+                        setShowReasonModal(false);
+                        // Nếu productToDelete đã được set (hoặc tìm cách truyền product vào đây), 
+                        // có thể gọi handleEdit(product)
+                        // Tạm thời đóng modal để user tự bấm nút sửa ở ngoài
+                    }}
+                >
+                  Đã hiểu
+               </Button>
+            )}
+        </Modal.Footer>
+      </Modal>
+
     </div>
   );
-
 }
