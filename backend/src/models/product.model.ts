@@ -13,7 +13,8 @@ export interface Product {
     shop_id: number;
     product_variants: ProductVariant[];
     avg_rating: number;
-
+    reject_reason: string | null;
+    ban_reason: string | null;
     original_price: number;
     sale_price: number | null;
     min_price: number;

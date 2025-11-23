@@ -344,32 +344,42 @@ class productController {
         }
     };
 
-    updateProductStatusController = async (req: Request, res: Response) => {
-        try {
-            const productId = Number(req.params.id);
-            const shopId = (req as any).shop?.id;
-            const { status } = req.body;
+  updateProductStatusController = async (req: Request, res: Response) => {
+    try {
+        const productId = Number(req.params.id);
+        // Lấy userId để kiểm tra quyền sở hữu
+        const userId = (req as any).user?.id; 
+        const { status } = req.body;
 
-            if (status === undefined || (status !== 0 && status !== 1)) {
-                return res.status(400).json({ success: false, message: 'Trạng thái (status) không hợp lệ.' });
-            }
-            if (!shopId) {
-                return res.status(403).json({ success: false, message: 'Forbidden' });
-            }
-
-            const success = await productService.updateProductStatusService(productId, shopId, status);
-
-            if (success) {
-                res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công.' });
-            } else {
-                res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm hoặc bạn không có quyền.' });
-            }
-        } catch (error) {
-            console.error('Error updating product status:', error);
-            res.status(500).json({ success: false, message: 'Internal server error' });
+        // SỬA 1: Mở rộng điều kiện - Cho phép status = 3 (Ẩn)
+        if (status === undefined || (status !== 0 && status !== 1 && status !== 3)) {
+            return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ (Chỉ chấp nhận 0, 1, 3).' });
         }
-    };
 
+        if (!userId) {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        // SỬA 2: Kiểm tra quyền sở hữu trước (Bảo mật)
+        const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
+        if (!hasPermission) {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền thay đổi trạng thái sản phẩm này.' });
+        }
+
+        // SỬA 3: Gọi Service đúng chuẩn (Bỏ shopId thừa, chỉ truyền productId và status)
+        // (Service updateProductStatusService nãy mình sửa chỉ nhận 2 tham số chính thôi)
+        const success = await productService.updateProductStatusService(productId, status);
+
+        if (success) {
+            res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công.' });
+        } else {
+            res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm hoặc lỗi cập nhật.' });
+        }
+    } catch (error) {
+        console.error('Error updating product status:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
     // =================================================================
     // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
     // =================================================================
