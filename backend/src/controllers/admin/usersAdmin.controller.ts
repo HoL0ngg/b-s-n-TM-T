@@ -45,5 +45,23 @@ class usersAdminController {
             res.status(500).json({ message: 'Internal server error' });
         }
     }
+    createUserController = async (req, res) => {
+        try {
+            const result = await userService.createUserService(req.body);
+            res.status(200).json(result);
+        } catch (err: any) {
+            res.status(500).json({ error: err.message });
+        }
+    };
+    updateUserController = async (req, res) => {
+        try {
+            const phone = req.params.phone;
+            const result = await userService.updateUserService(phone, req.body);
+            res.json(result);
+        } catch (err: any) {
+            res.status(500).json({ error: err.message });
+        }
+    };
+
 }
 export default new usersAdminController();

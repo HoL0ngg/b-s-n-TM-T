@@ -7,7 +7,7 @@ import {
     FiFilter
 } from 'react-icons/fi';
 import type { UserAdminType } from "../../types/admin/UserTypeAdmin";
-import { fetchBuyerByStatusAdmin, updateUserStatusAdmin } from "../../api/admin/usersAdmin";
+import { createUserAdmin, fetchBuyerByStatusAdmin, updateUserAdmin, updateUserStatusAdmin } from "../../api/admin/usersAdmin";
 import Pagenum from "../../components/Admin/Pagenum";
 import Swal from "sweetalert2";
 
@@ -18,11 +18,16 @@ const AdminUserManagement: React.FC = () => {
     const [modalType, setModalType] = useState<"add" | "edit">("add");
     const [selectedUser, setSelectedUser] = useState<UserAdminType | null>(null);
     const [formData, setFormData] = useState({
+        phone: "",
         name: "",
         email: "",
-        phone: "",
+        password: "",
+        status: 1,
         role: "customer",
+        dob: "",
+        gender: 0,
     });
+
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -39,13 +44,16 @@ const AdminUserManagement: React.FC = () => {
     );
 
     const openAddUserModal = () => {
-
         setModalType("add");
         setFormData({
+            phone: "",
             name: "",
             email: "",
-            phone: "",
+            password: "",
+            status: 1,
             role: "customer",
+            dob: "",
+            gender: 0,
         });
     }
 
@@ -53,12 +61,17 @@ const AdminUserManagement: React.FC = () => {
         setModalType("edit");
         setSelectedUser(user);
         setFormData({
-            name: user.name,
-            email: user.email,
             phone: user.phone,
-            role: user.role,
+            name: user.name || "", // nếu user.username undefined thì fallback ""
+            email: user.email || "",
+            password: "", // để trống khi edit
+            status: user.status ?? 1, // nếu undefined thì mặc định 1
+            role: user.role || "customer",
+            dob: user.dob ? user.dob.split("T")[0] : "", // chuyển datetime => yyyy-mm-dd
+            gender: user.gender ?? 0,
         });
     }
+
     const handlePageChange = (page: number) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
@@ -105,7 +118,7 @@ const AdminUserManagement: React.FC = () => {
     }
     const loadUsers = async () => {
         try {
-            const res = await fetchBuyerByStatusAdmin(statusFilter, currentPage, itemsPerPage, search);
+            const res = await fetchBuyerByStatusAdmin(statusFilter, currentPage, itemsPerPage);
             setUsers(res.users);
             setTotalPages(res.totalPages);
             console.log("Danh sách người dùng đã tải:", res.users);
@@ -113,10 +126,26 @@ const AdminUserManagement: React.FC = () => {
             console.error("Lỗi khi tải danh sách người dùng:", error);
         }
     }
+    const handleSave = async () => {
+        try {
+            if (modalType === "add") {
+                const res = await createUserAdmin(formData);
+                Swal.fire("Thành công!", res.message, "success");
+            } else if (modalType === "edit" && selectedUser) {
+                const res = await updateUserAdmin(selectedUser.phone, formData);
+                Swal.fire("Thành công!", res.message, "success");
+            }
+
+            loadUsers();
+        } catch (error: any) {
+            Swal.fire("Lỗi!", error.response?.data?.message || "Không thể lưu người dùng.", "error");
+        }
+    };
+
 
     useEffect(() => {
         loadUsers();
-    }, [statusFilter, currentPage, search]);
+    }, [statusFilter, currentPage]);
     useEffect(() => {
         setCurrentPage(1);
     }, [search, statusFilter]);
@@ -148,6 +177,10 @@ const AdminUserManagement: React.FC = () => {
                                 placeholder="Tìm kiếm theo tên hoặc email..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
+
+                                // Thêm 2 dòng này
+                                readOnly={true}
+                                onFocus={(e) => e.target.removeAttribute('readonly')}
                             />
                         </div>
                         <div className="col-md-4">
@@ -247,32 +280,98 @@ const AdminUserManagement: React.FC = () => {
 
 
                         <div className="modal-body">
-                            <div className="mb-3">
-                                <label className="form-label">Tên</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
-                            <div className="mb-3">
-                                <label className="form-label">Email</label>
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                />
-                            </div>
+                            {/* PHONE */}
                             <div className="mb-3">
                                 <label className="form-label">Số điện thoại</label>
                                 <input
                                     type="text"
                                     className="form-control"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    disabled={modalType === "edit"}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, phone: e.target.value })
+                                    }
                                 />
+                            </div>
+                            {/* NAME / USERNAME */}
+                            <div className="mb-3">
+                                <label className="form-label">Họ tên</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={formData.name}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, name: e.target.value })
+                                    }
+                                />
+                            </div>
+                            {/* EMAIL */}
+                            <div className="mb-3">
+                                <label className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    value={formData.email}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, email: e.target.value })
+                                    }
+                                />
+                            </div>
+
+                            {/* PASSWORD */}
+                            <div className="mb-3">
+                                <label className="form-label">
+                                    {modalType === "edit" ? "Mật khẩu (để trống nếu không đổi)" : "Mật khẩu"}
+                                </label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    value={formData.password}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, password: e.target.value })
+                                    }
+                                />
+                            </div>
+                            {/* GENDER */}
+                            <div className="mb-3">
+                                <label className="form-label">Giới tính</label>
+                                <select
+                                    className="form-select"
+                                    value={formData.gender}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, gender: Number(e.target.value) })
+                                    }
+                                >
+                                    <option value={0} >Nữ</option>
+                                    <option value={1}>Nam</option>
+                                    {/* <option value={2}>Khác</option> */}
+                                </select>
+                            </div>
+                            {/* DOB */}
+                            {/* <div className="mb-3">
+                                <label className="form-label">Ngày sinh</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={formData.dob ? formData.dob.split("T")[0] : ""}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, dob: e.target.value })
+                                    }
+                                />
+                            </div> */}
+                            {/* STATUS */}
+                            <div className="mb-3">
+                                <label className="form-label">Trạng thái</label>
+                                <select
+                                    className="form-select"
+                                    value={formData.status}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, status: Number(e.target.value) })
+                                    }
+                                >
+                                    <option value={1}>Hoạt động</option>
+                                    <option value={0}>Khóa</option>
+                                </select>
                             </div>
                             <div className="mb-3">
                                 <label className="form-label">Vai trò</label>
@@ -282,8 +381,6 @@ const AdminUserManagement: React.FC = () => {
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                 >
                                     <option value="customer">Customer</option>
-                                    <option value="seller">Seller</option>
-                                    <option value="admin">Admin</option>
                                 </select>
                             </div>
                         </div>
@@ -299,7 +396,7 @@ const AdminUserManagement: React.FC = () => {
                             <button
                                 className="btn btn-primary"
                                 data-bs-dismiss="modal"
-                            // onClick={handleSave}
+                                onClick={handleSave}
                             >
                                 Lưu
                             </button>
