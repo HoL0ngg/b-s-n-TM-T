@@ -17,7 +17,7 @@ class OrderController {
 
     updateShopOrderStatusController = async (req: Request, res: Response) => {
         try {
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user.id;
             const orderId = parseInt(req.params.orderId);
             const { status } = req.body;
 
@@ -103,6 +103,42 @@ class OrderController {
         } catch (error: any) {
             console.error(error);
             res.status(404).json({ message: error.message || "Lỗi lấy đơn hàng của người dùng" });
+        }
+    }
+
+    cancelOrder = async (req: Request, res: Response) => {
+        try {
+            const userId = (req as any).user.id;
+            const orderId = Number(req.params.id);
+            await orderService.cancelOrderByUser(userId, orderId);
+            res.status(200).json({ message: "Hủy đơn hàng thành công" });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message || "Lỗi khi hủy đơn hàng" });
+        }
+    }
+
+    confirmReceived = async (req: Request, res: Response) => {
+        try {
+            const userId = (req as any).user.id;
+            const orderId = Number(req.params.id);
+            await orderService.confirmOrderReceived(userId, orderId);
+            res.status(200).json({ message: "Xác nhận nhận hàng thành công" });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message || "Lỗi khi xác nhận nhận hàng" });
+        }
+    }
+
+    updatePaymentStatus = async (req: Request, res: Response) => {
+        try {
+            const orderId = Number(req.params.id);
+            const { paymentStatus } = req.body;
+            if (!paymentStatus) {
+                return res.status(400).json({ message: "Thiếu trạng thái thanh toán" });
+            }
+            await orderService.updateOrderPaymentStatus(orderId, paymentStatus);
+            res.status(200).json({ message: "Cập nhật trạng thái thanh toán thành công" });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message || "Lỗi khi cập nhật trạng thái thanh toán" });
         }
     }
 }

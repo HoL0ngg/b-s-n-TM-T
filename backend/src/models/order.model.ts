@@ -4,10 +4,8 @@ import { RowDataPacket } from 'mysql2/promise';
 export const findOrdersByShopId = async (shopId: number, status: string | undefined): Promise<RowDataPacket[]> => {
 
     let query = `
-        SELECT DISTINCT o.* FROM orders o
-        JOIN order_items oi ON o.order_id = oi.order_id
-        JOIN products p ON oi.product_id = p.id
-        WHERE p.shop_id = ?
+        SELECT o.* FROM orders o
+        WHERE o.shop_id = ?
     `;
     const params: (string | number)[] = [shopId];
 
@@ -23,22 +21,14 @@ export const findOrdersByShopId = async (shopId: number, status: string | undefi
 };
 
 export const updateOrderStatusByShop = async (orderId: number, shopId: number, newStatus: string): Promise<boolean> => {
-    const checkQuery = `
-        SELECT 1 
-        FROM order_items oi
-        JOIN products p ON oi.product_id = p.id
-        WHERE oi.order_id = ? AND p.shop_id = ?
-        LIMIT 1;
-    `;
-    const [checkRows] = await db.execute(checkQuery, [orderId, shopId]);
-    if ((checkRows as RowDataPacket[]).length === 0) {
-        throw new Error("Bạn không có quyền cập nhật đơn hàng này vì nó không chứa sản phẩm của bạn.");
-    }
     const [result] = await db.execute(
-        `UPDATE orders SET status = ? WHERE order_id = ?`,
-        [newStatus, orderId]
+        `UPDATE orders SET status = ? WHERE order_id = ? AND shop_id = ?`,
+        [newStatus, orderId, shopId]
     );
-    return (result as any).affectedRows > 0;
+    if ((result as any).affectedRows === 0) {
+        throw new Error("Bạn không có quyền cập nhật đơn hàng này hoặc đơn hàng không tồn tại.");
+    }
+    return true;
 };
 
 /**
@@ -46,11 +36,7 @@ export const updateOrderStatusByShop = async (orderId: number, shopId: number, n
  */
 const getOrderBaseInfo = async (orderId: number, shopId: number) => {
     const [rows] = await db.query<RowDataPacket[]>(
-        `SELECT o.* FROM orders o
-         JOIN order_items oi ON o.order_id = oi.order_id
-         JOIN products p ON oi.product_id = p.id
-         WHERE o.order_id = ? AND p.shop_id = ?
-         LIMIT 1`,
+        `SELECT * FROM orders WHERE order_id = ? AND shop_id = ? LIMIT 1`,
         [orderId, shopId]
     );
     return rows[0];

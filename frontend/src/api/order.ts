@@ -1,7 +1,7 @@
 import api from './api';
 
 export const getShopOrders = async (status: string | null) => {
-    const res = await api.get('/orders/shop/orders', {
+    const res = await api.get('/orders/shop', {
         params: { status }
     });
     return res.data;
@@ -47,6 +47,21 @@ export const apiGetUserOrders = async (
         }
     });
 
+    return res.data;
+}
+
+export const apiCancelOrder = async (orderId: number) => {
+    const res = await api.put(`/orders/${orderId}/cancel`);
+    return res.data;
+}
+
+export const apiConfirmOrderReceived = async (orderId: number) => {
+    const res = await api.put(`/orders/${orderId}/confirm`);
+    return res.data;
+}
+
+export const apiUpdatePaymentStatus = async (orderId: number, paymentStatus: string) => {
+    const res = await api.put(`/orders/${orderId}/payment-status`, { paymentStatus });
     return res.data;
 }
 

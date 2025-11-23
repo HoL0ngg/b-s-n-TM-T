@@ -1,4 +1,4 @@
-export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Shipping' | 'Delivered' | 'Cancelled' | 'Returns';
 
 /**
  * Định nghĩa cấu trúc dữ liệu của một đơn hàng (Order)
@@ -30,7 +30,7 @@ export interface OrderDetailType {
     id: number;
     order_date: string;
     total_amount: number;
-    status: 'pending' | 'confirmed' | 'shipping' | 'delivered' | 'cancelled';
+    status: 'Pending' | 'Confirmed' | 'Shipping' | 'Delivered' | 'Cancelled' | 'Returns';
     payment_method: string;
     note: string;
     shipping_address: string;

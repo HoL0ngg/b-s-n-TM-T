@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { useSearchParams, Link } from 'react-router-dom';
-import { getShopOrders, updateShopOrderStatus } from '../../api/order';
+import { getShopOrders, updateShopOrderStatus, apiUpdatePaymentStatus } from '../../api/order';
 import { type OrderType, type OrderStatus, type IApiError } from '../../types/OrderType';
 
 export default function Orders() {
@@ -46,6 +46,21 @@ export default function Orders() {
         }
     };
 
+    const handlePaymentStatusChange = async (orderId: number, currentStatus: string) => {
+        const newStatus = currentStatus === 'Paid' ? 'Unpaid' : 'Paid';
+        if (!window.confirm(`Bạn có chắc muốn đổi trạng thái thanh toán đơn hàng #${orderId} sang "${newStatus}"?`)) {
+            return;
+        }
+        try {
+            await apiUpdatePaymentStatus(orderId, newStatus);
+            alert('Cập nhật trạng thái thanh toán thành công!');
+            fetchOrders();
+        } catch (err) {
+            const axiosError = err as AxiosError<IApiError>;
+            alert('Lỗi khi cập nhật: ' + (axiosError.response?.data?.message || 'Lỗi không xác định'));
+        }
+    };
+
     const handleFilterChange = (status: string | null) => {
         if (status) {
             setSearchParams({ status });
@@ -63,8 +78,8 @@ export default function Orders() {
     const statusCounts = {
         all: allOrders.length,
         pending: allOrders.filter(o => o.status.toLowerCase() === 'pending').length,
-        processing: allOrders.filter(o => o.status.toLowerCase() === 'processing').length,
-        shipped: allOrders.filter(o => o.status.toLowerCase() === 'shipped').length,
+        confirmed: allOrders.filter(o => o.status.toLowerCase() === 'confirmed').length,
+        shipping: allOrders.filter(o => o.status.toLowerCase() === 'shipping').length,
         delivered: allOrders.filter(o => o.status.toLowerCase() === 'delivered').length,
         cancelled: allOrders.filter(o => o.status.toLowerCase() === 'cancelled').length,
     };
@@ -177,10 +192,10 @@ export default function Orders() {
                             Chờ xử lý ({statusCounts.pending})
                         </button>
                         <button
-                            onClick={() => handleFilterChange('processing')}
+                            onClick={() => handleFilterChange('confirmed')}
                             style={{
-                                backgroundColor: statusFilter === 'processing' ? '#2196F3' : '#F5F5F5',
-                                color: statusFilter === 'processing' ? '#fff' : '#333',
+                                backgroundColor: statusFilter === 'confirmed' ? '#2196F3' : '#F5F5F5',
+                                color: statusFilter === 'confirmed' ? '#fff' : '#333',
                                 border: 'none',
                                 padding: '8px 20px',
                                 borderRadius: '8px',
@@ -190,13 +205,13 @@ export default function Orders() {
                                 transition: 'all 0.3s ease'
                             }}
                         >
-                            Đang xử lý ({statusCounts.processing})
+                            Đã xác nhận ({statusCounts.confirmed})
                         </button>
                         <button
-                            onClick={() => handleFilterChange('shipped')}
+                            onClick={() => handleFilterChange('shipping')}
                             style={{
-                                backgroundColor: statusFilter === 'shipped' ? '#9C27B0' : '#F5F5F5',
-                                color: statusFilter === 'shipped' ? '#fff' : '#333',
+                                backgroundColor: statusFilter === 'shipping' ? '#9C27B0' : '#F5F5F5',
+                                color: statusFilter === 'shipping' ? '#fff' : '#333',
                                 border: 'none',
                                 padding: '8px 20px',
                                 borderRadius: '8px',
@@ -206,7 +221,7 @@ export default function Orders() {
                                 transition: 'all 0.3s ease'
                             }}
                         >
-                            Đang giao ({statusCounts.shipped})
+                            Đang giao ({statusCounts.shipping})
                         </button>
                         <button
                             onClick={() => handleFilterChange('delivered')}
@@ -309,15 +324,17 @@ export default function Orders() {
 
                                             {/* Trạng thái TT */}
                                             <td style={{ padding: '16px', textAlign: 'center' }}>
-                                                <span style={{
-                                                    backgroundColor: order.payment_status === 'Paid' ? '#E8F5E9' : '#F5F5F5',
-                                                    color: order.payment_status === 'Paid' ? '#4CAF50' : '#999',
-                                                    padding: '6px 12px',
-                                                    borderRadius: '6px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    display: 'inline-block'
-                                                }}>
+                                                <span 
+                                                    style={{
+                                                        backgroundColor: order.payment_status === 'Paid' ? '#E8F5E9' : '#FFEBEE',
+                                                        color: order.payment_status === 'Paid' ? '#4CAF50' : '#F44336',
+                                                        padding: '6px 12px',
+                                                        borderRadius: '6px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        display: 'inline-block',
+                                                    }}
+                                                >
                                                     {order.payment_status}
                                                 </span>
                                             </td>
@@ -341,7 +358,7 @@ export default function Orders() {
 
                                             {/* Hành động */}
                                             <td style={{ padding: '16px', textAlign: 'center' }}>
-                                                <div className="d-flex gap-2 justify-content-center">
+                                                <div className="d-flex gap-2 justify-content-center flex-wrap">
                                                     {/* Nút Xem chi tiết */}
                                                     <Link
                                                         to={`/seller/orders/${order.order_id}`}
@@ -364,30 +381,115 @@ export default function Orders() {
                                                     </Link>
 
                                                     {/* Các nút hành động */}
+                                                    {
+                                                        order.payment_status === 'Unpaid' && <button
+                                                        onClick={() => handlePaymentStatusChange(order.order_id, order.payment_status)}
+                                                        style={{
+                                                            backgroundColor: '#FFF3E0',
+                                                            color: '#FF9800',
+                                                            border: 'none',
+                                                            padding: '6px 12px',
+                                                            borderRadius: '6px',
+                                                            fontSize: '13px',
+                                                            cursor: 'pointer',
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px'
+                                                        }}
+                                                        title="Đổi trạng thái thanh toán"
+                                                    >
+                                                        <i className="bi bi-check-lg"></i>
+                                                        Đã thanh toán
+                                                    </button>
+                                                    }
+
                                                     {order.status.toLowerCase() === 'pending' && (
-                                                        <button
-                                                            onClick={() => handleStatusChange(order.order_id, 'Processing')}
-                                                            style={{
-                                                                backgroundColor: '#E3F2FD',
-                                                                color: '#2196F3',
-                                                                border: 'none',
-                                                                padding: '6px 12px',
-                                                                borderRadius: '6px',
-                                                                fontSize: '13px',
-                                                                cursor: 'pointer',
-                                                                display: 'inline-flex',
-                                                                alignItems: 'center',
-                                                                gap: '4px'
-                                                            }}
-                                                            title="Xác nhận đơn"
-                                                        >
-                                                            <i className="bi bi-check-lg"></i>
-                                                            Xác nhận
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleStatusChange(order.order_id, 'Confirmed')}
+                                                                style={{
+                                                                    backgroundColor: '#E3F2FD',
+                                                                    color: '#2196F3',
+                                                                    border: 'none',
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '13px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px'
+                                                                }}
+                                                                title="Xác nhận đơn"
+                                                            >
+                                                                <i className="bi bi-check-lg"></i>
+                                                                Xác nhận
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleStatusChange(order.order_id, 'Cancelled')}
+                                                                style={{
+                                                                    backgroundColor: '#FFEBEE',
+                                                                    color: '#F44336',
+                                                                    border: 'none',
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '13px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px'
+                                                                }}
+                                                                title="Hủy đơn hàng"
+                                                            >
+                                                                <i className="bi bi-x-circle"></i>
+                                                                Hủy đơn
+                                                            </button>
+                                                        </>
                                                     )}
-                                                    {order.status.toLowerCase() === 'processing' && (
+                                                    {order.status.toLowerCase() === 'confirmed' && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleStatusChange(order.order_id, 'Shipping')}
+                                                                style={{
+                                                                    backgroundColor: '#E8F5E9',
+                                                                    color: '#4CAF50',
+                                                                    border: 'none',
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '13px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px'
+                                                                }}
+                                                                title="Giao hàng"
+                                                            >
+                                                                <i className="bi bi-truck"></i>
+                                                                Giao hàng
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleStatusChange(order.order_id, 'Cancelled')}
+                                                                style={{
+                                                                    backgroundColor: '#FFEBEE',
+                                                                    color: '#F44336',
+                                                                    border: 'none',
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '6px',
+                                                                    fontSize: '13px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px'
+                                                                }}
+                                                                title="Hủy đơn hàng"
+                                                            >
+                                                                <i className="bi bi-x-circle"></i>
+                                                                Hủy đơn
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {order.status.toLowerCase() === 'shipping' && (
                                                         <button
-                                                            onClick={() => handleStatusChange(order.order_id, 'Shipped')}
+                                                            onClick={() => handleStatusChange(order.order_id, 'Delivered')}
                                                             style={{
                                                                 backgroundColor: '#E8F5E9',
                                                                 color: '#4CAF50',
@@ -400,10 +502,10 @@ export default function Orders() {
                                                                 alignItems: 'center',
                                                                 gap: '4px'
                                                             }}
-                                                            title="Giao hàng"
+                                                            title="Đã giao hàng"
                                                         >
-                                                            <i className="bi bi-truck"></i>
-                                                            Giao hàng
+                                                            <i className="bi bi-check-circle"></i>
+                                                            Đã giao
                                                         </button>
                                                     )}
                                                 </div>
@@ -424,15 +526,15 @@ export default function Orders() {
 const getStatusStyle = (status: OrderStatus) => {
     const lowerStatus = status.toLowerCase();
     switch (lowerStatus) {
-        case 'Pending':
+        case 'pending':
             return { backgroundColor: '#FFF3E0', color: '#FF9800' };
-        case 'Processing':
+        case 'confirmed':
             return { backgroundColor: '#E3F2FD', color: '#2196F3' };
-        case 'Shipped':
+        case 'shipping':
             return { backgroundColor: '#F3E5F5', color: '#9C27B0' };
-        case 'Delivered':
+        case 'delivered':
             return { backgroundColor: '#E8F5E9', color: '#4CAF50' };
-        case 'Cancelled':
+        case 'cancelled':
             return { backgroundColor: '#FFEBEE', color: '#F44336' };
         default:
             return { backgroundColor: '#F5F5F5', color: '#999' };
@@ -443,11 +545,11 @@ const getStatusStyle = (status: OrderStatus) => {
 const getStatusIcon = (status: OrderStatus) => {
     const lowerStatus = status.toLowerCase();
     switch (lowerStatus) {
-        case 'Pending': return 'bi-clock-history';
-        case 'Processing': return 'bi-box-seam';
-        case 'Shipped': return 'bi-truck';
-        case 'Delivered': return 'bi-check-circle-fill';
-        case 'Cancelled': return 'bi-x-circle-fill';
+        case 'pending': return 'bi-clock-history';
+        case 'confirmed': return 'bi-box-seam';
+        case 'shipping': return 'bi-truck';
+        case 'delivered': return 'bi-check-circle-fill';
+        case 'cancelled': return 'bi-x-circle-fill';
         default: return 'bi-question-circle';
     }
 };

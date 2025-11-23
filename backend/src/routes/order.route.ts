@@ -21,7 +21,11 @@ router.put('/shop/:orderId/status', orderController.updateShopOrderStatusControl
 // 3. ROUTE ĐỘNG (với :orderId) PHẢI NẰM CUỐI CÙNG
 router.get('/shop/:orderId', orderController.getShopOrderDetailController);
 
+router.get('/order', orderController.getShopOrdersController);
 router.get('/', orderController.getAllOrder);
 router.get('/user', verifyToken, orderController.getUserOrder);
+router.put('/:id/cancel', verifyToken, orderController.cancelOrder);
+router.put('/:id/confirm', verifyToken, orderController.confirmReceived);
+router.put('/:id/payment-status', verifyToken, orderController.updatePaymentStatus);
 router.get('/:id', orderController.getDetailOrder);
 export default router;

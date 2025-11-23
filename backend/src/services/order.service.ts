@@ -2,6 +2,7 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import * as OrderModel from '../models/order.model';
 import * as ShopModel from '../models/shop.model';
 import pool from '../config/db';
+import { VALID_TRANSITIONS } from '../constants/order-status';
 
 class OrderService {
     getOrdersForShop = async (userId: string, status: string | undefined) => {
@@ -16,6 +17,20 @@ class OrderService {
         const shopId = await ShopModel.findShopIdByOwner(userId);
         if (!shopId) {
             throw new Error("Người dùng này không sở hữu Shop nào.");
+        }
+
+        // Get current order status to validate transition
+        const orderDetail: any = await OrderModel.findOrderDetailByShop(orderId, shopId);
+        const currentStatus = orderDetail.status;
+
+        // Validate transition
+        const allowedTransitions = VALID_TRANSITIONS[currentStatus];
+        
+        // Allow same status update (idempotent) or check valid transition
+        if (currentStatus !== newStatus) {
+             if (!allowedTransitions || !allowedTransitions.includes(newStatus)) {
+                throw new Error(`Không thể chuyển trạng thái từ '${currentStatus}' sang '${newStatus}'.`);
+            }
         }
 
         return OrderModel.updateOrderStatusByShop(orderId, shopId, newStatus);
@@ -268,6 +283,66 @@ class OrderService {
             pagination: { page, limit, totalOrders, totalPages }
         };
         return result;
+    }
+
+    cancelOrderByUser = async (userId: string, orderId: number) => {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // Check order ownership and status
+            const [rows] = await connection.query<RowDataPacket[]>(
+                `SELECT status FROM orders WHERE order_id = ? AND user_id = ? FOR UPDATE`,
+                [orderId, userId]
+            );
+
+            if (rows.length === 0) {
+                throw new Error("Đơn hàng không tồn tại hoặc không thuộc về bạn.");
+            }
+
+            const currentStatus = rows[0].status;
+            if (currentStatus.toLowerCase() !== 'pending') {
+                throw new Error("Chỉ có thể hủy đơn hàng khi đang ở trạng thái Chờ xác nhận.");
+            }
+
+            // Update status
+            await connection.execute(
+                `UPDATE orders SET status = 'Cancelled' WHERE order_id = ?`,
+                [orderId]
+            );
+
+            // Restore stock
+            const [items] = await connection.query<RowDataPacket[]>(
+                `SELECT variant_id, quantity FROM order_items WHERE order_id = ?`,
+                [orderId]
+            );
+
+            for (const item of items) {
+                await connection.execute(
+                    `UPDATE productvariants SET stock = stock + ? WHERE id = ?`,
+                    [item.quantity, item.variant_id]
+                );
+            }
+
+            await connection.commit();
+            return true;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    confirmOrderReceived = async (userId: string, orderId: number) => {
+        const [result] = await pool.query<ResultSetHeader>(
+            `UPDATE orders SET status = 'Delivered', payment_status = 'Paid' WHERE order_id = ? AND user_id = ? AND status = 'Shipping'`,
+            [orderId, userId]
+        );
+        if (result.affectedRows === 0) {
+            throw new Error("Không thể xác nhận đơn hàng (có thể đơn hàng chưa được giao hoặc không tồn tại).");
+        }
+        return true;
     }
 }
 export default new OrderService();
