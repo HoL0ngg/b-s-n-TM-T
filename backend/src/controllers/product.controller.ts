@@ -31,16 +31,21 @@ class productController {
             console.log(err);
         }
     }
+    
     getProductOnShopIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
             const type = req.query.type;
             const sort = req.query.sortBy || "popular";
             const cate = req.query.bst || 0;
+            
+            const role = req.query.role; 
+            const isManager = (role === 'manager'); 
+
             let data;
             switch (type) {
                 case 'all':
-                    data = await productService.getProductOnShopIdService(Number(id), String(sort), Number(cate));
+                    data = await productService.getProductOnShopIdService(Number(id), String(sort), Number(cate), isManager);
                     break;
                 case 'suggest':
                     data = await productService.get5ProductOnShopIdService(Number(id));

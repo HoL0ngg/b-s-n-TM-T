@@ -21,10 +21,10 @@ export const fetch5ProductByShopId = async (id: number): Promise<ProductType[]> 
     return res.data;
 }
 
-// Lấy phiên bản code của bạn (đã sửa đúng route)
-export const fetchProductsByShopId = async (id: number, state: number, cate: number): Promise<ProductType[]> => {
+export const fetchProductsByShopId = async (id: number, state: number, cate: number, isManager: boolean = false): Promise<ProductType[]> => {
     const sort = state == 1 ? "popular" : state == 2 ? "new" : "hot";
-    const res = await axios.get(`${API_URL}/shop/${id}?type=all&sortBy=${sort}&bst=${cate}`);
+    const roleParam = isManager ? "&role=manager" : "";
+    const res = await axios.get(`${API_URL}/shop/${id}?type=all&sortBy=${sort}&bst=${cate}${roleParam}`);
     return res.data;
 }
 export const fetchReviewByProductId = async (id: number, type?: number): Promise<ProductReviewType[]> => {

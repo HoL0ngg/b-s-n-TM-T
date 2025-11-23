@@ -90,8 +90,7 @@ export default function ShopProductsManager() {
       setError('');
       const categoryId_generic = 0;
       const sortOption = sortBy === 'popular' ? 1 : sortBy === 'new' ? 2 : 3;
-
-      const data = await fetchProductsByShopId(shopId, sortOption, categoryId_generic);
+      const data = await fetchProductsByShopId(shopId, sortOption, categoryId_generic, true);
       setProducts(data || []);
     } catch (error) {
       console.error('Error loading products:', error);
