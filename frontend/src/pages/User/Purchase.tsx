@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGetOrderDetail, apiGetUserOrders } from "../../api/order";
+import { apiGetOrderDetail, apiGetUserOrders, apiCancelOrder, apiConfirmOrderReceived } from "../../api/order";
 import type { OrderType, OrderDetailType } from "../../types/OrderType";
 import { submitReview, checkOrderReviewed } from "../../api/user";
 
@@ -81,10 +81,27 @@ export default function Purchase() {
         setCurrentPage(page);
     };
 
-    const handleConfirmReceived = (orderId: number) => {
-        // Add order to confirmed set
-        setConfirmedOrders(prev => new Set(prev).add(orderId));
-        alert("Đã xác nhận nhận hàng thành công!");
+    const handleCancelOrder = async (orderId: number) => {
+        if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+        try {
+            await apiCancelOrder(orderId);
+            alert("Hủy đơn hàng thành công!");
+            loadOrders(activeTab, currentPage);
+        } catch (err: any) {
+            alert(err.response?.data?.message || "Không thể hủy đơn hàng");
+        }
+    };
+
+    const handleConfirmReceived = async (orderId: number) => {
+        if (!window.confirm("Bạn xác nhận đã nhận được hàng?")) return;
+        try {
+            await apiConfirmOrderReceived(orderId);
+            setConfirmedOrders(prev => new Set(prev).add(orderId));
+            alert("Đã xác nhận nhận hàng thành công!");
+            loadOrders(activeTab, currentPage);
+        } catch (err: any) {
+            alert(err.response?.data?.message || "Không thể xác nhận nhận hàng");
+        }
     };
 
     const handleOpenReview = (orderId: number) => {
@@ -260,6 +277,14 @@ export default function Purchase() {
                                     >
                                         Xem chi tiết
                                     </button>
+                                    {order.status.toLowerCase() === "pending" && (
+                                        <button
+                                            className="btn btn-outline-danger btn-sm"
+                                            onClick={() => handleCancelOrder(order.order_id)}
+                                        >
+                                            Hủy đơn
+                                        </button>
+                                    )}
                                     {order.status.toLowerCase() === "shipping" && !confirmedOrders.has(order.order_id) && (
                                         <button
                                             className="btn btn-success btn-sm"
