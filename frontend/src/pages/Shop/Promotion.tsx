@@ -103,6 +103,9 @@ export default function Promotion() {
         );
     }
 
+    console.log(promotions);
+
+
     return (
         <div style={{ backgroundColor: '#F5F5F5', minHeight: '100vh' }}>
             {/* Header */}
@@ -182,7 +185,7 @@ export default function Promotion() {
                                 <i className="bi bi-calendar-event me-2" style={{ color: '#FF9800' }}></i>
                                 Danh sách sự kiện
                             </h5>
-                            
+
                             {promotions && promotions.length > 0 ? (
                                 <div className="d-flex flex-column gap-2">
                                     {promotions.map(promo => (
@@ -211,10 +214,10 @@ export default function Promotion() {
                                             }}
                                         >
                                             <div className="d-flex align-items-center justify-content-between mb-2">
-                                                <span style={{ 
-                                                    fontSize: '15px', 
-                                                    fontWeight: '600', 
-                                                    color: '#333' 
+                                                <span style={{
+                                                    fontSize: '15px',
+                                                    fontWeight: '600',
+                                                    color: '#333'
                                                 }}>
                                                     {promo.name}
                                                 </span>
@@ -226,6 +229,9 @@ export default function Promotion() {
                                                 startDate={promo.start_date}
                                                 endDate={promo.end_date}
                                             />
+                                            <div className='mt-2' >
+                                                <img src={`http://localhost:5000${promo.banner_url}`} alt="" style={{ height: '100px', maxWidth: '100%', borderRadius: '8px' }} />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -294,14 +300,14 @@ export default function Promotion() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div style={{ 
-                                            overflowY: 'auto', 
-                                            maxHeight: '450px',
+                                        <div style={{
+                                            overflowY: 'auto',
+                                            maxHeight: '365px',
                                             border: '1px solid #E0E0E0',
                                             borderRadius: '8px'
                                         }}>
                                             <table className="table table-hover mb-0">
-                                                <thead style={{ 
+                                                <thead style={{
                                                     backgroundColor: '#FAFAFA',
                                                     position: 'sticky',
                                                     top: 0,
@@ -342,14 +348,14 @@ export default function Promotion() {
                                                                             fontSize: '13px'
                                                                         }}
                                                                     />
-                                                                    <span className="input-group-text" style={{ 
+                                                                    <span className="input-group-text" style={{
                                                                         borderRadius: '0 6px 6px 0',
                                                                         fontSize: '13px'
                                                                     }}>%</span>
                                                                 </div>
                                                             </td>
                                                             <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                                                                <button 
+                                                                <button
                                                                     className="btn btn-sm"
                                                                     onClick={() => handleDeleteItem(item.product_variant_id)}
                                                                     style={{
@@ -385,7 +391,7 @@ export default function Promotion() {
                                     borderTop: '1px solid #E0E0E0',
                                     textAlign: 'right'
                                 }}>
-                                    <button 
+                                    <button
                                         className="btn d-inline-flex align-items-center gap-2"
                                         onClick={handleSaveChanges}
                                         style={{
