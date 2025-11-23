@@ -235,7 +235,8 @@ class productController {
     // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
-            const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
+            // const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, brand, } = req.query;
+            const { page = 1, limit = 12, sort = "default", subCategoryId, brand, } = req.query;
             const categoryId = Number(req.params.id);
 
             // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
@@ -251,14 +252,14 @@ class productController {
                 whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
                 params.push(categoryId);
             }
-            if (minPrice) {
-                whereClause += " AND v_products_list.base_price >= ?";
-                params.push(minPrice);
-            }
-            if (maxPrice) {
-                whereClause += " AND v_products_list.base_price <= ?";
-                params.push(maxPrice);
-            }
+            // if (minPrice) {
+            //     whereClause += " AND v_products_list.base_price >= ?";
+            //     params.push(minPrice);
+            // }
+            // if (maxPrice) {
+            //     whereClause += " AND v_products_list.base_price <= ?";
+            //     params.push(maxPrice);
+            // }
             if (brand && typeof brand === "string" && brand.length > 0) {
                 const brandIds = brand.split(",").map(Number).filter(Boolean);
                 if (brandIds.length > 0) {

@@ -101,12 +101,12 @@ export const fetchProducts = async (query: any, category_id: number): Promise<Pr
     if (query.sort && query.sort !== "default") {
         params.append('sort', query.sort);
     }
-    if (query.minPrice !== null) {
-        params.append('minPrice', query.minPrice);
-    }
-    if (query.maxPrice !== null) {
-        params.append('maxPrice', query.maxPrice);
-    }
+    // if (query.minPrice !== null) {
+    //     params.append('minPrice', query.minPrice);
+    // }
+    // if (query.maxPrice !== null) {
+    //     params.append('maxPrice', query.maxPrice);
+    // }
     if (query.brand && query.brand.length > 0) {
         params.append('brand', query.brand.join(','));
     }
@@ -131,8 +131,8 @@ export const fetchProductForEdit = async (productId: string | number): Promise<a
 // (Hàm bật/tắt trạng thái - của bạn (qhuykuteo))
 export const updateProductStatus = async (productId: number, status: number) => {
     const response = await axios.patch(
-        `${API_URL}/${productId}/status`, 
-        { status }, 
+        `${API_URL}/${productId}/status`,
+        { status },
         getAuthHeaders()
     );
     return response.data;
