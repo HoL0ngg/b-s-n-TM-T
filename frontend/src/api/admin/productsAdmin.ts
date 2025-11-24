@@ -2,7 +2,7 @@ import axios from "axios";
 import type { ProductTypeAdmin } from "../../types/admin/ProductTypeAdmin";
 
 
-const API_URL = "http://localhost:5000/api/admin/productsAdmin";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/admin/productsAdmin`;
 
 export const fetchProductsByStatusAdmin = async (
     status: string,

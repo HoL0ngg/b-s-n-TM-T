@@ -140,7 +140,7 @@ export default function Navbar() {
     }, [keyword, debouncedSearch]);
 
     const handleNavigateInfo = () => navigate("/user/account/profile");
-    const handleNavigateOrder = () => navigate("/login");
+    const handleNavigateOrder = () => navigate("/user/purchase");
 
     return (
         <>

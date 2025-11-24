@@ -15,10 +15,11 @@ export interface ProductType {
     min_price: number;
     max_price: number;
 
-    // Giữ code của bạn (qhuykuteo)
     shop_cate_id?: number | null;
 
-    // Giữ code của đồng đội (main)
+    reject_reason?: string | null;
+    ban_reason?: string | null;
+    
     original_price: number;
     sale_price: number | null;
     discount_percentage: number | null;
@@ -95,6 +96,7 @@ export interface PromotionType {
     start_date: string;
     end_date: string;
     is_active: boolean;
+    banner_url: string;
 }
 
 export interface UpdatePromoItemDto {

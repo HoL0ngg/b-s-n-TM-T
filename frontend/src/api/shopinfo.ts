@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/shopinfo";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/shopinfo`;
 
 export const createShopInfo = async (shopData: any) => {
   const res = await axios.post(`${API_URL}/register`, shopData);
@@ -9,18 +9,18 @@ export const createShopInfo = async (shopData: any) => {
 // shopinfo.ts
 export const updateShopInfo = async (shopId: number, shopData: any) => {
   const token = localStorage.getItem('token');
-  
+
   // ✅ Debug token
   console.log('🔑 Token check:', {
     hasToken: !!token,
     tokenLength: token?.length,
     tokenPreview: token?.substring(0, 20) + '...'
   });
-  
+
   if (!token) {
     throw new Error('Không tìm thấy token. Vui lòng đăng nhập lại!');
   }
-  
+
   console.log('📡 API Call:', {
     url: `${API_URL}/update/${shopId}`,
     shopId: shopId,
@@ -28,7 +28,7 @@ export const updateShopInfo = async (shopId: number, shopData: any) => {
       'Authorization': `Bearer ${token.substring(0, 20)}...`
     }
   });
-  
+
   const res = await axios.put(
     `${API_URL}/update/${shopId}`,
     shopData,
@@ -39,7 +39,7 @@ export const updateShopInfo = async (shopId: number, shopData: any) => {
       }
     }
   );
-  
+
   return res.data;
 };
 export const getShopInfoByShopId = async (shopId: number) => {

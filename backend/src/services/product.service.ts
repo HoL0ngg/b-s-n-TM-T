@@ -90,24 +90,28 @@ class productService {
         );
         return rows as Product[];
     }
-    // Đường dẫn: backend/src/services/product.service.ts
-
-    getProductOnShopIdService = async (shopId: number, sort: string, cate: number) => {
+  
+ 
+    getProductOnShopIdService = async (shopId: number, sort: string, cate: number, isManager: boolean = false) => {
         let orderBy = "id DESC";
         if (sort === "popular") { orderBy = "hot_score DESC"; }
         else if (sort === "new") { orderBy = "created_at DESC"; }
         else if (sort === "hot") { orderBy = "sold_count DESC"; }
 
-        // === SỬA LẠI DÒNG NÀY ===
-        // Bỏ "AND status = 1" đi để Chủ shop có thể nhìn thấy sản phẩm tạm dừng
+    
         let whereClause = "WHERE shop_id = ?";
-        // ========================
+        
+ 
+        if (!isManager) {
+            whereClause += " AND status = 1";
+        }
 
         const params: (string | number)[] = [shopId];
         if (cate && cate !== 0) {
             whereClause += " AND shop_cate_id = ?";
             params.push(cate);
         }
+        
         const [rows] = await pool.query(`SELECT * FROM v_products_list ${whereClause} ORDER BY ${orderBy}`, params);
         return rows;
     };
@@ -174,33 +178,71 @@ class productService {
         return result as AttributeOfProductVariants[];
     }
 
-    // --- CÁC HÀM CRUD (CỦA BẠN - qhuykuteo) ---
+    // --- 1. HÀM TẠO SẢN PHẨM (Đã sửa: Mặc định status = 0) ---
     createProductService = async (productData: any) => {
-        const { shop_id, name, description, category_id, shop_cate_id, image_url, status, attribute_id, variations, details } = productData;
+        const { shop_id, name, description, category_id, shop_cate_id, image_url, attribute_id, variations, details } = productData;
+        
+        // Tính toán giá cơ bản (lấy giá thấp nhất trong các biến thể)
         let base_price = productData.base_price || 0;
-        if (variations && variations.length > 0) { base_price = Math.min(...variations.map((v: any) => v.price)); }
+        if (variations && variations.length > 0) { 
+            base_price = Math.min(...variations.map((v: any) => v.price)); 
+        }
+
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
-            const [result] = await connection.query<ResultSetHeader>(`INSERT INTO products (shop_id, name, description, base_price, generic_id, shop_cate_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`, [shop_id, name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1]);
+
+            // SỬA ĐỔI: Mặc định status = 0 (Pending) khi tạo mới
+            const initialStatus = 0; 
+
+            const [result] = await connection.query<ResultSetHeader>(
+                `INSERT INTO products (shop_id, name, description, base_price, generic_id, shop_cate_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`, 
+                [shop_id, name, description || null, base_price, category_id || null, shop_cate_id || null, initialStatus]
+            );
+            
             const productId = result.insertId;
-            if (image_url) { await connection.query(`INSERT INTO productimages (product_id, image_url, is_main) VALUES (?, ?, 1)`, [productId, image_url]); }
+
+            // Thêm ảnh chính
+            if (image_url) { 
+                await connection.query(`INSERT INTO productimages (product_id, image_url, is_main) VALUES (?, ?, 1)`, [productId, image_url]); 
+            }
+
+            // Thêm biến thể
             if (variations && variations.length > 0 && attribute_id) {
                 for (const variation of variations) {
-                    const [variantResult] = await connection.query<ResultSetHeader>(`INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`, [productId, variation.price, variation.stock, variation.sku || null, variation.image_url || null]);
+                    const [variantResult] = await connection.query<ResultSetHeader>(
+                        `INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`, 
+                        [productId, variation.price, variation.stock, variation.sku || null, variation.image_url || null]
+                    );
                     const variantId = variantResult.insertId;
-                    await connection.query(`INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`, [variantId, attribute_id, variation.value]);
+                    await connection.query(
+                        `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`, 
+                        [variantId, attribute_id, variation.value]
+                    );
                 }
             } else {
-                await connection.query<ResultSetHeader>(`INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`, [productId, base_price, productData.stock || 0]);
+                // Trường hợp không có biến thể (sản phẩm đơn)
+                await connection.query<ResultSetHeader>(
+                    `INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`, 
+                    [productId, base_price, productData.stock || 0]
+                );
             }
+
+            // Thêm chi tiết sản phẩm
             if (details && Array.isArray(details) && details.length > 0) {
                 const detailValues = details.map((d: any) => [productId, d.key, d.value]);
                 await connection.query(`INSERT INTO product_detail (product_id, attribute, value) VALUES ?`, [detailValues]);
             }
+
             await connection.commit();
-            const [product] = await pool.query(`SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`, [productId]) as [Product[], any];
+
+            // Trả về kết quả
+            const [product] = await pool.query(
+                `SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`, 
+                [productId]
+            ) as [Product[], any];
             return product[0];
+
         } catch (error) {
             await connection.rollback();
             console.error("Lỗi Transaction khi tạo sản phẩm:", error);
@@ -209,26 +251,60 @@ class productService {
             connection.release();
         }
     };
-    // NÂNG CẤP: updateProductService (Thông minh hơn - Tránh lỗi khóa ngoại)
-    updateProductService = async (productId: number, productData: any) => {
-        const { name, description, category_id, shop_cate_id, image_url, status, attribute_id, variations, details } = productData;
 
+    // --- 2. HÀM CẬP NHẬT SẢN PHẨM (Đã sửa: Reset status nếu đang bị từ chối) ---
+    updateProductService = async (productId: number, productData: any) => {
+        const { name, description, category_id, shop_cate_id, image_url, attribute_id, variations, details } = productData;
+
+        // Tính toán lại giá cơ bản
         let base_price = productData.base_price || 0;
-        if (variations && variations.length > 0) { base_price = Math.min(...variations.map((v: any) => v.price)); }
+        if (variations && variations.length > 0) { 
+            base_price = Math.min(...variations.map((v: any) => v.price)); 
+        }
 
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
-            // 1. Update thông tin chung
+            // === BẮT ĐẦU LOGIC XỬ LÝ STATUS ===
+            // Bước 1: Lấy status hiện tại của sản phẩm
+            const [currentProd] = await connection.query<RowDataPacket[]>(
+                "SELECT status FROM products WHERE id = ?", 
+                [productId]
+            );
+            
+            let newStatus = 1; // Giá trị mặc định an toàn
+            
+            if (currentProd.length > 0) {
+                const currentStatus = currentProd[0].status;
+                
+                // Case A: Nếu đang bị TỪ CHỐI (-1) -> Khi sửa xong sẽ về CHỜ DUYỆT (0)
+                if (currentStatus === -1) {
+                    newStatus = 0;
+                } 
+                // Case B: Nếu đang BỊ KHÓA (-2) -> Giữ nguyên khóa (-2), không cho shop mở lại
+                else if (currentStatus === -2) {
+                     newStatus = -2; 
+                }
+                // Case C: Các trạng thái bình thường (0, 1, 3)
+                else {
+                    // Nếu frontend có gửi status mới lên (ví dụ shop muốn ẩn/hiện) thì dùng cái đó
+                    // Nếu không thì giữ nguyên status cũ
+                    newStatus = productData.status !== undefined ? productData.status : currentStatus;
+                }
+            }
+            // === KẾT THÚC LOGIC XỬ LÝ STATUS ===
+
+            // 1. Update thông tin chung (Cập nhật status mới và Reset lý do từ chối)
             await connection.query(
                 `UPDATE products 
-                 SET name = ?, description = ?, base_price = ?, generic_id = ?, shop_cate_id = ?, status = ?, updated_at = NOW() 
+                 SET name = ?, description = ?, base_price = ?, generic_id = ?, shop_cate_id = ?, 
+                     status = ?, reject_reason = NULL, updated_at = NOW() 
                  WHERE id = ?`,
-                [name, description || null, base_price, category_id || null, shop_cate_id || null, status || 1, productId]
+                [name, description || null, base_price, category_id || null, shop_cate_id || null, newStatus, productId]
             );
 
-            // 2. Update ảnh chính (Giữ nguyên)
+            // 2. Update ảnh chính
             if (image_url) {
                 const [existingImages] = await connection.query('SELECT image_id FROM productimages WHERE product_id = ? AND is_main = 1', [productId]);
                 if ((existingImages as any[]).length > 0) {
@@ -238,24 +314,18 @@ class productService {
                 }
             }
 
-            // 3. XỬ LÝ BIẾN THỂ (PHẦN QUAN TRỌNG)
-            // Thay vì xóa hết, chúng ta sẽ xóa CÁC OPTION (variantoptionvalues) trước,
-            // sau đó cập nhật lại bảng productvariants.
-
-            // Bước 3a: Xóa các option cũ (để tạo lại option mới cho chính xác)
+            // 3. XỬ LÝ BIẾN THỂ
+            // Bước 3a: Xóa các option cũ trước
             await connection.query(
                 'DELETE FROM variantoptionvalues WHERE variant_id IN (SELECT id FROM productvariants WHERE product_id = ?)',
                 [productId]
             );
 
-            // Bước 3b: Xóa CÁC BIẾN THỂ CŨ (Trừ những cái đang bị kẹt trong đơn hàng - cái này khó).
-            // ĐỂ ĐƠN GIẢN: Chúng ta sẽ dùng một mẹo: Tắt kiểm tra khóa ngoại tạm thời.
+            // Bước 3b: Tắt khóa ngoại tạm thời để xóa biến thể cũ
             await connection.query('SET FOREIGN_KEY_CHECKS=0');
-
-            // Xóa hết biến thể cũ
             await connection.query('DELETE FROM productvariants WHERE product_id = ?', [productId]);
 
-            // Tạo lại biến thể mới (Như cũ)
+            // Bước 3c: Tạo lại biến thể mới
             if (variations && variations.length > 0 && attribute_id) {
                 for (const variation of variations) {
                     const [variantResult] = await connection.query<ResultSetHeader>(
@@ -278,17 +348,12 @@ class productService {
             // Bật lại kiểm tra khóa ngoại
             await connection.query('SET FOREIGN_KEY_CHECKS=1');
 
-            // 4. Xử lý chi tiết sản phẩm (Giữ nguyên)
-            // 4. Xử lý chi tiết sản phẩm (Đã sửa)
+            // 4. Xử lý chi tiết sản phẩm
             await connection.query('DELETE FROM product_detail WHERE product_id = ?', [productId]);
 
             if (details && Array.isArray(details) && details.length > 0) {
-                // Map dữ liệu đầu vào khớp với thứ tự cột trong câu lệnh INSERT bên dưới
                 const detailValues = details.map((d: any) => [productId, d.key, d.value]);
-
                 await connection.query(
-                    // SỬA 1: Tên bảng là `product_detail` (bỏ 's')
-                    // SỬA 2: Tên cột là `attribute` và `value`
                     `INSERT INTO product_detail (product_id, attribute, value) VALUES ?`,
                     [detailValues]
                 );
@@ -309,6 +374,7 @@ class productService {
             connection.release();
         }
     };
+  
     deleteProductService = async (productId: number) => {
         const connection = await pool.getConnection();
         try {
@@ -471,47 +537,52 @@ class productService {
         return product;
     };
 
-    updateProductStatusService = async (productId: number, status: number, reason?: string) => {
-        let sql = "";
-        let params: any[] = [];
+   // --- THAY THẾ TOÀN BỘ HÀM NÀY ---
+   updateProductStatusService = async (productId: number, status: number, reason?: string) => {
+    let sql = "";
+    let params: any[] = [];
 
-        switch (status) {
+    // LOGIC MỚI: Gộp các trạng thái "Sạch" (0: Pending, 1: Active, 3: Hidden)
+    // Khi chuyển sang các trạng thái này, ta cập nhật status và XÓA các lý do từ chối/ban cũ (nếu có)
+    if (status === 1 || status === 3 || status === 0) {
+        sql = `
+            UPDATE products
+            SET status = ?, reject_reason = NULL, ban_reason = NULL
+            WHERE id = ?
+        `;
+        params = [status, productId];
+    } 
+    // Logic cho Từ chối (-1)
+    else if (status === -1) {
+        sql = `
+            UPDATE products
+            SET status = ?, reject_reason = ?, ban_reason = NULL
+            WHERE id = ?
+        `;
+        params = [status, reason || null, productId];
+    }
+    // Logic cho Khóa (-2)
+    else if (status === -2) {
+         sql = `
+            UPDATE products
+            SET status = ?, ban_reason = ?, reject_reason = NULL
+            WHERE id = ?
+        `;
+        params = [status, reason || null, productId];
+    } 
+    else {
+        // Status không hợp lệ
+        return false;
+    }
 
-            case -1: // rejected
-                sql = `
-                UPDATE products
-                SET status = ?, reject_reason = ?, ban_reason = NULL
-                WHERE id = ?
-            `;
-                params = [status, reason, productId];
-                break;
-
-            case -2: // banned
-                sql = `
-                UPDATE products
-                SET status = ?, ban_reason = ?, reject_reason = NULL
-                WHERE id = ?
-            `;
-                params = [status, reason, productId];
-                break;
-
-            case 1: // approved
-                sql = `
-                UPDATE products
-                SET status = ?, reject_reason = NULL, ban_reason = NULL
-                WHERE id = ?
-            `;
-                params = [status, productId];
-                break;
-
-            default:
-                return false;
-        }
-
+    try {
         const [result] = await pool.query<ResultSetHeader>(sql, params);
         return result.affectedRows > 0;
-    };
-
+    } catch (error) {
+        console.error("Lỗi cập nhật status:", error);
+        return false;
+    }
+};
 
     // =================================================================
     // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
@@ -672,8 +743,11 @@ class productService {
 
     getProductsOnShopId = async (shopId: number, page: number, limit: number): Promise<ProductResponse> => {
         let query = `
-            WHERE v_products_list.shop_id = ?
-        `;
+            WHERE v_products_list.shop_id = ? 
+            AND v_products_list.status = 1
+        `; 
+        // (Nếu view của bạn có cột shop_status để check shop có bị khóa không thì thêm: AND v_products_list.shop_status = 1)
+
         const parameters: any[] = [shopId];
         return paginationProducts(query, parameters, page, limit);
     }

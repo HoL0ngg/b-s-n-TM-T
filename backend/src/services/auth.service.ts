@@ -14,10 +14,12 @@ export async function login(phone_number: string, password: string) {
 
     const user = (rows as any[])[0];
 
-    if (!user) throw new Error("Sai tài khoản");
-
+    if (!user) throw new Error("Tài khoản không tồn tại");
+    if (user.status === -1) {
+        throw new Error("Tài khoản của bạn đã bị khóa.")
+    }
     const validPass = await bcrypt.compare(password, user.password);
-    if (!validPass) throw new Error("Sai mật khẩu");
+    if (!validPass) throw new Error("Tài khoản hoặc mật khẩu không chính xác");
 
     const token = jwt.sign(
         { id: user.phone_number, email: user.email, username: "", avatar_url: user.avatar_url, role: user.role },

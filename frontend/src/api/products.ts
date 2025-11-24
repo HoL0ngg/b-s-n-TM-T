@@ -5,7 +5,7 @@ import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsTy
 import { getAuthHeaders } from "./apiHelpers";
 
 // Sửa lỗi gõ chữ
-const API_URL = "http://localhost:5000/api/products";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/products`;
 
 // (Các hàm GET công khai giữ nguyên, lấy từ code của bạn)
 export const fetchProductsByID = async (id: string): Promise<ProductType> => {
@@ -21,10 +21,10 @@ export const fetch5ProductByShopId = async (id: number): Promise<ProductType[]> 
     return res.data;
 }
 
-// Lấy phiên bản code của bạn (đã sửa đúng route)
-export const fetchProductsByShopId = async (id: number, state: number, cate: number): Promise<ProductType[]> => {
+export const fetchProductsByShopId = async (id: number, state: number, cate: number, isManager: boolean = false): Promise<ProductType[]> => {
     const sort = state == 1 ? "popular" : state == 2 ? "new" : "hot";
-    const res = await axios.get(`${API_URL}/shop/${id}?type=all&sortBy=${sort}&bst=${cate}`);
+    const roleParam = isManager ? "&role=manager" : "";
+    const res = await axios.get(`${API_URL}/shop/${id}?type=all&sortBy=${sort}&bst=${cate}${roleParam}`);
     return res.data;
 }
 export const fetchReviewByProductId = async (id: number, type?: number): Promise<ProductReviewType[]> => {
@@ -48,8 +48,8 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
 
 
 
-export const createProduct = async (productData: FormData) => { 
-    try {  
+export const createProduct = async (productData: FormData) => {
+    try {
         const response = await axios.post(API_URL, productData, getAuthHeaders());
         return response.data;
     } catch (error) {
@@ -152,8 +152,8 @@ export const fetchProductForEdit = async (productId: string | number): Promise<a
 // (Hàm bật/tắt trạng thái - của bạn (qhuykuteo))
 export const updateProductStatus = async (productId: number, status: number) => {
     const response = await axios.patch(
-        `${API_URL}/${productId}/status`, 
-        { status }, 
+        `${API_URL}/${productId}/status`,
+        { status },
         getAuthHeaders()
     );
     return response.data;
