@@ -39,13 +39,7 @@ const ShopSidebar = ({ isOpen }: ShopSidebarProps) => {
           </NavLink>
         </li>
 
-        <li className="nav-item">
-          <NavLink to="/seller/orders/returns" className="nav-link text-dark">
-            <i className="bi bi-arrow-return-left me-3 fs-5"></i>
-            <span className="sidebar-link-text">Trả hàng / Hoàn tiền</span>
-          </NavLink>
-        </li>
-
+    
         {/* --- Quản lý Sản phẩm --- */}
         <li className="nav-item mt-2">
           <span className="nav-link text-muted small text-uppercase sidebar-link-text">
