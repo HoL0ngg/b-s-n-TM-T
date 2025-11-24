@@ -13,6 +13,8 @@ class AdminController {
             res.json({ token, user });
         } catch (error: any) {
             res.status(401).json({ message: error.message });
+            console.log(error);
+
         }
     }
 

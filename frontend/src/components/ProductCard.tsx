@@ -15,19 +15,19 @@ const ProductCard = ({ product }: ProductCardProps) => {
     // ===== LOGIC XỬ LÝ ẢNH THÔNG MINH =====
     const getImageUrl = (url: string | undefined) => {
         if (!url) return 'https://via.placeholder.com/220x200?text=No+Image';
-        
+
         // 1. Link tuyệt đối (http/https) hoặc base64 -> Giữ nguyên
         if (url.startsWith('http') || url.startsWith('data:')) {
             return url;
         }
-        
+
         // 2. Ảnh Upload (Backend) -> Thêm localhost:5000
         if (url.startsWith('/uploads')) {
             return `http://localhost:5000${url}`;
         }
 
         // 3. Ảnh cũ (Frontend Assets) -> Giữ nguyên (để nó load từ localhost:5173)
-        return url; 
+        return url;
     };
     // =======================================
 
@@ -42,12 +42,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     -{product.discount_percentage}%
                 </div>
             )}
-            
+
             <img
                 src={getImageUrl(product.image_url)}
                 alt={product.name}
                 className="card-img-top"
-                style={{ height: "200px", objectFit: "cover" }} 
+                style={{ height: "200px" }}
                 onError={(e) => {
                     e.currentTarget.src = 'https://via.placeholder.com/220x200?text=Image+Error';
                 }}

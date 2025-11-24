@@ -5,7 +5,7 @@ import { CartItem, IVariantOption, OptionRow } from "../models/cart.model";
 class CartService {
     addToCartService = async (user_id: number, product_id: number, quantity: number) => {
         const sql = `
-          INSERT INTO Cart (user_id, product_variant_id, quantity, added_at)
+          INSERT INTO cart (user_id, product_variant_id, quantity, added_at)
           VALUES (?, ?, ?, NOW())
           ON DUPLICATE KEY 
           UPDATE
@@ -19,7 +19,7 @@ class CartService {
             const [result] = await pool.query(sql, values);
             return result;
         } catch (error) {
-            console.error("Lỗi khi thêm vào Cart:", error);
+            console.error("Lỗi khi thêm vào cart:", error);
             throw new Error('Lỗi CSDL khi cập nhật giỏ hàng');
         }
     }

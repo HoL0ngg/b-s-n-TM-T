@@ -230,7 +230,7 @@ export default function Promotion() {
                                                 endDate={promo.end_date}
                                             />
                                             <div className='mt-2' >
-                                                <img src={`http://localhost:5000${promo.banner_url}`} alt="" style={{ height: '100px', maxWidth: '100%', borderRadius: '8px' }} />
+                                                <img src={`${import.meta.env.VITE_API_URL}${promo.banner_url}`} alt="" style={{ height: '100px', maxWidth: '100%', borderRadius: '8px' }} />
                                             </div>
                                         </div>
                                     ))}

@@ -33,7 +33,7 @@ export default function AddProduct() {
     // 1. Thông tin cơ bản
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    
+
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
 
@@ -56,14 +56,14 @@ export default function AddProduct() {
 
     useEffect(() => {
         const fetchShopId = async () => {
-             if (!user?.id) return;
-             try {
-                const response = await fetch(`http://localhost:5000/api/shops/by-owner/${user.id}`);
+            if (!user?.id) return;
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shops/by-owner/${user.id}`);
                 const shopData = await response.json();
                 if (shopData && shopData.id) {
                     setShopId(shopData.id);
                 }
-             } catch (e) { console.error(e); }
+            } catch (e) { console.error(e); }
         };
         const loadInitialData = async () => {
             try {
@@ -98,12 +98,12 @@ export default function AddProduct() {
             setImagePreview(objectUrl);
         }
     };
-    
+
     // ===== HÀM XỬ LÝ ẢNH BIẾN THỂ (MỚI) =====
     const handleVariationImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            
+
             if (!file.type.startsWith('image/')) {
                 alert('Vui lòng chọn file ảnh!');
                 return;
@@ -114,13 +114,13 @@ export default function AddProduct() {
             }
 
             const objectUrl = URL.createObjectURL(file);
-            
+
             const newVariations = [...variations];
             // Lưu file và preview vào state của biến thể đó
-            newVariations[index] = { 
-                ...newVariations[index], 
-                file: file, 
-                preview: objectUrl 
+            newVariations[index] = {
+                ...newVariations[index],
+                file: file,
+                preview: objectUrl
             };
             setVariations(newVariations);
         }
@@ -208,7 +208,7 @@ export default function AddProduct() {
                     return;
                 }
                 formData.append('attribute_id', selectedAttributeId.toString());
-                
+
                 // 1. Gửi JSON thông tin (LOẠI BỎ FILE KHỎI JSON)
                 const validVariations = variations.map(v => ({
                     value: v.value,
@@ -231,8 +231,8 @@ export default function AddProduct() {
                 formData.append('stock', baseStock.toString());
             }
 
-            await createProduct(formData); 
-            
+            await createProduct(formData);
+
             setLoading(false);
             navigate('/seller/products');
         } catch (err: any) {
@@ -272,15 +272,15 @@ export default function AddProduct() {
                         <div className="row">
                             <div className="col-md-6 mb-3">
                                 <label className="form-label">Ảnh chính sản phẩm <span className="text-danger">*</span></label>
-                                <input 
-                                    type="file" 
-                                    className="form-control" 
+                                <input
+                                    type="file"
+                                    className="form-control"
                                     accept="image/png, image/jpeg, image/webp"
                                     onChange={handleImageChange}
                                 />
                                 {imagePreview && (
                                     <div className="mt-2 p-2 border rounded bg-light text-center">
-                                        <img src={imagePreview} alt="Xem trước" style={{maxHeight: '200px', maxWidth: '100%', objectFit: 'contain'}} />
+                                        <img src={imagePreview} alt="Xem trước" style={{ maxHeight: '200px', maxWidth: '100%', objectFit: 'contain' }} />
                                     </div>
                                 )}
                             </div>
@@ -302,7 +302,7 @@ export default function AddProduct() {
                     <div className="card-header">Chi tiết sản phẩm</div>
                     <div className="card-body">
                         {details.map((detail, index) => (
-                             <div key={index} className="row align-items-center mb-2">
+                            <div key={index} className="row align-items-center mb-2">
                                 <div className="col-md-5">
                                     <input type="text" className="form-control" placeholder="Thuộc tính" value={detail.key} onChange={(e) => handleDetailChange(index, 'key', e.target.value)} />
                                 </div>
@@ -354,19 +354,19 @@ export default function AddProduct() {
                                             <label className="form-label">Kho <span className="text-danger">*</span></label>
                                             <input type="number" className="form-control" value={variation.stock} onChange={(e) => handleVariationChange(index, 'stock', Number(e.target.value))} required />
                                         </div>
-                                        
+
                                         {/* ===== INPUT FILE CHO BIẾN THỂ ===== */}
                                         <div className="col-md-4">
                                             <label className="form-label">Ảnh (Tùy chọn)</label>
                                             <div className="d-flex align-items-center gap-2">
-                                                <input 
-                                                    type="file" 
-                                                    className="form-control form-control-sm" 
+                                                <input
+                                                    type="file"
+                                                    className="form-control form-control-sm"
                                                     accept="image/*"
-                                                    onChange={(e) => handleVariationImageChange(index, e)} 
+                                                    onChange={(e) => handleVariationImageChange(index, e)}
                                                 />
                                                 {variation.preview && (
-                                                    <img src={variation.preview} alt="Var" style={{height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd'}} />
+                                                    <img src={variation.preview} alt="Var" style={{ height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
                                                 )}
                                             </div>
                                         </div>
@@ -393,11 +393,11 @@ export default function AddProduct() {
                         )}
                     </div>
                 </div>
-                
+
                 {/* Trạng thái */}
                 <div className="card shadow-sm mb-3">
-                      <div className="card-header">Trạng thái đăng bán</div>
-                      <div className="card-body">
+                    <div className="card-header">Trạng thái đăng bán</div>
+                    <div className="card-body">
                         <div className="form-check">
                             <input className="form-check-input" type="radio" name="statusRadio" id="statusPublish" value={1} checked={status === 1} onChange={(e) => setStatus(Number(e.target.value))} />
                             <label className="form-check-label" htmlFor="statusPublish">Đăng bán (Công khai)</label>
@@ -406,9 +406,9 @@ export default function AddProduct() {
                             <input className="form-check-input" type="radio" name="statusRadio" id="statusDraft" value={0} checked={status === 0} onChange={(e) => setStatus(Number(e.target.value))} />
                             <label className="form-check-label" htmlFor="statusDraft">Lưu nháp (Ẩn)</label>
                         </div>
-                      </div>
+                    </div>
                 </div>
-                
+
                 <div className="d-flex justify-content-end mb-5">
                     <button type="button" className="btn btn-outline-secondary me-2" onClick={() => navigate('/seller/products')}>Hủy</button>
                     <button type="submit" className="btn btn-primary" disabled={loading}>

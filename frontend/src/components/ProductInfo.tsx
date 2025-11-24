@@ -1,6 +1,7 @@
 import { useCart } from "../context/CartContext";
 import type { ProductType, AttributeOfProductVariantsType } from "../types/ProductType";
 import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface ProductInfoProps {
     product: ProductType,
@@ -10,6 +11,7 @@ interface ProductInfoProps {
 
 export default function ProductInfo({ product, attributes, onVariantImageChange }: ProductInfoProps) {
     const { AddToCart } = useCart();
+    const navigate = useNavigate();
     const [count, setCount] = useState(1);
     const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string }>({});
 
@@ -37,7 +39,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
                 selectedAttributes[option.attribute] === option.value
             )
         );
-    }, [selectedAttributes, product.product_variants, attributes]); 
+    }, [selectedAttributes, product.product_variants, attributes]);
 
     useEffect(() => {
         if (currentVariant && currentVariant.image_url) {
@@ -48,7 +50,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
     }, [currentVariant, onVariantImageChange]);
 
     const increment = () => {
-        const maxStock = currentVariant ? currentVariant.stock : 100; 
+        const maxStock = currentVariant ? currentVariant.stock : 100;
         if (count < maxStock) {
             setCount(prev => prev + 1);
         }
@@ -70,6 +72,48 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
         }
         const res = await AddToCart(currentVariant.id, count);
         console.log(res);
+    }
+
+    const handleBuyNow = async () => {
+        if (!currentVariant) {
+            alert("Vui lòng chọn đầy đủ tùy chọn sản phẩm.");
+            return;
+        }
+        if (count > currentVariant.stock) {
+            alert(`Rất tiếc, số lượng tồn kho cho tùy chọn này chỉ còn ${currentVariant.stock}.`);
+            return;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const checkoutItem = {
+            product_variant_id: currentVariant.id,
+            product_id: product.id,
+            product_name: product.name,
+            product_url: product.image_url,
+            quantity: count,
+            original_price: currentVariant.original_price,
+            sale_price: currentVariant.sale_price || null,
+            discount_percentage: currentVariant.discount_percentage || null,
+            shop_id: product.shop_id,
+            shop_name: "Shop", // Will be loaded from cart context
+            logo_url: product.image_url,
+            options: currentVariant.options
+        };
+
+        const total = (currentVariant.sale_price || currentVariant.original_price) * count;
+
+        // Store in sessionStorage for checkout page
+        sessionStorage.setItem('checkoutItems', JSON.stringify([checkoutItem]));
+        sessionStorage.setItem('checkoutTotal', JSON.stringify(total));
+
+        // Navigate to checkout with state
+        navigate('/checkout/address', {
+            state: {
+                checkoutItems: [checkoutItem],
+                total: total
+            }
+        });
     }
 
     const handleSelectAttribute = (attrName: string, val: string) => {
@@ -125,7 +169,7 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
                                 // Lưu ý: Logic này chỉ đúng nếu 1 thuộc tính đại diện cho 1 ảnh (ví dụ Màu Sắc).
                                 // Nếu kết hợp nhiều thuộc tính thì phức tạp hơn.
                                 // Ở đây ta tạm thời tìm biến thể ĐẦU TIÊN khớp với giá trị này để lấy ảnh.
-                                const variantForImage = product.product_variants?.find(v => 
+                                const variantForImage = product.product_variants?.find(v =>
                                     v.options.some(opt => opt.attribute === attr.attribute && opt.value === val)
                                     && v.image_url // Chỉ lấy nếu có ảnh
                                 );
@@ -140,10 +184,10 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
                                     >
                                         {/* HIỂN THỊ ẢNH BIẾN THỂ NHỎ (NẾU CÓ) */}
                                         {imgUrl && (
-                                            <img 
-                                                src={imgUrl} 
-                                                alt={val} 
-                                                style={{width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px'}}
+                                            <img
+                                                src={imgUrl}
+                                                alt={val}
+                                                style={{ width: '24px', height: '24px', objectFit: 'cover', borderRadius: '4px' }}
                                                 onError={(e) => e.currentTarget.style.display = 'none'}
                                             />
                                         )}
@@ -179,7 +223,10 @@ export default function ProductInfo({ product, attributes, onVariantImageChange 
                 >
                     Thêm vào giỏ hàng
                 </button>
-                <button className="custom-button-buynow rounded-pill w-50">
+                <button
+                    className="custom-button-buynow rounded-pill w-50"
+                    onClick={handleBuyNow}
+                >
                     Mua ngay
                 </button>
             </div>

@@ -97,7 +97,7 @@ class userService {
     }
     createAddress = async (data: any, connection: any): Promise<number> => {
         const { city, ward, street } = data;
-        const query = 'INSERT INTO Address (city, ward, street) VALUES (?, ?, ?)';
+        const query = 'INSERT INTO address (city, ward, street) VALUES (?, ?, ?)';
 
         // Dùng connection.query() chứ không phải pool.query()
         const [result] = await connection.query(query, [city, ward, street]);
@@ -191,11 +191,11 @@ class userService {
             const totalPage = Math.ceil(total / limit);
             let query = `
             SELECT u.phone_number as phone, 
-            u.email, u.status, 
-            u.created_at, 
-            uf.username AS name, 
-            uf.gender, 
-            DATE_FORMAT(uf.dob, '%Y-%m-%d') as dob
+                u.email, u.status, 
+                u.created_at, 
+                uf.username AS name, 
+                uf.gender, 
+                DATE_FORMAT(uf.dob, '%Y-%m-%d') as dob
             FROM users u
             JOIN user_profile uf ON u.phone_number = uf.phone_number                        
             ${whereClause}
@@ -263,6 +263,7 @@ class userService {
 
         return rows.length > 0 && rows[0].is_reviewed === 1;
     }
+
     createUserService = async (data) => {
         const connection = await pool.getConnection();
         await connection.beginTransaction();

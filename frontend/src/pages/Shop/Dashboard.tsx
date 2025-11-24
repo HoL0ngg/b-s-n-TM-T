@@ -36,31 +36,31 @@ export default function Dashboard() {
 
       try {
         // Fetch shop info
-        const shopResponse = await fetch(`http://localhost:5000/api/shops/by-owner/${user.id}`);
+        const shopResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/shops/by-owner/${user.id}`);
         if (!shopResponse.ok) throw new Error('Shop not found');
         const shopData = await shopResponse.json();
-        
+
         if (shopData && shopData.id) {
           setShopId(shopData.id);
           setShopName(shopData.name || 'Cửa hàng của bạn');
 
           // Fetch products using the correct API
-          const productsResponse = await fetch(`http://localhost:5000/api/products/shop/${shopData.id}?type=all&sortBy=popular&bst=0`);
+          const productsResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/products/shop/${shopData.id}?type=all&sortBy=popular&bst=0`);
           const productsData = await productsResponse.json();
           const products = productsData || [];
-          
+
           // Fetch orders using getShopOrders API
           let orders = [];
           let totalRevenue = 0;
           try {
             const token = localStorage.getItem('token');
-            const ordersResponse = await fetch(`http://localhost:5000/api/shop/orders`, {
+            const ordersResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/shop/orders`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               }
             });
-            
+
             if (ordersResponse.ok) {
               orders = await ordersResponse.json();
               // Calculate revenue from delivered orders
@@ -71,18 +71,18 @@ export default function Dashboard() {
           } catch (err) {
             console.log('Could not fetch orders:', err);
           }
-          
+
           // Fetch categories using the correct API
           let categories = [];
           try {
             const token = localStorage.getItem('token');
-            const categoriesResponse = await fetch('http://localhost:5000/api/shop-categories', {
+            const categoriesResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/shop-categories`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               }
             });
-            
+
             if (categoriesResponse.ok) {
               categories = await categoriesResponse.json();
             }
@@ -128,7 +128,7 @@ export default function Dashboard() {
     <div style={{ backgroundColor: '#F5F5F5', minHeight: '100vh' }}>
       {/* Header */}
       <div style={{
-     background: 'linear-gradient(135deg, #B7CCFF 0%, #8FB0FF 100%)',
+        background: 'linear-gradient(135deg, #B7CCFF 0%, #8FB0FF 100%)',
 
         padding: '24px 32px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)'

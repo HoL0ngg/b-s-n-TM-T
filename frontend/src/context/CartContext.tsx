@@ -37,7 +37,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth(); // Lấy user từ AuthContext
     const [cart, setCart] = useState<CartType[]>([]);
     const [isCartLoading, setIsCartLoading] = useState(false);
-    const debounceTimers = useRef<{ [key: string]: number }>({});
+    const debounceTimers = useRef<{ [key: string]: ReturnType<typeof setTimeout> }>({});
 
     const handleSuccess = (text: string) => {
         Swal.fire({

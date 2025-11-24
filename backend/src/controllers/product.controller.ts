@@ -31,16 +31,16 @@ class productController {
             console.log(err);
         }
     }
-    
+
     getProductOnShopIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
             const type = req.query.type;
             const sort = req.query.sortBy || "popular";
             const cate = req.query.bst || 0;
-            
-            const role = req.query.role; 
-            const isManager = (role === 'manager'); 
+
+            const role = req.query.role;
+            const isManager = (role === 'manager');
 
             let data;
             switch (type) {
@@ -131,13 +131,13 @@ class productController {
         try {
             const shopId = (req as any).shop?.id;
             if (!shopId) return res.status(403).json({ message: 'Không tìm thấy shop' });
-            
+
             const productData = req.body;
             productData.shop_id = shopId;
 
             // Parse JSON từ FormData
-            if (typeof productData.variations === 'string') try { productData.variations = JSON.parse(productData.variations); } catch (e) {}
-            if (typeof productData.details === 'string') try { productData.details = JSON.parse(productData.details); } catch (e) {}
+            if (typeof productData.variations === 'string') try { productData.variations = JSON.parse(productData.variations); } catch (e) { }
+            if (typeof productData.details === 'string') try { productData.details = JSON.parse(productData.details); } catch (e) { }
 
             // GỌI HÀM XỬ LÝ FILE (MỚI)
             this.processUploadedFiles(req, productData);
@@ -170,9 +170,9 @@ class productController {
             const productData = req.body;
             productData.shop_id = shopId;
 
-             // Parse JSON
-            if (typeof productData.variations === 'string') try { productData.variations = JSON.parse(productData.variations); } catch (e) {}
-            if (typeof productData.details === 'string') try { productData.details = JSON.parse(productData.details); } catch (e) {}
+            // Parse JSON
+            if (typeof productData.variations === 'string') try { productData.variations = JSON.parse(productData.variations); } catch (e) { }
+            if (typeof productData.details === 'string') try { productData.details = JSON.parse(productData.details); } catch (e) { }
             if (typeof productData.shop_cate_id === 'string' && (productData.shop_cate_id === 'null' || productData.shop_cate_id === '')) productData.shop_cate_id = null;
 
             // GỌI HÀM XỬ LÝ FILE (MỚI)
@@ -246,129 +246,129 @@ class productController {
     // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
-          const {
-            page = 1,
-            limit = 12,
-            sort = "default",
-            subCategoryId,
-            minPrice,
-            maxPrice,
-            brand,
-            q,
-          } = req.query as any;
-      
-          const categoryId = req.params.id ? Number(req.params.id) : undefined;
-      
+            const {
+                page = 1,
+                limit = 12,
+                sort = "default",
+                subCategoryId,
+                minPrice,
+                maxPrice,
+                brand,
+                q,
+            } = req.query as any;
+
+            const categoryId = req.params.id ? Number(req.params.id) : undefined;
+
             // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
-          let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
-          const params: any[] = [];
+            let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
+            const params: any[] = [];
 
-          // Search mode (q) OR Category mode
-          let isSearch = false;
-          if (q && String(q).trim().length > 0) {
-            isSearch = true;
-            const keyword = String(q).trim();
-            whereClause += ` AND (v_products_list.name LIKE ? OR v_products_list.description LIKE ?)`;
-            const like = `%${keyword}%`;
-            params.push(like, like);
-          } else {
-            // Category logic
+            // Search mode (q) OR Category mode
+            let isSearch = false;
+            if (q && String(q).trim().length > 0) {
+                isSearch = true;
+                const keyword = String(q).trim();
+                whereClause += ` AND (v_products_list.name LIKE ? OR v_products_list.description LIKE ?)`;
+                const like = `%${keyword}%`;
+                params.push(like, like);
+            } else {
+                // Category logic
+                if (subCategoryId && Number(subCategoryId) !== 0) {
+                    whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
+                    params.push(Number(subCategoryId));
+                } else
+                    if (categoryId) {
+                        // Sửa lỗi: Phải là v_products_list.generic_id
+                        whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                        params.push(categoryId);
+                    }
+            }
+
+            if (minPrice) {
+                whereClause += " AND v_products_list.base_price >= ?";
+                params.push(minPrice);
+            }
+            if (maxPrice) {
+                whereClause += " AND v_products_list.base_price <= ?";
+                params.push(maxPrice);
+            }
+            if (brand && typeof brand === "string" && brand.length > 0) {
+                const brandIds = brand.split(",").map(Number).filter(Boolean);
+                if (brandIds.length > 0) {
+                    const placeholders = brandIds.map(() => "?").join(",");
+                    whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
+                    params.push(...brandIds);
+                }
+            }
+            let orderBy = "";
+            let orderParams: any[] = [];
+            switch (sort) {
+                case "priceAsc":
+                case "priceAsc".toLowerCase():
+                    orderBy = "ORDER BY v_products_list.base_price ASC";
+                    break;
+                case "priceDesc":
+                case "priceDesc".toLowerCase():
+                    orderBy = "ORDER BY v_products_list.base_price DESC";
+                    break;
+                case "newest":
+                    orderBy = "ORDER BY v_products_list.created_at DESC";
+                    break;
+                case "best_seller":
+                    orderBy = "ORDER BY IFNULL(v_products_list.sold_count,0) DESC";
+                    break;
+                case "relevance":
+                    if (isSearch) {
+                        // approximate relevance: name matches weighted higher than description
+                        // We need placeholders for the LIKE checks (we'll re-use keyword)
+                        orderBy = `ORDER BY ((v_products_list.name LIKE ?) * 2 + (v_products_list.description LIKE ?)) DESC`;
+                        const keyword = `%${String(q).trim()}%`;
+                        orderParams = [keyword, keyword];
+                    } else {
+                        // if no q and user asked relevance, fallback to newest
+                        orderBy = "ORDER BY v_products_list.created_at DESC";
+                    }
+                    break;
+                default:
+                    orderBy = "";
+            }
+
+            const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy, orderParams);
+
+            let brandsPromise;
             if (subCategoryId && Number(subCategoryId) !== 0) {
-              whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
-              params.push(Number(subCategoryId));
-            } else
-            if (categoryId) {
-                // Sửa lỗi: Phải là v_products_list.generic_id
-              whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
-              params.push(categoryId);
+                brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
+            } else if (categoryId) {
+                brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
+            } else {
+                brandsPromise = Promise.resolve([]);
             }
-          }
-      
-          if (minPrice) {
-            whereClause += " AND v_products_list.base_price >= ?";
-            params.push(minPrice);
-          }
-          if (maxPrice) {
-            whereClause += " AND v_products_list.base_price <= ?";
-            params.push(maxPrice);
-          }
-          if (brand && typeof brand === "string" && brand.length > 0) {
-            const brandIds = brand.split(",").map(Number).filter(Boolean);
-            if (brandIds.length > 0) {
-              const placeholders = brandIds.map(() => "?").join(",");
-              whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
-              params.push(...brandIds);
-            }
-          }
-          let orderBy = "";
-          let orderParams: any[] = [];
-          switch (sort) {
-            case "priceAsc":
-            case "priceAsc".toLowerCase():
-              orderBy = "ORDER BY v_products_list.base_price ASC";
-              break;
-            case "priceDesc":
-            case "priceDesc".toLowerCase():
-              orderBy = "ORDER BY v_products_list.base_price DESC";
-              break;
-            case "newest":
-              orderBy = "ORDER BY v_products_list.created_at DESC";
-              break;
-            case "best_seller":
-              orderBy = "ORDER BY IFNULL(v_products_list.sold_count,0) DESC";
-              break;
-            case "relevance":
-              if (isSearch) {
-                // approximate relevance: name matches weighted higher than description
-                // We need placeholders for the LIKE checks (we'll re-use keyword)
-                orderBy = `ORDER BY ((v_products_list.name LIKE ?) * 2 + (v_products_list.description LIKE ?)) DESC`;
-                const keyword = `%${String(q).trim()}%`;
-                orderParams = [keyword, keyword];
-              } else {
-                // if no q and user asked relevance, fallback to newest
-                orderBy = "ORDER BY v_products_list.created_at DESC";
-              }
-              break;
-            default:
-              orderBy = "";
-          }
-      
-          const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy, orderParams);
-      
-          let brandsPromise;
-          if (subCategoryId && Number(subCategoryId) !== 0) {
-            brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
-          } else if (categoryId) {
-            brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
-          } else {
-            brandsPromise = Promise.resolve([]);
-          }
 
-          const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
+            const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
 
-          res.status(200).json({
-            products: productResult.products,
-            totalPages: productResult.totalPages,
-            brands: brandsResult,
-          });
+            res.status(200).json({
+                products: productResult.products,
+                totalPages: productResult.totalPages,
+                brands: brandsResult,
+            });
         } catch (error) {
-          console.error("Lỗi tại getProductsController:", error);
-          res.status(500).json({
-            message: "Lỗi máy chủ nội bộ",
-            error: error instanceof Error ? error.message : "Lỗi không xác định",
-          });
+            console.error("Lỗi tại getProductsController:", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ nội bộ",
+                error: error instanceof Error ? error.message : "Lỗi không xác định",
+            });
         }
-      };
+    };
     // ===== KẾT THÚC TRỘN (MERGE) HÀM NÀY =====
     getRelatedCategoriesController = async (req: Request, res: Response) => {
         try {
-          const q = String(req.query.q || "").trim();
-          if (!q) return res.status(200).json([]);
-          const cats = await productService.getRelatedCategoriesByKeyword(q);
-          return res.status(200).json(cats);
+            const q = String(req.query.q || "").trim();
+            if (!q) return res.status(200).json([]);
+            const cats = await productService.getRelatedCategoriesByKeyword(q);
+            return res.status(200).json(cats);
         } catch (err) {
-          console.error("getRelatedCategoriesController error:", err);
-          return res.status(500).json({ message: "Lỗi server", error: (err as Error).message ?? err });
+            console.error("getRelatedCategoriesController error:", err);
+            return res.status(500).json({ message: "Lỗi server", error: (err as Error).message ?? err });
         }
     };
     getAllAttributesController = async (req: Request, res: Response) => {
@@ -398,42 +398,42 @@ class productController {
         }
     };
 
-  updateProductStatusController = async (req: Request, res: Response) => {
-    try {
-        const productId = Number(req.params.id);
-        // Lấy userId để kiểm tra quyền sở hữu
-        const userId = (req as any).user?.id; 
-        const { status } = req.body;
+    updateProductStatusController = async (req: Request, res: Response) => {
+        try {
+            const productId = Number(req.params.id);
+            // Lấy userId để kiểm tra quyền sở hữu
+            const userId = (req as any).user?.id;
+            const { status } = req.body;
 
-        // SỬA 1: Mở rộng điều kiện - Cho phép status = 3 (Ẩn)
-        if (status === undefined || (status !== 0 && status !== 1 && status !== 3)) {
-            return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ (Chỉ chấp nhận 0, 1, 3).' });
+            // SỬA 1: Mở rộng điều kiện - Cho phép status = 3 (Ẩn)
+            if (status === undefined || (status !== 0 && status !== 1 && status !== 3)) {
+                return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ (Chỉ chấp nhận 0, 1, 3).' });
+            }
+
+            if (!userId) {
+                return res.status(403).json({ success: false, message: 'Forbidden' });
+            }
+
+            // SỬA 2: Kiểm tra quyền sở hữu trước (Bảo mật)
+            const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
+            if (!hasPermission) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền thay đổi trạng thái sản phẩm này.' });
+            }
+
+            // SỬA 3: Gọi Service đúng chuẩn (Bỏ shopId thừa, chỉ truyền productId và status)
+            // (Service updateProductStatusService nãy mình sửa chỉ nhận 2 tham số chính thôi)
+            const success = await productService.updateProductStatusService(productId, status);
+
+            if (success) {
+                res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công.' });
+            } else {
+                res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm hoặc lỗi cập nhật.' });
+            }
+        } catch (error) {
+            console.error('Error updating product status:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
         }
-
-        if (!userId) {
-            return res.status(403).json({ success: false, message: 'Forbidden' });
-        }
-
-        // SỬA 2: Kiểm tra quyền sở hữu trước (Bảo mật)
-        const hasPermission = await productService.verifyShopOwnershipService(productId, userId);
-        if (!hasPermission) {
-            return res.status(403).json({ success: false, message: 'Bạn không có quyền thay đổi trạng thái sản phẩm này.' });
-        }
-
-        // SỬA 3: Gọi Service đúng chuẩn (Bỏ shopId thừa, chỉ truyền productId và status)
-        // (Service updateProductStatusService nãy mình sửa chỉ nhận 2 tham số chính thôi)
-        const success = await productService.updateProductStatusService(productId, status);
-
-        if (success) {
-            res.status(200).json({ success: true, message: 'Cập nhật trạng thái thành công.' });
-        } else {
-            res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm hoặc lỗi cập nhật.' });
-        }
-    } catch (error) {
-        console.error('Error updating product status:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-};
+    };
     // =================================================================
     // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
     // =================================================================
