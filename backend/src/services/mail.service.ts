@@ -3,35 +3,81 @@ import { ENV } from "../config/env";
 import redisClient from "../redis/redisClient";
 
 export async function sendOtpEmail(to: string) {
+    // Validate email
+    if (!to || !to.includes('@')) {
+        throw new Error('Invalid email address');
+    }
+
+    // Validate environment variables
+    if (!ENV.EMAIL_USER || !ENV.EMAIL_PASS) {
+        console.error('❌ EMAIL_USER or EMAIL_PASS not configured');
+        throw new Error('Email service not configured. Please check environment variables.');
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    console.log(`📧 Attempting to send OTP to: ${to}`);
+    console.log(`📧 Using EMAIL_USER: ${ENV.EMAIL_USER}`);
+
     const transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 465, // Changed from 587 to 465 (SSL)
+        secure: true, // Use SSL instead of TLS
         auth: {
             user: ENV.EMAIL_USER,
             pass: ENV.EMAIL_PASS
-        }
-    });
-
-    console.log("--- DEBUG EMAIL ---");
-    console.log("Email User:", ENV.EMAIL_USER); // Xem nó có hiện email không?
-    console.log("Email Pass Length:", ENV.EMAIL_PASS ? ENV.EMAIL_PASS.length : 0); // Xem độ dài có phải 16 không?
-    console.log("Type of Pass:", typeof ENV.EMAIL_PASS);
-    console.log("-------------------");
+        },
+        debug: true,
+        logger: true,
+        connectionTimeout: 10000, // 10 seconds timeout
+        greetingTimeout: 10000,
+        socketTimeout: 10000
+    });    // Verify transporter configuration
+    try {
+        await transporter.verify();
+        console.log('✅ SMTP connection verified');
+    } catch (verifyErr: any) {
+        console.error('❌ SMTP verification failed:', verifyErr.message);
+        throw new Error(`SMTP configuration error: ${verifyErr.message}`);
+    }
 
     const mailOptions = {
-        from: `"My App" <${ENV.EMAIL_USER}>`,
+        from: `"BáSàn" <${ENV.EMAIL_USER}>`,
         to,
-        subject: "Code OTP của bạn nè",
-        text: `Mã OTP của bạn là: ${otp}. Hết hạn sau 5 phút nka.`,
+        subject: "Mã OTP xác thực - BáSàn",
+        text: `Mã OTP của bạn là: ${otp}. Mã này sẽ hết hạn sau 5 phút.`,
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #0d6efd;">Xác thực tài khoản BáSàn</h2>
+                <p>Mã OTP của bạn là:</p>
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #0d6efd;">
+                    ${otp}
+                </div>
+                <p style="color: #666; margin-top: 20px;">Mã này sẽ hết hạn sau 5 phút.</p>
+                <p style="color: #666;">Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.</p>
+            </div>
+        `
     };
 
-    await transporter.sendMail(mailOptions);
     try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ OTP email sent successfully to ${to}`);
+        console.log(`📧 Message ID: ${info.messageId}`);
+
+        // Store OTP in Redis
         await redisClient.set(`otp:${to}`, otp, { EX: 300 });
-        console.log(`✅ OTP sent to ${to}`);
-    } catch (err) {
-        console.error("❌ Error sending email:", err);
-        throw err;
+        console.log(`✅ OTP stored in Redis for ${to}`);
+
+        return { success: true, messageId: info.messageId };
+    } catch (err: any) {
+        console.error("❌ Error sending email:", {
+            message: err.message,
+            code: err.code,
+            command: err.command,
+            response: err.response,
+            responseCode: err.responseCode
+        });
+        throw new Error(`Failed to send OTP email: ${err.message}`);
     }
 }
 

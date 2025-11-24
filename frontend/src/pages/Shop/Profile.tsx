@@ -139,8 +139,95 @@ export default function ProfileShop() {
       return false;
     }
   };
+  const validateForm = () => {
+  // Tên shop
+  if (!formData.shop_name || formData.shop_name.trim().length < 3) {
+    showNotification("danger", "Tên shop phải có ít nhất 3 ký tự");
+    return false;
+  }
+
+  // Logo URL nếu có
+  if (formData.shop_logo_url && !formData.shop_logo_url.startsWith("http")) {
+    showNotification("danger", "Logo URL phải là đường dẫn hợp lệ (http hoặc https)");
+    return false;
+  }
+
+  // Email shop
+  if (formData.email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showNotification("danger", "Email không hợp lệ");
+      return false;
+    }
+  } else {
+    showNotification("danger", "Vui lòng nhập email");
+    return false;
+  }
+
+  // Số điện thoại VN (10–11 số)
+  if (formData.phone) {
+    const phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      showNotification("danger", "Số điện thoại không hợp lệ");
+      return false;
+    }
+  } else {
+    showNotification("danger", "Vui lòng nhập số điện thoại");
+    return false;
+  }
+
+  // Địa chỉ
+  if (!formData.address || formData.address.trim().length < 10) {
+    showNotification("danger", "Địa chỉ phải có ít nhất 10 ký tự");
+    return false;
+  }
+
+  // Mã số thuế (nếu có)
+  if (formData.tax_code && !/^[0-9]{10,14}$/.test(formData.tax_code)) {
+    showNotification("danger", "Mã số thuế phải từ 10–14 chữ số");
+    return false;
+  }
+
+  // Số giấy tờ tùy theo loại
+  if (formData.identity_type === "cccd" || formData.identity_type === "cmnd") {
+    if (!/^[0-9]{9,12}$/.test(formData.identity_number || "")) {
+      showNotification("danger", "Số CCCD/CMND không hợp lệ");
+      return false;
+    }
+  }
+
+  if (formData.identity_type === "passport") {
+    if (!/^[A-Z0-9]{6,12}$/i.test(formData.identity_number || "")) {
+      showNotification("danger", "Số hộ chiếu không hợp lệ");
+      return false;
+    }
+  }
+
+  // Họ tên định danh
+  if (!formData.identity_full_name || formData.identity_full_name.trim().length < 5) {
+    showNotification("danger", "Họ và tên trên giấy tờ phải có ít nhất 5 ký tự");
+    return false;
+  }
+
+  // Shipping methods phải là JSON hợp lệ
+  if (formData.shipping_methods) {
+    try {
+      const list = JSON.parse(formData.shipping_methods);
+      if (!Array.isArray(list)) {
+        showNotification("danger", "Phương thức vận chuyển không hợp lệ");
+        return false;
+      }
+    } catch {
+      showNotification("danger", "Phương thức vận chuyển phải là JSON hợp lệ");
+      return false;
+    }
+  }
+
+  return true;
+};
 
   const handleSave = async () => {
+    if (!validateForm()) return;
     console.log('🔍 Debug IDs:', {
       'shopInfo': shopInfo,
       'shopInfo.id': shopInfo?.id,
@@ -528,7 +615,7 @@ export default function ProfileShop() {
                       }}
                     >
                       <option value={1}>Hoạt động</option>
-                      <option value={0}>Tạm ngưng</option>
+                      <option value={2}>Tạm ngưng</option>
                     </select>
                   ) : (
                     <div style={{ padding: '10px 14px' }}>
