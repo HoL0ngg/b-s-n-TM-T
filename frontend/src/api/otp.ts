@@ -1,5 +1,5 @@
 export const sendOtp = async (email: string) => {
-    const response = await fetch("http://localhost:5000/api/mail/send-otp", {
+    const response = await fetch(`${process.env.VITE_API_URL}/api/mail/send-otp`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -16,7 +16,7 @@ export const sendOtp = async (email: string) => {
 };
 
 export const verifyOtp = async (email: string, otpCode: string) => {
-    const response = await fetch("http://localhost:5000/api/mail/verify", {
+    const response = await fetch(`${process.env.VITE_API_URL}/api/mail/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otpCode }),
