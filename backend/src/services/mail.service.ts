@@ -25,8 +25,8 @@ export async function sendOtpEmail(to: string) {
         text: `Mã OTP của bạn là: ${otp}. Hết hạn sau 5 phút nka.`,
     };
 
-    await transporter.sendMail(mailOptions);
     try {
+        await transporter.sendMail(mailOptions);
         await redisClient.set(`otp:${to}`, otp, { EX: 300 });
         console.log(`✅ OTP sent to ${to}`);
     } catch (err) {
