@@ -97,7 +97,7 @@ class userService {
     }
     createAddress = async (data: any, connection: any): Promise<number> => {
         const { city, ward, street } = data;
-        const query = 'INSERT INTO Address (city, ward, street) VALUES (?, ?, ?)';
+        const query = 'INSERT INTO address (city, ward, street) VALUES (?, ?, ?)';
 
         // Dùng connection.query() chứ không phải pool.query()
         const [result] = await connection.query(query, [city, ward, street]);
@@ -190,12 +190,7 @@ class userService {
             const total = countResult[0]?.total || 0;
             const totalPage = Math.ceil(total / limit);
             let query = `
-            SELECT u.phone_number as phone, 
-            u.email, u.status, 
-            u.created_at, 
-            uf.username AS name, 
-            uf.gender, 
-            DATE_FORMAT(uf.dob, '%Y-%m-%d') as dob
+            SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name
             FROM users u
             JOIN user_profile uf ON u.phone_number = uf.phone_number                        
             ${whereClause}
@@ -263,130 +258,5 @@ class userService {
 
         return rows.length > 0 && rows[0].is_reviewed === 1;
     }
-    createUserService = async (data) => {
-        const connection = await pool.getConnection();
-        await connection.beginTransaction();
-
-        try {
-            const {
-                phone,
-                email,
-                password,
-                role,
-                dob,
-                name,
-                gender
-            } = data;
-            const [existingUser] = await connection.query<RowDataPacket[]>(`SELECT phone_number FROM users WHERE phone_number = ?`, [phone]);
-            if (existingUser.length > 0) {
-                return { message: "Số điện thoại đã tồn tại!", success: false };
-            }
-            // console.log(dob);
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Insert users
-            await connection.query(
-                `INSERT INTO users (phone_number, email, password, role)
-             VALUES (?, ?, ?, ?)`,
-                [phone, email, hashedPassword, role || "customer"]
-            );
-            // Insert user_profile
-            await connection.query(
-                `INSERT INTO user_profile (phone_number, username, gender, dob,updated_at)
-             VALUES (?, ?, ?, ?, NOW())`,
-                [phone, name || null, gender || null, dob || null]
-            );
-
-            await connection.commit();
-
-            return { message: "Thêm người dùng mới thành công!", success: true };
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
-        }
-    };
-    updateUserService = async (phone_number, data) => {
-        const connection = await pool.getConnection();
-        await connection.beginTransaction();
-
-        try {
-            const {
-                email,
-                password,
-                status,
-                role,
-                name,
-                dob,
-                gender
-            } = data;
-
-            // ==== UPDATE USERS ====
-            const userFields: string[] = [];
-            const userValues: (string | number | null)[] = [];
-
-
-            if (email !== undefined) {
-                userFields.push("email = ?");
-                userValues.push(email);
-            }
-            if (password !== undefined) {
-                const hashed = await bcrypt.hash(password, 10);
-                userFields.push("password = ?");
-                userValues.push(hashed);
-            }
-            if (status !== undefined) {
-                userFields.push("status = ?");
-                userValues.push(status);
-            }
-            if (role !== undefined) {
-                userFields.push("role = ?");
-                userValues.push(role);
-            }
-
-            if (userFields.length > 0) {
-                const sql = `UPDATE users SET ${userFields.join(", ")} WHERE phone_number = ?`;
-                userValues.push(phone_number);
-
-                await connection.query(sql, userValues);
-            }
-
-            // ==== UPDATE USER PROFILE ====
-            const profileFields: string[] = [];
-            const profileValues: (string | number | null)[] = [];
-
-            if (name !== undefined) {
-                profileFields.push("username = ?");
-                profileValues.push(name);
-            }
-            if (dob !== undefined) {
-                profileFields.push("dob = ?");
-                profileValues.push(dob);
-            }
-            if (gender !== undefined) {
-                profileFields.push("gender = ?");
-                profileValues.push(gender);
-            }
-
-            if (profileFields.length > 0) {
-                profileFields.push("updated_at = NOW()");
-                const sql = `UPDATE user_profile SET ${profileFields.join(", ")} WHERE phone_number = ?`;
-                profileValues.push(phone_number);
-
-                await connection.query(sql, profileValues);
-            }
-
-            await connection.commit();
-
-            return { message: "Cập nhật người dùng thành công!" };
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
-        }
-    };
 }
 export default new userService();
