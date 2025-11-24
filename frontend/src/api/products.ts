@@ -5,7 +5,7 @@ import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsTy
 import { getAuthHeaders } from "./apiHelpers";
 
 // Sửa lỗi gõ chữ
-const API_URL = "http://localhost:5000/api/products";
+const API_URL = `${process.env.VITE_API_URL}/api/products`;
 
 // (Các hàm GET công khai giữ nguyên, lấy từ code của bạn)
 export const fetchProductsByID = async (id: string): Promise<ProductType> => {
@@ -48,8 +48,8 @@ export const fetchAttributeOfProductVariants = async (id: number): Promise<Attri
 
 
 
-export const createProduct = async (productData: FormData) => { 
-    try {  
+export const createProduct = async (productData: FormData) => {
+    try {
         const response = await axios.post(API_URL, productData, getAuthHeaders());
         return response.data;
     } catch (error) {
@@ -132,8 +132,8 @@ export const fetchProductForEdit = async (productId: string | number): Promise<a
 // (Hàm bật/tắt trạng thái - của bạn (qhuykuteo))
 export const updateProductStatus = async (productId: number, status: number) => {
     const response = await axios.patch(
-        `${API_URL}/${productId}/status`, 
-        { status }, 
+        `${API_URL}/${productId}/status`,
+        { status },
         getAuthHeaders()
     );
     return response.data;
