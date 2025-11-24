@@ -191,9 +191,9 @@ const Category = () => {
     }
     setQuery((prev) => ({
       ...prev,
-      // page: 1,
-      // minPrice: min,
-      // maxPrice: max,
+      page: 1,
+      minPrice: min,
+      maxPrice: max,
     }))
 
     const result = products.filter((product) => {
