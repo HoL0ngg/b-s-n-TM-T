@@ -11,8 +11,8 @@ interface Variation {
     price: number;
     stock: number;
     image_url?: string;
-    file?: File;      // <--- MỚI: Lưu file gốc
-    preview?: string; // <--- MỚI: Lưu link preview
+    file?: File;      
+    preview?: string; 
 }
 
 interface DetailItem {
@@ -30,7 +30,6 @@ export default function AddProduct() {
     const [shopCategories, setShopCategories] = useState<ShopCategoryType[]>([]);
     const [attributes, setAttributes] = useState<AttributeType[]>([]);
 
-    // 1. Thông tin cơ bản
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
 
@@ -40,7 +39,6 @@ export default function AddProduct() {
     const [shopCateId, setShopCateId] = useState<number | null>(null);
     const [status, setStatus] = useState(1);
 
-    // 2. Phân loại
     const [hasVariation, setHasVariation] = useState(false);
     const [selectedAttributeId, setSelectedAttributeId] = useState<number | null>(null);
     const [variations, setVariations] = useState<Variation[]>([
@@ -49,16 +47,29 @@ export default function AddProduct() {
     const [basePrice, setBasePrice] = useState(0);
     const [baseStock, setBaseStock] = useState(0);
 
-    // 3. Chi tiết sản phẩm
     const [details, setDetails] = useState<DetailItem[]>([
         { key: '', value: '' }
     ]);
+
+    // ===== THÊM HÀM XỬ LÝ URL CHO CHẮC CHẮN =====
+    // (Dù AddProduct chủ yếu dùng Blob, nhưng thêm vào để đồng bộ logic)
+    const getImageUrl = (url: string | undefined) => {
+        if (!url) return '';
+        if (url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:')) {
+            return url;
+        }
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        return `${baseUrl}${url}`;
+    };
+    // ============================================
 
     useEffect(() => {
         const fetchShopId = async () => {
             if (!user?.id) return;
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shops/by-owner/${user.id}`);
+                // Sửa: Dùng biến môi trường thay vì template string phức tạp
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                const response = await fetch(`${baseUrl}/api/shops/by-owner/${user.id}`);
                 const shopData = await response.json();
                 if (shopData && shopData.id) {
                     setShopId(shopData.id);
@@ -81,7 +92,6 @@ export default function AddProduct() {
         loadInitialData();
     }, [user]);
 
-    // ===== HÀM XỬ LÝ ẢNH CHÍNH =====
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -99,7 +109,6 @@ export default function AddProduct() {
         }
     };
 
-    // ===== HÀM XỬ LÝ ẢNH BIẾN THỂ (MỚI) =====
     const handleVariationImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -116,7 +125,6 @@ export default function AddProduct() {
             const objectUrl = URL.createObjectURL(file);
 
             const newVariations = [...variations];
-            // Lưu file và preview vào state của biến thể đó
             newVariations[index] = {
                 ...newVariations[index],
                 file: file,
@@ -125,13 +133,10 @@ export default function AddProduct() {
             setVariations(newVariations);
         }
     };
-    // =======================================
 
-    // Cleanup preview url
     useEffect(() => {
         return () => {
             if (imagePreview) URL.revokeObjectURL(imagePreview);
-            // Cleanup variation previews
             variations.forEach(v => {
                 if (v.preview) URL.revokeObjectURL(v.preview);
             });
@@ -169,7 +174,6 @@ export default function AddProduct() {
         setDetails(newDetails);
     };
 
-    // ===== HÀM SUBMIT ĐÃ ĐƯỢC NÂNG CẤP (Xử lý ảnh biến thể) =====
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!shopId) {
@@ -209,20 +213,15 @@ export default function AddProduct() {
                 }
                 formData.append('attribute_id', selectedAttributeId.toString());
 
-                // 1. Gửi JSON thông tin (LOẠI BỎ FILE KHỎI JSON)
                 const validVariations = variations.map(v => ({
                     value: v.value,
                     price: Number(v.price),
                     stock: Number(v.stock)
-                    // Không gửi 'file' hay 'preview' trong JSON này
                 }));
                 formData.append('variations', JSON.stringify(validVariations));
 
-                // 2. Gửi CÁC FILE ẢNH BIẾN THỂ (Quan trọng)
                 variations.forEach((v, index) => {
                     if (v.file) {
-                        // Key: variation_image_0, variation_image_1 ...
-                        // Để backend biết file này thuộc về biến thể ở index nào
                         formData.append(`variation_image_${index}`, v.file);
                     }
                 });
@@ -245,7 +244,6 @@ export default function AddProduct() {
     return (
         <div className="container mt-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
             <form onSubmit={handleSubmit}>
-                {/* Header */}
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h3>Thêm sản phẩm mới</h3>
                     <div>
@@ -257,7 +255,6 @@ export default function AddProduct() {
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
 
-                {/* Thông tin cơ bản */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header">Thông tin cơ bản</div>
                     <div className="card-body">
@@ -280,7 +277,17 @@ export default function AddProduct() {
                                 />
                                 {imagePreview && (
                                     <div className="mt-2 p-2 border rounded bg-light text-center">
-                                        <img src={imagePreview} alt="Xem trước" style={{ maxHeight: '200px', maxWidth: '100%', objectFit: 'contain' }} />
+                                        {/* SỬA THẺ IMG PREVIEW CHÍNH */}
+                                        <img 
+                                            src={imagePreview} 
+                                            alt="Xem trước" 
+                                            style={{ maxHeight: '200px', maxWidth: '100%', objectFit: 'contain' }}
+                                            onError={(e) => {
+                                                const target = e.currentTarget;
+                                                target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='16' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EImage Error%3C/text%3E%3C/svg%3E";
+                                                target.onerror = null;
+                                            }} 
+                                        />
                                     </div>
                                 )}
                             </div>
@@ -297,7 +304,6 @@ export default function AddProduct() {
                     </div>
                 </div>
 
-                {/* Chi tiết sản phẩm */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header">Chi tiết sản phẩm</div>
                     <div className="card-body">
@@ -318,7 +324,6 @@ export default function AddProduct() {
                     </div>
                 </div>
 
-                {/* Thông tin bán hàng (Đã cập nhật input file cho biến thể) */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header d-flex justify-content-between align-items-center">
                         Thông tin bán hàng
@@ -355,7 +360,6 @@ export default function AddProduct() {
                                             <input type="number" className="form-control" value={variation.stock} onChange={(e) => handleVariationChange(index, 'stock', Number(e.target.value))} required />
                                         </div>
 
-                                        {/* ===== INPUT FILE CHO BIẾN THỂ ===== */}
                                         <div className="col-md-4">
                                             <label className="form-label">Ảnh (Tùy chọn)</label>
                                             <div className="d-flex align-items-center gap-2">
@@ -366,11 +370,20 @@ export default function AddProduct() {
                                                     onChange={(e) => handleVariationImageChange(index, e)}
                                                 />
                                                 {variation.preview && (
-                                                    <img src={variation.preview} alt="Var" style={{ height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} />
+                                                    // SỬA THẺ IMG PREVIEW BIẾN THỂ
+                                                    <img 
+                                                        src={variation.preview} 
+                                                        alt="Var" 
+                                                        style={{ height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} 
+                                                        onError={(e) => {
+                                                            const target = e.currentTarget;
+                                                            target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='10' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EX%3C/text%3E%3C/svg%3E";
+                                                            target.onerror = null;
+                                                        }}
+                                                    />
                                                 )}
                                             </div>
                                         </div>
-                                        {/* =================================== */}
 
                                         <div className="col-md-1 d-flex align-items-end">
                                             <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveVariation(index)} disabled={variations.length <= 1}>Xóa</button>
@@ -394,7 +407,6 @@ export default function AddProduct() {
                     </div>
                 </div>
 
-                {/* Trạng thái */}
                 <div className="card shadow-sm mb-3">
                     <div className="card-header">Trạng thái đăng bán</div>
                     <div className="card-body">
