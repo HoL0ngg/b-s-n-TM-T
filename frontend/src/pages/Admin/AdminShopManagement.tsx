@@ -27,6 +27,7 @@ const AdminShopManagement: React.FC = () => {
             case '1': return 'bg-success';
             case '0': return 'bg-warning text-dark';
             case '-1': return 'bg-danger';
+            case '2': return 'bg-secondary';
             default: return 'bg-secondary';
         }
     };
@@ -35,6 +36,7 @@ const AdminShopManagement: React.FC = () => {
             case '1': return 'Đã duyệt';
             case '0': return 'Chờ duyệt';
             case '-1': return 'Bị cấm';
+            case '2': return 'Tạm ngừng';
             default: return 'Không rõ';
         }
     };
@@ -189,7 +191,7 @@ const AdminShopManagement: React.FC = () => {
                     <div className="table-responsive">
                         <table className="table table-hover align-middle">
                             <thead className="table-light">
-                                <tr>
+                                <tr className='text-center'>
                                     <th scope="col">Hình ảnh</th>
                                     <th scope="col">Tên Cửa hàng</th>
                                     <th scope="col">Chủ Shop</th>
@@ -201,8 +203,8 @@ const AdminShopManagement: React.FC = () => {
                             {/* Nội dung bảng */}
                             <tbody>
                                 {shops.map((shop) => (
-                                    <tr key={shop.id}>
-                                        <td className="fw-bold">
+                                    <tr key={shop.id} className='text-center'>
+                                        <td className="fw-bold ">
                                             <img
                                                 src={shop.logo_url}
                                                 alt={shop.name}
