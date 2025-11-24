@@ -11,6 +11,7 @@ import {
     IpnSuccess,
 } from 'vnpay';
 import orderService from "../services/order.service";
+import cartService from "../services/cart.service";
 class PaymentController {
     readonly vnpay = new VNPay({
         tmnCode: process.env.VNP_TMN_CODE!,
@@ -23,7 +24,7 @@ class PaymentController {
     createPayment_vnpay = async (req: Request, res: Response) => {
         try {
             const orderIds = (req as any).orderIds;
-            
+
             const tmn_orderId = `${Date.now()}-${orderIds.join('-')}`;
             const total_amount = req.body.total;
 
@@ -50,7 +51,7 @@ class PaymentController {
             });
         } catch (error) {
             console.log(error);
-            
+
             return res.status(500).json({
                 success: false,
                 message: 'Lỗi khi tạo URL thanh toán',
@@ -134,14 +135,14 @@ class PaymentController {
 
     handleIpn_vnpay = async (req, res) => {
         try {
-            const verify: VerifyIpnCall = this.vnpay.verifyIpnCall(req.query,  {
+            const verify: VerifyIpnCall = this.vnpay.verifyIpnCall(req.query, {
                 logger: {
                     type: 'all',
                     loggerFn: consoleLogger,
                 },
             },);
-            
-            if(!verify.isVerified) {
+
+            if (!verify.isVerified) {
                 return res.json(IpnFailChecksum);
             }
 
@@ -155,9 +156,9 @@ class PaymentController {
             // Sau đó cập nhật trạng thái trở lại cho VNPay để họ biết đã xác nhận đơn hàng
             return res.json(IpnSuccess);
         } catch (error) {
-         console.log(`verify error: ${error}`);
-         return res.json(IpnUnknownError);
-     }
+            console.log(`verify error: ${error}`);
+            return res.json(IpnUnknownError);
+        }
     }
 
     createOrder = async (req, res, next) => {
@@ -171,16 +172,22 @@ class PaymentController {
                 payment_method: req.body.paymentMethod,
                 notes: null
             };
-    
+
             const shopOrders = this.orderFormat(groupedCarts, shippingFees);
             const orderIds = await orderService.addOrders(userId, shopOrders, opts);
+            for (const item of groupedCarts) {
+
+                for (const cartItem of item.items) {
+                    await cartService.deleteItemFromUser(userId, cartItem.product_variant_id);
+                }
+            }
             console.log(orderIds);
-            
+
             req.orderIds = orderIds;
-            
+
             return next();
         } catch (error) {
-            if(error && (error as any).status === 409) {
+            if (error && (error as any).status === 409) {
                 console.error("paymentController: insufficient: " + JSON.stringify((error as any).details, null, 2));
                 return res.status(409).json({
                     success: false,

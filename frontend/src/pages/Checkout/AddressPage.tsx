@@ -15,6 +15,7 @@ import { createPayment_momo, createPayment_vnpay, handleShipCod } from "../../ap
 import { calculateShippingFee } from "../../api/shipping";
 import Swal from "sweetalert2";
 import { useCart } from "../../context/CartContext";
+import { handleSwalAlert } from "../../utils/helper";
 
 export const AddressPage = () => {
     const location = useLocation();
@@ -34,6 +35,7 @@ export const AddressPage = () => {
     const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
     const [shippingFees, setShippingFees] = useState<{ [shopId: number]: number }>({});
     const [isCalculatingShip, setIsCalculatingShip] = useState(false);
+    const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
     const groupedCart: CartType[] = useMemo(() => {
         // Nếu không có giỏ hàng, trả về mảng rỗng
@@ -233,6 +235,13 @@ export const AddressPage = () => {
             return;
         }
 
+        if (isPlacingOrder) return; // Prevent double submission
+
+        if (shippingFees && Object.values(shippingFees).some(fee => fee < 0)) {
+            handleSwalAlert("Thông báo", "Có lỗi với phí vận chuyển của một số shop. Vui lòng kiểm tra lại địa chỉ hoặc thử lại sau.");
+            return;
+        }
+
         const checkoutData = {
             total: finalTotal,
             shippingFees: shippingFees,
@@ -243,6 +252,7 @@ export const AddressPage = () => {
 
         if (selectedMethod === "cod") {
             try {
+                setIsPlacingOrder(true);
                 const response = await handleShipCod(checkoutData);
                 if (response.success) {
                     // Clear session storage
@@ -282,13 +292,18 @@ export const AddressPage = () => {
                 } else {
                     alert(errorData.message);
                 }
+            } finally {
+                setIsPlacingOrder(false);
             }
             return;
         }
 
+        setIsPlacingOrder(true);
         const paymentUrl = await handleCreatePaymentUrl(selectedMethod, checkoutData);
         if (paymentUrl) {
             window.location.href = paymentUrl;
+        } else {
+            setIsPlacingOrder(false);
         }
     };
 
@@ -358,8 +373,20 @@ export const AddressPage = () => {
                                                 </div>
                                                 <div className="text-end">
                                                     <div className="text-primary fw-semibold">{subTotal.toLocaleString('vi-VN')}đ</div>
-                                                    <div className="text-primary fw-semibold">{fee ? `${fee.toLocaleString()}đ` : "---"}</div>
-                                                    <div className="text-danger fw-bold">{totall.toLocaleString('vi-VN')}đ</div>
+                                                    <div className="text-primary fw-semibold">
+                                                        {isCalculatingShip ? (
+                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                        ) : (
+                                                            fee ? `${fee.toLocaleString()}đ` : "---"
+                                                        )}
+                                                    </div>
+                                                    <div className="text-danger fw-bold">
+                                                        {isCalculatingShip ? (
+                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                        ) : (
+                                                            `${totall.toLocaleString('vi-VN')}đ`
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -513,9 +540,28 @@ export const AddressPage = () => {
                         </div>
                         <div className="d-flex justify-content-between my-4 p-4 rounded" style={{ border: '2px solid #ff7708', backgroundColor: '#FFE8D4', color: '#CC5200' }}>
                             <div>Tổng cộng:</div>
-                            <div>{finalTotal.toLocaleString('vi-VN')}đ</div>
+                            <div>
+                                {isCalculatingShip ? (
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                ) : (
+                                    `${finalTotal.toLocaleString('vi-VN')}đ`
+                                )}
+                            </div>
                         </div>
-                        <div className="btn btn-primary w-100 p-2" onClick={handlePlaceOrder}>ĐẶT HÀNG</div>
+                        <button
+                            className="btn btn-primary w-100 p-2"
+                            onClick={handlePlaceOrder}
+                            disabled={isPlacingOrder || isCalculatingShip}
+                        >
+                            {isPlacingOrder ? (
+                                <>
+                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Đang xử lý...
+                                </>
+                            ) : (
+                                'ĐẶT HÀNG'
+                            )}
+                        </button>
                     </div>
                 </div>
                 {/* ... */}

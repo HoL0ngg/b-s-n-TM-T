@@ -66,8 +66,10 @@ export default function Profile() {
     }, [selectedFile]);
 
     const avatarSrc = preview || (user?.avatar_url
-        ? `${user?.avatar_url}` // <-- Mấu chốt là đây
+        ? `${import.meta.env.VITE_API_URL}/uploads${user?.avatar_url}`
         : "/assets/panda.png");
+
+    console.log(user)
 
     // 4. HÀM SUBMIT
     const handleSubmit = async (e: React.FormEvent) => {

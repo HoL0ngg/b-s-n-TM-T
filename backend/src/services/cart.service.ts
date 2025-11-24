@@ -195,6 +195,24 @@ class CartService {
             throw new Error('Lỗi CSDL khi lấy giỏ hàng');
         }
     }
+
+    deleteItemFromUser = async (userId: number, productVariantId: number) => {
+        const sql = `
+            DELETE FROM cart
+            WHERE 
+                user_id = ? AND product_variant_id = ?;
+            `;
+        const values = [userId, productVariantId];
+        try {
+            const [result] = await pool.query<ResultSetHeader>(sql, values);
+            console.log(result);
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", error);
+            throw new Error('Lỗi CSDL khi xóa sản phẩm khỏi giỏ hàng');
+        }
+    }
 }
 
 export default new CartService();
