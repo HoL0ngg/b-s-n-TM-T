@@ -38,8 +38,7 @@ const Category = () => {
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const effectiveSort = query.sort === "relevance" ? "newest" : query.sort;
-      const res = await fetchProducts({ ...query, sort: effectiveSort }, Number(id));
+      const res = await fetchProducts(query, Number(id));
       setProducts(res.products);
       setTotalPages(res.totalPages);
       setBrands(res.brands ?? []);
@@ -49,7 +48,7 @@ const Category = () => {
     } finally {
       setLoading(false);
     }
-  }, [query, id]);
+  }, [query]);
 
   useEffect(() => {
     loadProducts();
@@ -75,7 +74,7 @@ const Category = () => {
     } else {
       setSearchParams(params, { replace: true }); //REPLACE khi auto sync
     }
-  }, [query, setSearchParams, isUserAction]);
+  }, [query]);
 
 
   useEffect(() => {
@@ -310,43 +309,42 @@ const Category = () => {
           <div className="col-lg-9 col-md-8 col-12" ref={scrollableContentRef}>
             <div className="mb-3">
               <h2 className="mb-2">{filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}</h2>
+              <div className="d-flex align-items-center flex-wrap mb-2 gap-2">
+                {/* Tabs sort */}
+                <div className="d-flex align-items-center gap-2">
+                  <div className="me-2 fw-semibold">Sắp xếp theo:</div>
 
-              <div className="d-flex justify-content-between align-items-center flex-wrap">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="me-3 fw-semibold">Sắp xếp theo:</div>
-                  <div className="sort-tabs d-flex align-items-center" role="tablist" aria-label="Sort tabs">
-                    <button
-                      className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`}
-                      onClick={() => handleSort("newest")}
-                    >
-                      Mới nhất
-                    </button>
-
-                    <button
-                      className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`}
-                      onClick={() => handleSort("best_seller")}
-                    >
-                      Bán chạy
-                    </button>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center mb-2">
-                  <label htmlFor="priceSort" className="me-2 mb-0 fw-semibold">Giá</label>
-                  <select
-                    id="priceSort"
-                    name="priceSort"
-                    className="form-select form-select-sm"
-                    value={query.sort}
-                    style={{ width: 220 }}
-                    onChange={(e) => handleSort(e.target.value)}
+                  <button
+                    className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`}
+                    onClick={() => handleSort("newest")}
                   >
-                    <option value="default">Mặc định</option>
-                    <option value="priceDesc">Cao đến thấp</option>
-                    <option value="priceAsc">Thấp đến cao</option>
-                  </select>
+                    Mới nhất
+                  </button>
+
+                  <button
+                    className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`}
+                    onClick={() => handleSort("best_seller")}
+                  >
+                    Bán chạy
+                  </button>
                 </div>
-              </div>
+
+                <select
+                  className="form-select form-select-sm sort-select"
+                  value={
+                    query.sort === "priceAsc" ||
+                    query.sort === "priceDesc"
+                      ? query.sort
+                      : "default"
+                  }
+                  onChange={(e) => handleSort(e.target.value)}
+                  style={{ width: 220 }}
+                >
+                  <option value="default">Giá: Mặc định</option>
+                  <option value="priceDesc">Giá: Cao đến thấp</option>
+                  <option value="priceAsc">Giá: Thấp đến cao</option>
+                </select>
+              </div>            
             </div>
 
             {/* Loader */}

@@ -161,22 +161,19 @@ const SearchPage = () => {
                 </div>
                 )}
 
-                <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                    <div className="d-flex align-items-center mb-2">
-                        <div className="me-3 fw-semibold">Sắp xếp theo:</div>
-                        <div className="sort-tabs d-flex align-items-center" role="tablist" aria-label="Sort tabs">
-                        <button className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`} onClick={() => handleSort("newest")}>Mới nhất</button>
-                        <button className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`} onClick={() => handleSort("best_seller")}>Bán chạy</button>
-                        <button className={`btn btn-sm sort-tab ${query.sort === "relevance" ? "active" : ""}`} onClick={() => handleSort("relevance")}>Liên quan nhất</button>
-                        </div>
+                <div className="d-flex align-items-center mt-3 flex-wrap gap-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="me-3 fw-semibold">Sắp xếp theo:</div>
+                      <button className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`} onClick={() => handleSort("newest")}>Mới nhất</button>
+                      <button className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`} onClick={() => handleSort("best_seller")}>Bán chạy</button>
+                      <button className={`btn btn-sm sort-tab ${query.sort === "relevance" ? "active" : ""}`} onClick={() => handleSort("relevance")}>Liên quan</button>
                     </div>
 
-                    <div className="d-flex align-items-center mb-2">
-                        <label htmlFor="priceSortSearch" className="me-2 mb-0 fw-semibold">Giá</label>
-                        <select id="priceSortSearch" className="form-select form-select-sm" style={{ width: 220 }} value={query.sort} onChange={(e) => handleSort(e.target.value)}>
-                            <option value="default">Mặc định</option>
-                            <option value="priceDesc">Cao đến thấp</option>
-                            <option value="priceAsc">Thấp đến cao</option>
+                    <div className="d-flex align-items-center">
+                        <select id="priceSortSearch" className="form-select form-select-sm sort-select" style={{ width: 220 }} value={query.sort} onChange={(e) => handleSort(e.target.value)}>
+                            <option value="default">Giá: Mặc định</option>
+                            <option value="priceDesc">Giá: Cao đến thấp</option>
+                            <option value="priceAsc">Giá: Thấp đến cao</option>
                         </select>
                     </div>
                 </div>
