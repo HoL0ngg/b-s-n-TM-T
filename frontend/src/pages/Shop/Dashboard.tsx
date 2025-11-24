@@ -58,9 +58,14 @@ export default function Dashboard() {
             // Calculate revenue from delivered orders
             totalRevenue = orders
               .filter((o: any) => o.status.toLowerCase() === 'delivered')
-              .reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
+              .reduce((sum: number, o: any) => {
+                const amount = parseFloat(o.total_amount);
+                return sum + (isNaN(amount) ? 0 : amount);
+              }, 0);
           } catch (err) {
             console.log('Could not fetch orders:', err);
+            orders = [];
+            totalRevenue = 0;
           }
 
           // Fetch categories using the correct API
