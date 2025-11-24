@@ -9,15 +9,26 @@ class userController {
     }
 
     getAddressByuserIdController = async (req: Request, res: Response) => {
-        const id = req.params.id;
-        const data = await userService.getAddressByuserIdService(id);
-        res.status(200).json(data);
+        try {
+            const id = req.params.id;
+            const data = await userService.getAddressByuserIdService(id);
+            res.status(200).json(data);
+
+        } catch (err: any) {
+            console.log(err);
+            res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
     }
 
     getDefaultAddressByuserIdController = async (req: Request, res: Response) => {
-        const id = req.params.id;
-        const data = await userService.geDefaultAddressByuserIdService(id);
-        res.status(200).json(data);
+        try {
+            const id = req.params.id;
+            const data = await userService.geDefaultAddressByuserIdService(id);
+            res.status(200).json(data);
+        } catch (err: any) {
+            console.log(err);
+            res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+        }
     }
 
     getUserProfileController = async (req: Request, res: Response) => {
