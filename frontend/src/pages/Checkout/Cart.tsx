@@ -104,7 +104,7 @@ export default function Cart() {
         const total = calculateTotal(); // (Hàm của bạn)
 
         if (itemsToCheckout.length === 0) {
-            handleSwalAlert("Thông báo báo", "Vui lòng chọn sản phẩm để thanh toán.");
+            handleSwalAlert("Thông báo", "Vui lòng chọn sản phẩm để thanh toán.");
             setLoading(false);
             return;
         }

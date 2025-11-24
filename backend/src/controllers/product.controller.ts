@@ -224,6 +224,7 @@ class productController {
             return res.status(200).json(products);
         } catch (error) {
             console.log(error);
+            return res.status(500).json(JSON.stringify(error, null, 2));
         }
     };
     getNewProducts = async (req: Request, res: Response) => {

@@ -21,7 +21,7 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const response = await fetch('http://provinces.open-api.vn/api/v2/p/');
+                const response = await fetch('https://provinces.open-api.vn/api/v2/p/');
                 const data = await response.json();
                 setCity(data);
             } catch (error) {
@@ -55,7 +55,7 @@ export default function ShopAddressModal({ isShow, onClose, onAddressSelect }: S
             setSelectedWardCode('');
 
             try {
-                const response = await fetch(`http://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
+                const response = await fetch(`https://provinces.open-api.vn/api/v2/p/${cityCode}?depth=2`);
                 const data = await response.json();
                 setWard(data.wards);
             } catch (error) {

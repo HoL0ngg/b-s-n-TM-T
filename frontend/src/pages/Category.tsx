@@ -8,6 +8,9 @@ import { fetchProducts } from "../api/products";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 import Swal from "sweetalert2";
+import RatingFilterBootstrap from "../components/RatingFilter";
+import RatingFilter from "../components/RatingFilter";
+import { se } from "date-fns/locale";
 
 
 
@@ -24,7 +27,7 @@ const Category = () => {
   const [isUserAction, setIsUserAction] = useState(false);
   const [priceRange, setPriceRange] = useState({ minPrice: "", maxPrice: "" });
   const scrollableContentRef = useRef<HTMLDivElement>(null);
-
+  const [minRating, setMinRating] = useState<number | null>(null);
   //  Gom toàn bộ điều kiện truy vấn vào 1 state duy nhất
   const [query, setQuery] = useState({
     categoryId: Number(id),
@@ -35,12 +38,12 @@ const Category = () => {
     minPrice: null as number | null,
     maxPrice: null as number | null,
     brand: [] as number[],
+    rating: minRating,
   });
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const effectiveSort = query.sort === "relevance" ? "newest" : query.sort;
-      const res = await fetchProducts({ ...query, sort: effectiveSort }, Number(id));
+      const res = await fetchProducts(query, Number(id));
       setProducts(res.products);
       setTotalPages(res.totalPages);
       setBrands(res.brands ?? []);
@@ -50,7 +53,7 @@ const Category = () => {
     } finally {
       setLoading(false);
     }
-  }, [query, id]);
+  }, [query]);
 
   useEffect(() => {
     loadProducts();
@@ -65,12 +68,15 @@ const Category = () => {
     if (query.subCategoryId !== 0) {
       params.sub = query.subCategoryId.toString();
     }
-    if (priceRange.minPrice !== "") params.minPrice = priceRange.minPrice.toString();
-    if (priceRange.maxPrice !== "") params.maxPrice = priceRange.maxPrice.toString();
-    // if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
-    // if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
+    // if (priceRange.minPrice !== "") params.minPrice = priceRange.minPrice.toString();
+    // if (priceRange.maxPrice !== "") params.maxPrice = priceRange.maxPrice.toString();
+    if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
+    if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
     if (query.brand && query.brand.length > 0) {
       params.brand = query.brand.join(',');
+    }
+    if (minRating !== null) {
+      params.rating = minRating.toString();
     }
     if (isUserAction) {
       setSearchParams(params); //PUSH history
@@ -78,7 +84,7 @@ const Category = () => {
     } else {
       setSearchParams(params, { replace: true }); //REPLACE khi auto sync
     }
-  }, [query, setSearchParams, isUserAction]);
+  }, [query]);
 
 
   useEffect(() => {
@@ -88,6 +94,8 @@ const Category = () => {
     const min = searchParams.get("minPrice") || "";
     const max = searchParams.get("maxPrice") || "";
     const brand = searchParams.get("brand")?.split(',').map(Number) || [];
+    const ratingParam = searchParams.get("rating");
+    const minRating = ratingParam ? Number(ratingParam) : null;
     setQuery({
       categoryId: Number(id),
       subCategoryId: sub,
@@ -97,12 +105,13 @@ const Category = () => {
       minPrice: min ? Number(min) : null,
       maxPrice: max ? Number(max) : null,
       brand,
+      rating: minRating,
     });
 
     setSelectedSubCategory(sub === 0 ? "all" : String(sub));
     loadSubCategories();
     loadCategories();
-  }, [id, searchParams]);
+  }, [searchParams]);
   const loadCategories = async () => {
     try {
       const data = await fetchCategories();
@@ -141,6 +150,7 @@ const Category = () => {
     setQuery((prev) => ({
       ...prev,
       sort: val,
+      page: 1
     }));
   };
 
@@ -196,18 +206,6 @@ const Category = () => {
       maxPrice: max,
     }))
 
-    const result = products.filter((product) => {
-      const price = product.base_price;
-      const isMinOk = min === null || price >= min;
-      const isMaxOk = max === null || price <= max;
-      return isMinOk && isMaxOk;
-    });
-    console.log(result);
-
-    setProducts(result);
-    if (result.length === 0) {
-      alert("Không có sản phẩm trong khoảng giá bạn vừa nhập!");
-    }
   }
 
   const filteredNameOfCategory = categories.find(
@@ -240,6 +238,7 @@ const Category = () => {
       maxPrice: null,
       brand: [],   //  reset brand trong query
       page: 1,
+      minRating: null,
     }));
 
     const params = new URLSearchParams(searchParams);
@@ -250,7 +249,8 @@ const Category = () => {
 
     //  Xoá brand trên URL
     params.delete("brand");
-
+    //  Xoá rating trên URL
+    params.delete("rating");
     //  Reset về page 1
     params.set("page", "1");
 
@@ -258,8 +258,16 @@ const Category = () => {
 
     //  Reset input tạm
     setPriceRange({ minPrice: "", maxPrice: "" });
+    setMinRating(null);
   };
-
+  const handleRatingFilterChange = (rating: number) => {
+    setIsUserAction(true);
+    setMinRating(rating);
+    setQuery((prev) => ({
+      ...prev,
+      page: 1,
+    }));
+  }
   return (
     <div className="container">
       <CategorySwiper categories={categories} />
@@ -333,7 +341,9 @@ const Category = () => {
             </div>
             <div className="border-top p-3 m-2">
               <h5>Đánh giá</h5>
-
+              <div>
+                <RatingFilter onFilterChange={handleRatingFilterChange} activeRating={minRating} />
+              </div>
             </div>
             <div className="border-top p-3 m-2">
               <button className="btn-apply fw-semibold" onClick={() => handleResetFilter()}>Đặt lại</button>
@@ -345,43 +355,42 @@ const Category = () => {
           <div className="col-lg-9 col-md-8 col-12" ref={scrollableContentRef}>
             <div className="mb-3">
               <h2 className="mb-2">{filteredNameOfCategory?.name ?? "Danh mục không tồn tại"}</h2>
+              <div className="d-flex align-items-center flex-wrap mb-2 gap-2">
+                {/* Tabs sort */}
+                <div className="d-flex align-items-center gap-2">
+                  <div className="me-2 fw-semibold">Sắp xếp theo:</div>
 
-              <div className="d-flex justify-content-between align-items-center flex-wrap">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="me-3 fw-semibold">Sắp xếp theo:</div>
-                  <div className="sort-tabs d-flex align-items-center" role="tablist" aria-label="Sort tabs">
-                    <button
-                      className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`}
-                      onClick={() => handleSort("newest")}
-                    >
-                      Mới nhất
-                    </button>
-
-                    <button
-                      className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`}
-                      onClick={() => handleSort("best_seller")}
-                    >
-                      Bán chạy
-                    </button>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center mb-2">
-                  <label htmlFor="priceSort" className="me-2 mb-0 fw-semibold">Giá</label>
-                  <select
-                    id="priceSort"
-                    name="priceSort"
-                    className="form-select form-select-sm"
-                    value={query.sort}
-                    style={{ width: 220 }}
-                    onChange={(e) => handleSort(e.target.value)}
+                  <button
+                    className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`}
+                    onClick={() => handleSort("newest")}
                   >
-                    <option value="default">Mặc định</option>
-                    <option value="priceDesc">Cao đến thấp</option>
-                    <option value="priceAsc">Thấp đến cao</option>
-                  </select>
+                    Mới nhất
+                  </button>
+
+                  <button
+                    className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`}
+                    onClick={() => handleSort("best_seller")}
+                  >
+                    Bán chạy
+                  </button>
                 </div>
-              </div>
+
+                <select
+                  className="form-select form-select-sm sort-select"
+                  value={
+                    query.sort === "priceAsc" ||
+                    query.sort === "priceDesc"
+                      ? query.sort
+                      : "default"
+                  }
+                  onChange={(e) => handleSort(e.target.value)}
+                  style={{ width: 220 }}
+                >
+                  <option value="default">Giá: Mặc định</option>
+                  <option value="priceDesc">Giá: Cao đến thấp</option>
+                  <option value="priceAsc">Giá: Thấp đến cao</option>
+                </select>
+              </div>            
             </div>
 
             {/* Loader */}

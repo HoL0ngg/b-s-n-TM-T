@@ -59,12 +59,12 @@ const menuItems: MenuItem[] = [
         icon: <FiBox />,
         path: '/admin/products'
     },
-    {
-        key: 'payouts',
-        label: 'Đối soát',
-        icon: <FiDollarSign />,
-        path: '/admin/payouts'
-    },
+    // {
+    //     key: 'payouts',
+    //     label: 'Đối soát',
+    //     icon: <FiDollarSign />,
+    //     path: '/admin/payouts'
+    // },
     {
         key: 'orders',
         label: 'Quản lý đơn hàng',

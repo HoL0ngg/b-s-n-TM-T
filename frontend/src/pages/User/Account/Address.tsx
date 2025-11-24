@@ -86,7 +86,7 @@ export default function Address() {
                             <div className="ms-4 text-muted">{address.ward}, {address.city}</div>
                         </div>
                         <div>
-                            {!address.is_default ? (<div className="border p-2 fs-6 cursor-pointer" onClick={() => handleDefault(address.id)} style={{ cursor: "pointer" }}>Thiệt lập mặc định</div>) : (<div className="text-primary fw-bolder">Mặc định r b ei</div>)}
+                            {!address.is_default ? (<div className="border p-2 fs-6 cursor-pointer" onClick={() => handleDefault(address.id)} style={{ cursor: "pointer" }}>Thiệt lập mặc định</div>) : (<div className="text-primary fw-bolder">Mặc định</div>)}
                         </div>
                     </div>
                 </div>

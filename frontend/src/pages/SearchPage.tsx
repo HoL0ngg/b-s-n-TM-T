@@ -26,6 +26,7 @@ const SearchPage = () => {
     minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : null,
     maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : null,
     brand: searchParams.get("brand") ? searchParams.get("brand")!.split(",").map(Number) : [],
+    categories: searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [] as number[],
   });
 
   useEffect(() => {
@@ -37,6 +38,7 @@ const SearchPage = () => {
       minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : null,
       maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : null,
       brand: searchParams.get("brand") ? searchParams.get("brand")!.split(",").map(Number) : [],
+      categories: searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [],
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -50,6 +52,11 @@ const SearchPage = () => {
     }
     try {
       setLoading(true);
+
+      // NOTE:
+      // We pass the full query object to fetchProducts; ensure your backend / fetchProducts
+      // implementation reads `categories` (query.categories) from query string if you want server-side filtering.
+      // If fetchProducts ignores categories, you should extend it to append `categories` param to the request.
       const res = await fetchProducts({ ...query, q: query.q }, undefined);
       setProducts(res.products);
       setTotalPages(res.totalPages);
@@ -64,8 +71,11 @@ const SearchPage = () => {
 
   useEffect(() => {
     loadProducts();
+    console.log("Haha");
+    
   }, [loadProducts]);
 
+  // load related categories for the left filter
   const loadRelatedCategories = useCallback(async (keyword: string) => {
     if (!keyword || keyword.trim() === "") {
       setRelatedCategories([]);
@@ -85,7 +95,7 @@ const SearchPage = () => {
   }, [query.q, loadRelatedCategories]);
 
   const handleSort = (val: string) => {
-    setQuery((prev) => ({ ...prev, sort: val, page: 1 }));
+    // update sort param in URL (reset page)
     const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
     params.set("sort", val);
     params.set("page", "1");
@@ -93,10 +103,32 @@ const SearchPage = () => {
   };
 
   const handlePageChange = (page: number) => {
-    setQuery((prev) => ({ ...prev, page }));
     const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
     params.set("page", String(page));
     setSearchParams(params);
+  };
+
+  // Toggle related category checkbox -> update URL param `categories`
+  const handleToggleRelatedCategory = (catId: number) => {
+    const current = searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [];
+    const exists = current.includes(catId);
+    const updated = exists ? current.filter((x) => x !== catId) : [...current, catId];
+
+    const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
+    if (updated.length > 0) params.set("categories", updated.join(","));
+    else params.delete("categories");
+    // reset to page 1 when filter changes
+    params.set("page", "1");
+    console.log(params);
+    
+    setSearchParams(params);
+    // setQuery will be synced by the useEffect watching searchParams
+  };
+
+  // Helper: check if related category is selected (based on URL)
+  const isRelatedCategoryChecked = (catId: number) => {
+    const current = searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [];
+    return current.includes(catId);
   };
 
   return (
@@ -106,17 +138,29 @@ const SearchPage = () => {
         <div className="col-lg-3 col-md-4 col-12">
           <div className="border-top p-3 m-2">
             <h5>Theo danh mục</h5>
-            <ul className="list-unstyled">
-              {relatedCategories.length === 0 ? (
-                <li className="text-muted">Không có danh mục phù hợp</li>
-              ) : (
-                relatedCategories.map((cat: any) => (
-                  <li key={cat.id} className="pointer my-1" onClick={() => window.location.href = `/category/${cat.id}`}>
-                    {cat.name} <small className="text-muted">({cat.match_count})</small>
-                  </li>
-                ))
-              )}
-            </ul>
+
+            {relatedCategories.length === 0 ? (
+              <div className="text-muted small">Không có danh mục phù hợp</div>
+            ) : (
+              <div>
+                {relatedCategories.map((cat: any) => (
+                  <div className="form-check my-1" key={cat.id}>
+                    <input
+                      className="form-check-input pointer"
+                      type="checkbox"
+                      value={cat.id}
+                      id={`related-cat-${cat.id}`}
+                      checked={isRelatedCategoryChecked(cat.id)}
+                      onChange={() => handleToggleRelatedCategory(cat.id)}
+                    />
+                    <label className="form-check-label pointer" htmlFor={`related-cat-${cat.id}`}>
+                      <span>{cat.name}</span>
+                      <small className="text-muted ms-2">({cat.match_count ?? 0})</small>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="border-top p-3 m-2">
@@ -161,26 +205,24 @@ const SearchPage = () => {
                 </div>
                 )}
 
-                <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap">
-                    <div className="d-flex align-items-center mb-2">
-                        <div className="me-3 fw-semibold">Sắp xếp theo:</div>
-                        <div className="sort-tabs d-flex align-items-center" role="tablist" aria-label="Sort tabs">
-                        <button className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`} onClick={() => handleSort("newest")}>Mới nhất</button>
-                        <button className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`} onClick={() => handleSort("best_seller")}>Bán chạy</button>
-                        <button className={`btn btn-sm sort-tab ${query.sort === "relevance" ? "active" : ""}`} onClick={() => handleSort("relevance")}>Liên quan nhất</button>
-                        </div>
+                <div className="d-flex align-items-center mt-3 flex-wrap gap-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="me-3 fw-semibold">Sắp xếp theo:</div>
+                      <button className={`btn btn-sm sort-tab ${query.sort === "newest" ? "active" : ""}`} onClick={() => handleSort("newest")}>Mới nhất</button>
+                      <button className={`btn btn-sm sort-tab ${query.sort === "best_seller" ? "active" : ""}`} onClick={() => handleSort("best_seller")}>Bán chạy</button>
+                      <button className={`btn btn-sm sort-tab ${query.sort === "relevance" ? "active" : ""}`} onClick={() => handleSort("relevance")}>Liên quan</button>
                     </div>
 
-                    <div className="d-flex align-items-center mb-2">
-                        <label htmlFor="priceSortSearch" className="me-2 mb-0 fw-semibold">Giá</label>
-                        <select id="priceSortSearch" className="form-select form-select-sm" style={{ width: 220 }} value={query.sort} onChange={(e) => handleSort(e.target.value)}>
-                            <option value="default">Mặc định</option>
-                            <option value="priceDesc">Cao đến thấp</option>
-                            <option value="priceAsc">Thấp đến cao</option>
+                    <div className="d-flex align-items-center">
+                        <select id="priceSortSearch" className="form-select form-select-sm sort-select" style={{ width: 220 }} value={query.sort} onChange={(e) => handleSort(e.target.value)}>
+                            <option value="default">Giá: Mặc định</option>
+                            <option value="priceDesc">Giá: Cao đến thấp</option>
+                            <option value="priceAsc">Giá: Thấp đến cao</option>
                         </select>
                     </div>
                 </div>
             </div>
+
           <div className="row row-cols-1 row-cols-md-4 g-4 pt-3">
             {!loading && products.length > 0 ? (
               products.map((product) => (

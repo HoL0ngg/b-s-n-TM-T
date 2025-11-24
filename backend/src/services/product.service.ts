@@ -427,7 +427,6 @@ class productService {
              LEFT JOIN productimages ON productimages.product_id = products.id AND productimages.is_main = 1 
              WHERE products.status = 1  -- <--- THÊM DÒNG NÀY (Chỉ lấy SP đang hoạt động)
              AND BINARY LOWER(products.name) LIKE LOWER(CONCAT('%', ? , '%')) 
-             GROUP BY products.id 
              LIMIT 7`,
             [keyword]
         );
