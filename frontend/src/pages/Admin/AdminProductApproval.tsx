@@ -38,6 +38,7 @@ const AdminProductApproval: React.FC = () => {
             case '0': return 'bg-warning text-dark';
             case '-1': return 'bg-danger';
             case '-2': return 'bg-danger';
+            case '3': return 'bg-secondary'; // Banned
             default: return 'bg-secondary';
         }
     };
@@ -47,6 +48,7 @@ const AdminProductApproval: React.FC = () => {
             case '0': return 'Chờ duyệt';
             case '-1': return 'Bị từ chối';
             case '-2': return 'Bị cấm';
+            case '3': return 'Ngừng bán'; // Banned
             default: return 'Không rõ';
         }
     };

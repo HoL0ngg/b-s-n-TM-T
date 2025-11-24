@@ -65,10 +65,10 @@ const Category = () => {
     if (query.subCategoryId !== 0) {
       params.sub = query.subCategoryId.toString();
     }
-    if (priceRange.minPrice !== "") params.minPrice = priceRange.minPrice.toString();
-    if (priceRange.maxPrice !== "") params.maxPrice = priceRange.maxPrice.toString();
-    // if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
-    // if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
+    // if (priceRange.minPrice !== "") params.minPrice = priceRange.minPrice.toString();
+    // if (priceRange.maxPrice !== "") params.maxPrice = priceRange.maxPrice.toString();
+    if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
+    if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
     if (query.brand && query.brand.length > 0) {
       params.brand = query.brand.join(',');
     }
@@ -196,18 +196,6 @@ const Category = () => {
       maxPrice: max,
     }))
 
-    const result = products.filter((product) => {
-      const price = product.base_price;
-      const isMinOk = min === null || price >= min;
-      const isMaxOk = max === null || price <= max;
-      return isMinOk && isMaxOk;
-    });
-    console.log(result);
-
-    setProducts(result);
-    if (result.length === 0) {
-      alert("Không có sản phẩm trong khoảng giá bạn vừa nhập!");
-    }
   }
 
   const filteredNameOfCategory = categories.find(
