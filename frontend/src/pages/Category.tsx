@@ -8,11 +8,7 @@ import { fetchProducts } from "../api/products";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 import Swal from "sweetalert2";
-import RatingFilterBootstrap from "../components/RatingFilter";
 import RatingFilter from "../components/RatingFilter";
-import { se } from "date-fns/locale";
-
-
 
 const Category = () => {
   const { id } = useParams<{ id: string }>();
@@ -379,7 +375,7 @@ const Category = () => {
                   className="form-select form-select-sm sort-select"
                   value={
                     query.sort === "priceAsc" ||
-                    query.sort === "priceDesc"
+                      query.sort === "priceDesc"
                       ? query.sort
                       : "default"
                   }
@@ -390,7 +386,7 @@ const Category = () => {
                   <option value="priceDesc">Giá: Cao đến thấp</option>
                   <option value="priceAsc">Giá: Thấp đến cao</option>
                 </select>
-              </div>            
+              </div>
             </div>
 
             {/* Loader */}

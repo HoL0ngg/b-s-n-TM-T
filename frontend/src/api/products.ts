@@ -111,6 +111,9 @@ export const fetchProducts = async (query: any, category_id?: number): Promise<P
     if (query.brand && query.brand.length > 0) {
         params.append('brand', query.brand.join(','));
     }
+    if (query.rating && query.rating > 0) {
+        params.append('rating', query.rating);
+    }
     // Search mode
     if (query.q) {
         console.log("Query");

@@ -255,6 +255,7 @@ class productController {
                 minPrice,
                 maxPrice,
                 brand,
+                rating,
                 q,
             } = req.query as any;
 
@@ -300,6 +301,10 @@ class productController {
                     whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
                     params.push(...brandIds);
                 }
+            }
+            if (rating) {
+                whereClause += " AND v_products_list.avg_rating >= ?";
+                params.push(rating);
             }
             let orderBy = "";
             let orderParams: any[] = [];

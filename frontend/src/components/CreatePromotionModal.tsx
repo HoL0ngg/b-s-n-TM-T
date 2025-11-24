@@ -144,6 +144,7 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
                                                     className="form-control"
                                                     value={startDate}
                                                     onChange={(e) => setStartDate(e.target.value)}
+                                                    min={new Date().toISOString().slice(0, 16)}
                                                     required
                                                 />
                                             </div>
@@ -155,6 +156,7 @@ export default function CreatePromotionModal({ show, onHide, onSaveSuccess }: Cr
                                                     className="form-control"
                                                     value={endDate}
                                                     onChange={(e) => setEndDate(e.target.value)}
+                                                    min={startDate || new Date().toISOString().slice(0, 16)}
                                                     required
                                                 />
                                             </div>
