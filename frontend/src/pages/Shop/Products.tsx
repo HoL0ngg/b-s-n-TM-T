@@ -40,16 +40,18 @@ export default function ShopProductsManager() {
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [shopId, setShopId] = useState<number | null>(null);
 
-  const getImageUrl = (url: string | undefined) => {
-    if (!url) return 'https://via.placeholder.com/150?text=No+Image';
-    if (url.startsWith('http') || url.startsWith('data:')) {
+const getImageUrl = (url: string | undefined) => {
+  if (!url) return 'https://via.placeholder.com/150?text=No+Image';
+  if (url.startsWith('http') || url.startsWith('data:')) {
       return url;
-    }
-    if (url.startsWith('/uploads')) {
-      return `http://localhost:5000${url}`;
-    }
-    return url;
-  };
+  }
+  if (url.startsWith('/uploads')) { 
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      return `${baseUrl}${url}`;
+  }
+  return url;
+};
 
   useEffect(() => {
     const fetchShopIdAndCategories = async () => {
@@ -476,7 +478,9 @@ export default function ShopProductsManager() {
                             alt={product.name || ''}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             onError={(e) => {
-                              e.currentTarget.src = 'https://via.placeholder.com/150?text=Error';
+                              const target = e.currentTarget;
+                              target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EHsnh hng%3C/text%3E%3C/svg%3E";
+                              target.onerror = null; 
                             }}
                           />
                         ) : (
@@ -583,7 +587,7 @@ export default function ShopProductsManager() {
                           </span>
                           <button
                             className="btn btn-sm btn-outline-danger py-0 px-2 ms-1"
-                            style={{ fontSize: '12px', height: '24px' }}
+                            style={{ fontSize: '12px', height: '50px' }}
                             onClick={() => handleShowReason(product)}
                           >
                             Xem lý do
@@ -599,7 +603,7 @@ export default function ShopProductsManager() {
                           </span>
                           <button
                             className="btn btn-sm btn-outline-dark py-0 px-2 ms-1"
-                            style={{ fontSize: '12px', height: '24px' }}
+                            style={{ fontSize: '12px', height: '50px' }}
                             onClick={() => handleShowReason(product)}
                           >
                             Chi tiết
@@ -928,7 +932,7 @@ export default function ShopProductsManager() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-3">
-          <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark">
+          <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark " style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
             {currentReason?.content}
           </div>
           <div className="mt-3 text-muted small fst-italic">
