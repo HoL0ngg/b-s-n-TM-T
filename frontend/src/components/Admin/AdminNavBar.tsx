@@ -2,13 +2,21 @@ import React from 'react';
 import { BsList } from 'react-icons/bs';
 import { IoCalendarSharp } from "react-icons/io5";
 import { formattedDate } from '../../utils/helper';
+import { FiLogOut } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Định nghĩa props
 interface AdminNavbarProps {
     toggleSidebar: () => void;
 }
-
 const AdminNavbar: React.FC<AdminNavbarProps> = ({ toggleSidebar }) => {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+    const handleLogout = () => {
+        logout();
+        navigate('/admin/login', { replace: true });
+    }
     return (
         <header className="navbar navbar-light bg-white shadow-sm p-3">
             <button
@@ -23,8 +31,8 @@ const AdminNavbar: React.FC<AdminNavbarProps> = ({ toggleSidebar }) => {
             </div>
 
             <div className="ms-auto">
-                <span>Xin chào, Admin!</span>
-                {/* Thêm Dropdown, Avatar... ở đây */}
+                <span className="fw-bold">Xin chào, Admin!</span>
+                <FiLogOut size={20} onClick={handleLogout} className="ms-1 me-3 text-danger" style={{ cursor: 'pointer' }} title="Đăng xuất" />
             </div>
         </header>
     );

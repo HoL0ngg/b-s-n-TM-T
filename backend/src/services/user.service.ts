@@ -140,14 +140,18 @@ class userService {
                 whereClause += " AND (uf.username LIKE ? OR u.email LIKE ?)";
                 params.push(`%${searchTerm}%`, `%${searchTerm}%`);
             }
+            // console.log("Search Term in Service:", searchTerm);
             const countQuery = `
             SELECT COUNT(*) AS total
             FROM users AS u
+            JOIN shops s ON u.phone_number = s.owner_id
+            JOIN user_profile uf ON u.phone_number = uf.phone_number
             ${whereClause};
         `;
             const [countResult]: any = await pool.query(countQuery, params);
             const total = countResult[0]?.total || 0;
             const totalPage = Math.ceil(total / limit);
+
             let query = `
             SELECT u.phone_number as phone, u.email, u.status, u.created_at, uf.username AS name
             FROM users u
@@ -170,7 +174,7 @@ class userService {
     }
     getBuyersService = async (status: string, page: number, limit: number, searchTerm?: string): Promise<{ users: UserAdmin[], totalPages: number }> => {
         try {
-            let whereClause = "WHERE 1=1 AND u.phone_number NOT IN (SELECT owner_id FROM shops)";
+            let whereClause = "WHERE 1=1";
             const params: any[] = [];
 
             if (status !== "all") {
@@ -181,14 +185,21 @@ class userService {
                 whereClause += " AND (uf.username LIKE ? OR u.email LIKE ?)";
                 params.push(`%${searchTerm}%`, `%${searchTerm}%`);
             }
+            whereClause += " AND u.role = ?";
+            params.push("customer");
             const countQuery = `
             SELECT COUNT(*) AS total
             FROM users AS u
+            JOIN user_profile uf ON u.phone_number = uf.phone_number  
             ${whereClause};
         `;
             const [countResult]: any = await pool.query(countQuery, params);
             const total = countResult[0]?.total || 0;
             const totalPage = Math.ceil(total / limit);
+
+            // console.log("Total buyers found:", total);
+            // console.log("Total pages calculated:", totalPage);
+            // console.log("limit:", limit);
             let query = `
             SELECT u.phone_number as phone, 
                 u.email, u.status, 
