@@ -1,17 +1,68 @@
 import { motion, useAnimation, useMotionValue } from "framer-motion";
 import React, { useRef, useState } from "react";
 import { LuBotMessageSquare } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 
 interface ChatMessage {
     role: "user" | "bot";
     content: string;
 }
 
+// Helper function to parse markdown links and convert to clickable elements
+const parseMessageContent = (content: string, onLinkClick: (url: string) => void): (string | React.ReactElement)[] | string => {
+    // Regex to match markdown links: [text](url)
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts: (string | React.ReactElement)[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = linkRegex.exec(content)) !== null) {
+        // Add text before the link
+        if (match.index > lastIndex) {
+            parts.push(content.substring(lastIndex, match.index));
+        }
+
+        // Add the link
+        const linkText = match[1];
+        const linkUrl = match[2];
+        parts.push(
+            <a
+                key={match.index}
+                href="#"
+                onClick={(e) => {
+                    e.preventDefault();
+                    onLinkClick(linkUrl);
+                }}
+                style={{ color: '#0d6efd', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+                {linkText}
+            </a>
+        );
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < content.length) {
+        parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+};
+
 const ChatbotFloating: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const isDragging = useRef(false);
+    const navigate = useNavigate();
+
+    const handleLinkClick = (url: string) => {
+        // Extract path from full URL if needed
+        const path = url.replace(/^https?:\/\/[^\/]+/, '');
+        navigate(path);
+        setOpen(false); // Close chatbot after navigation
+    };
 
     const sendMessage = async () => {
         if (!input.trim()) return;
@@ -142,9 +193,12 @@ const ChatbotFloating: React.FC = () => {
                                         ? "bg-primary text-white"
                                         : "bg-light border"
                                         }`}
-                                    style={{ maxWidth: "70%" }}
+                                    style={{ maxWidth: "70%", whiteSpace: "pre-line" }}
                                 >
-                                    {msg.content}
+                                    {msg.role === "bot"
+                                        ? parseMessageContent(msg.content, handleLinkClick)
+                                        : msg.content
+                                    }
                                 </div>
                             </div>
                         ))}

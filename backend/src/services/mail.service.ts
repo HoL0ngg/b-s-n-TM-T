@@ -7,10 +7,16 @@ export async function sendOtpEmail(to: string) {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-            user: ENV.EMAIL_USER, // Gmail của bạn
-            pass: ENV.EMAIL_PASS  // App password (không dùng mật khẩu thường)
+            user: ENV.EMAIL_USER,
+            pass: ENV.EMAIL_PASS
         }
     });
+
+    console.log("--- DEBUG EMAIL ---");
+    console.log("Email User:", ENV.EMAIL_USER); // Xem nó có hiện email không?
+    console.log("Email Pass Length:", ENV.EMAIL_PASS ? ENV.EMAIL_PASS.length : 0); // Xem độ dài có phải 16 không?
+    console.log("Type of Pass:", typeof ENV.EMAIL_PASS);
+    console.log("-------------------");
 
     const mailOptions = {
         from: `"My App" <${ENV.EMAIL_USER}>`,
