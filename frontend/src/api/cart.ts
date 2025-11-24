@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_URL = `${process.env.VITE_API_URL}/api/cart`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/cart`;
 
 export const addToCart = async (product_id: number, quantity: number) => {
     const response = await axios.post(`${API_URL}/add`, {

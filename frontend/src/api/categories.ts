@@ -2,7 +2,7 @@
 import axios from "axios";
 import type { CategoryType, SubCategoryType } from "../types/CategoryType";
 
-const API_URL = `${process.env.VITE_API_URL}/api/categories`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/categories`;
 
 export const fetchCategories = async (): Promise<CategoryType[]> => {
     const res = await axios.get(`${API_URL}`);

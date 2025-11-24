@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { ShopType, ShopCateType } from "../types/ShopType";
 
-const API_URL = `${process.env.VITE_API_URL}/api/shops`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/shops`;
 
 export const fetchShop = async (id: number): Promise<ShopType> => {
   const res = await axios.get(`${API_URL}/shop/${id}`);

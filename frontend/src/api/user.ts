@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { AddressType, UserProfileType, UserType } from "../types/UserType";
 
-const API_URL = `${process.env.VITE_API_URL}/api/user`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/user`;
 
 export const fetchUserById = async (id: number): Promise<UserType> => {
     const res = await axios.get(`${API_URL}/${id}`);

@@ -9,7 +9,7 @@ export interface ShopCategoryType {
     product_count: number;
 }
 
-const API_URL = `${process.env.VITE_API_URL}/api/shop-categories`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/shop-categories`;
 
 // Token sẽ được đính kèm tự động
 export const fetchShopCategories = async (): Promise<ShopCategoryType[]> => {

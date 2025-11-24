@@ -3,7 +3,7 @@ import type { ShopAdminType, ShopDetailAdminType, ShopType } from "../../types/S
 import type { ProductType } from "../../types/ProductType";
 import type { UserAdminType } from "../../types/admin/UserTypeAdmin";
 
-const API_URL = `${process.env.VITE_API_URL}/api/admin/shopsAdmin`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/admin/shopsAdmin`;
 export const fetchShopsByStatusAdmin = async (
     status: string,
     page: number,

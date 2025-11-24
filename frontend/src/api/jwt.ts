@@ -1,7 +1,7 @@
 import axios from "axios"
 
 // API_URL ĐÃ ĐƯỢC SỬA TỪ /jwt -> /auth
-const API_URL = `${process.env.VITE_API_URL}/api/auth`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 export const setAuthToken = (token?: string | null) => {
     if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;

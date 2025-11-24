@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = `${process.env.VITE_API_URL}/api/shopinfo`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/shopinfo`;
 
 export const createShopInfo = async (shopData: any) => {
   const res = await axios.post(`${API_URL}/register`, shopData);

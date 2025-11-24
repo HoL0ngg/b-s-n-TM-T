@@ -5,7 +5,7 @@ import type { ProductType, ProductImageType, ProductReviewType, ProductDetailsTy
 import { getAuthHeaders } from "./apiHelpers";
 
 // Sửa lỗi gõ chữ
-const API_URL = `${process.env.VITE_API_URL}/api/products`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/products`;
 
 // (Các hàm GET công khai giữ nguyên, lấy từ code của bạn)
 export const fetchProductsByID = async (id: string): Promise<ProductType> => {
