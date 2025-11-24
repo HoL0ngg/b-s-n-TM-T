@@ -7,6 +7,7 @@ import { fetchCategories, fetchSubCategories } from "../api/categories";
 import { fetchProducts } from "../api/products";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
+import Swal from "sweetalert2";
 
 
 
@@ -64,8 +65,10 @@ const Category = () => {
     if (query.subCategoryId !== 0) {
       params.sub = query.subCategoryId.toString();
     }
-    if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
-    if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
+    if (priceRange.minPrice !== "") params.minPrice = priceRange.minPrice.toString();
+    if (priceRange.maxPrice !== "") params.maxPrice = priceRange.maxPrice.toString();
+    // if (query.minPrice !== null) params.minPrice = query.minPrice.toString();
+    // if (query.maxPrice !== null) params.maxPrice = query.maxPrice.toString();
     if (query.brand && query.brand.length > 0) {
       params.brand = query.brand.join(',');
     }
@@ -160,21 +163,53 @@ const Category = () => {
   const handleApplyBtn = () => {
     const min = priceRange.minPrice ? Number(priceRange.minPrice) : null;
     const max = priceRange.maxPrice ? Number(priceRange.maxPrice) : null;
-    if ((min != null && min < 0) || (max != null && max < 0)) {
-      alert("Giá phải là số lớn hơn 0 !");
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end", // Vị trí: góc trên bên phải
+      showConfirmButton: false, // Ẩn nút OK
+      timer: 3000, // Tự tắt sau 3 giây
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      }
+    });
+
+    if ((min !== null && min < 0) || (max !== null && max < 0)) {
+      Toast.fire({
+        icon: "warning", // Icon cảnh báo
+        title: "Giá phải là số lớn hơn 0!"
+      });
       return;
     }
     if (min != null && max != null && min > max) {
-      alert("Khoảng giá bạn vừa nhập không hợp lệ!");
+      Toast.fire({
+        icon: "warning", // Icon cảnh báo
+        title: "Khoảng giá không hợp lệ!"
+      });
       return;
     }
     setQuery((prev) => ({
       ...prev,
-      page: 1,
-      minPrice: min,
-      maxPrice: max,
+      // page: 1,
+      // minPrice: min,
+      // maxPrice: max,
     }))
+
+    const result = products.filter((product) => {
+      const price = product.base_price;
+      const isMinOk = min === null || price >= min;
+      const isMaxOk = max === null || price <= max;
+      return isMinOk && isMaxOk;
+    });
+    console.log(result);
+
+    setProducts(result);
+    if (result.length === 0) {
+      alert("Không có sản phẩm trong khoảng giá bạn vừa nhập!");
+    }
   }
+
   const filteredNameOfCategory = categories.find(
     (cat) => cat.id === Number(id)
   );
