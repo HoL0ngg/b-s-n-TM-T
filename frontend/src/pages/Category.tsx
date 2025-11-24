@@ -140,6 +140,7 @@ const Category = () => {
     setQuery((prev) => ({
       ...prev,
       sort: val,
+      page: 1
     }));
   };
 

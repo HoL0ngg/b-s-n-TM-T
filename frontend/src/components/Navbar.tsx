@@ -121,7 +121,6 @@ export default function Navbar() {
         try {
             const res = await fetchProductsByKeyWord(val);
             setProducts(res);
-            console.log(res);
         } catch (error) {
             console.log(error);
         }

@@ -1,7 +1,7 @@
 // Đường dẫn: backend/src/controllers/product.controller.ts
 // (PHIÊN BẢN ĐÃ SỬA XUNG ĐỘT - ĐÃ TRỘN)
 
-import e, { Request, Response } from "express"
+import { Request, Response } from "express"
 import productService from "../services/product.service";
 // SỬA: Thêm import 'CreatePromotionData' từ nhánh 'main'
 import { CreatePromotionData } from "../models/product.model";
