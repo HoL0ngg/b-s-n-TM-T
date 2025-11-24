@@ -4,7 +4,6 @@ import ImageSlider from "../components/ImageSlider";
 import { useState } from "react";
 import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetailsType, AttributeOfProductVariantsType } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
-// Sửa lỗi gõ chữ và import (đã làm ở bước trước)
 import { fetchProductsByID, fetchProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
@@ -20,10 +19,8 @@ const ProductDetail = () => {
     const { id } = useParams<{ id: string | undefined }>();
     const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
 
-    // ===== BẮT ĐẦU SỬA LỖI 1 =====
     // Sửa state để chấp nhận `null`
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    // ===== KẾT THÚC SỬA LỖI 1 =====
 
     const [shop, setShop] = useState<ShopType>();
     const [rating, setRating] = useState<number>(0);
@@ -34,7 +31,6 @@ const ProductDetail = () => {
     const [attributeOfProductVariants, setAttributeOfProductVariants] = useState<AttributeOfProductVariantsType[]>([]);
     const navigator = useNavigate();
 
-    // (Các hàm loadProductDetails và loadAttributeOfProduct giữ nguyên)
     const loadProductDetails = async () => {
         if (!id) return;
         try {
@@ -58,7 +54,7 @@ const ProductDetail = () => {
         const loadProductAndShop = async () => {
             if (!id) return;
             try {
-                const data = await fetchProductsByID(id); // (Đã sửa lỗi gõ chữ)
+                const data = await fetchProductsByID(id);
                 console.log(data);
 
                 setProduct(data);
@@ -82,61 +78,48 @@ const ProductDetail = () => {
             try {
                 const data = await fetchProductImg(id);
                 
-                // ===== BẮT ĐẦU SỬA LỖI ẢNH VỠ =====
+                // ===== BẮT ĐẦU SỬA LỖI ẢNH VỠ (DÙNG BIẾN MÔI TRƯỜNG) =====
                 const processedImages = data.map(img => {
-                    // Nếu ảnh bắt đầu bằng /uploads (ảnh mới upload) -> thêm localhost
                     if (img.image_url && img.image_url.startsWith('/uploads')) {
-                        return { ...img, image_url: `http://localhost:5000${img.image_url}` };
+                        // SỬA TẠI ĐÂY: Lấy link từ biến môi trường
+                        // (Nếu nhóm trưởng đã chốt VITE_API_URL thì dùng cái này)
+                        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                        return { ...img, image_url: `${baseUrl}${img.image_url}` };
                     }
-                    // Nếu ảnh bắt đầu bằng /assets (ảnh cũ local) -> giữ nguyên (hoặc thêm localhost:5173 tùy cấu hình)
-                    // Nếu ảnh là link online (http) -> giữ nguyên
                     return img;
                 });
+                // ==========================================================
                 
                 setImages(processedImages);
                 
-                // Tự động set ảnh đầu tiên (hoặc ảnh main) làm ảnh được chọn
                 if (processedImages.length > 0) {
                     const mainImg = processedImages.find(img => img.is_main === 1);
                     setSelectedImage(mainImg ? mainImg.image_url : processedImages[0].image_url);
                 }
-                // ===== KẾT THÚC SỬA LỖI =====
                 
             } catch (err) {
                 console.error("Failed to fetch product images:", err);
             }
         };
 
-        // Chạy các hàm load
         loadAttributeOfProduct();
         loadProductDetails();
         loadProductAndShop();
         loadProductImg();
 
-        // ===== BẮT ĐẦU SỬA LỖI 3 =====
-        // Xóa dòng code gây lỗi. Logic đã được chuyển vào `loadProductImg`.
-        // setSelectedImage(mainProductImage); // <--- XÓA DÒNG NÀY
-        // ===== KẾT THÚC SỬA LỖI 3 =====
+    }, [id]);
 
-    }, [id]); // Bỏ `mainProductImage` ra khỏi dependency array
-
-    // ===== BẮT ĐẦU SỬA LỖI 2 =====
-    // Sửa `useMemo` để nó phụ thuộc vào state `images` (đúng)
-    // thay vì `product.images` (sai, vì `product` không chứa ảnh)
+    // useMemo giữ nguyên logic sửa trước đó
     const mainProductImage = useMemo(() => {
-        if (!images || images.length === 0) { // Phụ thuộc vào state `images`
+        if (!images || images.length === 0) {
             return null;
         }
-        const mainImg = images.find(img => img.is_main === 1); // Tìm trong state `images`
+        const mainImg = images.find(img => img.is_main === 1);
         if (mainImg) {
             return mainImg.image_url;
         }
-        // Nếu không có ảnh main, lấy ảnh đầu tiên
         return images[0].image_url;
-    }, [images]); // Dependency array là `images`
-    // ===== KẾT THÚC SỬA LỖI 2 =====
-
-    console.log(product);
+    }, [images]);
 
     const reloadReview = async (hihi: number) => {
         if (!product?.id) return;
@@ -180,7 +163,13 @@ const ProductDetail = () => {
 
     const handleVariantImageChange = useCallback((newImageUrl: string) => {
         if (newImageUrl) {
-            setSelectedImage(newImageUrl);
+            // Xử lý link ảnh variant nếu nó chưa có domain (trường hợp hiếm nhưng nên có)
+            let finalUrl = newImageUrl;
+            if (finalUrl.startsWith('/uploads')) {
+                 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                 finalUrl = `${baseUrl}${finalUrl}`;
+            }
+            setSelectedImage(finalUrl);
         }
     }, []);
 
@@ -204,6 +193,12 @@ const ProductDetail = () => {
                                 src={selectedImage}
                                 alt="Selected"
                                 style={{ width: "550px", height: "550px", objectFit: "cover", borderRadius: "10px" }}
+                                // THÊM: Xử lý lỗi ảnh (chống treo máy)
+                                onError={(e) => {
+                                    const target = e.currentTarget;
+                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='550' height='550' viewBox='0 0 550 550'%3E%3Crect width='550' height='550' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='24' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EImage Error%3C/text%3E%3C/svg%3E";
+                                    target.onerror = null;
+                                }}
                             />
                         ) : (
                             <p>Không có ảnh</p>
@@ -219,8 +214,6 @@ const ProductDetail = () => {
                 </div >
 
             </div>
-
-            {/* (Phần code hiển thị shop, chi tiết, mô tả... giữ nguyên) */}
 
             <div className="row mt-4 p-3">
                 <div className="col-7">
@@ -241,15 +234,12 @@ const ProductDetail = () => {
                                 <p>Khong co chi tiet sp</p>
                             </div>
                         )}
-                    {/* <div className="fw-bold fs-4">Mô tả sản phẩm</div>
-                    <div className="product-description"> 
-                        <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
-                    </div> */}
                 </div>
                 <div className="col-5">
                     <div className="p-4 border rounded">
                         <div className="d-flex align-items-center">
                             <div className="">
+                                {/* Cập nhật link ảnh shop nếu cần thiết, tạm thời giữ nguyên toString() */}
                                 <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "70px", width: "70px" }} />
                             </div>
                             <div className="ms-3">
@@ -278,7 +268,7 @@ const ProductDetail = () => {
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <div className="fw-bold fs-4">Mô tả sản phẩm</div>
-                <div className="product-description"> {/* <-- 1. Đặt một class cha ở đây */}
+                <div className="product-description"> 
                     <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
                 </div>
             </div>
