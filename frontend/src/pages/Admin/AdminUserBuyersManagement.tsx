@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import {
     FiUserPlus,
     FiEdit,
@@ -31,17 +31,18 @@ const AdminUserManagement: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     useEffect(() => {
         loadUsers();
     }, []);
 
 
-    const filtered = users.filter(
-        (u) =>
-            u.name.toLowerCase().includes(search.toLowerCase()) ||
-            u.email.toLowerCase().includes(search.toLowerCase())
-    );
+    // const filtered = users.filter(
+    //     (u) =>
+    //         u.name.toLowerCase().includes(search.toLowerCase()) ||
+    //         u.email.toLowerCase().includes(search.toLowerCase())
+    // );
 
     const openAddUserModal = () => {
         setModalType("add");
@@ -119,10 +120,11 @@ const AdminUserManagement: React.FC = () => {
     }
     const loadUsers = async () => {
         try {
-            const res = await fetchBuyerByStatusAdmin(statusFilter, currentPage, itemsPerPage);
+            const res = await fetchBuyerByStatusAdmin(statusFilter, currentPage, itemsPerPage, debouncedSearch);
             setUsers(res.users);
             setTotalPages(res.totalPages);
             // console.log("Danh sách người dùng đã tải:", res.users);
+            // console.log("Total Pages:", res.totalPages);
         } catch (error) {
             console.error("Lỗi khi tải danh sách người dùng:", error);
         }
@@ -149,11 +151,16 @@ const AdminUserManagement: React.FC = () => {
             Swal.fire("Lỗi!", error.response?.data?.message || "Không thể lưu người dùng.", "error");
         }
     };
-
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(delayDebounceFn);
+    }, [search]);
 
     useEffect(() => {
         loadUsers();
-    }, [statusFilter, currentPage]);
+    }, [statusFilter, currentPage, debouncedSearch]);
     useEffect(() => {
         setCurrentPage(1);
     }, [search, statusFilter]);
@@ -222,7 +229,7 @@ const AdminUserManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="text-center">
-                            {filtered.map((user) => (
+                            {users.map((user) => (
                                 <tr key={user.phone}>
                                     <td>{user.name}</td>
                                     <td>{user.email}</td>
@@ -262,7 +269,13 @@ const AdminUserManagement: React.FC = () => {
                         </tbody>
                     </table>
                     {/* --- 3. THANH PHÂN TRANG (Không đổi) --- */}
-                    <Pagenum currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                    {users.length > 0 && (
+                        <Pagenum
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    )}
                 </div>
             </div>
 
