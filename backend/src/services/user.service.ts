@@ -10,12 +10,12 @@ class userService {
         return row[0] as User;
     }
     getAddressByuserIdService = async (id: string): Promise<Address[]> => {
-        const [rows] = await pool.query("select id, city, ward, street, home_number, is_default, user_name, phone_number_jdo from address Join address_user on address_id = id where phone_number = ? Group by id", [id]) as [Address[], any];
+        const [rows] = await pool.query("select address.id, city, ward, street, home_number, is_default, user_name, phone_number_jdo from address Join address_user on address_id = address.id where phone_number = ? Group by id", [id]) as [Address[], any];
         return rows as Address[];
     }
 
     geDefaultAddressByuserIdService = async (id: string): Promise<Address> => {
-        const [rows] = await pool.query("select id, city, ward, street, home_number, is_default, user_name, phone_number_jdo from address Join address_user on address_id = id where phone_number = ? AND is_default = 1", [id]) as [Address[], any];
+        const [rows] = await pool.query("select address.id, city, ward, street, home_number, is_default, user_name, phone_number_jdo from address Join address_user on address_id = address.id where phone_number = ? AND is_default = 1", [id]) as [Address[], any];
         return rows[0] as Address;
     }
     getUserProfileService = async (id: string): Promise<UserProfile> => {
