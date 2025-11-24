@@ -47,8 +47,8 @@ const RegisterShop = () => {
     identityType: 'cccd',
     identityNumber: '',
     identityFullName: '',
-    description: '', // Thêm mô tả cho shop
-    logoUrl: '', // Thêm logo cho shop
+    description: '',
+    logoUrl: '',
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,7 +93,9 @@ const RegisterShop = () => {
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
-
+    if (!formData.logoUrl.trim()) {
+  newErrors.logoUrl = 'Vui lòng tải lên logo shop';
+}
     if (!formData.shopName.trim()) {
       newErrors.shopName = 'Vui lòng nhập tên shop';
     } else if (formData.shopName.length < 3) {
@@ -101,12 +103,14 @@ const RegisterShop = () => {
     } else if (formData.shopName.length > 100) {
       newErrors.shopName = 'Tên shop không được vượt quá 100 ký tự';
     }
+    if (!formData.description.trim()) {
+  newErrors.description = 'Vui lòng nhập mô tả shop';
+}
+
 
     // Validation cho logo (optional nhưng nếu có thì phải hợp lệ)
     if (formData.logoUrl && formData.logoUrl.trim()) {
-      // Kiểm tra nếu là base64 image
       const base64Regex = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/;
-      // Hoặc kiểm tra nếu là URL
       const urlRegex = /^(https?:\/\/|\/)/;
       
       if (!base64Regex.test(formData.logoUrl) && !urlRegex.test(formData.logoUrl)) {
@@ -158,21 +162,27 @@ const RegisterShop = () => {
     const newErrors: Record<string, string> = {};
 
     if (formData.businessType === 'business') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!formData.invoiceEmail.trim()) {
-        newErrors.invoiceEmail = 'Vui lòng nhập email nhận hóa đơn';
-      } else if (!emailRegex.test(formData.invoiceEmail)) {
-        newErrors.invoiceEmail = 'Email không hợp lệ';
-      }
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          
+        // Email hóa đơn bắt buộc
+    if (!formData.invoiceEmail.trim()) {
+      newErrors.invoiceEmail = 'Vui lòng nhập email nhận hóa đơn';
+    } else if (!emailRegex.test(formData.invoiceEmail)) {
+      newErrors.invoiceEmail = 'Email không hợp lệ';
+    }
 
-      const taxCodeRegex = /^[0-9]{10}(-[0-9]{3})?$/;
-      if (!formData.taxCode.trim()) {
-        newErrors.taxCode = 'Vui lòng nhập mã số thuế';
-      } else if (!taxCodeRegex.test(formData.taxCode)) {
-        newErrors.taxCode = 'Mã số thuế phải có 10 chữ số hoặc 10 chữ số + 3 chữ số chi nhánh (VD: 0123456789 hoặc 0123456789-001)';
+    // Mã số thuế bắt buộc
+    if (!formData.taxCode.trim()) {
+      newErrors.taxCode = 'Vui lòng nhập mã số thuế';
+    } else {
+      const cleanTaxCode = formData.taxCode.replace(/[-\s]/g, '');
+      const taxCodeRegex = /^[0-9]{10}([0-9]{3})?$/;
+      if (!taxCodeRegex.test(cleanTaxCode)) {
+        newErrors.taxCode = 'Mã số thuế phải có 10 hoặc 13 chữ số';
       }
     }
 
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -274,7 +284,7 @@ const RegisterShop = () => {
         name: formData.shopName,
         logo_url: formData.logoUrl || '/assets/shops/default-shop.png',
         description: formData.description || `Shop chuyên về ${formData.shopName}`,
-        status: 1, // Active
+        status: 1,
         owner_id: auth.user.id
       };
 
@@ -287,6 +297,11 @@ const RegisterShop = () => {
       }
 
       // Bước 2: Tạo thông tin chi tiết trong bảng `shop_info`
+      // Clean tax code trước khi gửi (loại bỏ dấu gạch ngang và khoảng trắng)
+      const cleanTaxCode = formData.taxCode.trim() 
+        ? formData.taxCode.replace(/[-\s]/g, '') 
+        : '';
+
       const shopInfoPayload = {
         shop_id: shopId,
         user_id: auth.user.id,
@@ -295,8 +310,8 @@ const RegisterShop = () => {
         phone: formData.phone,
         shipping_methods: JSON.stringify(formData.shippingMethods),
         business_type: formData.businessType,
-        invoice_email: formData.invoiceEmail || null,
-        tax_code: formData.taxCode || null,
+        invoice_email: formData.invoiceEmail.trim() || null,
+        tax_code: cleanTaxCode || null,
         identity_type: formData.identityType,
         identity_number: formData.identityNumber,
         identity_full_name: formData.identityFullName,
@@ -311,17 +326,14 @@ const RegisterShop = () => {
     } catch (error: any) {
       console.error("❌ Lỗi chi tiết:", error);
       
-      // Xử lý các loại lỗi khác nhau
       let errorMessage = "Đăng ký thất bại";
       
       if (error.code === 'ERR_NETWORK') {
         errorMessage = "Lỗi kết nối! Vui lòng kiểm tra:\n- Backend có đang chạy không?\n- URL API có đúng không?\n- CORS đã được cấu hình chưa?";
       } else if (error.response) {
-        // Server trả về response với status code lỗi
         errorMessage = error.response.data?.message || `Lỗi ${error.response.status}: ${error.response.statusText}`;
         console.error("📡 Response lỗi:", error.response.data);
       } else if (error.request) {
-        // Request đã được gửi nhưng không nhận được response
         errorMessage = "Không nhận được phản hồi từ server. Vui lòng kiểm tra backend!";
       } else {
         errorMessage = error.message || "Đã xảy ra lỗi không xác định";
@@ -384,7 +396,38 @@ const RegisterShop = () => {
           </>
         );
       case 5:
-        return <p>Xác nhận và Hoàn tất...</p>;
+        return (
+          <div className="text-center py-4">
+            <div className="mb-4">
+              <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '64px' }}></i>
+            </div>
+            <h4 className="mb-3">Xác nhận thông tin</h4>
+            <div className="text-start" style={{ maxWidth: '600px', margin: '0 auto' }}>
+              <div className="mb-3">
+                <strong>Tên shop:</strong> {formData.shopName}
+              </div>
+              <div className="mb-3">
+                <strong>Địa chỉ:</strong> {formData.address}
+              </div>
+              <div className="mb-3">
+                <strong>Loại hình:</strong> {formData.businessType === 'business' ? 'Doanh nghiệp' : 'Cá nhân'}
+              </div>
+              {formData.businessType === 'business' && (
+                <>
+                  <div className="mb-3">
+                    <strong>Mã số thuế:</strong> {formData.taxCode}
+                  </div>
+                  <div className="mb-3">
+                    <strong>Email hóa đơn:</strong> {formData.invoiceEmail}
+                  </div>
+                </>
+              )}
+              <div className="mb-3">
+                <strong>Giấy tờ định danh:</strong> {formData.identityType.toUpperCase()} - {formData.identityNumber}
+              </div>
+            </div>
+          </div>
+        );
       default:
         return <p>Bước {currentStep}...</p>;
     }
