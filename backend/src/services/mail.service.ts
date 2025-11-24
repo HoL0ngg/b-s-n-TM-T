@@ -5,10 +5,15 @@ import redisClient from "../redis/redisClient";
 export async function sendOtpEmail(to: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
         auth: {
             user: ENV.EMAIL_USER,
             pass: ENV.EMAIL_PASS
+        },
+        tls: {
+            rejectUnauthorized: false // Đôi khi cần thiết trên cloud
         }
     });
 
