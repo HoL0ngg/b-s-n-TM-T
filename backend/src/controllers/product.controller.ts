@@ -1,7 +1,7 @@
 // Đường dẫn: backend/src/controllers/product.controller.ts
 // (PHIÊN BẢN ĐÃ SỬA XUNG ĐỘT - ĐÃ TRỘN)
 
-import { Request, Response } from "express"
+import e, { Request, Response } from "express"
 import productService from "../services/product.service";
 // SỬA: Thêm import 'CreatePromotionData' từ nhánh 'main'
 import { CreatePromotionData } from "../models/product.model";
@@ -224,6 +224,7 @@ class productController {
             return res.status(200).json(products);
         } catch (error) {
             console.log(error);
+            return res.status(500).json(JSON.stringify(error, null, 2));
         }
     };
     getNewProducts = async (req: Request, res: Response) => {

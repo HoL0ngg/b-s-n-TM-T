@@ -121,6 +121,7 @@ export default function Navbar() {
         try {
             const res = await fetchProductsByKeyWord(val);
             setProducts(res);
+            console.log(res);
         } catch (error) {
             console.log(error);
         }
@@ -244,7 +245,7 @@ export default function Navbar() {
                                         </li>
                                     ))}
 
-                                    {showDropdown && keyword.trim() && products.length >= 6 && (
+                                    {showDropdown && keyword.trim() && products.length > 7 && (
                                         <li
                                             className="search-item search-more d-flex flex-column gap-1 p-2 mt-1 border-top"
                                             onClick={() => handleNavigateToSearch()}
