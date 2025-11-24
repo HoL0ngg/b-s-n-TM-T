@@ -24,7 +24,7 @@ export default function ShopProductsManager() {
 
   // --- STATE CHO PHÂN TRANG ---
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 15; 
+  const productsPerPage = 15;
   // ----------------------------
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -43,10 +43,10 @@ export default function ShopProductsManager() {
   const getImageUrl = (url: string | undefined) => {
     if (!url) return 'https://via.placeholder.com/150?text=No+Image';
     if (url.startsWith('http') || url.startsWith('data:')) {
-        return url;
+      return url;
     }
     if (url.startsWith('/uploads')) {
-        return `http://localhost:5000${url}`;
+      return `http://localhost:5000${url}`;
     }
     return url;
   };
@@ -59,7 +59,7 @@ export default function ShopProductsManager() {
         return;
       }
       try {
-        const response = await fetch(`http://localhost:5000/api/shops/by-owner/${user.id}`);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/shops/by-owner/${user.id}`);
         if (!response.ok) throw new Error('Shop not found');
         const shopData = await response.json();
 
@@ -173,7 +173,7 @@ export default function ShopProductsManager() {
     if (product.status === 0 || product.status === -1 || product.status === -2) return;
 
     const newStatus = product.status === 1 ? 3 : 1;
-    
+
     setPendingToggle({
       id: product.id,
       newStatus: newStatus,
@@ -548,12 +548,12 @@ export default function ShopProductsManager() {
 
                   <td style={{ padding: '18px 24px' }}>
                     <div className="d-flex flex-column gap-2">
-                      
+
                       {/* 1. Case: Pending (0) */}
                       {product.status === 0 && (
-                         <div className="badge bg-warning text-dark border border-warning bg-opacity-25 p-2">
-                            <i className="bi bi-hourglass-split me-1"></i> Đang chờ duyệt
-                         </div>
+                        <div className="badge bg-warning text-dark border border-warning bg-opacity-25 p-2">
+                          <i className="bi bi-hourglass-split me-1"></i> Đang chờ duyệt
+                        </div>
                       )}
 
                       {/* 2. Case: Active (1) hoặc Hidden (3) */}
@@ -578,32 +578,32 @@ export default function ShopProductsManager() {
                       {/* 3. Case: Rejected (-1) */}
                       {product.status === -1 && (
                         <div className="d-flex align-items-center gap-2">
-                            <span className="badge bg-danger bg-opacity-10 text-danger border border-danger p-2">
-                                <i className="bi bi-x-circle me-1"></i> Bị từ chối
-                            </span>
-                            <button 
-                                className="btn btn-sm btn-outline-danger py-0 px-2 ms-1" 
-                                style={{fontSize: '12px', height: '24px'}}
-                                onClick={() => handleShowReason(product)}
-                            >
-                                Xem lý do
-                            </button>
+                          <span className="badge bg-danger bg-opacity-10 text-danger border border-danger p-2">
+                            <i className="bi bi-x-circle me-1"></i> Bị từ chối
+                          </span>
+                          <button
+                            className="btn btn-sm btn-outline-danger py-0 px-2 ms-1"
+                            style={{ fontSize: '12px', height: '24px' }}
+                            onClick={() => handleShowReason(product)}
+                          >
+                            Xem lý do
+                          </button>
                         </div>
                       )}
 
                       {/* 4. Case: Banned (-2) */}
                       {product.status === -2 && (
-                         <div className="d-flex align-items-center gap-2">
-                            <span className="badge bg-dark text-white p-2">
-                                <i className="bi bi-ban me-1"></i> Vi phạm
-                            </span>
-                            <button 
-                                className="btn btn-sm btn-outline-dark py-0 px-2 ms-1" 
-                                style={{fontSize: '12px', height: '24px'}}
-                                onClick={() => handleShowReason(product)}
-                            >
-                                Chi tiết
-                            </button>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="badge bg-dark text-white p-2">
+                            <i className="bi bi-ban me-1"></i> Vi phạm
+                          </span>
+                          <button
+                            className="btn btn-sm btn-outline-dark py-0 px-2 ms-1"
+                            style={{ fontSize: '12px', height: '24px' }}
+                            onClick={() => handleShowReason(product)}
+                          >
+                            Chi tiết
+                          </button>
                         </div>
                       )}
 
@@ -634,26 +634,26 @@ export default function ShopProductsManager() {
                       </button>
 
                       {product.status !== -2 && (
-                          <button
-                            onClick={() => handleEdit(product)}
-                            className="btn btn-sm p-0"
-                            title="Chỉnh sửa"
-                            style={{
-                              width: '36px', height: '36px', borderRadius: '8px', border: 'none',
-                              backgroundColor: '#FFF3E0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#FF9800';
-                              e.currentTarget.querySelector('i')!.style.color = '#fff';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#FFF3E0';
-                              e.currentTarget.querySelector('i')!.style.color = '#F57C00';
-                            }}
-                          >
-                            <i className="bi bi-pencil-fill" style={{ color: '#F57C00', fontSize: '15px' }}></i>
-                          </button>
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="btn btn-sm p-0"
+                          title="Chỉnh sửa"
+                          style={{
+                            width: '36px', height: '36px', borderRadius: '8px', border: 'none',
+                            backgroundColor: '#FFF3E0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'all 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#FF9800';
+                            e.currentTarget.querySelector('i')!.style.color = '#fff';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#FFF3E0';
+                            e.currentTarget.querySelector('i')!.style.color = '#F57C00';
+                          }}
+                        >
+                          <i className="bi bi-pencil-fill" style={{ color: '#F57C00', fontSize: '15px' }}></i>
+                        </button>
                       )}
 
                       <button
@@ -676,7 +676,7 @@ export default function ShopProductsManager() {
               ))}
             </tbody>
           </table>
-          
+
           {filteredProducts.length === 0 && (
             <div className="text-center py-5">
               <i className="bi bi-inbox" style={{ fontSize: '64px', color: '#E0E0E0' }}></i>
@@ -693,26 +693,26 @@ export default function ShopProductsManager() {
           {filteredProducts.length > productsPerPage && (
             <div className="d-flex justify-content-center pt-4 pb-3">
               <Pagination>
-                <Pagination.First 
-                    onClick={() => handlePageChange(1)} 
-                    disabled={currentPage === 1} 
+                <Pagination.First
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
                 />
-                <Pagination.Prev 
-                    onClick={() => handlePageChange(currentPage - 1)} 
-                    disabled={currentPage === 1} 
+                <Pagination.Prev
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
                 />
-                
+
                 {[...Array(totalPages)].map((_, idx) => {
                   const pageNum = idx + 1;
                   // Logic hiển thị thu gọn: Đầu, Cuối, và Xung quanh trang hiện tại
                   if (
-                    pageNum === 1 || 
-                    pageNum === totalPages || 
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
                     (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
                   ) {
                     return (
-                      <Pagination.Item 
-                        key={pageNum} 
+                      <Pagination.Item
+                        key={pageNum}
                         active={pageNum === currentPage}
                         onClick={() => handlePageChange(pageNum)}
                       >
@@ -721,18 +721,18 @@ export default function ShopProductsManager() {
                     );
                   }
                   if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
-                     return <Pagination.Ellipsis key={pageNum} disabled />;
+                    return <Pagination.Ellipsis key={pageNum} disabled />;
                   }
                   return null;
                 })}
 
-                <Pagination.Next 
-                    onClick={() => handlePageChange(currentPage + 1)} 
-                    disabled={currentPage === totalPages} 
+                <Pagination.Next
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
                 />
-                <Pagination.Last 
-                    onClick={() => handlePageChange(totalPages)} 
-                    disabled={currentPage === totalPages} 
+                <Pagination.Last
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
                 />
               </Pagination>
             </div>
@@ -922,31 +922,31 @@ export default function ShopProductsManager() {
       {/* MODAL HIỂN THỊ LÝ DO (TỪ CHỐI / KHÓA) */}
       <Modal show={showReasonModal} onHide={() => setShowReasonModal(false)} centered>
         <Modal.Header closeButton className="bg-white border-0 pb-0">
-            <Modal.Title className="fs-5 text-danger fw-bold">
-                <i className="bi bi-exclamation-triangle-fill me-2"></i>
-                {currentReason?.title}
-            </Modal.Title>
+          <Modal.Title className="fs-5 text-danger fw-bold">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            {currentReason?.title}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-3">
-            <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark">
-                {currentReason?.content}
-            </div>
-            <div className="mt-3 text-muted small fst-italic">
-                * Nếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ người bán.
-            </div>
+          <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark">
+            {currentReason?.content}
+          </div>
+          <div className="mt-3 text-muted small fst-italic">
+            * Nếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ người bán.
+          </div>
         </Modal.Body>
         <Modal.Footer className="border-0 pt-0">
-            <Button variant="secondary" onClick={() => setShowReasonModal(false)}>Đóng</Button>
-            {currentReason?.title.includes('từ chối') && (
-               <Button 
-                    variant="primary" 
-                    onClick={() => { 
-                        setShowReasonModal(false);
-                    }}
-                >
-                  Đã hiểu
-               </Button>
-            )}
+          <Button variant="secondary" onClick={() => setShowReasonModal(false)}>Đóng</Button>
+          {currentReason?.title.includes('từ chối') && (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setShowReasonModal(false);
+              }}
+            >
+              Đã hiểu
+            </Button>
+          )}
         </Modal.Footer>
       </Modal>
 
