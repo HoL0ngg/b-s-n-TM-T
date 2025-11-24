@@ -583,7 +583,7 @@ export default function ShopProductsManager() {
                           </span>
                           <button
                             className="btn btn-sm btn-outline-danger py-0 px-2 ms-1"
-                            style={{ fontSize: '12px', height: '24px' }}
+                            style={{ fontSize: '12px', height: '50px' }}
                             onClick={() => handleShowReason(product)}
                           >
                             Xem lý do
@@ -599,7 +599,7 @@ export default function ShopProductsManager() {
                           </span>
                           <button
                             className="btn btn-sm btn-outline-dark py-0 px-2 ms-1"
-                            style={{ fontSize: '12px', height: '24px' }}
+                            style={{ fontSize: '12px', height: '50px' }}
                             onClick={() => handleShowReason(product)}
                           >
                             Chi tiết
@@ -928,7 +928,7 @@ export default function ShopProductsManager() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-3">
-          <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark">
+          <div className="p-3 bg-light rounded border border-danger bg-opacity-10 text-dark " style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
             {currentReason?.content}
           </div>
           <div className="mt-3 text-muted small fst-italic">

@@ -8,6 +8,9 @@ import { fetchProducts } from "../api/products";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 import Swal from "sweetalert2";
+import RatingFilterBootstrap from "../components/RatingFilter";
+import RatingFilter from "../components/RatingFilter";
+import { se } from "date-fns/locale";
 
 
 
@@ -24,7 +27,7 @@ const Category = () => {
   const [isUserAction, setIsUserAction] = useState(false);
   const [priceRange, setPriceRange] = useState({ minPrice: "", maxPrice: "" });
   const scrollableContentRef = useRef<HTMLDivElement>(null);
-
+  const [minRating, setMinRating] = useState<number | null>(null);
   //  Gom toàn bộ điều kiện truy vấn vào 1 state duy nhất
   const [query, setQuery] = useState({
     categoryId: Number(id),
@@ -35,6 +38,7 @@ const Category = () => {
     minPrice: null as number | null,
     maxPrice: null as number | null,
     brand: [] as number[],
+    rating: minRating,
   });
   const loadProducts = useCallback(async () => {
     try {
@@ -71,6 +75,9 @@ const Category = () => {
     if (query.brand && query.brand.length > 0) {
       params.brand = query.brand.join(',');
     }
+    if (minRating !== null) {
+      params.rating = minRating.toString();
+    }
     if (isUserAction) {
       setSearchParams(params); //PUSH history
       setIsUserAction(false);
@@ -87,6 +94,8 @@ const Category = () => {
     const min = searchParams.get("minPrice") || "";
     const max = searchParams.get("maxPrice") || "";
     const brand = searchParams.get("brand")?.split(',').map(Number) || [];
+    const ratingParam = searchParams.get("rating");
+    const minRating = ratingParam ? Number(ratingParam) : null;
     setQuery({
       categoryId: Number(id),
       subCategoryId: sub,
@@ -96,12 +105,13 @@ const Category = () => {
       minPrice: min ? Number(min) : null,
       maxPrice: max ? Number(max) : null,
       brand,
+      rating: minRating,
     });
 
     setSelectedSubCategory(sub === 0 ? "all" : String(sub));
     loadSubCategories();
     loadCategories();
-  }, [id, searchParams]);
+  }, [searchParams]);
   const loadCategories = async () => {
     try {
       const data = await fetchCategories();
@@ -227,6 +237,7 @@ const Category = () => {
       maxPrice: null,
       brand: [],   //  reset brand trong query
       page: 1,
+      minRating: null,
     }));
 
     const params = new URLSearchParams(searchParams);
@@ -237,7 +248,8 @@ const Category = () => {
 
     //  Xoá brand trên URL
     params.delete("brand");
-
+    //  Xoá rating trên URL
+    params.delete("rating");
     //  Reset về page 1
     params.set("page", "1");
 
@@ -245,8 +257,16 @@ const Category = () => {
 
     //  Reset input tạm
     setPriceRange({ minPrice: "", maxPrice: "" });
+    setMinRating(null);
   };
-
+  const handleRatingFilterChange = (rating: number) => {
+    setIsUserAction(true);
+    setMinRating(rating);
+    setQuery((prev) => ({
+      ...prev,
+      page: 1,
+    }));
+  }
   return (
     <div className="container">
       <CategorySwiper categories={categories} />
@@ -320,7 +340,9 @@ const Category = () => {
             </div>
             <div className="border-top p-3 m-2">
               <h5>Đánh giá</h5>
-
+              <div>
+                <RatingFilter onFilterChange={handleRatingFilterChange} activeRating={minRating} />
+              </div>
             </div>
             <div className="border-top p-3 m-2">
               <button className="btn-apply fw-semibold" onClick={() => handleResetFilter()}>Đặt lại</button>
