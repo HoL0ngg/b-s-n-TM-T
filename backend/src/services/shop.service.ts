@@ -56,9 +56,9 @@ class shopService {
                     FROM productreviews
                     JOIN products ON productreviews.product_id = products.id
                     WHERE products.shop_id = shops.id) AS avgRating
-                    
-                FROM 
+                    FROM 
                     shops
+                    WHERE status = 1
                 ORDER BY
                     RAND()`
         ) as [Shop[], any];
