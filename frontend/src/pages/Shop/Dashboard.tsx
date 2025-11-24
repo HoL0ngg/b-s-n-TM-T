@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getShopOrders } from '../../api/order';
 
 interface DashboardStats {
   totalProducts: number;
@@ -49,27 +50,22 @@ export default function Dashboard() {
           const productsData = await productsResponse.json();
           const products = productsData || [];
 
-          // Fetch orders using getShopOrders API
+          // Fetch orders using getShopOrders API (sử dụng hàm từ api/order.ts)
           let orders = [];
           let totalRevenue = 0;
           try {
-            const token = localStorage.getItem('token');
-            const ordersResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/shop/orders`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            });
-
-            if (ordersResponse.ok) {
-              orders = await ordersResponse.json();
-              // Calculate revenue from delivered orders
-              totalRevenue = orders
-                .filter((o: any) => o.status === 'delivered')
-                .reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
-            }
+            orders = await getShopOrders(null);
+            // Calculate revenue from delivered orders
+            totalRevenue = orders
+              .filter((o: any) => o.status.toLowerCase() === 'delivered')
+              .reduce((sum: number, o: any) => {
+                const amount = parseFloat(o.total_amount);
+                return sum + (isNaN(amount) ? 0 : amount);
+              }, 0);
           } catch (err) {
             console.log('Could not fetch orders:', err);
+            orders = [];
+            totalRevenue = 0;
           }
 
           // Fetch categories using the correct API
@@ -95,7 +91,7 @@ export default function Dashboard() {
             totalProducts: products.length,
             activeProducts: products.filter((p: any) => p.status === 1).length,
             totalOrders: orders.length,
-            pendingOrders: orders.filter((o: any) => o.status === 'Pending').length,
+            pendingOrders: orders.filter((o: any) => o.status.toLowerCase() === 'pending').length,
             totalRevenue: totalRevenue,
             totalCategories: categories.length
           });
@@ -129,7 +125,6 @@ export default function Dashboard() {
       {/* Header */}
       <div style={{
         background: 'linear-gradient(135deg, #B7CCFF 0%, #8FB0FF 100%)',
-
         padding: '24px 32px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
       }}>

@@ -16,7 +16,10 @@ class userController {
 
         } catch (err: any) {
             console.log(err);
-            res.status(500).json({ message: 'Lỗi máy chủ nội bộ' });
+            res.status(500).json({
+                message: 'Lỗi máy chủ nội bộ',
+                error: JSON.stringify(err, null, 2)
+            });
         }
     }
 

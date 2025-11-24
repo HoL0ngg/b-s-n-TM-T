@@ -12,8 +12,8 @@ interface Variation {
     price: number;
     stock: number;
     image_url?: string;
-    file?: File;      // <--- MỚI: Lưu file gốc
-    preview?: string; // <--- MỚI: Lưu link preview
+    file?: File;      
+    preview?: string; 
 }
 interface DetailItem {
     key: string;
@@ -35,10 +35,8 @@ export default function EditProduct() {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     
-    // ===== STATE CHO ẢNH CHÍNH =====
     const [imageFile, setImageFile] = useState<File | null>(null); 
     const [imagePreview, setImagePreview] = useState<string>('');   
-    // ===============================
 
     const [shopCateId, setShopCateId] = useState<number | null>(null);
     const [status, setStatus] = useState(1);
@@ -54,14 +52,18 @@ export default function EditProduct() {
         { key: '', value: '' }
     ]);
 
-    // Hàm xử lý URL ảnh thông minh (Dùng chung cho cả ảnh chính và biến thể)
+    // ===== 1. SỬA HÀM XỬ LÝ URL (DÙNG BIẾN MÔI TRƯỜNG) =====
     const getImageUrl = (url: string | undefined) => {
         if (!url) return '';
+        // Nếu là ảnh Blob (vừa chọn từ máy) hoặc Link online -> Giữ nguyên
         if (url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:')) {
             return url;
         }
-        return `http://localhost:5000${url}`;
+        // Nếu là ảnh từ Server -> Nối thêm VITE_API_URL
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        return `${baseUrl}${url}`;
     };
+    // =======================================================
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -93,7 +95,7 @@ export default function EditProduct() {
                 setName(data.name);
                 setDescription(data.description || '');
                 
-                // Gán ảnh chính cũ vào preview
+                // Gán ảnh chính cũ vào preview (Đã qua hàm getImageUrl xử lý)
                 if (data.image_url) {
                     setImagePreview(getImageUrl(data.image_url));
                 }
@@ -111,13 +113,13 @@ export default function EditProduct() {
                     setHasVariation(true);
                     setSelectedAttributeId(data.attribute_id);
                     
-                    // Gán dữ liệu biến thể (bao gồm ảnh cũ)
+                    // Gán dữ liệu biến thể
                     setVariations(data.variations.map((v: any) => ({
                         value: v.value,
                         price: v.price,
                         stock: v.stock,
                         image_url: v.image_url || '',
-                        preview: v.image_url ? getImageUrl(v.image_url) : '' // Tạo preview từ ảnh cũ
+                        preview: v.image_url ? getImageUrl(v.image_url) : '' // Xử lý URL ảnh biến thể
                     })));
                 } else {
                     setHasVariation(false);
@@ -134,7 +136,6 @@ export default function EditProduct() {
         loadProductData();
     }, [productId]);
 
-    // ===== 1. XỬ LÝ CHỌN ẢNH CHÍNH =====
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -147,7 +148,6 @@ export default function EditProduct() {
         }
     };
 
-    // ===== 2. XỬ LÝ CHỌN ẢNH BIẾN THỂ (MỚI) =====
     const handleVariationImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -165,9 +165,7 @@ export default function EditProduct() {
             setVariations(newVariations);
         }
     };
-    // =========================================
 
-    // Cleanup preview url
     useEffect(() => {
         return () => {
             if (imagePreview && imagePreview.startsWith('blob:')) {
@@ -246,21 +244,16 @@ export default function EditProduct() {
                 }
                 formData.append('attribute_id', selectedAttributeId.toString());
                 
-                // 1. Gửi JSON thông tin (LOẠI BỎ FILE KHỎI JSON)
-                // QUAN TRỌNG: Với ảnh biến thể, nếu không có file mới, ta cần giữ lại image_url cũ
                 const validVariations = variations.map(v => ({
                     value: v.value,
                     price: Number(v.price),
                     stock: Number(v.stock),
-                    image_url: v.image_url // Gửi lại URL cũ để backend biết giữ nguyên nếu không có file mới
-                    // Không gửi 'file' hay 'preview' trong JSON này
+                    image_url: v.image_url 
                 }));
                 formData.append('variations', JSON.stringify(validVariations));
 
-                // 2. Gửi CÁC FILE ẢNH BIẾN THỂ MỚI
                 variations.forEach((v, index) => {
                     if (v.file) {
-                        // Key: variation_image_0, variation_image_1 ...
                         formData.append(`variation_image_${index}`, v.file);
                     }
                 });
@@ -322,14 +315,18 @@ export default function EditProduct() {
                                 />
                                 {imagePreview && (
                                     <div className="mt-2 p-2 border rounded bg-light text-center">
+                                        {/* ===== 2. SỬA THẺ IMG CHÍNH (CHỐNG TREO MÁY) ===== */}
                                         <img 
                                             src={imagePreview} 
                                             alt="Preview" 
                                             style={{maxHeight: '200px', maxWidth: '100%', objectFit: 'contain'}}
                                             onError={(e) => {
-                                                e.currentTarget.src = 'https://via.placeholder.com/200x200?text=No+Image';
+                                                const target = e.currentTarget;
+                                                target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='16' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EImage Error%3C/text%3E%3C/svg%3E";
+                                                target.onerror = null;
                                             }}
                                         />
+                                        {/* =============================================== */}
                                     </div>
                                 )}
                             </div>
@@ -390,46 +387,50 @@ export default function EditProduct() {
                                 </div>
                                 {variations.map((variation, index) => (
                                     <div key={index} className="row align-items-center mb-2 p-2 border rounded">
-                                        <div className="col-md-3">
-                                            <label className="form-label">Tên phân loại <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" placeholder="ví dụ: Đỏ" value={variation.value} onChange={(e) => handleVariationChange(index, 'value', e.target.value)} required />
-                                        </div>
-                                        <div className="col-md-2">
-                                            <label className="form-label">Giá <span className="text-danger">*</span></label>
-                                            <input type="number" className="form-control" value={variation.price} onChange={(e) => handleVariationChange(index, 'price', Number(e.target.value))} required />
-                                        </div>
-                                        <div className="col-md-2">
-                                            <label className="form-label">Kho <span className="text-danger">*</span></label>
-                                            <input type="number" className="form-control" value={variation.stock} onChange={(e) => handleVariationChange(index, 'stock', Number(e.target.value))} required />
-                                        </div>
-                                        
-                                        {/* ===== INPUT FILE CHO BIẾN THỂ ===== */}
-                                        <div className="col-md-4">
-                                            <label className="form-label">Ảnh (Tùy chọn)</label>
-                                            <div className="d-flex align-items-center gap-2">
-                                                <input 
-                                                    type="file" 
-                                                    className="form-control form-control-sm" 
-                                                    accept="image/*"
-                                                    onChange={(e) => handleVariationImageChange(index, e)} 
-                                                />
-                                                {variation.preview && (
-                                                    <img 
-                                                        src={variation.preview} 
-                                                        alt="Var" 
-                                                        style={{height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd'}} 
-                                                        onError={(e) => {
-                                                            e.currentTarget.src = 'https://via.placeholder.com/40?text=X';
-                                                        }}
-                                                    />
-                                                )}
+                                            <div className="col-md-3">
+                                                <label className="form-label">Tên phân loại <span className="text-danger">*</span></label>
+                                                <input type="text" className="form-control" placeholder="ví dụ: Đỏ" value={variation.value} onChange={(e) => handleVariationChange(index, 'value', e.target.value)} required />
                                             </div>
-                                        </div>
-                                        {/* =================================== */}
+                                            <div className="col-md-2">
+                                                <label className="form-label">Giá <span className="text-danger">*</span></label>
+                                                <input type="number" className="form-control" value={variation.price} onChange={(e) => handleVariationChange(index, 'price', Number(e.target.value))} required />
+                                            </div>
+                                            <div className="col-md-2">
+                                                <label className="form-label">Kho <span className="text-danger">*</span></label>
+                                                <input type="number" className="form-control" value={variation.stock} onChange={(e) => handleVariationChange(index, 'stock', Number(e.target.value))} required />
+                                            </div>
+                                            
+                                            {/* ===== INPUT FILE CHO BIẾN THỂ ===== */}
+                                            <div className="col-md-4">
+                                                <label className="form-label">Ảnh (Tùy chọn)</label>
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <input 
+                                                        type="file" 
+                                                        className="form-control form-control-sm" 
+                                                        accept="image/*"
+                                                        onChange={(e) => handleVariationImageChange(index, e)} 
+                                                    />
+                                                    {variation.preview && (
+                                                        // ===== 3. SỬA THẺ IMG BIẾN THỂ (CHỐNG TREO MÁY) =====
+                                                        <img 
+                                                            src={variation.preview} 
+                                                            alt="Var" 
+                                                            style={{height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd'}} 
+                                                            onError={(e) => {
+                                                                const target = e.currentTarget;
+                                                                target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='10' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EX%3C/text%3E%3C/svg%3E";
+                                                                target.onerror = null;
+                                                            }}
+                                                        />
+                                                        // ====================================================
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {/* =================================== */}
 
-                                        <div className="col-md-1 d-flex align-items-end">
-                                            <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveVariation(index)} disabled={variations.length <= 1}>X</button>
-                                        </div>
+                                            <div className="col-md-1 d-flex align-items-end">
+                                                <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveVariation(index)} disabled={variations.length <= 1}>X</button>
+                                            </div>
                                     </div>
                                 ))}
                                 <button type="button" className="btn btn-link" onClick={handleAddVariation}>+ Thêm phân loại</button>
