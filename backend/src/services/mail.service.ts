@@ -21,20 +21,18 @@ export async function sendOtpEmail(to: string) {
 
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
+        port: 465, // Changed from 587 to 465 (SSL)
+        secure: true, // Use SSL instead of TLS
         auth: {
             user: ENV.EMAIL_USER,
             pass: ENV.EMAIL_PASS
         },
-        tls: {
-            rejectUnauthorized: false
-        },
-        debug: true, // Enable debug logs
-        logger: true // Enable logger
-    });
-
-    // Verify transporter configuration
+        debug: true,
+        logger: true,
+        connectionTimeout: 10000, // 10 seconds timeout
+        greetingTimeout: 10000,
+        socketTimeout: 10000
+    });    // Verify transporter configuration
     try {
         await transporter.verify();
         console.log('✅ SMTP connection verified');
