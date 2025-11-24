@@ -1,5 +1,6 @@
 import { motion, useAnimation, useMotionValue } from "framer-motion";
 import React, { useRef, useState } from "react";
+import { LuBotMessageSquare } from "react-icons/lu";
 
 interface ChatMessage {
     role: "user" | "bot";
@@ -95,7 +96,9 @@ const ChatbotFloating: React.FC = () => {
                     }}
                     onClick={() => handleButtonClick()}
                 >
-                    💬
+                    <div className="d-flex align-items-center justify-content-center">
+                        <LuBotMessageSquare color="white" size={30} />
+                    </div>
                 </button>
             )}
 
@@ -112,7 +115,7 @@ const ChatbotFloating: React.FC = () => {
                 >
                     {/* Header */}
                     <div className="card-header d-flex justify-content-between align-items-center bg-primary text-white">
-                        <span>ShopBot</span>
+                        <span>Nhân viên BáSàn</span>
                         <button
                             className="btn btn-sm btn-light"
                             onClick={() => setOpen(false)}
