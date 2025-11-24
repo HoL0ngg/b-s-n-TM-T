@@ -13,6 +13,8 @@ import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
 import { createPayment_momo, createPayment_vnpay, handleShipCod } from "../../api/payments";
 import { calculateShippingFee } from "../../api/shipping";
+import Swal from "sweetalert2";
+import { useCart } from "../../context/CartContext";
 
 export const AddressPage = () => {
     const location = useLocation();
@@ -24,6 +26,7 @@ export const AddressPage = () => {
     const [productTotal, setProductTotal] = useState(0);
     const [isShow, setIsShow] = useState(false);
     const { user } = useAuth();
+    const { loadCart } = useCart();
     const [hoveredId, setHoveredId] = useState<number | null>(null);
     const [qrImage, setQrImage] = useState("");
     const [orderId, setOrderId] = useState("");
@@ -229,7 +232,7 @@ export const AddressPage = () => {
             alert("Vui lòng chờ tính phí vận chuyển xong trước khi thanh toán.");
             return;
         }
-        
+
         const checkoutData = {
             total: finalTotal,
             shippingFees: shippingFees,
@@ -241,7 +244,31 @@ export const AddressPage = () => {
         if (selectedMethod === "cod") {
             try {
                 const response = await handleShipCod(checkoutData);
-                if (response.success) alert(response.message);
+                if (response.success) {
+                    // Clear session storage
+                    sessionStorage.removeItem('checkoutItems');
+                    sessionStorage.removeItem('checkoutTotal');
+
+                    // Reload cart to remove purchased items
+                    await loadCart();
+
+                    // Show success modal
+                    const result = await Swal.fire({
+                        icon: "success",
+                        title: "Đặt hàng thành công",
+                        text: "Cảm ơn bạn đã đặt hàng! Chúng tôi sẽ sớm liên hệ với bạn.",
+                        confirmButtonText: "Tiếp tục mua sắm",
+                        confirmButtonColor: "#0d6efd",
+                        width: "500px",
+                        padding: "3em",
+                        backdrop: true
+                    });
+
+                    // Redirect to home page after user clicks the button
+                    if (result.isConfirmed) {
+                        navigate('/', { replace: true });
+                    }
+                }
             } catch (error) {
                 console.log(error);
 
@@ -488,7 +515,7 @@ export const AddressPage = () => {
                             <div>Tổng cộng:</div>
                             <div>{finalTotal.toLocaleString('vi-VN')}đ</div>
                         </div>
-                        <div className="btn btn-primary w-100 p-2" onClick={handlePlaceOrder}>Thanh toán</div>
+                        <div className="btn btn-primary w-100 p-2" onClick={handlePlaceOrder}>ĐẶT HÀNG</div>
                     </div>
                 </div>
                 {/* ... */}

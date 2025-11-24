@@ -8,7 +8,7 @@ export async function sendOtpController(req: Request, res: Response) {
         await sendOtpEmail(email);
         res.json({ success: true, message: "OTP sent to email" });
     } catch (error) {
-        res.status(500).json({ success: false, error: "Failed to send OTP" });
+        res.status(500).json({ success: false, error: "Failed to send OTP" , message: JSON.stringify(error, null, 2)});
     }
 }
 

@@ -10,6 +10,7 @@ import type { UserAdminType } from "../../types/admin/UserTypeAdmin";
 import { fetchSellerByStatusAdmin, updateUserStatusAdmin } from "../../api/admin/usersAdmin";
 import Pagenum from "../../components/Admin/Pagenum";
 import Swal from "sweetalert2";
+import { de } from "date-fns/locale";
 
 const AdminUserManagement: React.FC = () => {
 
@@ -27,18 +28,10 @@ const AdminUserManagement: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const itemsPerPage = 5;
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     useEffect(() => {
         loadUsers();
     }, []);
-
-
-    const filtered = users.filter(
-        (u) =>
-            u.name.toLowerCase().includes(search.toLowerCase()) ||
-            u.email.toLowerCase().includes(search.toLowerCase())
-    );
-
-
 
     const openEditUserModal = (user: UserAdminType) => {
         setModalType("edit");
@@ -96,9 +89,10 @@ const AdminUserManagement: React.FC = () => {
     }
     const loadUsers = async () => {
         try {
-            const res = await fetchSellerByStatusAdmin(statusFilter, currentPage, itemsPerPage, search);
+            const res = await fetchSellerByStatusAdmin(statusFilter, currentPage, itemsPerPage, debouncedSearch);
             setUsers(res.users);
             setTotalPages(res.totalPages);
+
             // console.log("Danh sách người dùng đã tải:", res.users);
             // console.log("Total Pages:", res.totalPages);
             scrollToTop();
@@ -113,8 +107,18 @@ const AdminUserManagement: React.FC = () => {
         });
     }
     useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(search);   // sau 500ms không gõ nữa mới cập nhật
+        }, 500);
+
+        // nếu user tiếp tục gõ thì clear timeout cũ
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [search]);
+    useEffect(() => {
         loadUsers();
-    }, [statusFilter, currentPage, search]);
+    }, [statusFilter, currentPage, debouncedSearch]);
     useEffect(() => {
         setCurrentPage(1);
 
@@ -171,7 +175,7 @@ const AdminUserManagement: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="text-center">
-                            {filtered.map((user) => (
+                            {users.map((user) => (
                                 <tr key={user.phone}>
                                     <td>{user.name}</td>
                                     <td>{user.email}</td>
@@ -211,7 +215,13 @@ const AdminUserManagement: React.FC = () => {
                         </tbody>
                     </table>
                     {/* --- 3. THANH PHÂN TRANG (Không đổi) --- */}
-                    <Pagenum currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                    {users.length > 0 && (
+                        <Pagenum
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    )}
                 </div>
 
             </div>

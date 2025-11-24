@@ -13,7 +13,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgetPassword from "./pages/forgetPassword";
-import Category from "./pages/Category";
+// import Category from "./pages/Category";
+import Category_fixed from "./pages/Category_fixed"; // (Sửa lỗi phân trang)
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import Profile from "./pages/User/Account/Profile";
@@ -62,7 +63,8 @@ function App() {
           <Route path="/login" element={<AuthRedirectRoute><Login /></AuthRedirectRoute>} />
           <Route path="/register" element={<AuthRedirectRoute><Register /></AuthRedirectRoute>} />
           <Route path="/forgot-password" element={<ForgetPassword />} />
-          <Route path="/category/:id" element={<Category />} />
+          <Route path="/category/:id" element={<Category_fixed />} />
+
           <Route path="/search" element={<SearchPage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />

@@ -15,13 +15,35 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [dateFilter, setDateFilter] = useState<'7days' | 'month' | 'year'>('month');
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setIsLoading(true);
-                // Gọi API (không truyền tham số để lấy mặc định tháng này)
-                const data = await apiGetDashboardStats();
+
+                // Tính toán startDate và endDate dựa trên filter
+                const now = new Date();
+                let startDate: string | undefined;
+                let endDate: string | undefined;
+
+                if (dateFilter === '7days') {
+                    // 7 ngày qua
+                    const sevenDaysAgo = new Date(now);
+                    sevenDaysAgo.setDate(now.getDate() - 7);
+                    startDate = sevenDaysAgo.toISOString().split('T')[0];
+                    endDate = now.toISOString().split('T')[0];
+                } else if (dateFilter === 'month') {
+                    // Tháng này
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                    endDate = now.toISOString().split('T')[0];
+                } else if (dateFilter === 'year') {
+                    // Năm nay
+                    startDate = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+                    endDate = now.toISOString().split('T')[0];
+                }
+
+                const data = await apiGetDashboardStats(startDate, endDate);
                 setStats(data);
             } catch (err) {
                 console.error("Lỗi tải thống kê:", err);
@@ -32,20 +54,20 @@ export default function AdminDashboard() {
         };
 
         fetchStats();
-    }, []);
+    }, [dateFilter]);
 
     const renderStatusBadge = (status: string) => {
         const badges: { [key: string]: string } = {
-            delivered: 'bg-success-subtle text-success',
-            pending: 'bg-warning-subtle text-warning',
-            shipping: 'bg-info-subtle text-info',
-            cancelled: 'bg-danger-subtle text-danger',
+            Delivered: 'bg-success-subtle text-success',
+            Pending: 'bg-warning-subtle text-warning',
+            Shipping: 'bg-info-subtle text-info',
+            Cancelled: 'bg-danger-subtle text-danger',
         };
         const labels: { [key: string]: string } = {
-            delivered: 'Hoàn thành',
-            pending: 'Chờ xử lý',
-            shipping: 'Đang giao',
-            cancelled: 'Đã hủy',
+            Delivered: 'Hoàn thành',
+            Pending: 'Chờ xử lý',
+            Shipping: 'Đang giao',
+            Cancelled: 'Đã hủy',
         };
         return (
             <span className={`badge rounded-pill px-3 py-2 ${badges[status] || 'bg-secondary'}`}>
@@ -68,10 +90,15 @@ export default function AdminDashboard() {
                     <p className="text-muted mb-0">Chào mừng trở lại, Admin!</p>
                 </div>
                 <div className="d-flex gap-2">
-                    <select className="form-select form-select-sm shadow-sm" style={{ width: '150px' }}>
-                        <option>7 ngày qua</option>
-                        <option>Tháng này</option>
-                        <option>Năm nay</option>
+                    <select
+                        className="form-select form-select-sm shadow-sm"
+                        style={{ width: '150px' }}
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value as '7days' | 'month' | 'year')}
+                    >
+                        <option value="7days">7 ngày qua</option>
+                        <option value="month">Tháng này</option>
+                        <option value="year">Năm nay</option>
                     </select>
                     <button className="btn btn-primary btn-sm shadow-sm">Xuất báo cáo</button>
                 </div>

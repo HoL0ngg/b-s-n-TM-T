@@ -17,16 +17,29 @@ const Shop = () => {
     const [shopCateList, setShopCateList] = useState<ShopCateType[]>([]);
     const [curShopCate, setCurShopCate] = useState<number>(0);
     const [curState, setCurState] = useState<number>(1);
+    const [showDropdown, setShowDropdown] = useState(false);
 
     const daoCategory = { id: 0, name: 'Dạo' };
-    const fullCateList = useMemo(() => {
-        // Nếu shopCateList chưa có, chỉ trả về mảng có "Dạo"
-        if (!shopCateList) {
-            return [daoCategory];
+
+    const { visibleCategories, moreCategories } = useMemo(() => {
+        if (!shopCateList || shopCateList.length === 0) {
+            return { visibleCategories: [daoCategory], moreCategories: [] };
         }
-        // Nối object "Dạo" vào đầu mảng shopCateList
-        return [daoCategory, ...shopCateList];
-    }, [shopCateList]); // Chỉ tính toán lại khi shopCateList thay đổi
+
+        // If 7 or fewer items (including "Dạo"), show all
+        if (shopCateList.length <= 6) {
+            return {
+                visibleCategories: [daoCategory, ...shopCateList],
+                moreCategories: []
+            };
+        }
+
+        // If more than 6 items, show first 6 + "Xem thêm" dropdown
+        return {
+            visibleCategories: [daoCategory, ...shopCateList.slice(0, 5)],
+            moreCategories: shopCateList.slice(5)
+        };
+    }, [shopCateList]);
 
     useEffect(() => {
         const loadShopAndProduct = async () => {
@@ -134,32 +147,72 @@ const Shop = () => {
                 </div>
                 <div className="row">
                     <div className="d-flex p-0 flex-nowrap text-center position-relative">
-                        {fullCateList?.map((item) => (
+                        {visibleCategories?.map((item) => (
                             <div
-                                // 4. Gán ref cho từng item
                                 key={Number(item.id)}
-                                // Bỏ class border, chỉ giữ lại class active cho text
                                 className={curShopCate === item.id ? "p-3 text-primary position-relative category-component" : "p-3 category-component position-relative"}
                                 style={{ minWidth: '15%', cursor: 'pointer', textAlign: 'center' }}
                                 onClick={() => handleChangeCate(Number(item.id))}
                             >
                                 {item.name}
                                 {curShopCate === item.id && (
-                                    // 3. Sử dụng motion.div và layoutId
                                     <motion.div
                                         className="position-absolute bottom-0 start-0 end-0"
                                         style={{ height: '2px', backgroundColor: '#ff7708' }}
-                                        // layoutId là "chìa khóa" để Framer Motion hiểu đây là cùng một element
                                         layoutId="underline"
-                                        // Tùy chỉnh hiệu ứng (ví dụ: spring)
                                         transition={{ type: 'spring', stiffness: 380, damping: 10 }}
                                     />
                                 )}
                             </div>
                         ))}
-                        {/* <div className="p-3 category-component" style={{ minWidth: '15%' }}>Sản phẩm</div>
-                        <div className="p-3 category-component" style={{ minWidth: '10%' }}>Thêm</div> */}
 
+                        {/* Dropdown "Xem thêm" if there are more categories */}
+                        {moreCategories.length > 0 && (
+                            <div
+                                className="p-3 category-component position-relative dropdown"
+                                style={{ minWidth: '15%', cursor: 'pointer', textAlign: 'center' }}
+                            >
+                                <div
+                                    className="dropdown-toggle"
+                                    onClick={() => setShowDropdown(!showDropdown)}
+                                >
+                                    Xem thêm
+                                </div>
+                                {showDropdown && (
+                                    <div
+                                        className="dropdown-menu show position-absolute"
+                                        style={{
+                                            top: '100%',
+                                            left: 0,
+                                            zIndex: 1000,
+                                            minWidth: '150px'
+                                        }}
+                                    >
+                                        {moreCategories.map((item) => (
+                                            <div
+                                                key={Number(item.id)}
+                                                className={`dropdown-item ${curShopCate === item.id ? 'active' : ''}`}
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => {
+                                                    handleChangeCate(Number(item.id));
+                                                    setShowDropdown(false);
+                                                }}
+                                            >
+                                                {item.name}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                {moreCategories.some(item => item.id === curShopCate) && (
+                                    <motion.div
+                                        className="position-absolute bottom-0 start-0 end-0"
+                                        style={{ height: '2px', backgroundColor: '#ff7708' }}
+                                        layoutId="underline"
+                                        transition={{ type: 'spring', stiffness: 380, damping: 10 }}
+                                    />
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

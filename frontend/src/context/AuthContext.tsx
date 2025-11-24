@@ -53,6 +53,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         })
                         .catch(handleAuthError)
                         .finally(() => setLoading(false));
+                } else {
+                    const restoredAdmin: UserType = {
+                        id: Number(decoded.sub), // Chuyển sub thành number cho khớp UserType
+                        email: "admin@system.com", // Lấy từ token hoặc điền mặc định
+                        role: "admin", // Set cứng role (lưu ý chữ thường để khớp UserType)
+                        avatar_url: "", // Admin mặc định không có avatar thì để rỗng
+                        shop_id: 0,     // Admin không phải shop
+                        phone: 0        // Admin không có sdt trong token thì để 0
+                    };
+
+                    setUser(restoredAdmin);
+                    setLoading(false);
                 }
             }
             catch (err: any) {
