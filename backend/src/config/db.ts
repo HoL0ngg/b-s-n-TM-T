@@ -17,4 +17,8 @@ const pool = mysql.createPool({
     }
 });
 
+pool.on('connection', (connection) => {
+    connection.query("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))");
+});
+
 export default pool;
