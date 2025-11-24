@@ -12,7 +12,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         navigate(`/product/${product.id}`);
     };
 
-    // ===== LOGIC XỬ LÝ ẢNH THÔNG MINH =====
+    // ===== LOGIC XỬ LÝ ẢNH THÔNG MINH (ĐÃ SỬA) =====
     const getImageUrl = (url: string | undefined) => {
         if (!url) return 'https://via.placeholder.com/220x200?text=No+Image';
 
@@ -21,12 +21,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
             return url;
         }
 
-        // 2. Ảnh Upload (Backend) -> Thêm localhost:5000
+        // 2. Ảnh Upload (Backend) -> Dùng biến môi trường VITE_BACKEND_URL
         if (url.startsWith('/uploads')) {
-            return `http://localhost:5000${url}`;
+            // SỬA Ở ĐÂY: Tự động lấy link thật hoặc fallback về localhost
+            const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+            return `${baseUrl}${url}`;
         }
 
-        // 3. Ảnh cũ (Frontend Assets) -> Giữ nguyên (để nó load từ localhost:5173)
+        // 3. Ảnh cũ (Frontend Assets) -> Giữ nguyên
         return url;
     };
     // =======================================
@@ -47,9 +49,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 src={getImageUrl(product.image_url)}
                 alt={product.name}
                 className="card-img-top"
-                style={{ height: "200px" }}
+                style={{ height: "200px", objectFit: "cover" }} // Thêm objectFit để ảnh không bị méo
+                
+                // SỬA Ở ĐÂY: Chống vòng lặp lỗi (Infinite Loop)
                 onError={(e) => {
-                    e.currentTarget.src = 'https://via.placeholder.com/220x200?text=Image+Error';
+                    const target = e.currentTarget;
+                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='200' viewBox='0 0 220 200'%3E%3Crect width='220' height='200' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EImage Error%3C/text%3E%3C/svg%3E";
+                    target.onerror = null;
                 }}
             />
 
