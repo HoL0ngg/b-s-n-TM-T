@@ -121,7 +121,13 @@ export default function Register() {
         }
         try {
             await register(phone, mail, password);
-            alert("Tạo tài khoản thành công");
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'Tạo tài khoản thành công!',
+                showConfirmButton: false, // Ẩn nút OK
+                timer: 1500 // Tự động đóng sau 1.5 giây
+            });
             navigator("/login");
         } catch (err: any) {
             alert(err.response?.data?.message || "Login thất bại");
