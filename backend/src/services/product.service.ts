@@ -427,16 +427,16 @@ class productService {
         if (historyCheck.length > 0) { return this.getRecommendationsFromHistory(user_id); } else { return this.getRandomRecommendations(); }
     }
     getRandomRecommendations = async () => {
-        const [rows] = await pool.query(`SELECT * FROM v_products_list ORDER BY RAND() LIMIT 15`);
+        const [rows] = await pool.query(`SELECT * FROM v_products_list WHERE status = 1 ORDER BY RAND() LIMIT 15`);
         return rows;
     }
     getRecommendationsFromHistory = async (user_id: number) => {
         const [recentViewedIds] = await pool.query<RowDataPacket[]>(`SELECT DISTINCT product_id FROM UserViewHistory WHERE user_id = ? ORDER BY viewed_at DESC LIMIT 5`, [user_id]);
         const productIds = recentViewedIds.map(row => row.product_id);
-        const [relatedCategoryIds] = await pool.query<RowDataPacket[]>(`SELECT DISTINCT generic_id FROM products WHERE id IN (?)`, [productIds]);
+        const [relatedCategoryIds] = await pool.query<RowDataPacket[]>(`SELECT DISTINCT generic_id FROM products WHERE id IN (?) AND status = 1`, [productIds]);
         if (relatedCategoryIds.length === 0) { return this.getRandomRecommendations(); }
         const categoryIds = relatedCategoryIds.map(row => row.generic_id);
-        const [recommendations] = await pool.query(`SELECT * FROM v_products_list WHERE generic_id IN (?) AND id NOT IN (?) ORDER BY RAND() LIMIT 15`, [categoryIds, productIds]);
+        const [recommendations] = await pool.query(`SELECT * FROM v_products_list WHERE generic_id IN (?) AND id NOT IN (?) AND status = 1 ORDER BY RAND() LIMIT 15`, [categoryIds, productIds]);
         return recommendations;
     }
     getProductsByKeyWordService = async (keyword: string): Promise<Product[]> => {

@@ -23,6 +23,7 @@ const ProductDetail = () => {
     });
     const [productDetails, setProductDetails] = useState<ProductDetailsType[]>([]);
     const [attributeOfProductVariants, setAttributeOfProductVariants] = useState<AttributeOfProductVariantsType[]>([]);
+    const [isLoadingReviews, setIsLoadingReviews] = useState<boolean>(false);
     const navigator = useNavigate();
 
     const loadProductDetails = async () => {
@@ -149,10 +150,13 @@ const ProductDetail = () => {
     const reloadReview = async (hihi: number) => {
         if (!product?.id) return;
         try {
+            setIsLoadingReviews(true);
             const data = await fetchReviewByProductId(product.id, hihi);
             setProductReviews(data);
         } catch (err) {
             console.error(err);
+        } finally {
+            setIsLoadingReviews(false);
         }
     };
 
@@ -313,7 +317,13 @@ const ProductDetail = () => {
                         <div className={rating == 1 ? "border border-primary px-4 py-1 text-primary" : "border border-primary px-4 py-1 bg-light"} style={{ cursor: 'pointer' }} onClick={() => handleChange(1)}>1 sao ({formatCount(ratingSummary[1])})</div>
                     </div>
                 </div>
-                {productReviews.length > 0 ? productReviews.map((review) => (
+                {isLoadingReviews ? (
+                    <div className="d-flex justify-content-center align-items-center py-5">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                ) : productReviews.length > 0 ? productReviews.map((review) => (
                     <div className="d-flex p-4" key={review.id}>
                         <div><img src={review?.avatar_url ? review.avatar_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "50px", width: "50px" }} /></div>
                         <div className="ms-4" >
