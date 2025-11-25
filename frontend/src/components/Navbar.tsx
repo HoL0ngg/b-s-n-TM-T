@@ -342,7 +342,8 @@ export default function Navbar() {
                                         <li
                                             key={pro.id}
                                             className="search-item d-flex align-items-center gap-2 p-1"
-                                            onClick={() => {
+                                            onClick={(ev) => {
+                                                ev.preventDefault();
                                                 // navigate product
                                                 setSuppressDropdown(true);
                                                 navigate(`/product/${pro.id}`);
