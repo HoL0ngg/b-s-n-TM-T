@@ -1,27 +1,21 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import ImageSlider from "../components/ImageSlider";
-import { useState } from "react";
 import type { ProductType, ProductImageType, ProductReviewType, ProductReviewSummaryType, ProductDetailsType, AttributeOfProductVariantsType } from "../types/ProductType";
 import type { ShopType } from "../types/ShopType";
 import { fetchProductsByID, fetchProductImg, fetchReviewByProductId, fetchReviewSummaryByProductId, fetchProductDetails, fetchAttributeOfProductVariants } from "../api/products";
 import { fetchShop } from "../api/shop";
 import ProductInfo from "../components/ProductInfo";
 import { StarRating } from "../components/StarRating";
-import { useNavigate } from "react-router-dom";
 import { formatTimeAgo } from "../utils/helper";
 import { IoChevronBackCircleOutline } from "react-icons/io5";
-
 
 const ProductDetail = () => {
     const [images, setImages] = useState<ProductImageType[]>([]);
     const [product, setProduct] = useState<ProductType>();
     const { id } = useParams<{ id: string | undefined }>();
     const [productReviews, setProductReviews] = useState<ProductReviewType[]>([]);
-
-    // Sửa state để chấp nhận `null`
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
     const [shop, setShop] = useState<ShopType>();
     const [rating, setRating] = useState<number>(0);
     const [ratingSummary, setRatingSummary] = useState<ProductReviewSummaryType>({
@@ -82,7 +76,6 @@ const ProductDetail = () => {
                 const processedImages = data.map(img => {
                     if (img.image_url && img.image_url.startsWith('/uploads')) {
                         // SỬA TẠI ĐÂY: Lấy link từ biến môi trường
-                        // (Nếu nhóm trưởng đã chốt VITE_API_URL thì dùng cái này)
                         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                         return { ...img, image_url: `${baseUrl}${img.image_url}` };
                     }
@@ -109,7 +102,39 @@ const ProductDetail = () => {
 
     }, [id]);
 
-    // useMemo giữ nguyên logic sửa trước đó
+    // --- XỬ LÝ ẢNH TRONG PHẦN MÔ TẢ (Rich Text) ---
+    useEffect(() => {
+        // Tìm vùng chứa mô tả
+        const descContainer = document.querySelector('.product-description');
+        if (descContainer) {
+            const imgs = descContainer.querySelectorAll('img');
+            
+            imgs.forEach((img) => {
+                const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+                // 1. Sửa lại đường dẫn nếu nó đang trỏ sai về localhost (khi lên production)
+                // Logic: Nếu src chứa localhost:5000 mà web đang chạy domain thật -> thay thế
+                if (img.src.includes('localhost:5000') && window.location.hostname !== 'localhost') {
+                     img.src = img.src.replace('http://localhost:5000', apiBaseUrl);
+                }
+                // Hoặc nếu ảnh là đường dẫn tương đối (/uploads/...) mà trình duyệt tự thêm domain frontend vào
+                else if (img.getAttribute('src')?.startsWith('/uploads')) {
+                    img.src = `${apiBaseUrl}${img.getAttribute('src')}`;
+                }
+
+                // 2. Bắt lỗi nếu ảnh chết (do server xóa file) -> Thay bằng ảnh xám
+                img.onerror = function() {
+                    const target = this as HTMLImageElement; 
+                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='12' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EError%3C/text%3E%3C/svg%3E";
+                    target.onerror = null; // Ngắt vòng lặp (an toàn tuyệt đối)
+                    target.style.border = "1px dashed #ccc"; // Viền nhẹ cho đẹp
+                }
+            });
+        }
+    }, [product?.description]); 
+    // ----------------------------------------------
+
+    // useMemo giữ nguyên
     const mainProductImage = useMemo(() => {
         if (!images || images.length === 0) {
             return null;
@@ -239,7 +264,6 @@ const ProductDetail = () => {
                     <div className="p-4 border rounded">
                         <div className="d-flex align-items-center">
                             <div className="">
-                                {/* Cập nhật link ảnh shop nếu cần thiết, tạm thời giữ nguyên toString() */}
                                 <img src={shop?.logo_url ? shop.logo_url.toString() : undefined} alt="" className="rounded-circle" style={{ height: "70px", width: "70px" }} />
                             </div>
                             <div className="ms-3">
@@ -268,6 +292,7 @@ const ProductDetail = () => {
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <div className="fw-bold fs-4">Mô tả sản phẩm</div>
+                {/* THÊM CLASS ĐỂ JS TÌM THẤY ẢNH */}
                 <div className="product-description"> 
                     <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
                 </div>

@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { checkShopOwner } from "../middleware/auth.middleware";
+// SỬA: Import thêm verifyToken từ auth.middleware
+import { checkShopOwner, verifyToken } from "../middleware/auth.middleware"; 
 import { uploadEditorImage } from "../config/multer";
 import uploadController from "../controllers/upload.controller";
 
 const UploadRouter = Router();
 
-UploadRouter.post("/image", checkShopOwner, uploadEditorImage, uploadController.handleEditorImage);
+// SỬA: Thêm verifyToken vào vị trí đầu tiên của chuỗi middleware
+UploadRouter.post("/image", verifyToken, checkShopOwner, uploadEditorImage, uploadController.handleEditorImage);
 
 export default UploadRouter;
