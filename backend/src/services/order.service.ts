@@ -269,7 +269,7 @@ class OrderService {
         // Truy vấn lấy dữ liệu
         const dataSql = `
             SELECT
-                o.order_id, o.order_date, o.total_amount, o.status, o.payment_method, o.payment_status,
+                o.order_id, o.order_date, o.total_amount, o.status, o.payment_method,
                 s.name as shop_name
             FROM orders o
             JOIN shops s ON o.shop_id = s.id
