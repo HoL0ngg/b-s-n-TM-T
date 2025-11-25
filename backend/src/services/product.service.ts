@@ -90,18 +90,18 @@ class productService {
         );
         return rows as Product[];
     }
-  
- 
+
+
     getProductOnShopIdService = async (shopId: number, sort: string, cate: number, isManager: boolean = false) => {
         let orderBy = "id DESC";
         if (sort === "popular") { orderBy = "hot_score DESC"; }
         else if (sort === "new") { orderBy = "created_at DESC"; }
         else if (sort === "hot") { orderBy = "sold_count DESC"; }
 
-    
+
         let whereClause = "WHERE shop_id = ?";
-        
- 
+
+
         if (!isManager) {
             whereClause += " AND status = 1";
         }
@@ -111,7 +111,7 @@ class productService {
             whereClause += " AND shop_cate_id = ?";
             params.push(cate);
         }
-        
+
         const [rows] = await pool.query(`SELECT * FROM v_products_list ${whereClause} ORDER BY ${orderBy}`, params);
         return rows;
     };
@@ -181,11 +181,11 @@ class productService {
     // --- 1. HÀM TẠO SẢN PHẨM (Đã sửa: Mặc định status = 0) ---
     createProductService = async (productData: any) => {
         const { shop_id, name, description, category_id, shop_cate_id, image_url, attribute_id, variations, details } = productData;
-        
+
         // Tính toán giá cơ bản (lấy giá thấp nhất trong các biến thể)
         let base_price = productData.base_price || 0;
-        if (variations && variations.length > 0) { 
-            base_price = Math.min(...variations.map((v: any) => v.price)); 
+        if (variations && variations.length > 0) {
+            base_price = Math.min(...variations.map((v: any) => v.price));
         }
 
         const connection = await pool.getConnection();
@@ -193,37 +193,37 @@ class productService {
             await connection.beginTransaction();
 
             // SỬA ĐỔI: Mặc định status = 0 (Pending) khi tạo mới
-            const initialStatus = 0; 
+            const initialStatus = 0;
 
             const [result] = await connection.query<ResultSetHeader>(
-                `INSERT INTO products (shop_id, name, description, base_price, generic_id, shop_cate_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`, 
+                `INSERT INTO products (shop_id, name, description, base_price, generic_id, shop_cate_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
                 [shop_id, name, description || null, base_price, category_id || null, shop_cate_id || null, initialStatus]
             );
-            
+
             const productId = result.insertId;
 
             // Thêm ảnh chính
-            if (image_url) { 
-                await connection.query(`INSERT INTO productimages (product_id, image_url, is_main) VALUES (?, ?, 1)`, [productId, image_url]); 
+            if (image_url) {
+                await connection.query(`INSERT INTO productimages (product_id, image_url, is_main) VALUES (?, ?, 1)`, [productId, image_url]);
             }
 
             // Thêm biến thể
             if (variations && variations.length > 0 && attribute_id) {
                 for (const variation of variations) {
                     const [variantResult] = await connection.query<ResultSetHeader>(
-                        `INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`, 
+                        `INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`,
                         [productId, variation.price, variation.stock, variation.sku || null, variation.image_url || null]
                     );
                     const variantId = variantResult.insertId;
                     await connection.query(
-                        `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`, 
+                        `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`,
                         [variantId, attribute_id, variation.value]
                     );
                 }
             } else {
                 // Trường hợp không có biến thể (sản phẩm đơn)
                 await connection.query<ResultSetHeader>(
-                    `INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`, 
+                    `INSERT INTO productvariants (product_id, price, stock) VALUES (?, ?, ?)`,
                     [productId, base_price, productData.stock || 0]
                 );
             }
@@ -238,7 +238,7 @@ class productService {
 
             // Trả về kết quả
             const [product] = await pool.query(
-                `SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`, 
+                `SELECT p.*, pi.image_url FROM products p LEFT JOIN productimages pi ON p.id = pi.product_id AND pi.is_main = 1 WHERE p.id = ?`,
                 [productId]
             ) as [Product[], any];
             return product[0];
@@ -258,8 +258,8 @@ class productService {
 
         // Tính toán lại giá cơ bản
         let base_price = productData.base_price || 0;
-        if (variations && variations.length > 0) { 
-            base_price = Math.min(...variations.map((v: any) => v.price)); 
+        if (variations && variations.length > 0) {
+            base_price = Math.min(...variations.map((v: any) => v.price));
         }
 
         const connection = await pool.getConnection();
@@ -269,22 +269,22 @@ class productService {
             // === BẮT ĐẦU LOGIC XỬ LÝ STATUS ===
             // Bước 1: Lấy status hiện tại của sản phẩm
             const [currentProd] = await connection.query<RowDataPacket[]>(
-                "SELECT status FROM products WHERE id = ?", 
+                "SELECT status FROM products WHERE id = ?",
                 [productId]
             );
-            
+
             let newStatus = 1; // Giá trị mặc định an toàn
-            
+
             if (currentProd.length > 0) {
                 const currentStatus = currentProd[0].status;
-                
+
                 // Case A: Nếu đang bị TỪ CHỐI (-1) -> Khi sửa xong sẽ về CHỜ DUYỆT (0)
                 if (currentStatus === -1) {
                     newStatus = 0;
-                } 
+                }
                 // Case B: Nếu đang BỊ KHÓA (-2) -> Giữ nguyên khóa (-2), không cho shop mở lại
                 else if (currentStatus === -2) {
-                     newStatus = -2; 
+                    newStatus = -2;
                 }
                 // Case C: Các trạng thái bình thường (0, 1, 3)
                 else {
@@ -374,7 +374,7 @@ class productService {
             connection.release();
         }
     };
-  
+
     deleteProductService = async (productId: number) => {
         const connection = await pool.getConnection();
         try {
@@ -443,15 +443,40 @@ class productService {
     getNewProducts = async () => {
         const sql = `
             SELECT * FROM (
-                SELECT products.id, products.name, products.description, products.base_price, products.shop_id, productimages.image_url, products.sold_count, generic.name as category_name 
-                FROM products 
-                JOIN productimages on productimages.product_id = products.id 
-                JOIN generic on generic.id = products.generic_id 
-                WHERE products.status = 1 -- <--- THÊM DÒNG NÀY
-                GROUP BY products.id 
-                ORDER BY products.updated_at DESC 
+                SELECT 
+                    p.id, 
+                    p.name, 
+                    p.description, 
+                    p.shop_id, 
+                    p.sold_count,
+                    g.name as category_name,
+                    MIN(pv.price) as base_price,
+                    MAX(CASE WHEN pi_img.is_main = 1 THEN pi_img.image_url END) as image_url,
+                    MAX(CASE 
+                        WHEN promo.id IS NOT NULL THEN promo_items.discount_value 
+                        ELSE NULL 
+                    END) AS discount_percentage,
+                    MAX(CASE
+                        WHEN promo.id IS NOT NULL AND promo_items.discount_value IS NOT NULL 
+                        THEN ROUND(MIN(pv.price) * (1 - (promo_items.discount_value / 100)))
+                        ELSE NULL 
+                    END) AS sale_price,
+                    p.updated_at
+                FROM products p
+                JOIN generic g ON g.id = p.generic_id
+                LEFT JOIN productimages pi_img ON pi_img.product_id = p.id
+                LEFT JOIN productvariants pv ON pv.product_id = p.id
+                LEFT JOIN promotion_items promo_items ON pv.id = promo_items.product_variant_id
+                LEFT JOIN promotions promo ON promo_items.promotion_id = promo.id
+                    AND promo.is_active = 1
+                    AND NOW() BETWEEN promo.start_date AND promo.end_date
+                WHERE p.status = 1
+                GROUP BY p.id, p.name, p.description, p.shop_id, p.sold_count, g.name, p.updated_at
+                ORDER BY p.updated_at DESC
                 LIMIT 100
-            ) AS newest_products ORDER BY RAND() LIMIT 15;
+            ) AS newest_products 
+            ORDER BY RAND() 
+            LIMIT 15;
         `;
         const [rows] = await pool.query(sql);
         return rows;
@@ -459,16 +484,42 @@ class productService {
     getHotPorducts = async () => {
         const sql = `
             SELECT * FROM (
-                SELECT products.id, products.name, products.description, products.base_price, products.shop_id, productimages.image_url, products.sold_count, generic.name as category_name 
-                FROM products 
-                JOIN productimages on productimages.product_id = products.id 
-                JOIN generic on generic.id = products.generic_id 
-                LEFT JOIN productreviews on productreviews.product_id = products.id 
-                WHERE products.status = 1 -- <--- THÊM DÒNG NÀY
-                GROUP BY products.id 
-                ORDER BY (sold_count * 0.6 + IFNULL(AVG(rating), 0) * 0.4) DESC 
+                SELECT 
+                    p.id, 
+                    p.name, 
+                    p.description, 
+                    p.shop_id, 
+                    p.sold_count,
+                    g.name as category_name,
+                    MIN(pv.price) as base_price,
+                    MAX(CASE WHEN pi_img.is_main = 1 THEN pi_img.image_url END) as image_url,
+                    MAX(CASE 
+                        WHEN promo.id IS NOT NULL THEN promo_items.discount_value 
+                        ELSE NULL 
+                    END) AS discount_percentage,
+                    MAX(CASE
+                        WHEN promo.id IS NOT NULL AND promo_items.discount_value IS NOT NULL 
+                        THEN ROUND(MIN(pv.price) * (1 - (promo_items.discount_value / 100)))
+                        ELSE NULL 
+                    END) AS sale_price,
+                    IFNULL(AVG(pr.rating), 0) as avg_rating,
+                    (p.sold_count * 0.6 + IFNULL(AVG(pr.rating), 0) * 0.4) as hot_score
+                FROM products p
+                JOIN generic g ON g.id = p.generic_id
+                LEFT JOIN productimages pi_img ON pi_img.product_id = p.id
+                LEFT JOIN productvariants pv ON pv.product_id = p.id
+                LEFT JOIN productreviews pr ON pr.product_id = p.id
+                LEFT JOIN promotion_items promo_items ON pv.id = promo_items.product_variant_id
+                LEFT JOIN promotions promo ON promo_items.promotion_id = promo.id
+                    AND promo.is_active = 1
+                    AND NOW() BETWEEN promo.start_date AND promo.end_date
+                WHERE p.status = 1
+                GROUP BY p.id, p.name, p.description, p.shop_id, p.sold_count, g.name
+                ORDER BY hot_score DESC
                 LIMIT 20
-            ) AS newest_products ORDER BY RAND() LIMIT 15;
+            ) AS hot_products 
+            ORDER BY RAND() 
+            LIMIT 15;
         `;
         const [rows] = await pool.query(sql);
         return rows;
@@ -480,13 +531,13 @@ class productService {
         limit: number = 12,
         orderBy: string = "",
         orderParams: any[] = []
-      ) => {
+    ) => {
         return paginationProducts(whereClause, params, page, limit, orderBy, orderParams);
-        };
+    };
 
     getRelatedCategoriesByKeyword = async (keyword: string): Promise<CategoryCount[]> => {
         if (!keyword || keyword.trim().length === 0) return [];
-        
+
         const like = `%${keyword.trim()}%`;
         const sql = `
             SELECT gen.id, gen.name, COUNT(DISTINCT p.id) AS match_count
@@ -534,52 +585,52 @@ class productService {
         return product;
     };
 
-   // --- THAY THẾ TOÀN BỘ HÀM NÀY ---
-   updateProductStatusService = async (productId: number, status: number, reason?: string) => {
-    let sql = "";
-    let params: any[] = [];
+    // --- THAY THẾ TOÀN BỘ HÀM NÀY ---
+    updateProductStatusService = async (productId: number, status: number, reason?: string) => {
+        let sql = "";
+        let params: any[] = [];
 
-    // LOGIC MỚI: Gộp các trạng thái "Sạch" (0: Pending, 1: Active, 3: Hidden)
-    // Khi chuyển sang các trạng thái này, ta cập nhật status và XÓA các lý do từ chối/ban cũ (nếu có)
-    if (status === 1 || status === 3 || status === 0) {
-        sql = `
+        // LOGIC MỚI: Gộp các trạng thái "Sạch" (0: Pending, 1: Active, 3: Hidden)
+        // Khi chuyển sang các trạng thái này, ta cập nhật status và XÓA các lý do từ chối/ban cũ (nếu có)
+        if (status === 1 || status === 3 || status === 0) {
+            sql = `
             UPDATE products
             SET status = ?, reject_reason = NULL, ban_reason = NULL
             WHERE id = ?
         `;
-        params = [status, productId];
-    } 
-    // Logic cho Từ chối (-1)
-    else if (status === -1) {
-        sql = `
+            params = [status, productId];
+        }
+        // Logic cho Từ chối (-1)
+        else if (status === -1) {
+            sql = `
             UPDATE products
             SET status = ?, reject_reason = ?, ban_reason = NULL
             WHERE id = ?
         `;
-        params = [status, reason || null, productId];
-    }
-    // Logic cho Khóa (-2)
-    else if (status === -2) {
-         sql = `
+            params = [status, reason || null, productId];
+        }
+        // Logic cho Khóa (-2)
+        else if (status === -2) {
+            sql = `
             UPDATE products
             SET status = ?, ban_reason = ?, reject_reason = NULL
             WHERE id = ?
         `;
-        params = [status, reason || null, productId];
-    } 
-    else {
-        // Status không hợp lệ
-        return false;
-    }
+            params = [status, reason || null, productId];
+        }
+        else {
+            // Status không hợp lệ
+            return false;
+        }
 
-    try {
-        const [result] = await pool.query<ResultSetHeader>(sql, params);
-        return result.affectedRows > 0;
-    } catch (error) {
-        console.error("Lỗi cập nhật status:", error);
-        return false;
-    }
-};
+        try {
+            const [result] = await pool.query<ResultSetHeader>(sql, params);
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.error("Lỗi cập nhật status:", error);
+            return false;
+        }
+    };
 
     // =================================================================
     // CÁC HÀM MỚI (LẤY TỪ NHÁNH `main` CỦA ĐỒNG ĐỘI)
@@ -742,7 +793,7 @@ class productService {
         let query = `
             WHERE v_products_list.shop_id = ? 
             AND v_products_list.status = 1
-        `; 
+        `;
         // (Nếu view của bạn có cột shop_status để check shop có bị khóa không thì thêm: AND v_products_list.shop_status = 1)
 
         const parameters: any[] = [shopId];
