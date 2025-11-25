@@ -33,7 +33,7 @@ export default function HomeProduct() {
                     if (Array.isArray(data)) {
                         setProducts(data);
                     } else if (data && Array.isArray(data.products)) {
-                         setProducts(data.products);
+                        setProducts(data.products);
                     } else {
                         setProducts([]);
                     }
@@ -83,12 +83,25 @@ export default function HomeProduct() {
                 ))}
             </div>
             <div className="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4 mt-2">
-                {loading && (
-                    <div className="loader-overlay">
-                        <div className="spinner"></div>
-                    </div>
-                )}
-                {products.length > 0 ? (
+                {loading ? (
+                    // Skeleton loading cards
+                    Array.from({ length: 15 }).map((_, index) => (
+                        <div className="col" key={index}>
+                            <div className="card h-100 border-0 shadow-sm">
+                                <div className="placeholder-glow">
+                                    <div className="placeholder bg-secondary w-100" style={{ height: '200px', borderRadius: '8px 8px 0 0' }}></div>
+                                </div>
+                                <div className="card-body">
+                                    <div className="placeholder-glow">
+                                        <div className="placeholder bg-secondary col-12 mb-2"></div>
+                                        <div className="placeholder bg-secondary col-8 mb-3"></div>
+                                        <div className="placeholder bg-secondary col-6"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                ) : products.length > 0 ? (
                     products.map((product) => (
                         <div className="col" key={product.id}>
                             <ProductCard product={product} />
