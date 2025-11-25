@@ -298,7 +298,7 @@ class productService {
             // 1. Update thông tin chung (Cập nhật status mới và Reset lý do từ chối)
             await connection.query(
                 `UPDATE products 
-                 SET name = ?, description = ?, base_price = ?, generic_id = ?, shop_cate_id = ?, 
+                 SET name = ?, description = ?, base_price = ?, generic_id = COALESCE(?, generic_id), shop_cate_id = ?, 
                      status = ?, reject_reason = NULL, updated_at = NOW() 
                  WHERE id = ?`,
                 [name, description || null, base_price, category_id || null, shop_cate_id || null, newStatus, productId]
