@@ -180,7 +180,7 @@ class productService {
 
     // --- 1. HÀM TẠO SẢN PHẨM (Đã sửa: Mặc định status = 0) ---
     createProductService = async (productData: any) => {
-        const { shop_id, name, description, category_id, shop_cate_id, image_url, attribute_id, variations, details } = productData;
+        const { shop_id, name, description, category_id, shop_cate_id, image_url, variations, details } = productData;
 
         // Tính toán giá cơ bản (lấy giá thấp nhất trong các biến thể)
         let base_price = productData.base_price || 0;
@@ -192,7 +192,7 @@ class productService {
         try {
             await connection.beginTransaction();
 
-            // SỬA ĐỔI: Mặc định status = 0 (Pending) khi tạo mới
+            // Mặc định status = 0 (Pending) khi tạo mới
             const initialStatus = 0;
 
             const [result] = await connection.query<ResultSetHeader>(
@@ -207,18 +207,37 @@ class productService {
                 await connection.query(`INSERT INTO productimages (product_id, image_url, is_main) VALUES (?, ?, 1)`, [productId, image_url]);
             }
 
-            // Thêm biến thể
-            if (variations && variations.length > 0 && attribute_id) {
+            // XỬ LÝ BIẾN THỂ (Hỗ trợ 2 cấp)
+            if (variations && variations.length > 0) {
+                // Lấy ID của 2 nhóm thuộc tính từ dữ liệu gửi lên (attribute1_id, attribute2_id)
+                const attr1_id = productData.attribute1_id;
+                const attr2_id = productData.attribute2_id;
+
                 for (const variation of variations) {
+                    // 1. Tạo dòng trong bảng productvariants (SKU)
                     const [variantResult] = await connection.query<ResultSetHeader>(
                         `INSERT INTO productvariants (product_id, price, stock, sku, image_url) VALUES (?, ?, ?, ?, ?)`,
                         [productId, variation.price, variation.stock, variation.sku || null, variation.image_url || null]
                     );
                     const variantId = variantResult.insertId;
-                    await connection.query(
-                        `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`,
-                        [variantId, attribute_id, variation.value]
-                    );
+
+                    // 2. Lưu giá trị thuộc tính Cấp 1 (Ví dụ: Màu sắc = Đỏ)
+                    // Frontend gửi lên: value1
+                    if (attr1_id && variation.value1) {
+                        await connection.query(
+                            `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`,
+                            [variantId, attr1_id, variation.value1]
+                        );
+                    }
+
+                    // 3. Lưu giá trị thuộc tính Cấp 2 (Ví dụ: Size = XL) - Nếu có
+                    // Frontend gửi lên: value2
+                    if (attr2_id && variation.value2) {
+                        await connection.query(
+                            `INSERT INTO variantoptionvalues (variant_id, attribute_id, value) VALUES (?, ?, ?)`,
+                            [variantId, attr2_id, variation.value2]
+                        );
+                    }
                 }
             } else {
                 // Trường hợp không có biến thể (sản phẩm đơn)
