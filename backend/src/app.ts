@@ -30,10 +30,11 @@ const app = express();
 app.use(bodyParser.json());
 app.use(express.json());
 
-// ===== 1. CẤU HÌNH THƯ MỤC TĨNH (PUBLIC) =====
-app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
-app.use(express.static(path.join(__dirname, '../public')));
-// =============================================
+// ===== SỬA: CẤU HÌNH THƯ MỤC TĨNH (CHUẨN PRODUCTION) =====
+// Sử dụng process.cwd() để lấy gốc dự án -> Luôn đúng dù build ra thư mục dist
+app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
+app.use(express.static(path.join(process.cwd(), 'public')));
+// ==========================================================
 
 app.use(cors({
     origin: [
