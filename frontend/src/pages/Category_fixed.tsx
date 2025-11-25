@@ -181,8 +181,7 @@ const Category_fixed = () => {
     const handleSort = (val: string) => {
         setIsUserAction(true);
         setSort(val);
-        // Không cần reset page khi sort, nhưng thường user thích về page 1
-        // setPage(1); 
+        setPage(1);
     };
 
     const handlePageChange = (newPage: number) => {
