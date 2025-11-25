@@ -5,11 +5,12 @@ import type { ShopCategoryType } from '../../api/shopCategory';
 import { fetchProductAttributes, createProduct } from '../../api/products';
 import type { AttributeType } from '../../api/products';
 import { useAuth } from '../../context/AuthContext';
-// SỬA 1: Import bộ soạn thảo văn bản
 import TiptapEditor from '../../components/TipTapEditor';
 
-interface Variation {
-    value: string;
+// Type cho biến thể cuối cùng gửi đi
+interface FinalVariation {
+    value1: string; // Giá trị cấp 1 (vd: Đỏ)
+    value2?: string; // Giá trị cấp 2 (vd: XL)
     price: number;
     stock: number;
     image_url?: string;
@@ -17,10 +18,7 @@ interface Variation {
     preview?: string; 
 }
 
-interface DetailItem {
-    key: string;
-    value: string;
-}
+interface DetailItem { key: string; value: string; }
 
 export default function AddProduct() {
     const navigate = useNavigate();
@@ -29,39 +27,39 @@ export default function AddProduct() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Data tĩnh
     const [shopCategories, setShopCategories] = useState<ShopCategoryType[]>([]);
     const [attributes, setAttributes] = useState<AttributeType[]>([]);
 
+    // Form cơ bản
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
-
     const [shopCateId, setShopCateId] = useState<number | null>(null);
     const [status, setStatus] = useState(1);
 
+    // ===== LOGIC PHÂN LOẠI 2 CẤP (Shopee Style) =====
     const [hasVariation, setHasVariation] = useState(false);
-    const [selectedAttributeId, setSelectedAttributeId] = useState<number | null>(null);
-    const [variations, setVariations] = useState<Variation[]>([
-        { value: '', price: 0, stock: 0, image_url: '' }
-    ]);
+    
+    // Cấp 1 (Ví dụ: Màu sắc)
+    const [tier1Id, setTier1Id] = useState<number | null>(null);
+    const [tier1Input, setTier1Input] = useState(''); // Input tạm
+    const [tier1Values, setTier1Values] = useState<string[]>([]); // Danh sách: [Đỏ, Xanh]
+
+    // Cấp 2 (Ví dụ: Size)
+    const [tier2Id, setTier2Id] = useState<number | null>(null);
+    const [tier2Input, setTier2Input] = useState('');
+    const [tier2Values, setTier2Values] = useState<string[]>([]); // Danh sách: [S, M]
+
+    // Bảng kết quả biến thể (Cartesian Product)
+    const [variations, setVariations] = useState<FinalVariation[]>([]);
+    
+    // =================================================
+
     const [basePrice, setBasePrice] = useState(0);
     const [baseStock, setBaseStock] = useState(0);
-
-    const [details, setDetails] = useState<DetailItem[]>([
-        { key: '', value: '' }
-    ]);
-
-    // Hàm xử lý URL ảnh
-    const getImageUrl = (url: string | undefined) => {
-        if (!url) return '';
-        if (url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:')) {
-            return url;
-        }
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        return `${baseUrl}${url}`;
-    };
+    const [details, setDetails] = useState<DetailItem[]>([{ key: '', value: '' }]);
 
     useEffect(() => {
         const fetchShopId = async () => {
@@ -70,159 +68,140 @@ export default function AddProduct() {
                 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                 const response = await fetch(`${baseUrl}/api/shops/by-owner/${user.id}`);
                 const shopData = await response.json();
-                if (shopData && shopData.id) {
-                    setShopId(shopData.id);
-                }
+                if (shopData && shopData.id) setShopId(shopData.id);
             } catch (e) { console.error(e); }
         };
-        const loadInitialData = async () => {
-            try {
-                const [categories, attrs] = await Promise.all([
-                    fetchShopCategories(),
-                    fetchProductAttributes()
-                ]);
-                setShopCategories(categories || []);
-                setAttributes(attrs || []);
-            } catch (err) {
-                setError("Không thể tải dữ liệu danh mục hoặc thuộc tính.");
-            }
+        const loadData = async () => {
+            const [cats, attrs] = await Promise.all([fetchShopCategories(), fetchProductAttributes()]);
+            setShopCategories(cats || []);
+            setAttributes(attrs || []);
         };
         fetchShopId();
-        loadInitialData();
+        loadData();
     }, [user]);
 
+    // --- XỬ LÝ ẢNH CHÍNH ---
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
+        if (e.target.files?.[0]) {
             const file = e.target.files[0];
-            if (!file.type.startsWith('image/')) {
-                alert('Vui lòng chọn file ảnh!');
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Ảnh quá lớn (Max 5MB)!');
-                return;
-            }
             setImageFile(file);
-            const objectUrl = URL.createObjectURL(file);
-            setImagePreview(objectUrl);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
-    const handleVariationImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-
-            if (!file.type.startsWith('image/')) {
-                alert('Vui lòng chọn file ảnh!');
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Ảnh quá lớn (Max 5MB)!');
-                return;
-            }
-
-            const objectUrl = URL.createObjectURL(file);
-
-            const newVariations = [...variations];
-            newVariations[index] = {
-                ...newVariations[index],
-                file: file,
-                preview: objectUrl
-            };
-            setVariations(newVariations);
-        }
-    };
-
+    // --- LOGIC TẠO BẢNG BIẾN THỂ (TỰ ĐỘNG) ---
     useEffect(() => {
-        return () => {
-            if (imagePreview) URL.revokeObjectURL(imagePreview);
-            variations.forEach(v => {
-                if (v.preview) URL.revokeObjectURL(v.preview);
+        if (!hasVariation) return;
+
+        // Tạo tổ hợp: (List 1) x (List 2)
+        const newVariations: FinalVariation[] = [];
+
+        if (tier1Values.length > 0) {
+            tier1Values.forEach(v1 => {
+                if (tier2Values.length > 0) {
+                    // Nếu có cả cấp 2 -> Tạo tổ hợp (Đỏ-S, Đỏ-M...)
+                    tier2Values.forEach(v2 => {
+                        // Tìm xem biến thể này đã có dữ liệu cũ chưa (để giữ lại giá/kho/ảnh)
+                        const existing = variations.find(v => v.value1 === v1 && v.value2 === v2);
+                        newVariations.push({
+                            value1: v1,
+                            value2: v2,
+                            price: existing ? existing.price : 0,
+                            stock: existing ? existing.stock : 0,
+                            file: existing?.file,
+                            preview: existing?.preview
+                        });
+                    });
+                } else {
+                    // Nếu chỉ có cấp 1
+                    const existing = variations.find(v => v.value1 === v1 && !v.value2);
+                    newVariations.push({
+                        value1: v1,
+                        price: existing ? existing.price : 0,
+                        stock: existing ? existing.stock : 0,
+                        file: existing?.file,
+                        preview: existing?.preview
+                    });
+                }
             });
         }
-    }, [imagePreview, variations]);
-
-    const handleVariationChange = (index: number, field: keyof Variation, value: string | number) => {
-        const newVariations = [...variations];
-        (newVariations[index] as any)[field] = value;
+        // Chỉ update nếu số lượng thay đổi (để tránh loop vô tận, logic đơn giản)
+        // Ở đây ta set luôn để cập nhật realtime
         setVariations(newVariations);
-    };
-    const handleAddVariation = () => {
-        setVariations([...variations, { value: '', price: 0, stock: 0, image_url: '' }]);
-    };
-    const handleRemoveVariation = (index: number) => {
-        if (variations.length <= 1) return;
-        const newVariations = variations.filter((_, i) => i !== index);
-        setVariations(newVariations);
-    };
+    }, [tier1Values, tier2Values, hasVariation]); // Chạy lại khi danh sách giá trị thay đổi
 
-    const handleDetailChange = (index: number, field: keyof DetailItem, value: string) => {
-        const newDetails = [...details];
-        newDetails[index][field] = value;
-        setDetails(newDetails);
-    };
-    const handleAddDetail = () => {
-        setDetails([...details, { key: '', value: '' }]);
-    };
-    const handleRemoveDetail = (index: number) => {
-        if (details.length <= 1) {
-            setDetails([{ key: '', value: '' }]);
-            return;
+    // Hàm thêm giá trị vào danh sách (khi nhấn Enter hoặc nút Thêm)
+    const addValue = (tier: 1 | 2) => {
+        if (tier === 1) {
+            if (tier1Input.trim() && !tier1Values.includes(tier1Input.trim())) {
+                setTier1Values([...tier1Values, tier1Input.trim()]);
+                setTier1Input('');
+            }
+        } else {
+            if (tier2Input.trim() && !tier2Values.includes(tier2Input.trim())) {
+                setTier2Values([...tier2Values, tier2Input.trim()]);
+                setTier2Input('');
+            }
         }
-        const newDetails = details.filter((_, i) => i !== index);
-        setDetails(newDetails);
+    };
+    
+    // Hàm xóa giá trị
+    const removeValue = (tier: 1 | 2, val: string) => {
+        if (tier === 1) setTier1Values(tier1Values.filter(v => v !== val));
+        else setTier2Values(tier2Values.filter(v => v !== val));
+    };
+
+    // Cập nhật thông tin từng dòng biến thể (Giá, Kho)
+    const updateVariationRow = (index: number, field: keyof FinalVariation, val: any) => {
+        const updated = [...variations];
+        (updated[index] as any)[field] = val;
+        setVariations(updated);
+    };
+
+    // Upload ảnh cho biến thể (Chỉ cho phép ở cấp 1 đại diện, hoặc từng dòng tùy bạn)
+    // Ở đây tôi làm cho từng dòng trong bảng
+    const handleVarImage = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.[0]) {
+            const file = e.target.files[0];
+            const updated = [...variations];
+            updated[index].file = file;
+            updated[index].preview = URL.createObjectURL(file);
+            setVariations(updated);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!shopId) {
-            setError("Lỗi: Không tìm thấy ID của shop.");
-            return;
-        }
-        if (!name.trim()) {
-            setError("Tên sản phẩm là bắt buộc");
-            return;
-        }
-        if (!imageFile) {
-            setError("Vui lòng chọn ảnh chính cho sản phẩm");
-            return;
-        }
-
+        if (!shopId) return alert("Lỗi Shop ID");
+        
         setLoading(true);
-        setError('');
-
         try {
             const formData = new FormData();
             formData.append('name', name);
             formData.append('description', description);
             formData.append('shop_cate_id', shopCateId ? shopCateId.toString() : '');
             formData.append('status', status.toString());
-            formData.append('product_image', imageFile);
+            if (imageFile) formData.append('product_image', imageFile);
 
-            const filteredDetails = details.filter(d => d.key.trim() !== '' && d.value.trim() !== '');
-            if (filteredDetails.length > 0) {
-                formData.append('details', JSON.stringify(filteredDetails));
-            }
+            if (details[0].key) formData.append('details', JSON.stringify(details));
 
             if (hasVariation) {
-                if (!selectedAttributeId) {
-                    setError("Vui lòng chọn tên nhóm phân loại (ví dụ: Màu sắc).");
-                    setLoading(false);
-                    return;
-                }
-                formData.append('attribute_id', selectedAttributeId.toString());
+                if (!tier1Id) return alert("Vui lòng chọn Nhóm phân loại 1");
+                formData.append('attribute1_id', tier1Id.toString());
+                if (tier2Id) formData.append('attribute2_id', tier2Id.toString());
 
-                const validVariations = variations.map(v => ({
-                    value: v.value,
-                    price: Number(v.price),
-                    stock: Number(v.stock)
+                // Gửi JSON danh sách (trừ file)
+                const jsonVars = variations.map(v => ({
+                    value1: v.value1,
+                    value2: v.value2, // Có thể undefined
+                    price: v.price,
+                    stock: v.stock
                 }));
-                formData.append('variations', JSON.stringify(validVariations));
+                formData.append('variations', JSON.stringify(jsonVars));
 
-                variations.forEach((v, index) => {
-                    if (v.file) {
-                        formData.append(`variation_image_${index}`, v.file);
-                    }
+                // Gửi File ảnh
+                variations.forEach((v, idx) => {
+                    if (v.file) formData.append(`variation_image_${idx}`, v.file);
                 });
             } else {
                 formData.append('base_price', basePrice.toString());
@@ -230,203 +209,197 @@ export default function AddProduct() {
             }
 
             await createProduct(formData);
-
-            setLoading(false);
             navigate('/seller/products');
         } catch (err: any) {
-            console.error(err);
-            setError(err.response?.data?.message || "Đã xảy ra lỗi khi tạo sản phẩm.");
+            setError(err.response?.data?.message || "Lỗi tạo sản phẩm");
+        } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="container mt-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <div className="container mt-4 mb-5" style={{ maxWidth: '1000px' }}>
             <form onSubmit={handleSubmit}>
-                <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex justify-content-between mb-3">
                     <h3>Thêm sản phẩm mới</h3>
-                    <div>
-                        <button type="button" className="btn btn-outline-secondary me-2" onClick={() => navigate('/seller/products')}>Hủy</button>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                            {loading ? "Đang lưu..." : (status === 1 ? "Lưu & Đăng bán" : "Lưu nháp")}
-                        </button>
-                    </div>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                        {loading ? "Đang lưu..." : "Lưu & Đăng bán"}
+                    </button>
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
 
-                <div className="card shadow-sm mb-3">
-                    <div className="card-header">Thông tin cơ bản</div>
+                {/* 1. THÔNG TIN CƠ BẢN */}
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header fw-bold">Thông tin cơ bản</div>
                     <div className="card-body">
                         <div className="mb-3">
-                            <label className="form-label">Tên sản phẩm <span className="text-danger">*</span></label>
-                            <input type="text" className="form-control" value={name} onChange={(e) => setName(e.target.value)} required />
+                            <label className="form-label">Tên sản phẩm *</label>
+                            <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} required />
                         </div>
-                        
-                        {/* SỬA 2: Thay textarea bằng TipTapEditor */}
                         <div className="mb-3">
-                            <label className="form-label">Mô tả sản phẩm</label>
+                            <label className="form-label">Mô tả</label>
                             <TiptapEditor value={description} onChange={setDescription} />
                         </div>
-                        {/* ======================================== */}
-
                         <div className="row">
-                            <div className="col-md-6 mb-3">
-                                <label className="form-label">Ảnh chính sản phẩm <span className="text-danger">*</span></label>
-                                <input
-                                    type="file"
-                                    className="form-control"
-                                    accept="image/png, image/jpeg, image/webp"
-                                    onChange={handleImageChange}
-                                />
-                                {imagePreview && (
-                                    <div className="mt-2 p-2 border rounded bg-light text-center">
-                                        <img 
-                                            src={imagePreview} 
-                                            alt="Xem trước" 
-                                            style={{ maxHeight: '200px', maxWidth: '100%', objectFit: 'contain' }}
-                                            onError={(e) => {
-                                                const target = e.currentTarget;
-                                                target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='16' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EImage Error%3C/text%3E%3C/svg%3E";
-                                                target.onerror = null;
-                                            }} 
-                                        />
-                                    </div>
-                                )}
+                            <div className="col-md-6">
+                                <label className="form-label">Ảnh bìa *</label>
+                                <input type="file" className="form-control" onChange={handleImageChange} />
+                                {imagePreview && <img src={imagePreview} alt="Preview" className="mt-2" style={{height: 100}} />}
                             </div>
-                            <div className="col-md-6 mb-3">
-                                <label className="form-label">Loại sản phẩm (Kệ hàng)</label>
-                                <select className="form-select" value={shopCateId || ''} onChange={(e) => setShopCateId(Number(e.target.value) || null)}>
-                                    <option value="">-- Chọn loại sản phẩm --</option>
-                                    {shopCategories.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                    ))}
+                            <div className="col-md-6">
+                                <label className="form-label">Danh mục</label>
+                                <select className="form-select" value={shopCateId || ''} onChange={e => setShopCateId(Number(e.target.value))}>
+                                    <option value="">-- Chọn --</option>
+                                    {shopCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="card shadow-sm mb-3">
-                    <div className="card-header">Chi tiết sản phẩm</div>
-                    <div className="card-body">
-                        {details.map((detail, index) => (
-                            <div key={index} className="row align-items-center mb-2">
-                                <div className="col-md-5">
-                                    <input type="text" className="form-control" placeholder="Thuộc tính" value={detail.key} onChange={(e) => handleDetailChange(index, 'key', e.target.value)} />
-                                </div>
-                                <div className="col-md-5">
-                                    <input type="text" className="form-control" placeholder="Giá trị" value={detail.value} onChange={(e) => handleDetailChange(index, 'value', e.target.value)} />
-                                </div>
-                                <div className="col-md-2">
-                                    <button type="button" className="btn btn-outline-danger btn-sm w-100" onClick={() => handleRemoveDetail(index)}>Xóa</button>
-                                </div>
-                            </div>
-                        ))}
-                        <button type="button" className="btn btn-link" onClick={handleAddDetail}>+ Thêm chi tiết</button>
-                    </div>
-                </div>
-
-                <div className="card shadow-sm mb-3">
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                        Thông tin bán hàng
+                {/* 2. PHÂN LOẠI HÀNG (2 CẤP) */}
+                <div className="card shadow-sm mb-4">
+                    <div className="card-header d-flex justify-content-between">
+                        <span className="fw-bold">Thông tin bán hàng</span>
                         <div className="form-check form-switch">
-                            <input className="form-check-input" type="checkbox" role="switch" id="hasVariationSwitch" checked={hasVariation} onChange={(e) => setHasVariation(e.target.checked)} />
-                            <label className="form-check-label" htmlFor="hasVariationSwitch">Bật phân loại</label>
+                            <input className="form-check-input" type="checkbox" checked={hasVariation} onChange={e => setHasVariation(e.target.checked)} />
+                            <label className="form-check-label">Bật phân loại hàng</label>
                         </div>
                     </div>
                     <div className="card-body">
-                        {hasVariation ? (
-                            <div>
-                                <div className="mb-3">
-                                    <label className="form-label">Tên nhóm phân loại <span className="text-danger">*</span></label>
-                                    <select className="form-select" value={selectedAttributeId || ''} onChange={(e) => setSelectedAttributeId(Number(e.target.value) || null)}>
-                                        <option value="">-- Chọn thuộc tính (ví dụ: Màu sắc) --</option>
-                                        {attributes.map(attr => (
-                                            <option key={attr.id} value={attr.id}>{attr.name}</option>
-                                        ))}
-                                    </select>
+                        {!hasVariation ? (
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <label>Giá bán *</label>
+                                    <input type="number" className="form-control" value={basePrice} onChange={e => setBasePrice(Number(e.target.value))} />
                                 </div>
-                                <hr />
-                                {variations.map((variation, index) => (
-                                    <div key={index} className="row align-items-center mb-2 p-2 border rounded">
-                                        <div className="col-md-3">
-                                            <label className="form-label">Tên phân loại <span className="text-danger">*</span></label>
-                                            <input type="text" className="form-control" placeholder="ví dụ: Đỏ" value={variation.value} onChange={(e) => handleVariationChange(index, 'value', e.target.value)} required />
-                                        </div>
-                                        <div className="col-md-2">
-                                            <label className="form-label">Giá <span className="text-danger">*</span></label>
-                                            <input type="number" className="form-control" value={variation.price} onChange={(e) => handleVariationChange(index, 'price', Number(e.target.value))} required />
-                                        </div>
-                                        <div className="col-md-2">
-                                            <label className="form-label">Kho <span className="text-danger">*</span></label>
-                                            <input type="number" className="form-control" value={variation.stock} onChange={(e) => handleVariationChange(index, 'stock', Number(e.target.value))} required />
-                                        </div>
-
-                                        <div className="col-md-4">
-                                            <label className="form-label">Ảnh (Tùy chọn)</label>
-                                            <div className="d-flex align-items-center gap-2">
-                                                <input
-                                                    type="file"
-                                                    className="form-control form-control-sm"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleVariationImageChange(index, e)}
-                                                />
-                                                {variation.preview && (
-                                                    <img 
-                                                        src={variation.preview} 
-                                                        alt="Var" 
-                                                        style={{ height: '38px', width: '38px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} 
-                                                        onError={(e) => {
-                                                            const target = e.currentTarget;
-                                                            target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23eee'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='10' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EX%3C/text%3E%3C/svg%3E";
-                                                            target.onerror = null;
-                                                        }}
-                                                    />
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="col-md-1 d-flex align-items-end">
-                                            <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => handleRemoveVariation(index)} disabled={variations.length <= 1}>Xóa</button>
-                                        </div>
-                                    </div>
-                                ))}
-                                <button type="button" className="btn btn-link" onClick={handleAddVariation}>+ Thêm phân loại</button>
+                                <div className="col-md-6">
+                                    <label>Kho hàng *</label>
+                                    <input type="number" className="form-control" value={baseStock} onChange={e => setBaseStock(Number(e.target.value))} />
+                                </div>
                             </div>
                         ) : (
-                            <div className="row">
-                                <div className="col-md-6 mb-3">
-                                    <label className="form-label">Giá <span className="text-danger">*</span></label>
-                                    <input type="number" className="form-control" value={basePrice} onChange={(e) => setBasePrice(Number(e.target.value))} required={!hasVariation} />
+                            <div>
+                                {/* NHÓM PHÂN LOẠI 1 */}
+                                <div className="mb-4 p-3 bg-light rounded">
+                                    <div className="row mb-2">
+                                        <div className="col-md-4">
+                                            <label>Nhóm phân loại 1 (vd: Màu sắc)</label>
+                                            <select className="form-select" value={tier1Id || ''} onChange={e => setTier1Id(Number(e.target.value))}>
+                                                <option value="">-- Chọn --</option>
+                                                {attributes.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="col-md-8">
+                                            <label>Giá trị (Nhấn Enter để thêm)</label>
+                                            <div className="d-flex gap-2">
+                                                <input 
+                                                    type="text" className="form-control" placeholder="vd: Đỏ, Xanh..." 
+                                                    value={tier1Input} onChange={e => setTier1Input(e.target.value)}
+                                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addValue(1))}
+                                                />
+                                                <button type="button" className="btn btn-secondary" onClick={() => addValue(1)}>Thêm</button>
+                                            </div>
+                                            <div className="mt-2 d-flex flex-wrap gap-2">
+                                                {tier1Values.map(v => (
+                                                    <span key={v} className="badge bg-primary d-flex align-items-center gap-2 p-2">
+                                                        {v} <i className="bi bi-x-circle cursor-pointer" onClick={() => removeValue(1, v)} style={{cursor:'pointer'}}></i>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="col-md-6 mb-3">
-                                    <label className="form-label">Kho hàng <span className="text-danger">*</span></label>
-                                    <input type="number" className="form-control" value={baseStock} onChange={(e) => setBaseStock(Number(e.target.value))} required={!hasVariation} />
-                                </div>
+
+                                {/* NHÓM PHÂN LOẠI 2 */}
+                                {tier1Values.length > 0 && (
+                                    <div className="mb-4 p-3 bg-light rounded">
+                                        <div className="row mb-2">
+                                            <div className="col-md-4">
+                                                <label>Nhóm phân loại 2 (vd: Size) - Tùy chọn</label>
+                                                <select className="form-select" value={tier2Id || ''} onChange={e => setTier2Id(Number(e.target.value))}>
+                                                    <option value="">-- Không chọn --</option>
+                                                    {attributes.filter(a => a.id !== tier1Id).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                                </select>
+                                            </div>
+                                            {tier2Id && (
+                                                <div className="col-md-8">
+                                                    <label>Giá trị (Nhấn Enter để thêm)</label>
+                                                    <div className="d-flex gap-2">
+                                                        <input 
+                                                            type="text" className="form-control" placeholder="vd: S, M, L..." 
+                                                            value={tier2Input} onChange={e => setTier2Input(e.target.value)}
+                                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addValue(2))}
+                                                        />
+                                                        <button type="button" className="btn btn-secondary" onClick={() => addValue(2)}>Thêm</button>
+                                                    </div>
+                                                    <div className="mt-2 d-flex flex-wrap gap-2">
+                                                        {tier2Values.map(v => (
+                                                            <span key={v} className="badge bg-info text-dark d-flex align-items-center gap-2 p-2">
+                                                                {v} <i className="bi bi-x-circle cursor-pointer" onClick={() => removeValue(2, v)} style={{cursor:'pointer'}}></i>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* BẢNG DANH SÁCH BIẾN THỂ */}
+                                {variations.length > 0 && (
+                                    <div className="table-responsive">
+                                        <table className="table table-bordered text-center align-middle">
+                                            <thead className="table-light">
+                                                <tr>
+                                                    <th>{attributes.find(a => a.id === tier1Id)?.name || 'Nhóm 1'}</th>
+                                                    {tier2Id && <th>{attributes.find(a => a.id === tier2Id)?.name || 'Nhóm 2'}</th>}
+                                                    <th style={{width: '120px'}}>Giá *</th>
+                                                    <th style={{width: '100px'}}>Kho *</th>
+                                                    <th>Ảnh (Tùy chọn)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {variations.map((v, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{v.value1}</td>
+                                                        {tier2Id && <td>{v.value2}</td>}
+                                                        <td>
+                                                            <input type="number" className="form-control" value={v.price} onChange={e => updateVariationRow(idx, 'price', Number(e.target.value))} />
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" className="form-control" value={v.stock} onChange={e => updateVariationRow(idx, 'stock', Number(e.target.value))} />
+                                                        </td>
+                                                        <td>
+                                                            <div className="d-flex align-items-center justify-content-center gap-2">
+                                                                <input type="file" className="form-control form-control-sm" style={{width: '90px'}} onChange={e => handleVarImage(idx, e)} />
+                                                                {v.preview && <img src={v.preview} style={{width: 30, height: 30}} alt="v" />}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
 
+                {/* 3. CHI TIẾT KHÁC */}
                 <div className="card shadow-sm mb-3">
-                    <div className="card-header">Trạng thái đăng bán</div>
+                    <div className="card-header">Chi tiết khác</div>
                     <div className="card-body">
-                        <div className="form-check">
-                            <input className="form-check-input" type="radio" name="statusRadio" id="statusPublish" value={1} checked={status === 1} onChange={(e) => setStatus(Number(e.target.value))} />
-                            <label className="form-check-label" htmlFor="statusPublish">Đăng bán (Công khai)</label>
-                        </div>
-                        <div className="form-check">
-                            <input className="form-check-input" type="radio" name="statusRadio" id="statusDraft" value={0} checked={status === 0} onChange={(e) => setStatus(Number(e.target.value))} />
-                            <label className="form-check-label" htmlFor="statusDraft">Lưu nháp (Ẩn)</label>
-                        </div>
+                        {details.map((d, i) => (
+                            <div key={i} className="row mb-2">
+                                <div className="col-5"><input className="form-control" placeholder="Thuộc tính" value={d.key} onChange={e => {const n=[...details]; n[i].key=e.target.value; setDetails(n)}}/></div>
+                                <div className="col-5"><input className="form-control" placeholder="Giá trị" value={d.value} onChange={e => {const n=[...details]; n[i].value=e.target.value; setDetails(n)}}/></div>
+                                <div className="col-2"><button type="button" className="btn btn-outline-danger w-100" onClick={() => {if(details.length>1) setDetails(details.filter((_,idx)=>idx!==i))}}>Xóa</button></div>
+                            </div>
+                        ))}
+                        <button type="button" className="btn btn-link" onClick={() => setDetails([...details, {key:'', value:''}])}>+ Thêm</button>
                     </div>
-                </div>
-
-                <div className="d-flex justify-content-end mb-5">
-                    <button type="button" className="btn btn-outline-secondary me-2" onClick={() => navigate('/seller/products')}>Hủy</button>
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? "Đang lưu..." : (status === 1 ? "Lưu & Đăng bán" : "Lưu nháp")}
-                    </button>
                 </div>
             </form>
         </div>
