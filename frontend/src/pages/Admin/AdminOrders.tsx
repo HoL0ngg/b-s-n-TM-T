@@ -5,6 +5,7 @@ import {
 import { type OrderType } from '../../types/OrderType'
 import { apiGetAllOrders } from '../../api/order';
 import OrderDetailModal from '../../components/OrderDetailModal';
+import * as XLSX from 'xlsx';
 
 export default function AdminOrders() {
     // --- STATE QUẢN LÝ ---
@@ -18,6 +19,8 @@ export default function AdminOrders() {
     // Filters
     const [filterStatus, setFilterStatus] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     // Modal State
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -44,7 +47,7 @@ export default function AdminOrders() {
             fetchOrders();
         }, 500); // Đợi 0.5s sau khi gõ phím
         return () => clearTimeout(timeout);
-    }, [currentPage, filterStatus, searchTerm]);
+    }, [currentPage, filterStatus, searchTerm, startDate, endDate]);
 
 
     // --- HELPERS ---
@@ -52,11 +55,11 @@ export default function AdminOrders() {
     // Hàm hiển thị Badge trạng thái đẹp mắt
     const renderStatusBadge = (status: string) => {
         const config: any = {
-            pending: { label: 'Chờ xử lý', class: 'bg-warning-subtle text-warning border border-warning' },
-            confirmed: { label: 'Đã xác nhận', class: 'bg-primary-subtle text-primary border border-primary' },
-            shipping: { label: 'Đang giao', class: 'bg-info-subtle text-info border border-info' },
-            delivered: { label: 'Thành công', class: 'bg-success-subtle text-success border border-success' },
-            cancelled: { label: 'Đã hủy', class: 'bg-danger-subtle text-danger border border-danger' },
+            Pending: { label: 'Chờ xử lý', class: 'bg-warning-subtle text-warning border border-warning' },
+            Confirmed: { label: 'Đã xác nhận', class: 'bg-primary-subtle text-primary border border-primary' },
+            Shipping: { label: 'Đang giao', class: 'bg-info-subtle text-info border border-info' },
+            Delivered: { label: 'Thành công', class: 'bg-success-subtle text-success border border-success' },
+            Cancelled: { label: 'Đã hủy', class: 'bg-danger-subtle text-danger border border-danger' },
         };
         const style = config[status] || { label: status, class: 'bg-secondary text-white' };
 
@@ -73,6 +76,57 @@ export default function AdminOrders() {
         setShowModal(true);
     };
 
+    // Hàm xuất Excel
+    const handleExportExcel = () => {
+        if (orders.length === 0) {
+            alert('Không có dữ liệu để xuất!');
+            return;
+        }
+
+        // Map lại trạng thái sang tiếng Việt
+        const statusMap: any = {
+            Pending: 'Chờ xử lý',
+            Confirmed: 'Đã xác nhận',
+            Shipping: 'Đang giao',
+            Delivered: 'Thành công',
+            Cancelled: 'Đã hủy',
+        };
+
+        // Chuẩn bị dữ liệu
+        const excelData = orders.map((order, index) => ({
+            'STT': index + 1,
+            'Mã đơn': `#${order.order_id}`,
+            'Khách hàng': order.customer_phone,
+            'Email': order.custmer_email,
+            'Cửa hàng': order.shop_name,
+            'Ngày đặt': new Date(order.order_date).toLocaleDateString('vi-VN'),
+            'Tổng tiền': Number(order.total_amount).toLocaleString() + ' ₫',
+            'Trạng thái': statusMap[order.status] || order.status,
+        }));
+
+        // Tạo worksheet và workbook
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Đơn hàng');
+
+        // Tự động điều chỉnh độ rộng cột
+        const wscols = [
+            { wch: 5 },  // STT
+            { wch: 10 }, // Mã đơn
+            { wch: 15 }, // Khách hàng
+            { wch: 25 }, // Email
+            { wch: 20 }, // Cửa hàng
+            { wch: 12 }, // Ngày đặt
+            { wch: 15 }, // Tổng tiền
+            { wch: 15 }, // Trạng thái
+        ];
+        ws['!cols'] = wscols;
+
+        // Xuất file
+        const fileName = `DonHang_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    };
+
     // --- GIAO DIỆN (JSX) ---
     return (
         <div className="container-fluid py-4 bg-light min-vh-100">
@@ -83,7 +137,11 @@ export default function AdminOrders() {
                     <h3 className="fw-bold text-dark mb-1">Quản lý Đơn hàng</h3>
                     <p className="text-muted mb-0">Xem và quản lý tất cả đơn hàng trên hệ thống</p>
                 </div>
-                <button className="btn btn-outline-success d-flex align-items-center gap-2 shadow-sm">
+                <button
+                    className="btn btn-outline-success d-flex align-items-center gap-2 shadow-sm"
+                    onClick={handleExportExcel}
+                    disabled={orders.length === 0}
+                >
                     <FaFileExport /> Xuất Excel
                 </button>
             </div>
@@ -94,7 +152,7 @@ export default function AdminOrders() {
                     <div className="row g-3 align-items-center">
 
                         {/* Search Box */}
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <div className="input-group">
                                 <span className="input-group-text bg-white border-end-0"><FaSearch className="text-muted" /></span>
                                 <input
@@ -130,7 +188,27 @@ export default function AdminOrders() {
                         <div className="col-md-3">
                             <div className="input-group">
                                 <span className="input-group-text bg-white"><FaCalendarAlt className="text-muted" /></span>
-                                <input type="date" className="form-control" />
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={startDate}
+                                    onChange={e => { setStartDate(e.target.value); setCurrentPage(1); }}
+                                    placeholder="Từ ngày"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="col-md-3">
+                            <div className="input-group">
+                                <span className="input-group-text bg-white"><FaCalendarAlt className="text-muted" /></span>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={endDate}
+                                    onChange={e => { setEndDate(e.target.value); setCurrentPage(1); }}
+                                    placeholder="Đến ngày"
+                                    min={startDate}
+                                />
                             </div>
                         </div>
 
@@ -140,6 +218,24 @@ export default function AdminOrders() {
                                 Làm mới
                             </button>
                         </div>
+
+                        {/* Clear Filters */}
+                        {(startDate || endDate || searchTerm || filterStatus !== 'all') && (
+                            <div className="col-12">
+                                <button
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={() => {
+                                        setStartDate('');
+                                        setEndDate('');
+                                        setSearchTerm('');
+                                        setFilterStatus('all');
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    Xóa bộ lọc
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

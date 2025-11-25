@@ -101,7 +101,7 @@ class AdminService {
             // --- LOGIC THEO THÁNG (Trong năm nay) ---
             sql = `
                 SELECT 
-                    ANY_VALUE(CONCAT('Thg ', MONTH(order_date))) as name, -- Tên: "Thg 1", "Thg 2"
+                    MAX(CONCAT('Thg ', MONTH(order_date))) as name, -- Tên: "Thg 1", "Thg 2"
                     MONTH(order_date) as month_num,            -- Để sắp xếp
                     SUM(total_amount) as revenue,              -- Tổng doanh thu
                     COUNT(order_id) as orders                        -- Tổng số đơn

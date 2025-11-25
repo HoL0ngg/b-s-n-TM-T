@@ -38,10 +38,12 @@ export default function Promotion() {
 
     const handleDiscountChange = (variantId: number, newValueString: string) => {
         const newValue = newValueString === '' ? 0 : Number(newValueString);
+        // Giới hạn giảm giá tối đa 50%
+        const limitedValue = Math.min(Math.max(newValue, 0), 50);
         setPromoItems(currentItems =>
             currentItems.map(item =>
                 item.product_variant_id === variantId
-                    ? { ...item, discount_value: newValue }
+                    ? { ...item, discount_value: limitedValue }
                     : item
             )
         );
@@ -342,7 +344,7 @@ export default function Promotion() {
                                                                         value={item.discount_value}
                                                                         onChange={(e) => handleDiscountChange(item.product_variant_id, e.target.value)}
                                                                         min={0}
-                                                                        max={100}
+                                                                        max={50}
                                                                         style={{
                                                                             borderRadius: '6px',
                                                                             fontSize: '13px'
