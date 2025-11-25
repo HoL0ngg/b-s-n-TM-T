@@ -59,7 +59,7 @@ export default function UserLayout() {
                                     <i className="fa-solid fa-house-user me-2"></i>
                                     Địa chỉ
                                 </NavLink>
-                                <NavLink
+                                {/* <NavLink
                                     to="account/bank"
                                     className={({ isActive }) =>
                                         `list-group-item list-group-item-action ${isActive ? "text-primary" : ""} ms-4`
@@ -67,7 +67,7 @@ export default function UserLayout() {
                                 >
                                     <i className="fa-solid fa-money-check-dollar me-2"></i>
                                     Thẻ/ Ngân hàng
-                                </NavLink>
+                                </NavLink> */}
                             </div>
                         )}
 
