@@ -252,13 +252,11 @@ const ProductDetail = () => {
                                 </div>
                             </div>
                         ))
-                    )
-                        :
-                        (
-                            <div>
-                                <p>Khong co chi tiet sp</p>
-                            </div>
-                        )}
+                    ) : (
+                        <div>
+                            <p>Khong co chi tiet sp</p>
+                        </div>
+                    )}
                 </div>
                 <div className="col-5">
                     <div className="p-4 border rounded">
