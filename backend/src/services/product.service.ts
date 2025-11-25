@@ -488,18 +488,16 @@ class productService {
         if (!keyword || keyword.trim().length === 0) return [];
         
         const like = `%${keyword.trim()}%`;
-
         const sql = `
-            SELECT c.id, c.name, COUNT(DISTINCT p.id) AS match_count
-            FROM categories c
-            JOIN generic gen ON gen.category_id = c.id
+            SELECT gen.id, gen.name, COUNT(DISTINCT p.id) AS match_count
+            FROM generic gen
             JOIN v_products_list p ON p.generic_id = gen.id
             WHERE p.status = 1
             AND p.shop_status = 1
             AND (p.name LIKE ? OR p.description LIKE ?)
-            GROUP BY c.id
+            GROUP BY gen.id
             ORDER BY match_count DESC
-            LIMIT 20
+            LIMIT 20;
         `;
         const params = [like, like];
         const [rows] = await pool.query<RowDataPacket[] & CategoryCount[]>(sql, params);

@@ -145,7 +145,16 @@ export default function Purchase() {
             cancelled: { class: "bg-danger", text: "Đã hủy" },
         };
         const s = statusMap[status.toLowerCase()] || { class: "bg-secondary", text: status };
-        return <span className={`badge ${s.class}`}>{s.text}</span>;
+        return <div className={`badge ${s.class}`}>{s.text}</div>;
+    };
+
+    const getPaymentStatusBadge = (status: string) => {
+        const statusMap: { [key: string]: { class: string; text: string } } = {
+            unpaid: { class: "bg-warning text-dark", text: "Chưa thanh toán" },
+            paid: { class: "bg-success", text: "Đã thanh toán" },
+        };
+        const s = statusMap[status.toLowerCase()] || { class: "bg-secondary", text: status };
+        return <div className={`badge ${s.class}`}>{s.text}</div>;
     };
 
     const formatDate = (dateString: string) => {
@@ -261,7 +270,10 @@ export default function Purchase() {
                                         </>
                                     )}
                                 </div>
-                                {getStatusBadge(order.status)}
+                                <div className="d-flex flex-column gap-2">
+                                    {getStatusBadge(order.status)}
+                                    {getPaymentStatusBadge(order.payment_status)}
+                                </div>
                             </div>
                             <div className="d-flex justify-content-between align-items-center">
                                 <div>
