@@ -71,7 +71,7 @@ const ProductDetail = () => {
             if (!id) return;
             try {
                 const data = await fetchProductImg(id);
-                
+
                 // ===== BẮT ĐẦU SỬA LỖI ẢNH VỠ (DÙNG BIẾN MÔI TRƯỜNG) =====
                 const processedImages = data.map(img => {
                     if (img.image_url && img.image_url.startsWith('/uploads')) {
@@ -82,14 +82,14 @@ const ProductDetail = () => {
                     return img;
                 });
                 // ==========================================================
-                
+
                 setImages(processedImages);
-                
+
                 if (processedImages.length > 0) {
                     const mainImg = processedImages.find(img => img.is_main === 1);
                     setSelectedImage(mainImg ? mainImg.image_url : processedImages[0].image_url);
                 }
-                
+
             } catch (err) {
                 console.error("Failed to fetch product images:", err);
             }
@@ -108,14 +108,14 @@ const ProductDetail = () => {
         const descContainer = document.querySelector('.product-description');
         if (descContainer) {
             const imgs = descContainer.querySelectorAll('img');
-            
+
             imgs.forEach((img) => {
                 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
                 // 1. Sửa lại đường dẫn nếu nó đang trỏ sai về localhost (khi lên production)
                 // Logic: Nếu src chứa localhost:5000 mà web đang chạy domain thật -> thay thế
                 if (img.src.includes('localhost:5000') && window.location.hostname !== 'localhost') {
-                     img.src = img.src.replace('http://localhost:5000', apiBaseUrl);
+                    img.src = img.src.replace('http://localhost:5000', apiBaseUrl);
                 }
                 // Hoặc nếu ảnh là đường dẫn tương đối (/uploads/...) mà trình duyệt tự thêm domain frontend vào
                 else if (img.getAttribute('src')?.startsWith('/uploads')) {
@@ -123,15 +123,15 @@ const ProductDetail = () => {
                 }
 
                 // 2. Bắt lỗi nếu ảnh chết (do server xóa file) -> Thay bằng ảnh xám
-                img.onerror = function() {
-                    const target = this as HTMLImageElement; 
+                img.onerror = function () {
+                    const target = this as HTMLImageElement;
                     target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='12' fill='%23999' dominant-baseline='middle' text-anchor='middle'%3EError%3C/text%3E%3C/svg%3E";
                     target.onerror = null; // Ngắt vòng lặp (an toàn tuyệt đối)
                     target.style.border = "1px dashed #ccc"; // Viền nhẹ cho đẹp
                 }
             });
         }
-    }, [product?.description]); 
+    }, [product?.description]);
     // ----------------------------------------------
 
     // useMemo giữ nguyên
@@ -191,8 +191,8 @@ const ProductDetail = () => {
             // Xử lý link ảnh variant nếu nó chưa có domain (trường hợp hiếm nhưng nên có)
             let finalUrl = newImageUrl;
             if (finalUrl.startsWith('/uploads')) {
-                 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-                 finalUrl = `${baseUrl}${finalUrl}`;
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                finalUrl = `${baseUrl}${finalUrl}`;
             }
             setSelectedImage(finalUrl);
         }
@@ -292,9 +292,10 @@ const ProductDetail = () => {
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <div className="fw-bold fs-4">Mô tả sản phẩm</div>
-                {/* THÊM CLASS ĐỂ JS TÌM THẤY ẢNH */}
-                <div className="product-description"> 
-                    <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
+                <div className="product-description">
+                    <div dangerouslySetInnerHTML={{
+                        __html: product?.description ? product.description.replace(/\n/g, '<br />') : ''
+                    }} />
                 </div>
             </div>
 
