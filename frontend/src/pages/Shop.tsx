@@ -5,6 +5,7 @@ import { fetch5ProductByShopId, fetchProductsByShopId } from "../api/products";
 import type { ShopType, ShopCateType } from "../types/ShopType";
 import type { ProductType } from "../types/ProductType";
 import ProductCard from "../components/ProductCard";
+import Pagenum from "../components/Admin/Pagenum";
 import { motion } from "framer-motion";
 import { formatTimeAgo } from "../utils/helper";
 
@@ -18,8 +19,22 @@ const Shop = () => {
     const [curShopCate, setCurShopCate] = useState<number>(0);
     const [curState, setCurState] = useState<number>(1);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const ITEMS_PER_PAGE = 12;
 
     const daoCategory = { id: 0, name: 'Dạo' };
+
+    // Lấy danh sách các danh mục từ sản phẩm
+    const productCategories = useMemo(() => {
+        const categories = new Set<string>();
+        productList.forEach(product => {
+            if (product.category_name) {
+                categories.add(product.category_name);
+            }
+        });
+        return Array.from(categories).sort();
+    }, [productList]);
 
     const { visibleCategories, moreCategories } = useMemo(() => {
         if (!shopCateList || shopCateList.length === 0) {
@@ -68,10 +83,9 @@ const Shop = () => {
 
         const loadProducts = async () => {
             try {
-                // API này sẽ nhận 'shopId' và 'cate' (giống hệt
-                // hàm 'getProductOnShopIdService' bạn đã viết)
                 const hehe = await fetchProductsByShopId(Number(id), curState, curShopCate);
                 setProductList(hehe);
+                setCurrentPage(1); // Reset về trang 1 khi thay đổi filter
             } catch (err) {
                 console.error("Lỗi tải sản phẩm:", err);
             }
@@ -79,6 +93,33 @@ const Shop = () => {
 
         loadProducts();
     }, [id, curState, curShopCate]);
+
+    // Tính toán sản phẩm cho trang hiện tại
+    const paginatedProducts = useMemo(() => {
+        // Lọc theo danh mục nếu có
+        let filtered = productList;
+        if (selectedCategory) {
+            filtered = productList.filter(p => p.category_name === selectedCategory);
+        }
+
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filtered.slice(startIndex, endIndex);
+    }, [productList, currentPage, selectedCategory]);
+
+    // Tính tổng số trang
+    const totalPages = useMemo(() => {
+        let filtered = productList;
+        if (selectedCategory) {
+            filtered = productList.filter(p => p.category_name === selectedCategory);
+        }
+        return Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    }, [productList, selectedCategory]);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const handleChangeState = (id: number) => {
         if (id === curState) return;
@@ -88,7 +129,13 @@ const Shop = () => {
     const handleChangeCate = (id: number) => {
         if (id === curShopCate) return;
         setCurShopCate(id);
+        setSelectedCategory(null); // Reset category filter khi đổi shop category
     }
+
+    const handleCategoryClick = (category: string | null) => {
+        setSelectedCategory(category);
+        setCurrentPage(1); // Reset về trang 1
+    };
 
     // const handleChangePriceState = (e: React.ChangeEvent<HTMLSelectElement>) => {
     //     const value = e.target.value;
@@ -237,9 +284,32 @@ const Shop = () => {
                         )}
                     </div>
                     <div className="row mt-4">
-                        <div className="col-2 mt-2">
-                            <i className="me-2 fa-solid fa-list-ul"></i>
-                            Danh mục
+                        <div className="col-2">
+                            <div className="mt-2 mb-3">
+                                <i className="me-2 fa-solid fa-list-ul"></i>
+                                <strong>Danh mục</strong>
+                            </div>
+                            <div className="d-flex flex-column gap-2">
+                                <div
+                                    className={`p-2 rounded ${selectedCategory === null ? 'bg-primary text-white' : 'bg-light'}`}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => handleCategoryClick(null)}
+                                >
+                                    <i className="fa-solid fa-border-all me-2"></i>
+                                    Tất cả
+                                </div>
+                                {productCategories.map((category) => (
+                                    <div
+                                        key={category}
+                                        className={`p-2 rounded ${selectedCategory === category ? 'bg-primary text-white' : 'bg-light'}`}
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => handleCategoryClick(category)}
+                                    >
+                                        <i className="fa-solid fa-tag me-2"></i>
+                                        {category}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <div className="col-10">
                             <div className="d-flex align-items-center justify-content-between">
@@ -254,19 +324,42 @@ const Shop = () => {
                                         <option value="2">Cao đến thấp</option>
                                     </select> */}
                                 </div>
-                                <div>
-                                    <span className="text-primary">1</span>/<span>2</span>
-                                    <span className="ms-4 border border-2 py-1 px-2"><i className="fa-solid fa-less-than fa-xs text-muted"></i></span>
-                                    <span className="border border-2 py-1 px-2"><i className="fa-solid fa-greater-than fa-xs"></i></span>
+                                <div className="d-flex align-items-center gap-2">
+                                    <span className="text-primary">{currentPage}</span>/<span>{totalPages || 1}</span>
+                                    <button
+                                        className="btn btn-sm border border-2 py-1 px-2"
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <i className="fa-solid fa-less-than fa-xs"></i>
+                                    </button>
+                                    <button
+                                        className="btn btn-sm border border-2 py-1 px-2"
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages || totalPages === 0}
+                                    >
+                                        <i className="fa-solid fa-greater-than fa-xs"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div className="row mt-4 g-4">
-                                {productList.map((product) => (
-                                    <div className="col-6 col-md-3" key={product.id}>
-                                        <ProductCard product={product} />
+                                {paginatedProducts.length > 0 ? (
+                                    paginatedProducts.map((product) => (
+                                        <div className="col-6 col-md-3" key={product.id}>
+                                            <ProductCard product={product} />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="col-12 text-center py-5">
+                                        <p className="text-muted">Không có sản phẩm nào</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
+                            <Pagenum
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange}
+                            />
                         </div>
                     </div>
                 </div>
