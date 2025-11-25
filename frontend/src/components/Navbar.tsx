@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useCart } from "../context/CartContext";
 import { fetchProductsByKeyWord } from "../api/products";
 import { fetchShopByOwnerId } from "../api/shop";
@@ -33,6 +33,7 @@ export default function Navbar() {
     const [keyword, setKeyWord] = useState<string>("");
     const [products, setProducts] = useState<ProductType[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [suppressDropdown, setSuppressDropdown] = useState(false);
 
     console.log(user);
 
@@ -102,10 +103,54 @@ export default function Navbar() {
         }
     };
 
+    const [searchHistory, setSearchHistory] = useState<string[]>([]);
+    const hideTimeout = useRef<number | null>(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const debounceTimerRef = useRef<any>(null);
+
+    const HISTORY_KEY = "search_history_v1";
+    const MAX_HISTORY = 5;
+    const SUGGEST_LIMIT = 7; // backend trả tối đa 7 gợi ý (bạn set trước đó)
+
+    // Load history từ localStorage
+    const loadHistory = useCallback(() => {
+    try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (!raw) {
+        setSearchHistory([]);
+        return;
+        }
+        const arr = JSON.parse(raw) as string[];
+        setSearchHistory(Array.isArray(arr) ? arr.slice(0, MAX_HISTORY) : []);
+    } catch {
+        setSearchHistory([]);
+    }
+    }, []);
+
+    // Lưu 1 keyword vào history (dedupe, newest first)
+    const saveToHistory = useCallback((kw: string) => {
+    const v = (kw || "").trim();
+    if (!v) return;
+    try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const arr = raw ? (JSON.parse(raw) as string[]) : [];
+        const filtered = (arr || []).filter(s => s.toLowerCase() !== v.toLowerCase());
+        filtered.unshift(v);
+        const sliced = filtered.slice(0, MAX_HISTORY);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(sliced));
+        setSearchHistory(sliced);
+    } catch {
+        // ignore
+    }
+    }, []);
+
     const handleNavigateToSearch = (kw?: string) => {
         const q = (kw ?? keyword ?? "").trim();
         if (!q) return;
+        // lưu lịch sử (submit hoặc click "Xem thêm" đều nên lưu)
+        saveToHistory(q);
         // Điều hướng tới SearchPage với query param 'q'
+        setSuppressDropdown(true);
         setShowDropdown(false);
         navigate(`/search?q=${encodeURIComponent(q)}`);
     };
@@ -120,9 +165,10 @@ export default function Navbar() {
     const fetchProducts = async (val: string) => {
         try {
             const res = await fetchProductsByKeyWord(val);
-            setProducts(res);
+            setProducts(res ?? []);
         } catch (error) {
             console.log(error);
+            setProducts([]);
         }
     };
 
@@ -132,12 +178,68 @@ export default function Navbar() {
     );
 
     useEffect(() => {
-        if (keyword.trim() !== "") {
-            debouncedSearch(keyword);
-        } else {
+        if (suppressDropdown) return; // khóa dropdown 1 lần sau khi navigate
+        // nếu input rỗng -> clear suggestions & không show dropdown
+        if (!keyword || keyword.trim() === "") {
             setProducts([]);
+            if (searchHistory.length > 0) {
+                setShowDropdown(true);
+            } else {
+                setShowDropdown(false);
+            }
+            return;
         }
-    }, [keyword, debouncedSearch]);
+
+        // nếu có keyword -> debounce tìm suggestions
+        debouncedSearch(keyword);
+
+        // Show dropdown only if backend returns suggestions (we will set showDropdown in effect below when products updated)
+        // Don't force open here.
+
+        return () => {
+            // cancel pending debounce on cleanup
+            debouncedSearch.cancel();
+        };
+        // watch searchHistory too so initial focus can show history
+    }, [keyword, debouncedSearch, searchHistory]);
+
+    // watch products: if products exist -> show dropdown, else hide (per requirement)
+    useEffect(() => {
+        if (keyword && keyword.trim() !== "") {
+            if (products.length > 0) setShowDropdown(true);
+            else setShowDropdown(false); // if no suggestions, don't show dropdown
+        }
+    }, [products, keyword]);
+
+    // focus / blur handlers for input (đảm bảo hide after small delay to allow onMouseDown)
+    const handleInputFocus = () => {
+        if (!keyword || keyword.trim() === "") {
+            loadHistory();
+            if (searchHistory.length > 0) setShowDropdown(true);
+            else setShowDropdown(false);
+        } else {
+            // if typed, suggestions effect will open dropdown when products available
+            if (products.length > 0) setShowDropdown(true);
+        }
+    };
+
+    const handleInputBlur = () => {
+        if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+        hideTimeout.current = window.setTimeout(() => {
+            setShowDropdown(false);
+            hideTimeout.current = null;
+        }, 120);
+    };
+
+    // cleanup when component unmount
+    useEffect(() => {
+    return () => {
+        if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+        debouncedSearch.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
 
     const handleNavigateInfo = () => navigate("/user/account/profile");
     const handleNavigateOrder = () => navigate("/user/purchase");
@@ -166,13 +268,23 @@ export default function Navbar() {
                         }}
                     >
                         <input
+                            ref={inputRef}
                             className="form-control shadow"
                             placeholder="Tìm sản phẩm..."
                             aria-label="Search"
                             value={keyword}
                             onChange={(e) => {
+                                setSuppressDropdown(false); // cho phép dropdown hoạt động lại khi user gõ chữ mới
                                 setKeyWord(e.target.value);
-                                setShowDropdown(true);
+                                 // không ép showDropdown ở đây; effect/focus decides visibility
+                                }}
+                                onFocus={handleInputFocus}
+                                onBlur={handleInputBlur}
+                                onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleSubmit(e as any);
+                                }
                             }}
                         />
 
@@ -195,16 +307,47 @@ export default function Navbar() {
                         </button>
 
                         {/* Dropdown kết quả tìm kiếm */}
-                        {showDropdown && keyword.trim() && products.length > 0 && (
+                        {showDropdown && (
                             <div className="search-dropdown bg-white w-100 position-absolute top-100 start-0 shadow" style={{ zIndex: 999 }}>
                                 <ul className="search-list m-0 p-2" role="list">
+                                {/* Nếu rỗng -> show history (chỉ khi có history) */}
+                                {(!keyword || keyword.trim() === "") ? (
+                                <>
+                                    {searchHistory.length === 0 ? null : (
+                                    searchHistory.map((h) => (
+                                        <li
+                                        key={h}
+                                        className="search-item d-flex align-items-center gap-2 p-1 pointer"
+                                        onMouseDown={(ev) => {
+                                            ev.preventDefault();
+                                            // click history: set keyword, navigate to search
+                                            setKeyWord(h);
+                                            saveToHistory(h);
+                                            setShowDropdown(false);
+                                            navigate(`/search?q=${encodeURIComponent(h)}`);
+                                        }}
+                                        >
+                                        <div className="search-info">
+                                            <div className="search-name">{h}</div>
+                                        </div>
+                                        </li>
+                                    ))
+                                    )}
+                                </>
+                                ) : (
+                                // Có keyword -> show suggestions nếu có; nếu ko có suggestions -> per yêu cầu không hiển thị anything
+                                <>
+                                    {/* only render suggestions if exist (we already ensured showDropdown true only when products.length>0) */}
                                     {products.map((pro) => (
                                         <li
                                             key={pro.id}
                                             className="search-item d-flex align-items-center gap-2 p-1"
                                             onClick={() => {
+                                                // navigate product
+                                                setSuppressDropdown(true);
                                                 navigate(`/product/${pro.id}`);
                                                 setKeyWord("");
+                                                setShowDropdown(false);
                                             }}
                                             role="button"
                                             tabIndex={0}
@@ -217,7 +360,6 @@ export default function Navbar() {
                                             {pro.image_url && (
                                                 <img
                                                     src={
-                                                        // 1. Link online hoặc base64 -> Giữ nguyên
                                                         pro.image_url.startsWith('http') || pro.image_url.startsWith('data:')
                                                             ? pro.image_url
                                                             : pro.image_url.startsWith('/uploads')
@@ -233,35 +375,40 @@ export default function Navbar() {
                                                         borderRadius: "4px",
                                                     }}
                                                     onError={(e) => {
-                                                        e.currentTarget.src = 'https://via.placeholder.com/40?text=X';
+                                                        (e.currentTarget as HTMLImageElement).src = 'https://via.placeholder.com/40?text=X';
                                                     }}
-                                                />
+                                            />
                                             )}
                                             <div className="search-info">
                                                 <div className="search-name">{pro.name}</div>
-                                                <div className="search-price">{pro.base_price.toLocaleString()}</div>
+                                                <div className="search-price">{(pro.base_price ?? 0).toLocaleString()}</div>
                                             </div>
                                         </li>
                                     ))}
 
-                                    {showDropdown && keyword.trim() && products.length > 7 && (
-                                        <li
-                                            className="search-item search-more d-flex flex-column gap-1 p-2 mt-1 border-top"
-                                            onClick={() => handleNavigateToSearch()}
-                                            role="button"
-                                            tabIndex={0}
-                                            onKeyDown={(e) => { if (e.key === "Enter") handleNavigateToSearch(); }}
-                                            style={{ cursor: "pointer", background: "#fff" }}
-                                        >
-                                            <div style={{ fontWeight: 600 }}>
-                                                Xem thêm kết quả cho “{keyword}”
-                                            </div>
-                                        </li>
+                                    {/* Xem thêm: chỉ hiện nếu có khả năng còn nhiều kết quả (backend trả đầy đủ limit) */}
+                                    {products.length >= SUGGEST_LIMIT && (
+                                    <li
+                                        className="search-item search-more d-flex flex-column gap-1 p-2 mt-1 border-top"
+                                        onMouseDown={(ev) => {
+                                        ev.preventDefault();
+                                        handleNavigateToSearch();
+                                        }}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => { if (e.key === "Enter") handleNavigateToSearch(); }}
+                                        style={{ cursor: "pointer", background: "#fff", fontWeight: 600 }}
+                                    >
+                                        <div>Xem thêm kết quả cho “{keyword.trim()}”</div>
+                                    </li>
                                     )}
-                                </ul>
+                                </>
+                                )}
+                            </ul>
                             </div>
                         )}
                     </form>
+
 
                     {/* 🧭 Menu bên phải */}
                     <ul className="navbar-nav gap-2 align-items-center">

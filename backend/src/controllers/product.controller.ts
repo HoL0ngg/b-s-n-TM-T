@@ -275,7 +275,6 @@ class productController {
             }
 
             // Apply category/subcategory filters (categories CSV takes precedence)
-            console.log("productController: " + categories);
             
             if (categories && typeof categories === "string" && categories.trim().length > 0) {
                 // categories passed from SearchPage -> expected to be generic ids (subcategories)
