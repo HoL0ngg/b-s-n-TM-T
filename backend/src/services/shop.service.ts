@@ -49,18 +49,32 @@ class shopService {
                     -- Truy vấn con 1: Đếm tổng số sản phẩm
                     (SELECT COUNT(*) 
                     FROM products 
-                    WHERE products.shop_id = shops.id) AS totalProduct,
+                    WHERE products.shop_id = shops.id AND products.status = 1) AS totalProduct,
                     
                     -- Truy vấn con 2: Tính rating trung bình của tất cả review
                     (SELECT IFNULL(AVG(productreviews.rating), 0) 
                     FROM productreviews
                     JOIN products ON productreviews.product_id = products.id
-                    WHERE products.shop_id = shops.id) AS avgRating
-                    FROM 
+                    WHERE products.shop_id = shops.id) AS avgRating,
+                    
+                    -- Truy vấn con 3: Tính điểm hot (rating * 0.6 + totalProduct * 0.4)
+                    (
+                        (SELECT IFNULL(AVG(productreviews.rating), 0) 
+                        FROM productreviews
+                        JOIN products ON productreviews.product_id = products.id
+                        WHERE products.shop_id = shops.id) * 0.6 
+                        + 
+                        (SELECT COUNT(*) 
+                        FROM products 
+                        WHERE products.shop_id = shops.id AND products.status = 1) * 0.4
+                    ) AS hot_score
+                    
+                FROM 
                     shops
-                    WHERE status = 1
+                WHERE status = 1
                 ORDER BY
-                    RAND()`
+                    hot_score DESC
+                LIMIT 20`
         ) as [Shop[], any];
         return row as Shop[];
     }
