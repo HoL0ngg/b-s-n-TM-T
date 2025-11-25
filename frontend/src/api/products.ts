@@ -99,36 +99,37 @@ export const fetchProducts = async (query: any, category_id?: number): Promise<P
     if (query.subCategoryId && query.subCategoryId !== 0) {
         params.append('subCategoryId', query.subCategoryId);
     }
+    if (query.subCategoryIds && Array.isArray(query.subCategoryIds) && query.subCategoryIds.length > 0) {
+        params.append('subCategoryIds', query.subCategoryIds.join(','));
+    }
+    if (query.categories && Array.isArray(query.categories) && query.categories.length > 0) {
+        params.append('categories', query.categories.join(','));
+        console.log(params.toString());
+    }
     if (query.sort && query.sort !== "default") {
         params.append('sort', query.sort);
     }
-    if (query.minPrice !== null && query.minPrice !== undefined) {
+    if (query.minPrice !== null && query.minPrice !== undefined && query.minPrice !== "") {
         params.append('minPrice', String(query.minPrice));
     }
-    if (query.maxPrice !== null && query.maxPrice !== undefined) {
+    if (query.maxPrice !== null && query.maxPrice !== undefined && query.maxPrice !== "") {
         params.append('maxPrice', String(query.maxPrice));
-    }
-    if (query.brand && query.brand.length > 0) {
-        params.append('brand', query.brand.join(','));
     }
     if (query.rating && query.rating > 0) {
         params.append('rating', query.rating);
     }
-    // Search mode
+    
     if (query.q) {
-        console.log("Query");
         params.append('q', query.q);
         const res = await axios.get(`${API_URL}/search?${params.toString()}`);
         return res.data;
     }
 
-    // Category mode
     if (category_id) {
         const res = await axios.get(`${API_URL}/category/${category_id}?${params.toString()}`);
         return res.data;
     }
 
-    // Chỗ này có thể hiện tất cả. *** Chưa xử lý ***. Note: Chắc cũng không xảy ra.
     const res = await axios.get(`${API_URL}/products?${params.toString()}`);
     return res.data;
 };

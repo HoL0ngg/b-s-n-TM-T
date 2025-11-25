@@ -252,20 +252,19 @@ class productController {
                 limit = 12,
                 sort = "default",
                 subCategoryId,
+                categories, // <-- nhận CSV từ frontend (subcategory ids / generic ids)
                 minPrice,
                 maxPrice,
-                brand,
                 rating,
                 q,
             } = req.query as any;
-
             const categoryId = req.params.id ? Number(req.params.id) : undefined;
 
             // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
             let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
             const params: any[] = [];
 
-            // Search mode (q) OR Category mode
+            // If searching by keyword -> add LIKE conditions
             let isSearch = false;
             if (q && String(q).trim().length > 0) {
                 isSearch = true;
@@ -273,19 +272,33 @@ class productController {
                 whereClause += ` AND (v_products_list.name LIKE ? OR v_products_list.description LIKE ?)`;
                 const like = `%${keyword}%`;
                 params.push(like, like);
-            } else {
-                // Category logic
-                if (subCategoryId && Number(subCategoryId) !== 0) {
-                    whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
-                    params.push(Number(subCategoryId));
-                } else
-                    if (categoryId) {
-                        // Sửa lỗi: Phải là v_products_list.generic_id
-                        whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
-                        params.push(categoryId);
-                    }
             }
 
+            // Apply category/subcategory filters (categories CSV takes precedence)
+            console.log("productController: " + categories);
+            
+            if (categories && typeof categories === "string" && categories.trim().length > 0) {
+                // categories passed from SearchPage -> expected to be generic ids (subcategories)
+                const ids = categories.split(",").map((s: string) => Number(s)).filter(Boolean);
+                if (ids.length > 0) {
+                    const placeholders = ids.map(() => "?").join(",");
+                    whereClause += ` AND v_products_list.generic_id IN (${placeholders})`;
+                    params.push(...ids);
+                    console.log(`productController: ` + params);
+                }
+            } else
+            if (subCategoryId && Number(subCategoryId) !== 0) {
+                whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
+                params.push(Number(subCategoryId));
+            } else
+                if (categoryId) {
+                    // Sửa lỗi: Phải là v_products_list.generic_id
+                    whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                    params.push(categoryId);
+                        
+                }
+
+            // Price filters
             if (minPrice) {
                 whereClause += " AND v_products_list.base_price >= ?";
                 params.push(minPrice);
@@ -294,21 +307,17 @@ class productController {
                 whereClause += " AND v_products_list.base_price <= ?";
                 params.push(maxPrice);
             }
-            if (brand && typeof brand === "string" && brand.length > 0) {
-                const brandIds = brand.split(",").map(Number).filter(Boolean);
-                if (brandIds.length > 0) {
-                    const placeholders = brandIds.map(() => "?").join(",");
-                    whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
-                    params.push(...brandIds);
-                }
-            }
+
+            // Rating
             if (rating) {
                 whereClause += " AND v_products_list.avg_rating >= ?";
                 params.push(rating);
             }
+
+            // ORDER BY handling (orderParams used when ORDER BY contains placeholders, e.g. relevance)
             let orderBy = "";
             let orderParams: any[] = [];
-            switch (sort) {
+            switch ((String(sort || "")).toLowerCase()) {
                 case "priceAsc":
                 case "priceAsc".toLowerCase():
                     orderBy = "ORDER BY v_products_list.base_price ASC";
@@ -325,13 +334,12 @@ class productController {
                     break;
                 case "relevance":
                     if (isSearch) {
-                        // approximate relevance: name matches weighted higher than description
-                        // We need placeholders for the LIKE checks (we'll re-use keyword)
+                        // approximate relevance: name match weighted higher than description
                         orderBy = `ORDER BY ((v_products_list.name LIKE ?) * 2 + (v_products_list.description LIKE ?)) DESC`;
                         const keyword = `%${String(q).trim()}%`;
                         orderParams = [keyword, keyword];
                     } else {
-                        // if no q and user asked relevance, fallback to newest
+                        // fallback
                         orderBy = "ORDER BY v_products_list.created_at DESC";
                     }
                     break;
@@ -339,6 +347,7 @@ class productController {
                     orderBy = "";
             }
 
+            // Call service (note: service should accept orderParams as 6th arg)
             const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy, orderParams);
 
             let brandsPromise;
@@ -350,7 +359,7 @@ class productController {
                 brandsPromise = Promise.resolve([]);
             }
 
-            const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
+            const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise]);
 
             res.status(200).json({
                 products: productResult.products,

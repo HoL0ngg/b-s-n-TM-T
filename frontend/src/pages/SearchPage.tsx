@@ -2,65 +2,110 @@
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts, fetchRelatedCategories } from "../api/products";
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import type { ProductType } from "../types/ProductType";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
 
-const SearchPage = () => {
+type QueryState = {
+  q: string;
+  page: number;
+  limit: number;
+  sort: "relevance" | "newest" | "best_seller" | "priceAsc" | "priceDesc";
+  minPrice: number | null;
+  maxPrice: number | null;
+  categories: number[]; // CSV of generic ids or category ids (your backend decides)
+};
+
+const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const [brands, setBrands] = useState<any[]>([]);
   const [relatedCategories, setRelatedCategories] = useState<any[]>([]);
-  const scrollableContentRef = useRef<HTMLDivElement>(null);
+  const scrollableContentRef = useRef<HTMLDivElement | null>(null);
 
   const qParam = searchParams.get("q") || "";
   const noResultsFlag = searchParams.get("noResults") === "1";
 
-  const [query, setQuery] = useState({
+  // initial state from URL
+  const [query, setQuery] = useState<QueryState>({
     q: qParam,
     page: Number(searchParams.get("page")) || 1,
     limit: 12,
-    sort: (searchParams.get("sort") as string) || "relevance",
+    sort: (searchParams.get("sort") as QueryState["sort"]) || "relevance",
     minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : null,
     maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : null,
-    brand: searchParams.get("brand") ? searchParams.get("brand")!.split(",").map(Number) : [],
-    categories: searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [] as number[],
+    categories: searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [],
   });
 
+  // sync URL -> query
   useEffect(() => {
     setQuery((prev) => ({
       ...prev,
       q: searchParams.get("q") || "",
       page: Number(searchParams.get("page")) || 1,
-      sort: (searchParams.get("sort") as string) || "relevance",
+      sort: (searchParams.get("sort") as QueryState["sort"]) || "relevance",
       minPrice: searchParams.get("minPrice") ? Number(searchParams.get("minPrice")) : null,
       maxPrice: searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : null,
-      brand: searchParams.get("brand") ? searchParams.get("brand")!.split(",").map(Number) : [],
       categories: searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [],
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // load products based on query
   const loadProducts = useCallback(async () => {
     if (!query.q || query.q.trim() === "") {
       setProducts([]);
       setTotalPages(1);
-      setBrands([]);
       return;
     }
+
     try {
       setLoading(true);
 
-      // NOTE:
-      // We pass the full query object to fetchProducts; ensure your backend / fetchProducts
-      // implementation reads `categories` (query.categories) from query string if you want server-side filtering.
-      // If fetchProducts ignores categories, you should extend it to append `categories` param to the request.
-      const res = await fetchProducts({ ...query, q: query.q }, undefined);
-      setProducts(res.products);
-      setTotalPages(res.totalPages);
-      setBrands(res.brands ?? []);
+      // Build fetch payload; fetchProducts should convert arrays to CSV query params
+      const fetchQuery: any = {
+        q: query.q,
+        page: query.page,
+        limit: query.limit,
+        sort: query.sort, // single sort param per your request
+        minPrice: query.minPrice,
+        maxPrice: query.maxPrice,
+      };
+      if (query.categories && query.categories.length > 0) fetchQuery.categories = query.categories;
+      console.log(`${Date.now()} SEARCHING`);
+      console.log(query.categories);
+      
+      const res = await fetchProducts(fetchQuery, undefined);
+      let fetched = res.products ?? [];
+      const fetchedTotalPages = res.totalPages ?? 1;
+
+      // client-side fallback sorting if backend didn't perform requested sort
+      // switch (query.sort) {
+      //   case "newest":
+      //     fetched = [...fetched].sort((a: any, b: any) => {
+      //       const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+      //       const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+      //       return tb - ta;
+      //     });
+      //     break;
+      //   case "best_seller":
+      //     fetched = [...fetched].sort((a: any, b: any) => (b.sold_quantity ?? 0) - (a.sold_quantity ?? 0));
+      //     break;
+      //   case "priceAsc":
+      //     fetched = [...fetched].sort((a: any, b: any) => (a.base_price ?? 0) - (b.base_price ?? 0));
+      //     break;
+      //   case "priceDesc":
+      //     fetched = [...fetched].sort((a: any, b: any) => (b.base_price ?? 0) - (a.base_price ?? 0));
+      //     break;
+      //   case "relevance":
+      //   default:
+      //     // keep backend order (assume relevance)
+      //     break;
+      // }
+
+      setProducts(fetched);
+      setTotalPages(fetchedTotalPages);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("SearchPage.loadProducts error:", err);
@@ -71,8 +116,6 @@ const SearchPage = () => {
 
   useEffect(() => {
     loadProducts();
-    console.log("Haha");
-    
   }, [loadProducts]);
 
   // load related categories for the left filter
@@ -83,7 +126,7 @@ const SearchPage = () => {
     }
     try {
       const data = await fetchRelatedCategories(keyword);
-      setRelatedCategories(data);
+      setRelatedCategories(data ?? []);
     } catch (err) {
       console.error("loadRelatedCategories error:", err);
       setRelatedCategories([]);
@@ -94,47 +137,45 @@ const SearchPage = () => {
     loadRelatedCategories(query.q);
   }, [query.q, loadRelatedCategories]);
 
-  const handleSort = (val: string) => {
-    // update sort param in URL (reset page)
+  // helper update URL params
+  const updateURLParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
-    params.set("sort", val);
-    params.set("page", "1");
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v == null || v === "") params.delete(k);
+      else params.set(k, v);
+    });
     setSearchParams(params);
   };
 
+  // handle sorting (single sort param)
+  const handleSort = (val: QueryState["sort"]) => {
+    updateURLParams({ sort: val, page: "1" });
+  };
+
+  // pagination
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
-    params.set("page", String(page));
-    setSearchParams(params);
+    updateURLParams({ page: String(page) });
   };
 
-  // Toggle related category checkbox -> update URL param `categories`
+  // toggle related category checkbox -> update URL param `categories` (CSV)
   const handleToggleRelatedCategory = (catId: number) => {
-    const current = searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [];
-    const exists = current.includes(catId);
-    const updated = exists ? current.filter((x) => x !== catId) : [...current, catId];
-
-    const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
-    if (updated.length > 0) params.set("categories", updated.join(","));
-    else params.delete("categories");
-    // reset to page 1 when filter changes
-    params.set("page", "1");
-    console.log(params);
-    
-    setSearchParams(params);
-    // setQuery will be synced by the useEffect watching searchParams
+    const cur = searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [];
+    const exists = cur.includes(catId);
+    const updated = exists ? cur.filter((x) => x !== catId) : [...cur, catId];
+    const value = updated.length > 0 ? updated.join(",") : null;
+    updateURLParams({ categories: value, page: "1" });
   };
 
-  // Helper: check if related category is selected (based on URL)
   const isRelatedCategoryChecked = (catId: number) => {
-    const current = searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [];
-    return current.includes(catId);
+    const cur = searchParams.get("categories") ? searchParams.get("categories")!.split(",").map(Number) : [];
+    return cur.includes(catId);
   };
 
   return (
     <div className="container my-3">
+      {/* LAYOUT: SIDEBAR + CONTENT */}
       <div className="row">
-        {/* Sidebar - Theo danh mục (search) + brands */}
+        {/* SIDEBAR */}
         <div className="col-lg-3 col-md-4 col-12">
           <div className="border-top p-3 m-2">
             <h5>Theo danh mục</h5>
@@ -162,38 +203,17 @@ const SearchPage = () => {
               </div>
             )}
           </div>
-
-          <div className="border-top p-3 m-2">
-            <h5>Theo thương hiệu</h5>
-            <div>
-              {brands.length === 0 ? <div className="text-muted">Không có thương hiệu phù hợp</div> :
-                brands.map((b) => (
-                  <div className="mb-1" key={b.id}>
-                    <input className="pointer" type="checkbox" id={`brand-search-${b.id}`} onChange={() => {
-                      const currentBrands = searchParams.get("brand") ? searchParams.get("brand")!.split(",").map(Number) : [];
-                      const exists = currentBrands.includes(b.id);
-                      const updated = exists ? currentBrands.filter(x => x !== b.id) : [...currentBrands, b.id];
-                      const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
-                      if (updated.length > 0) params.set("brand", updated.join(",")); else params.delete("brand");
-                      params.set("page", "1");
-                      setSearchParams(params);
-                    }} checked={query.brand.includes(b.id)} />
-                    <label className="mx-2 pointer" htmlFor={`brand-search-${b.id}`}>{b.name}</label>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
         </div>
 
-        {/* Content */}
+        {/* CONTENT */}
         <div className="col-lg-9 col-md-8 col-12" ref={scrollableContentRef}>
           {loading && (
             <div className="loader-overlay">
               <div className="spinner"></div>
             </div>
           )}
-            <div className="search-info-box border-0 rounded p-3 mb-0">
+          {/* INFO + SORT */}
+              <div className="search-info-box border-0 rounded p-3 mb-0">
                 <div>
                     <span className="me-2">Kết quả tìm kiếm cho từ khoá</span>
                     <span style={{ color: "#ff6600", fontWeight: 700, fontSize: "1.05rem" }}>“{query.q}”</span>
@@ -214,7 +234,7 @@ const SearchPage = () => {
                     </div>
 
                     <div className="d-flex align-items-center">
-                        <select id="priceSortSearch" className="form-select form-select-sm sort-select" style={{ width: 220 }} value={query.sort} onChange={(e) => handleSort(e.target.value)}>
+                        <select id="priceSortSearch" className="form-select form-select-sm sort-select" style={{ width: 220 }} value={query.sort} onChange={(e) => handleSort(e.target.value as QueryState["sort"])}>
                             <option value="default">Giá: Mặc định</option>
                             <option value="priceDesc">Giá: Cao đến thấp</option>
                             <option value="priceAsc">Giá: Thấp đến cao</option>

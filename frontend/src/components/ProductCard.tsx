@@ -41,8 +41,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 src={getImageUrl(product.image_url)}
                 alt={product.name}
                 className="card-img-top"
-                style={{ height: "200px", objectFit: "cover" }} // Thêm objectFit để ảnh không bị méo
-                
+                style={{ height: "200px" }} // Thêm objectFit để ảnh không bị méo
+
                 // SỬA Ở ĐÂY: Chống vòng lặp lỗi (Infinite Loop)
                 onError={(e) => {
                     const target = e.currentTarget;
