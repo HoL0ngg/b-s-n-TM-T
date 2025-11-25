@@ -5,6 +5,8 @@ import type { ShopCategoryType } from '../../api/shopCategory';
 import { fetchProductAttributes, createProduct } from '../../api/products';
 import type { AttributeType } from '../../api/products';
 import { useAuth } from '../../context/AuthContext';
+// SỬA 1: Import bộ soạn thảo văn bản
+import TiptapEditor from '../../components/TipTapEditor';
 
 interface Variation {
     value: string;
@@ -51,8 +53,7 @@ export default function AddProduct() {
         { key: '', value: '' }
     ]);
 
-    // ===== THÊM HÀM XỬ LÝ URL CHO CHẮC CHẮN =====
-    // (Dù AddProduct chủ yếu dùng Blob, nhưng thêm vào để đồng bộ logic)
+    // Hàm xử lý URL ảnh
     const getImageUrl = (url: string | undefined) => {
         if (!url) return '';
         if (url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:')) {
@@ -61,13 +62,11 @@ export default function AddProduct() {
         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
         return `${baseUrl}${url}`;
     };
-    // ============================================
 
     useEffect(() => {
         const fetchShopId = async () => {
             if (!user?.id) return;
             try {
-                // Sửa: Dùng biến môi trường thay vì template string phức tạp
                 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                 const response = await fetch(`${baseUrl}/api/shops/by-owner/${user.id}`);
                 const shopData = await response.json();
@@ -262,10 +261,14 @@ export default function AddProduct() {
                             <label className="form-label">Tên sản phẩm <span className="text-danger">*</span></label>
                             <input type="text" className="form-control" value={name} onChange={(e) => setName(e.target.value)} required />
                         </div>
+                        
+                        {/* SỬA 2: Thay textarea bằng TipTapEditor */}
                         <div className="mb-3">
                             <label className="form-label">Mô tả sản phẩm</label>
-                            <textarea className="form-control" rows={5} value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
+                            <TiptapEditor value={description} onChange={setDescription} />
                         </div>
+                        {/* ======================================== */}
+
                         <div className="row">
                             <div className="col-md-6 mb-3">
                                 <label className="form-label">Ảnh chính sản phẩm <span className="text-danger">*</span></label>
@@ -277,7 +280,6 @@ export default function AddProduct() {
                                 />
                                 {imagePreview && (
                                     <div className="mt-2 p-2 border rounded bg-light text-center">
-                                        {/* SỬA THẺ IMG PREVIEW CHÍNH */}
                                         <img 
                                             src={imagePreview} 
                                             alt="Xem trước" 
@@ -370,7 +372,6 @@ export default function AddProduct() {
                                                     onChange={(e) => handleVariationImageChange(index, e)}
                                                 />
                                                 {variation.preview && (
-                                                    // SỬA THẺ IMG PREVIEW BIẾN THỂ
                                                     <img 
                                                         src={variation.preview} 
                                                         alt="Var" 
