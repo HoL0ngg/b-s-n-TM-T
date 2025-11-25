@@ -442,7 +442,23 @@ class productService {
     }
     getNewProducts = async () => {
         const sql = `
-            SELECT * FROM (
+            SELECT 
+                t.id, 
+                t.name, 
+                t.description, 
+                t.shop_id, 
+                t.sold_count,
+                t.category_name,
+                t.base_price,
+                t.image_url,
+                t.discount_percentage,
+                CASE 
+                    WHEN t.discount_percentage IS NOT NULL 
+                    THEN ROUND(t.base_price * (1 - (t.discount_percentage / 100)))
+                    ELSE NULL 
+                END AS sale_price,
+                t.created_at
+            FROM (
                 SELECT 
                     p.id, 
                     p.name, 
@@ -452,16 +468,8 @@ class productService {
                     g.name as category_name,
                     MIN(pv.price) as base_price,
                     MAX(CASE WHEN pi_img.is_main = 1 THEN pi_img.image_url END) as image_url,
-                    MAX(CASE 
-                        WHEN promo.id IS NOT NULL THEN promo_items.discount_value 
-                        ELSE NULL 
-                    END) AS discount_percentage,
-                    MAX(CASE
-                        WHEN promo.id IS NOT NULL AND promo_items.discount_value IS NOT NULL 
-                        THEN ROUND(MIN(pv.price) * (1 - (promo_items.discount_value / 100)))
-                        ELSE NULL 
-                    END) AS sale_price,
-                    p.updated_at
+                    MAX(promo_items.discount_value) AS discount_percentage,
+                    p.created_at
                 FROM products p
                 JOIN generic g ON g.id = p.generic_id
                 LEFT JOIN productimages pi_img ON pi_img.product_id = p.id
@@ -471,10 +479,10 @@ class productService {
                     AND promo.is_active = 1
                     AND NOW() BETWEEN promo.start_date AND promo.end_date
                 WHERE p.status = 1
-                GROUP BY p.id, p.name, p.description, p.shop_id, p.sold_count, g.name, p.updated_at
-                ORDER BY p.updated_at DESC
+                GROUP BY p.id, p.name, p.description, p.shop_id, p.sold_count, g.name, p.created_at
+                ORDER BY p.created_at DESC
                 LIMIT 100
-            ) AS newest_products 
+            ) AS t
             ORDER BY RAND() 
             LIMIT 15;
         `;
@@ -483,7 +491,24 @@ class productService {
     }
     getHotPorducts = async () => {
         const sql = `
-            SELECT * FROM (
+            SELECT 
+                t.id, 
+                t.name, 
+                t.description, 
+                t.shop_id, 
+                t.sold_count,
+                t.category_name,
+                t.base_price,
+                t.image_url,
+                t.discount_percentage,
+                CASE 
+                    WHEN t.discount_percentage IS NOT NULL 
+                    THEN ROUND(t.base_price * (1 - (t.discount_percentage / 100)))
+                    ELSE NULL 
+                END AS sale_price,
+                t.avg_rating,
+                t.hot_score
+            FROM (
                 SELECT 
                     p.id, 
                     p.name, 
@@ -493,15 +518,7 @@ class productService {
                     g.name as category_name,
                     MIN(pv.price) as base_price,
                     MAX(CASE WHEN pi_img.is_main = 1 THEN pi_img.image_url END) as image_url,
-                    MAX(CASE 
-                        WHEN promo.id IS NOT NULL THEN promo_items.discount_value 
-                        ELSE NULL 
-                    END) AS discount_percentage,
-                    MAX(CASE
-                        WHEN promo.id IS NOT NULL AND promo_items.discount_value IS NOT NULL 
-                        THEN ROUND(MIN(pv.price) * (1 - (promo_items.discount_value / 100)))
-                        ELSE NULL 
-                    END) AS sale_price,
+                    MAX(promo_items.discount_value) AS discount_percentage,
                     IFNULL(AVG(pr.rating), 0) as avg_rating,
                     (p.sold_count * 0.6 + IFNULL(AVG(pr.rating), 0) * 0.4) as hot_score
                 FROM products p
@@ -517,7 +534,7 @@ class productService {
                 GROUP BY p.id, p.name, p.description, p.shop_id, p.sold_count, g.name
                 ORDER BY hot_score DESC
                 LIMIT 20
-            ) AS hot_products 
+            ) AS t
             ORDER BY RAND() 
             LIMIT 15;
         `;
