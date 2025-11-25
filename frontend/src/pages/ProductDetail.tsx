@@ -77,7 +77,7 @@ const ProductDetail = () => {
             if (!id) return;
             try {
                 const data = await fetchProductImg(id);
-                
+
                 // ===== BẮT ĐẦU SỬA LỖI ẢNH VỠ (DÙNG BIẾN MÔI TRƯỜNG) =====
                 const processedImages = data.map(img => {
                     if (img.image_url && img.image_url.startsWith('/uploads')) {
@@ -89,14 +89,14 @@ const ProductDetail = () => {
                     return img;
                 });
                 // ==========================================================
-                
+
                 setImages(processedImages);
-                
+
                 if (processedImages.length > 0) {
                     const mainImg = processedImages.find(img => img.is_main === 1);
                     setSelectedImage(mainImg ? mainImg.image_url : processedImages[0].image_url);
                 }
-                
+
             } catch (err) {
                 console.error("Failed to fetch product images:", err);
             }
@@ -166,8 +166,8 @@ const ProductDetail = () => {
             // Xử lý link ảnh variant nếu nó chưa có domain (trường hợp hiếm nhưng nên có)
             let finalUrl = newImageUrl;
             if (finalUrl.startsWith('/uploads')) {
-                 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-                 finalUrl = `${baseUrl}${finalUrl}`;
+                const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                finalUrl = `${baseUrl}${finalUrl}`;
             }
             setSelectedImage(finalUrl);
         }
@@ -268,8 +268,10 @@ const ProductDetail = () => {
             </div>
             <div className="row mt-4 p-3 rounded shadow-sm">
                 <div className="fw-bold fs-4">Mô tả sản phẩm</div>
-                <div className="product-description"> 
-                    <div dangerouslySetInnerHTML={{ __html: product?.description || '' }} />
+                <div className="product-description">
+                    <div dangerouslySetInnerHTML={{
+                        __html: product?.description ? product.description.replace(/\n/g, '<br />') : ''
+                    }} />
                 </div>
             </div>
 
