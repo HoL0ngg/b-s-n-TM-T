@@ -152,6 +152,7 @@ export default function Navbar() {
         // Điều hướng tới SearchPage với query param 'q'
         setSuppressDropdown(true);
         setShowDropdown(false);
+        inputRef.current?.blur();
         navigate(`/search?q=${encodeURIComponent(q)}`);
     };
 
@@ -323,8 +324,9 @@ export default function Navbar() {
                                             // click history: set keyword, navigate to search
                                             setKeyWord(h);
                                             saveToHistory(h);
-                                            setShowDropdown(false);
-                                            navigate(`/search?q=${encodeURIComponent(h)}`);
+                                            // setShowDropdown(false);
+                                            // navigate(`/search?q=${encodeURIComponent(h)}`);
+                                            // inputRef.current?.blur();
                                         }}
                                         >
                                         <div className="search-info">
@@ -342,13 +344,14 @@ export default function Navbar() {
                                         <li
                                             key={pro.id}
                                             className="search-item d-flex align-items-center gap-2 p-1"
-                                            onClick={(ev) => {
+                                            onMouseDown={(ev) => {
                                                 ev.preventDefault();
                                                 // navigate product
                                                 setSuppressDropdown(true);
                                                 navigate(`/product/${pro.id}`);
                                                 setKeyWord("");
                                                 setShowDropdown(false);
+                                                inputRef.current?.blur();
                                             }}
                                             role="button"
                                             tabIndex={0}
