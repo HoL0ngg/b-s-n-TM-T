@@ -247,6 +247,91 @@ class productController {
     // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
     getProductsController = async (req: Request, res: Response) => {
         try {
+            const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, rating, brand, } = req.query;
+            const categoryId = Number(req.params.id);
+            
+            // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
+            let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
+            const params: any[] = [];
+
+            if (subCategoryId && Number(subCategoryId) !== 0) {
+                whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
+                params.push(Number(subCategoryId));
+            }
+            else if (categoryId) {
+                // Sửa lỗi: Phải là v_products_list.generic_id
+                whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                params.push(categoryId);
+            }
+            if (minPrice) {
+                whereClause += " AND v_products_list.base_price >= ?";
+                params.push(minPrice);
+            }
+            if (maxPrice) {
+                whereClause += " AND v_products_list.base_price <= ?";
+                params.push(maxPrice);
+            }
+
+            // Rating
+            if (rating) {
+                whereClause += " AND v_products_list.avg_rating >= ?";
+                params.push(rating);
+            }
+            if (brand && typeof brand === "string" && brand.length > 0) {
+                const brandIds = brand.split(",").map(Number).filter(Boolean);
+                if (brandIds.length > 0) {
+                    const placeholders = brandIds.map(() => "?").join(",");
+                    whereClause += ` AND v_products_list.brand_id IN (${placeholders})`;
+                    params.push(...brandIds);
+                }
+            }
+
+            // (Không sort bằng SQL, để logic của 'main' sort bằng JS)
+            let orderBy = "";
+
+            const productsPromise = productService.getProductsService(whereClause, params, Number(page), Number(limit), orderBy);
+
+            let brandsPromise;
+            if (subCategoryId && Number(subCategoryId) !== 0) {
+                brandsPromise = productService.getBrandsOfProductByGenericIdSerivice(Number(subCategoryId));
+            } else if (categoryId) {
+                brandsPromise = productService.getBrandsOfProductByCategoryIdSerivice(categoryId);
+            }
+
+            const [productResult, brandsResult] = await Promise.all([productsPromise, brandsPromise,]);
+
+            // Lấy logic `sort` (sắp xếp) của 'main' (đồng đội)
+            let sortedProducts = [...productResult.products];
+            switch (sort) {
+                case "priceAsc":
+                    sortedProducts.sort((a, b) => a.base_price - b.base_price);
+                    break;
+                case "priceDesc":
+                    sortedProducts.sort((a, b) => b.base_price - a.base_price);
+                    break;
+                default:
+                    // Mặc định
+                    break;
+            }
+
+            res.status(200).json({
+                products: sortedProducts, // Trả về mảng đã sort
+                totalPages: productResult.totalPages,
+                brands: brandsResult,
+            });
+        } catch (error) {
+            console.error("Lỗi tại getProductsController:", error);
+            res.status(500).json({
+                message: "Lỗi máy chủ nội bộ",
+                error: error instanceof Error ? error.message : "Lỗi không xác định",
+            });
+        }
+    };
+    // ===== KẾT THÚC TRỘN (MERGE) HÀM NÀY =====
+
+    // ===== BẮT ĐẦU TRỘN (MERGE) HÀM NÀY =====
+    getProductsSearchController = async (req: Request, res: Response) => {
+        try {
             const {
                 page = 1,
                 limit = 12,
@@ -283,7 +368,6 @@ class productController {
                     const placeholders = ids.map(() => "?").join(",");
                     whereClause += ` AND v_products_list.generic_id IN (${placeholders})`;
                     params.push(...ids);
-                    console.log(`productController: ` + params);
                 }
             } else
             if (subCategoryId && Number(subCategoryId) !== 0) {
