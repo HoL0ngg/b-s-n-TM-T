@@ -92,7 +92,34 @@ export const fetchProductsByKeyWord = async (keyword: string): Promise<ProductTy
     const res = await axios.get(`${API_URL}/product/search?keyword=${keyword}`);
     return res.data;
 }
-export const fetchProducts = async (query: any, category_id?: number): Promise<ProductResponseType> => {
+
+export const fetchProducts = async (query: any, category_id: number): Promise<ProductResponseType> => {
+    const params = new URLSearchParams();
+    params.append("page", query.page);
+    params.append("limit", query.limit);
+    if (query.subCategoryId && query.subCategoryId !== 0) {
+        params.append('subCategoryId', query.subCategoryId);
+    }
+    if (query.sort && query.sort !== "default") {
+        params.append('sort', query.sort);
+    }
+    if (query.minPrice !== null) {
+        params.append('minPrice', query.minPrice);
+    }
+    if (query.maxPrice !== null) {
+        params.append('maxPrice', query.maxPrice);
+    }
+    if (query.rating && query.rating > 0) {
+        params.append('rating', query.rating);
+    }
+    if (query.brand && query.brand.length > 0) {
+        params.append('brand', query.brand.join(','));
+    }
+    const res = await axios.get(`${API_URL}/category/${category_id}?${params.toString()}`);
+    return res.data;
+}
+
+export const fetchProductsSearch = async (query: any): Promise<ProductResponseType> => {
     const params = new URLSearchParams();
     params.append("page", query.page);
     params.append("limit", query.limit);
@@ -119,18 +146,8 @@ export const fetchProducts = async (query: any, category_id?: number): Promise<P
         params.append('rating', query.rating);
     }
     
-    if (query.q) {
-        params.append('q', query.q);
-        const res = await axios.get(`${API_URL}/search?${params.toString()}`);
-        return res.data;
-    }
-
-    if (category_id) {
-        const res = await axios.get(`${API_URL}/category/${category_id}?${params.toString()}`);
-        return res.data;
-    }
-
-    const res = await axios.get(`${API_URL}/products?${params.toString()}`);
+    params.append('q', query.q);
+    const res = await axios.get(`${API_URL}/search?${params.toString()}`);
     return res.data;
 };
 export const fetchRelatedCategories = async (keyword: string) => {

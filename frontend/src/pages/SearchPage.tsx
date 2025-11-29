@@ -1,7 +1,7 @@
 // src/pages/SearchPage.tsx
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { fetchProducts, fetchRelatedCategories } from "../api/products";
+import { fetchProductsSearch, fetchRelatedCategories } from "../api/products";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import type { ProductType } from "../types/ProductType";
 import { FaLessThan, FaGreaterThan } from "react-icons/fa6";
@@ -76,7 +76,7 @@ const SearchPage: React.FC = () => {
       console.log(`${Date.now()} SEARCHING`);
       console.log(query.categories);
       
-      const res = await fetchProducts(fetchQuery, undefined);
+      const res = await fetchProductsSearch(fetchQuery);
       let fetched = res.products ?? [];
       const fetchedTotalPages = res.totalPages ?? 1;
 
