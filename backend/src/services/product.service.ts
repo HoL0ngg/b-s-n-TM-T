@@ -75,6 +75,7 @@ class productService {
             variant.options = optionRows.filter(opt => opt.variant_id === variant.id);
         });
         product.product_variants = variantRows;
+
         return product as Product;
     }
 

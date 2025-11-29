@@ -1,17 +1,12 @@
-// Đường dẫn: backend/src/controllers/product.controller.ts
-// (PHIÊN BẢN ĐÃ SỬA XUNG ĐỘT - ĐÃ TRỘN)
-
 import { Request, Response } from "express"
 import productService from "../services/product.service";
-// SỬA: Thêm import 'CreatePromotionData' từ nhánh 'main'
 import { CreatePromotionData } from "../models/product.model";
 
 class productController {
-    // ... (Tất cả các hàm GET (getProductOnIdController, ...) giữ nguyên) ...
     getProductOnIdController = async (req: Request, res: Response) => {
         try {
             const id = req.params.id;
-            const user_id = (req as any).user?.id;
+            const user_id = (req as any).user?.userId;
             const product = await productService.getProductOnIdService(Number(id));
             if (product && user_id) {
                 productService.logView(user_id, Number(product.id)).catch((err: any) => console.error("Lỗi ghi log xem sản phẩm:", err));
@@ -275,7 +270,7 @@ class productController {
             }
 
             // Apply category/subcategory filters (categories CSV takes precedence)
-            
+
             if (categories && typeof categories === "string" && categories.trim().length > 0) {
                 // categories passed from SearchPage -> expected to be generic ids (subcategories)
                 const ids = categories.split(",").map((s: string) => Number(s)).filter(Boolean);
@@ -286,16 +281,16 @@ class productController {
                     console.log(`productController: ` + params);
                 }
             } else
-            if (subCategoryId && Number(subCategoryId) !== 0) {
-                whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
-                params.push(Number(subCategoryId));
-            } else
-                if (categoryId) {
-                    // Sửa lỗi: Phải là v_products_list.generic_id
-                    whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
-                    params.push(categoryId);
-                        
-                }
+                if (subCategoryId && Number(subCategoryId) !== 0) {
+                    whereClause += " AND v_products_list.generic_id = ?"; // (Sửa lỗi)
+                    params.push(Number(subCategoryId));
+                } else
+                    if (categoryId) {
+                        // Sửa lỗi: Phải là v_products_list.generic_id
+                        whereClause += " AND v_products_list.generic_id IN (SELECT gen.id FROM generic gen WHERE gen.category_id = ?)";
+                        params.push(categoryId);
+
+                    }
 
             // Price filters
             if (minPrice) {
