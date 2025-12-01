@@ -51,7 +51,7 @@ import AdminShopDetail from "./pages/Admin/AdminShopDetail";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import AdminOrders from "./pages/Admin/AdminOrders";
 import SearchPage from "./pages/SearchPage";
-
+import PaymentReturnPage from "./pages/Checkout/PaymentReturnPage";
 function App() {
   return (
     <BrowserRouter>
@@ -65,6 +65,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgetPassword />} />
           <Route path="/category/:id" element={<Category_fixed />} />
 
+          <Route path="/vnpay-return" element={<PaymentReturnPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/register-shop" element={<RegisterShop />} />

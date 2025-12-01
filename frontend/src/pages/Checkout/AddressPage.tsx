@@ -11,7 +11,7 @@ import { FaAngleDown } from "react-icons/fa6";
 import { FaMoneyBillWave } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import AddressModal from "../../components/AddressModel";
-import { createPayment_momo, createPayment_vnpay, handleShipCod } from "../../api/payments";
+import { createPayment_vnpay, handleShipCod } from "../../api/payments";
 import { calculateShippingFee } from "../../api/shipping";
 import Swal from "sweetalert2";
 import { useCart } from "../../context/CartContext";
@@ -195,8 +195,8 @@ export const AddressPage = () => {
             switch (provider) {
                 case 'vnpay':
                     return await createPayment_vnpay(data);
-                case 'momo':
-                    return await createPayment_momo(data);
+                // case 'momo':
+                //     return await createPayment_momo(data);
                 default:
                     throw new Error(`Nhà cung cấp chưa được hỗ trợ: ${provider}`);
             }
@@ -390,7 +390,7 @@ export const AddressPage = () => {
                                     {show ? (<FaAngleUp className="text-primary ms-4" />) : (<FaAngleDown className="text-primary ms-4" />)}
                                 </div>
                                 <div>
-                                    Chọn địa chỉ khác đê
+                                    Chọn địa chỉ khác
                                 </div>
                             </div>
 
@@ -469,10 +469,10 @@ export const AddressPage = () => {
                                     <FaMoneyBillWave className="ms-1 fs-3" style={{ color: '#98cb75' }} />
                                 </div>
                                 <div>
-                                    Chọn thanh toán khi nhận hàng đê
+                                    Chọn thanh toán khi nhận hàng
                                 </div>
                             </div>
-                            <div
+                            {/* <div
                                 className="d-flex align-items-center gap-3 border-top p-2 pointer"
                                 onClick={() => setSelectedMethod('momo')}
                                 onMouseEnter={() => setHoveredMethod('momo')}
@@ -487,9 +487,9 @@ export const AddressPage = () => {
                                     <img src="/assets/momo.png" alt="MoMo" style={{ height: '30px', width: '30px' }} className="ms-1" />
                                 </div>
                                 <div>
-                                    Chọn mono đê
+                                    Chọn mono
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div
                                 className="d-flex align-items-center gap-3 border-top p-2 pointer"
@@ -506,7 +506,7 @@ export const AddressPage = () => {
                                     <img src="/assets/vnpay.svg" alt="VNPay" style={{ height: '30px', width: '30px' }} className="ms-1" />
                                 </div>
                                 <div>
-                                    Chọn vnpay đê
+                                    Chọn vnpay
                                 </div>
                             </div>
 
