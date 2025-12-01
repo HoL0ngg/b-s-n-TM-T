@@ -23,11 +23,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
         }
         return url;
     };
-    // =======================================
-    console.log(product.image_url);
-    console.log(getImageUrl(product.image_url));
-
-
 
     return (
         <div

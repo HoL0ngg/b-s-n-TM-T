@@ -205,7 +205,7 @@ class productController {
     // --- (Các hàm GET còn lại giữ nguyên) ---
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
-            const userId = (req as any).user?.id;
+            const userId = (req as any).user.userId;
             const products = await productService.getForYouRecommendations(userId);
             res.status(200).json(products);
         } catch (error: any) {
@@ -244,7 +244,7 @@ class productController {
         try {
             const { page = 1, limit = 12, sort = "default", subCategoryId, minPrice, maxPrice, rating, brand, } = req.query;
             const categoryId = Number(req.params.id);
-            
+
             // Lấy logic `WHERE` của đồng đội (main) VÀ sửa lỗi
             let whereClause = "WHERE v_products_list.status = 1 AND v_products_list.shop_status = 1"; // (Từ 'main')
             const params: any[] = [];

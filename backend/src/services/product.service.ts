@@ -437,6 +437,8 @@ class productService {
         const [relatedCategoryIds] = await pool.query<RowDataPacket[]>(`SELECT DISTINCT generic_id FROM products WHERE id IN (?) AND status = 1`, [productIds]);
         if (relatedCategoryIds.length === 0) { return this.getRandomRecommendations(); }
         const categoryIds = relatedCategoryIds.map(row => row.generic_id);
+        console.log(categoryIds);
+
         const [recommendations] = await pool.query(`SELECT * FROM v_products_list WHERE generic_id IN (?) AND id NOT IN (?) AND status = 1 ORDER BY RAND() LIMIT 15`, [categoryIds, productIds]);
         return recommendations;
     }
