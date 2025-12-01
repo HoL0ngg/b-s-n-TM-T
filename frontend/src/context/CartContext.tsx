@@ -57,7 +57,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const handleKeuDangNhap = () => {
         Swal.fire({
             title: "Thông báo!",
-            text: "Đăng nhập đi b ei",
+            text: "Vui lòng đăng nhập vào tài khoản",
             icon: "info",
             confirmButtonText: "OK"
         });

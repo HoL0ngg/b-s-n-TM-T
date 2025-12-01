@@ -133,8 +133,8 @@ export default function Cart() {
         deleteProductOnCart(product_id);
     }
 
-    if (!user) return (<div>Đăng nhập đi b ei</div>)
-    if (!cart) return (<div>Đang tải b ei</div>)
+    if (!user) return (<div>Vui lòng đăng nhập vào tài khoản</div>)
+    if (!cart) return (<div>Đang tải.....</div>)
     console.log(cart);
 
     return (
@@ -143,7 +143,7 @@ export default function Cart() {
                 {cart.length == 0 ?
                     (<div className="d-flex justify-content-center mt-4 flex-column align-items-center gap-4">
                         <BsCartXFill className="fs-1 text-primary" />
-                        <div className="fs-3 text-primary fw-bolder">Mua hàng đi b ei</div>
+                        <div className="fs-3 text-primary fw-bolder">Vui lòng mua hàng</div>
                     </div>)
                     :
                     (<div className="container p-4">

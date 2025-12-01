@@ -103,14 +103,14 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
 
     const validateData = () => {
         if (!isValidPhoneNumber(phone)) {
-            alert("Nhập đúng sđt đi b ei")
+            alert("Vui lòng nhập đúng số điện thoại")
             return false;
         }
         if (!isLength(name, { min: 1, max: 20 })) {
             return false;
         }
         if (!isLength(street, { min: 10 })) {
-            alert("Nhập địa chỉ dài dài lên b ei")
+            alert("Vui lòng nhập địa chỉ hợp lệ")
             return false;
         }
 
@@ -120,7 +120,7 @@ export default function AddressModal({ isShow, onClose, address, onSaveSuccess }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !phone || !selectedCityName || !selectedWardName || !street) {
-            alert("Nhập đủ thông tin đi b ei");
+            alert("Vui lòng nhập đủ thông tin");
             return;
         }
         if (!validateData()) return false;
