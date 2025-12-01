@@ -49,7 +49,7 @@ export default function Address() {
         setIsShow(true);
     };
 
-    if (!user) return (<div>Đang tải b ei</div>);
+    if (!user) return (<div>Đang tải.....</div>);
     return (
         <div>
             <AddressModal isShow={isShow} onClose={handleCloseModal} onSaveSuccess={handleSaveSuccess} address={editingAddress} />
@@ -91,7 +91,7 @@ export default function Address() {
                     </div>
                 </div>
             )) :
-                (<div className="text-center text-primary fs-4"><div>Chưa có địa chỉ b ei</div><div><MdOutlineAddHomeWork className="fs-1" /></div></div>)}
+                (<div className="text-center text-primary fs-4"><div>Chưa có địa chỉ</div><div><MdOutlineAddHomeWork className="fs-1" /></div></div>)}
 
         </div>
     );

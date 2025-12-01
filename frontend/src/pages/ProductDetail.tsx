@@ -336,7 +336,7 @@ const ProductDetail = () => {
                         </div>
                     </div>
                 )) : (
-                    <div className="fs-4 text-center mt-4">Chưa có đánh giá b ei</div>
+                    <div className="fs-4 text-center mt-4">Chưa có đánh giá</div>
                 )}
             </div>
         </div >
