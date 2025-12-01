@@ -78,6 +78,9 @@ export const deleteProduct = async (productId: number) => {
 // (Các hàm recommend/search... giữ nguyên)
 export const apiGetForYouRecommendations = async () => {
     const res = await axios.get(`${API_URL}/recommend/for-you`);
+    console.log(res.data);
+    console.log("hihihihi");
+
     return res.data;
 }
 export const apiGetHotRecommendations = async () => {
@@ -145,7 +148,7 @@ export const fetchProductsSearch = async (query: any): Promise<ProductResponseTy
     if (query.rating && query.rating > 0) {
         params.append('rating', query.rating);
     }
-    
+
     params.append('q', query.q);
     const res = await axios.get(`${API_URL}/search?${params.toString()}`);
     return res.data;

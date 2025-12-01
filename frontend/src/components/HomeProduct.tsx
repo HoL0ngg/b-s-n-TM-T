@@ -27,6 +27,7 @@ export default function HomeProduct() {
                         data = await apiGetHotRecommendations();
                         break;
                 }
+
                 if (isActive) {
                     // Dữ liệu trả về có thể là mảng hoặc object { products: [...] } tùy API
                     // Nếu API trả về mảng trực tiếp thì gán luôn
@@ -39,7 +40,6 @@ export default function HomeProduct() {
                     }
                 }
             } catch (err) {
-                console.log(err);
             } finally {
                 if (isActive) {
                     setLoading(false);
