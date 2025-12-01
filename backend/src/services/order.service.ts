@@ -3,6 +3,7 @@ import * as OrderModel from '../models/order.model';
 import * as ShopModel from '../models/shop.model';
 import pool from '../config/db';
 import { VALID_TRANSITIONS } from '../constants/order-status';
+import cartService from './cart.service';
 
 class OrderService {
     getOrdersForShop = async (userId: string, status: string | undefined) => {
@@ -25,10 +26,10 @@ class OrderService {
 
         // Validate transition
         const allowedTransitions = VALID_TRANSITIONS[currentStatus];
-        
+
         // Allow same status update (idempotent) or check valid transition
         if (currentStatus !== newStatus) {
-             if (!allowedTransitions || !allowedTransitions.includes(newStatus)) {
+            if (!allowedTransitions || !allowedTransitions.includes(newStatus)) {
                 throw new Error(`Không thể chuyển trạng thái từ '${currentStatus}' sang '${newStatus}'.`);
             }
         }
@@ -228,6 +229,10 @@ class OrderService {
                 );
             }
 
+            // Xóa các sản phẩm đã đặt khỏi giỏ hàng
+            const variantIdsToDelete = Array.from(needed.keys());
+            await cartService.deleteCartItems(userId, variantIdsToDelete);
+
             await connection.commit();
             return orderIds;
         } catch (error) {
@@ -251,7 +256,7 @@ class OrderService {
                 `,
                 [orderIds]
             );
-            if(!aggRows.length) {
+            if (!aggRows.length) {
                 await conn.commit();
                 return;
             }
@@ -263,7 +268,7 @@ class OrderService {
                 [variantIds]
             );
 
-            if(!locked.length) {
+            if (!locked.length) {
                 await conn.rollback();
                 throw new Error("Không tìm thấy variant products");
             }
@@ -283,7 +288,7 @@ class OrderService {
                 SET stock = CASE ${cases.join(" ")} ELSE stock END
                 where id IN (?);
             `;
-            
+
             await conn.query(sql, [...params, variantIds]);
             await conn.commit();
 

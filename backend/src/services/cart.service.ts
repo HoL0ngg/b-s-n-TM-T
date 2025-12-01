@@ -195,6 +195,24 @@ class CartService {
             throw new Error('Lỗi CSDL khi lấy giỏ hàng');
         }
     }
+
+    deleteCartItems = async (user_id: number, variant_ids: number[]) => {
+        if (!variant_ids || variant_ids.length === 0) return true;
+
+        const placeholders = variant_ids.map(() => '?').join(',');
+        const sql = `
+            DELETE FROM cart
+            WHERE user_id = ? AND product_variant_id IN (${placeholders})
+        `;
+
+        try {
+            const [result] = await pool.query<ResultSetHeader>(sql, [user_id, ...variant_ids]);
+            return result.affectedRows > 0;
+        } catch (err) {
+            console.log(err);
+            throw new Error('Lỗi CSDL khi xóa sản phẩm khỏi giỏ hàng');
+        }
+    }
 }
 
 export default new CartService();

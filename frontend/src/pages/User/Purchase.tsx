@@ -20,6 +20,8 @@ export default function Purchase() {
     const [reviewRating, setReviewRating] = useState(5);
     const [confirmedOrders, setConfirmedOrders] = useState<Set<number>>(new Set());
     const [reviewedOrders, setReviewedOrders] = useState<Set<number>>(new Set());
+    const [loadingOrderId, setLoadingOrderId] = useState<number | null>(null);
+    const [loadingDetailId, setLoadingDetailId] = useState<number | null>(null);
 
     // Load orders based on active tab, page, and sort
     useEffect(() => {
@@ -41,7 +43,7 @@ export default function Purchase() {
                 return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
             });
             console.log(ordersList);
-            
+
             setOrders(ordersList);
 
             // Check which orders have been reviewed
@@ -84,12 +86,15 @@ export default function Purchase() {
 
     const handleCancelOrder = async (orderId: number) => {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+        setLoadingOrderId(orderId);
         try {
             await apiCancelOrder(orderId);
             alert("Hủy đơn hàng thành công!");
             loadOrders(activeTab, currentPage);
         } catch (err: any) {
             alert(err.response?.data?.message || "Không thể hủy đơn hàng");
+        } finally {
+            setLoadingOrderId(null);
         }
     };
 
@@ -127,12 +132,15 @@ export default function Purchase() {
     };
 
     const handleViewDetails = async (orderId: number) => {
+        setLoadingDetailId(orderId);
         try {
             const data = await apiGetOrderDetail(orderId);
             setSelectedOrder(data);
             setShowModal(true);
         } catch (err: any) {
             alert("Không thể tải chi tiết đơn hàng");
+        } finally {
+            setLoadingDetailId(null);
         }
     };
 
@@ -288,15 +296,31 @@ export default function Purchase() {
                                     <button
                                         className="btn btn-outline-primary btn-sm"
                                         onClick={() => handleViewDetails(order.order_id)}
+                                        disabled={loadingDetailId === order.order_id}
                                     >
-                                        Xem chi tiết
+                                        {loadingDetailId === order.order_id ? (
+                                            <>
+                                                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                Đang tải...
+                                            </>
+                                        ) : (
+                                            'Xem chi tiết'
+                                        )}
                                     </button>
                                     {order.status.toLowerCase() === "pending" && (
                                         <button
                                             className="btn btn-outline-danger btn-sm"
                                             onClick={() => handleCancelOrder(order.order_id)}
+                                            disabled={loadingOrderId === order.order_id}
                                         >
-                                            Hủy đơn
+                                            {loadingOrderId === order.order_id ? (
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                    Đang hủy...
+                                                </>
+                                            ) : (
+                                                'Hủy đơn'
+                                            )}
                                         </button>
                                     )}
                                     {order.status.toLowerCase() === "shipping" && !confirmedOrders.has(order.order_id) && (

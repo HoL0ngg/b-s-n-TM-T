@@ -34,6 +34,7 @@ export const AddressPage = () => {
     const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
     const [shippingFees, setShippingFees] = useState<{ [shopId: number]: number }>({});
     const [isCalculatingShip, setIsCalculatingShip] = useState(false);
+    const [loadingPayment, setLoadingPayment] = useState(false);
 
     const groupedCart: CartType[] = useMemo(() => {
         // Nếu không có giỏ hàng, trả về mảng rỗng
@@ -233,6 +234,8 @@ export const AddressPage = () => {
             return;
         }
 
+        setLoadingPayment(true);
+
         const checkoutData = {
             total: finalTotal,
             shippingFees: shippingFees,
@@ -242,6 +245,7 @@ export const AddressPage = () => {
         };
 
         if (selectedMethod === "cod") {
+            setLoadingPayment(true);
             try {
                 const response = await handleShipCod(checkoutData);
                 if (response.success) {
@@ -271,6 +275,7 @@ export const AddressPage = () => {
                 }
             } catch (error) {
                 console.log(error);
+                setLoadingPayment(false);
 
                 const errorData = (error as any).response.data;
                 console.error(errorData.message);
@@ -289,6 +294,8 @@ export const AddressPage = () => {
         const paymentUrl = await handleCreatePaymentUrl(selectedMethod, checkoutData);
         if (paymentUrl) {
             window.location.href = paymentUrl;
+        } else {
+            setLoadingPayment(false);
         }
     };
 
@@ -358,8 +365,20 @@ export const AddressPage = () => {
                                                 </div>
                                                 <div className="text-end">
                                                     <div className="text-primary fw-semibold">{subTotal.toLocaleString('vi-VN')}đ</div>
-                                                    <div className="text-primary fw-semibold">{fee ? `${fee.toLocaleString()}đ` : "---"}</div>
-                                                    <div className="text-danger fw-bold">{totall.toLocaleString('vi-VN')}đ</div>
+                                                    <div className="text-primary fw-semibold">
+                                                        {isCalculatingShip ? (
+                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                        ) : (
+                                                            fee ? `${fee.toLocaleString()}đ` : "---"
+                                                        )}
+                                                    </div>
+                                                    <div className="text-danger fw-bold">
+                                                        {isCalculatingShip ? (
+                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                        ) : (
+                                                            `${totall.toLocaleString('vi-VN')}đ`
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -513,9 +532,28 @@ export const AddressPage = () => {
                         </div>
                         <div className="d-flex justify-content-between my-4 p-4 rounded" style={{ border: '2px solid #ff7708', backgroundColor: '#FFE8D4', color: '#CC5200' }}>
                             <div>Tổng cộng:</div>
-                            <div>{finalTotal.toLocaleString('vi-VN')}đ</div>
+                            <div>
+                                {isCalculatingShip ? (
+                                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                ) : (
+                                    `${finalTotal.toLocaleString('vi-VN')}đ`
+                                )}
+                            </div>
                         </div>
-                        <div className="btn btn-primary w-100 p-2" onClick={handlePlaceOrder}>ĐẶT HÀNG</div>
+                        <button
+                            className="btn btn-primary w-100 p-2"
+                            onClick={handlePlaceOrder}
+                            disabled={loadingPayment}
+                        >
+                            {loadingPayment ? (
+                                <>
+                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Đang xử lý...
+                                </>
+                            ) : (
+                                'ĐẶT HÀNG'
+                            )}
+                        </button>
                     </div>
                 </div>
                 {/* ... */}
