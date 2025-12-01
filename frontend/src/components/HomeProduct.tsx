@@ -54,6 +54,9 @@ export default function HomeProduct() {
         }
     }, [selectedList])
 
+    console.log(products);
+
+
     const handleChangeMenu = (id: number) => {
         if (id == selectedList) return;
         setSelectedList(id);

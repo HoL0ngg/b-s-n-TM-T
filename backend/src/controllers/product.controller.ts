@@ -205,11 +205,15 @@ class productController {
     // --- (Các hàm GET còn lại giữ nguyên) ---
     getRecommendedProduct = async (req: Request, res: Response) => {
         try {
-            const userId = (req as any).user.userId;
+            const userId = (req as any).user?.userId;
+            console.log(userId);
+
             const products = await productService.getForYouRecommendations(userId);
             res.status(200).json(products);
         } catch (error: any) {
             res.status(500).json({ error: error.message });
+            console.log(error);
+
         }
     }
     getProductsByKeyWordController = async (req: Request, res: Response) => {
