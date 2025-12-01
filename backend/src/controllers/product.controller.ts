@@ -349,9 +349,10 @@ class productController {
             if (q && String(q).trim().length > 0) {
                 isSearch = true;
                 const keyword = String(q).trim();
-                whereClause += ` AND (v_products_list.name LIKE ? OR v_products_list.description LIKE ?)`;
-                const like = `%${keyword}%`;
-                params.push(like, like);
+                // whereClause += ` AND (v_products_list.name LIKE ? OR v_products_list.description LIKE ?)`;
+                whereClause += ` AND BINARY LOWER(v_products_list.name) LIKE LOWER(CONCAT('%', ? , '%'))`;
+                const like = keyword;
+                params.push(like);
             }
 
             // Apply category/subcategory filters (categories CSV takes precedence)

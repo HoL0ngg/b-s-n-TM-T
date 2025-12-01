@@ -575,19 +575,20 @@ class productService {
     getRelatedCategoriesByKeyword = async (keyword: string): Promise<CategoryCount[]> => {
         if (!keyword || keyword.trim().length === 0) return [];
 
-        const like = `%${keyword.trim()}%`;
+        // const like = `%${keyword.trim()}%`;
+        const like = keyword.trim();
         const sql = `
             SELECT gen.id, gen.name, COUNT(DISTINCT p.id) AS match_count
             FROM generic gen
             JOIN v_products_list p ON p.generic_id = gen.id
             WHERE p.status = 1
             AND p.shop_status = 1
-            AND (p.name LIKE ? OR p.description LIKE ?)
+            AND BINARY LOWER(p.name) LIKE LOWER(CONCAT('%', ? , '%'))
             GROUP BY gen.id
             ORDER BY match_count DESC
             LIMIT 20;
         `;
-        const params = [like, like];
+        const params = [like];
         const [rows] = await pool.query<RowDataPacket[] & CategoryCount[]>(sql, params);
         return (rows as CategoryCount[]).map(r => ({ id: Number(r.id), name: r.name, match_count: Number(r.match_count) }));
     };
