@@ -31,6 +31,7 @@ export interface OrderDetailType {
     order_date: string;
     total_amount: number;
     status: 'Pending' | 'Confirmed' | 'Shipping' | 'Delivered' | 'Cancelled' | 'Returns';
+    payment_status: string;
     payment_method: string;
     note: string;
     shipping_address: string;
@@ -60,4 +61,5 @@ export interface OrderDetailType {
     price_at_purchase: number;
     subtotal: number;
     options_string?: string; // Ví dụ: màu sắc, kích thước
+    payment_status: string;
 }

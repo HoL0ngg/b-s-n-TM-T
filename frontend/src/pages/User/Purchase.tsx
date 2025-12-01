@@ -138,11 +138,11 @@ export default function Purchase() {
 
     const getStatusBadge = (status: string) => {
         const statusMap: { [key: string]: { class: string; text: string } } = {
-            pending: { class: "bg-warning text-dark", text: "Chờ xác nhận" },
-            confirmed: { class: "bg-info text-white", text: "Đã xác nhận" },
-            shipping: { class: "bg-primary", text: "Đang giao" },
-            delivered: { class: "bg-success", text: "Hoàn thành" },
-            cancelled: { class: "bg-danger", text: "Đã hủy" },
+            pending: { class: "bg-warning text-dark py-2 px-3", text: "Chờ xác nhận" },
+            confirmed: { class: "bg-info text-white py-2 px-3", text: "Đã xác nhận" },
+            shipping: { class: "bg-primary py-2 px-3", text: "Đang giao" },
+            delivered: { class: "bg-success py-2 px-3", text: "Hoàn thành" },
+            cancelled: { class: "bg-danger py-2 px-3", text: "Đã hủy" },
         };
         const s = statusMap[status.toLowerCase()] || { class: "bg-secondary", text: status };
         return <div className={`badge ${s.class}`}>{s.text}</div>;
@@ -150,8 +150,9 @@ export default function Purchase() {
 
     const getPaymentStatusBadge = (status: string) => {
         const statusMap: { [key: string]: { class: string; text: string } } = {
-            unpaid: { class: "bg-warning text-dark", text: "Chưa thanh toán" },
-            paid: { class: "bg-success", text: "Đã thanh toán" },
+            unpaid: { class: "bg-warning text-dark py-2 px-3", text: "Chưa thanh toán" },
+            paid: { class: "bg-success py-2 px-3", text: "Đã thanh toán" },
+            failed: { class: "bg-danger py-2 px-3", text: "Thanh toán thất bại" },
         };
         const s = statusMap[status.toLowerCase()] || { class: "bg-secondary", text: status };
         return <div className={`badge ${s.class}`}>{s.text}</div>;
@@ -271,7 +272,7 @@ export default function Purchase() {
                                     )}
                                 </div>
                                 <div className="d-flex flex-column gap-2">
-                                    {getStatusBadge(order.status)}
+                                    {order.payment_status !== "Failed" ? getStatusBadge(order.status) : ""}
                                     {getPaymentStatusBadge(order.payment_status)}
                                 </div>
                             </div>
@@ -417,6 +418,11 @@ export default function Purchase() {
                                         <strong>Trạng thái:</strong>{" "}
                                         {getStatusBadge(selectedOrder.status)}
                                     </p>
+                                    <p className="mb-1">
+                                        <strong>Thanh toán:</strong>{" "}
+                                        {getPaymentStatusBadge(selectedOrder.payment_status)}
+                                    </p>
+
                                     <p className="mb-1">
                                         <strong>Phương thức thanh toán:</strong>{" "}
                                         {selectedOrder.payment_method}

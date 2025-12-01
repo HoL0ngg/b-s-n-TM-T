@@ -238,6 +238,62 @@ class OrderService {
         }
     }
 
+    restoreStock = async (orderIds) => {
+        if (!orderIds || orderIds.length === 0) return;
+        const conn = await pool.getConnection();
+        try {
+            await conn.beginTransaction();
+            const [aggRows] = await conn.query<RowDataPacket[]>(
+                `SELECT variant_id, SUM(quantity) AS sumQty
+                 FROM order_items
+                 WHERE order_id IN (?)
+                 GROUP BY variant_id
+                `,
+                [orderIds]
+            );
+            if(!aggRows.length) {
+                await conn.commit();
+                return;
+            }
+
+            const variantIds = aggRows.map(r => r.variant_id);
+
+            const [locked] = await conn.query<RowDataPacket[]>(
+                `SELECT id FROM productvariants WHERE id in (?) FOR UPDATE`,
+                [variantIds]
+            );
+
+            if(!locked.length) {
+                await conn.rollback();
+                throw new Error("Không tìm thấy variant products");
+            }
+
+            const cases: string[] = [];
+            const params: Array<number> = [];
+
+            for (const r of aggRows) {
+                const qty = Number(r.sumQty) || 0;
+                const id = Number(r.variant_id);
+                cases.push(`WHEN id = ? THEN stock + ?`);
+                params.push(id, qty);
+            }
+
+            const sql = `
+                UPDATE productvariants
+                SET stock = CASE ${cases.join(" ")} ELSE stock END
+                where id IN (?);
+            `;
+            
+            await conn.query(sql, [...params, variantIds]);
+            await conn.commit();
+
+        } catch (error) {
+            await conn.rollback();
+            throw error;
+        } finally {
+            conn.release();
+        }
+    }
     updateOrderPaymentStatus = async (orderId, newPaymentStatus) => {
         const [result] = await pool.query<ResultSetHeader>(
             `UPDATE orders SET payment_status = ? WHERE order_id = ?`,

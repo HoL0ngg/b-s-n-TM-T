@@ -142,10 +142,20 @@ class PaymentController {
             },);
             
             if(!verify.isVerified) {
+                const orderIds = verify.vnp_TxnRef.split('-').slice(1);
+                await this.restoreStock(orderIds);
+                orderIds.forEach((orderId) => {
+                    orderService.updateOrderPaymentStatus(orderId, `Failed`);
+                });
                 return res.json(IpnFailChecksum);
             }
 
             if (!verify.isSuccess) {
+                const orderIds = verify.vnp_TxnRef.split('-').slice(1);
+                await this.restoreStock(orderIds);
+                orderIds.forEach((orderId) => {
+                    orderService.updateOrderPaymentStatus(orderId, `Failed`);
+                });
                 return res.json(IpnUnknownError);
             }
             const orderIds = verify.vnp_TxnRef.split('-').slice(1);
@@ -194,6 +204,16 @@ class PaymentController {
                 success: false,
                 message: (error as any).message || 'Internal server error'
             });
+        }
+    };
+
+    restoreStock = async (orderIds) => {
+        try {
+            console.log(orderIds);
+            await orderService.restoreStock(orderIds);
+        } catch (error) {
+            console.error(`restoreStock error: `, error);
+            throw error
         }
     };
 
