@@ -7,10 +7,10 @@ export const createPayment_vnpay = async (checkoutData: any) => {
     return res.data;
 }
 
-export const createPayment_momo = async (checkoutData: any) => {
-    const res = await axios.post(`${API_URL}/momo`, checkoutData);
-    return res.data;
-}
+// export const createPayment_momo = async (checkoutData: any) => {
+//     const res = await axios.post(`${API_URL}/momo`, checkoutData);
+//     return res.data;
+// }
 
 export const handleShipCod = async (checkoutData: any) => {
     const res = await axios.post(`${API_URL}/cod`, checkoutData);

@@ -58,79 +58,79 @@ class PaymentController {
         }
     };
 
-    createPayment_momo = async (req: Request, res: Response) => {
-        const order = {
-            id: `ORDER_TESTING_${Date.now()}`,
-            user_id: (req as any).user.id,
-            amount: (req as any).body.total,
-        }
+    // createPayment_momo = async (req: Request, res: Response) => {
+    //     const order = {
+    //         id: `ORDER_TESTING_${Date.now()}`,
+    //         user_id: (req as any).user.id,
+    //         amount: (req as any).body.total,
+    //     }
 
-        const partnerCode = process.env.MOMO_PARTNER_CODE!;
-        const accessKey = process.env.MOMO_ACCESS_KEY!;
+    //     const partnerCode = process.env.MOMO_PARTNER_CODE!;
+    //     const accessKey = process.env.MOMO_ACCESS_KEY!;
 
-        const secretkey = process.env.MOMO_SECRET_KEY!;
-        const requestId = partnerCode + new Date().getTime();
-        const orderId = order.id;
-        const orderInfo = `Thanh toan don hang ${orderId}`;
-        const returnUrl = process.env.MOMO_RETURN_URL!;
-        const ipnUrl = process.env.MOMO_IPN_URL!;
+    //     const secretkey = process.env.MOMO_SECRET_KEY!;
+    //     const requestId = partnerCode + new Date().getTime();
+    //     const orderId = order.id;
+    //     const orderInfo = `Thanh toan don hang ${orderId}`;
+    //     const returnUrl = process.env.MOMO_RETURN_URL!;
+    //     const ipnUrl = process.env.MOMO_IPN_URL!;
 
-        const amount = order.amount;
-        const requestType = "payWithMethod"
-        const extraData = ""; //pass empty value if your merchant does not have stores
+    //     const amount = order.amount;
+    //     const requestType = "payWithMethod"
+    //     const extraData = ""; //pass empty value if your merchant does not have stores
 
-        //before sign HMAC SHA256 with format
-        //accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&returnUrl=$returnUrl&requestId=$requestId&requestType=$requestType
-        const rawSignature = "accessKey=" + accessKey + "&amount=" + amount + "&extraData=" + extraData + "&ipnUrl=" + ipnUrl + "&orderId=" + orderId + "&orderInfo=" + orderInfo + "&partnerCode=" + partnerCode + "&redirectUrl=" + returnUrl + "&requestId=" + requestId + "&requestType=" + requestType
-        //puts raw signature
-        console.log("--------------------RAW SIGNATURE----------------")
-        console.log(rawSignature)
-        //signature
-        const crypto = require('crypto');
-        const signature = crypto.createHmac('sha256', secretkey)
-            .update(rawSignature)
-            .digest('hex');
-        console.log("--------------------SIGNATURE----------------")
-        console.log(signature)
+    //     //before sign HMAC SHA256 with format
+    //     //accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&returnUrl=$returnUrl&requestId=$requestId&requestType=$requestType
+    //     const rawSignature = "accessKey=" + accessKey + "&amount=" + amount + "&extraData=" + extraData + "&ipnUrl=" + ipnUrl + "&orderId=" + orderId + "&orderInfo=" + orderInfo + "&partnerCode=" + partnerCode + "&redirectUrl=" + returnUrl + "&requestId=" + requestId + "&requestType=" + requestType
+    //     //puts raw signature
+    //     console.log("--------------------RAW SIGNATURE----------------")
+    //     console.log(rawSignature)
+    //     //signature
+    //     const crypto = require('crypto');
+    //     const signature = crypto.createHmac('sha256', secretkey)
+    //         .update(rawSignature)
+    //         .digest('hex');
+    //     console.log("--------------------SIGNATURE----------------")
+    //     console.log(signature)
 
-        //json object send to MoMo endpoint
-        const requestBody = JSON.stringify({
-            partnerCode: partnerCode,
-            accessKey: accessKey,
-            requestId: requestId,
-            amount: amount,
-            orderId: orderId,
-            orderInfo: orderInfo,
-            redirectUrl: returnUrl,
-            ipnUrl: ipnUrl,
-            extraData: extraData,
-            requestType: requestType,
-            signature: signature,
-            lang: 'vi'
-        });
+    //     //json object send to MoMo endpoint
+    //     const requestBody = JSON.stringify({
+    //         partnerCode: partnerCode,
+    //         accessKey: accessKey,
+    //         requestId: requestId,
+    //         amount: amount,
+    //         orderId: orderId,
+    //         orderInfo: orderInfo,
+    //         redirectUrl: returnUrl,
+    //         ipnUrl: ipnUrl,
+    //         extraData: extraData,
+    //         requestType: requestType,
+    //         signature: signature,
+    //         lang: 'vi'
+    //     });
 
 
-        try {
-            const response = await axios.post("https://test-payment.momo.vn/v2/gateway/api/create", requestBody, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+    //     try {
+    //         const response = await axios.post("https://test-payment.momo.vn/v2/gateway/api/create", requestBody, {
+    //             headers: {
+    //                 'Content-Type': 'application/json'
+    //             }
+    //         });
 
-            const paymentUrl = (response as any).data.payUrl;
-            return res.status(201).json({
-                success: true,
-                paymentUrl,
-                order,
-            });
-        } catch (error) {
-            console.log(`Prolem with request: ${(error as any).message}`);
-            return res.status(500).json({
-                success: false,
-                message: 'Lỗi khi tạo URL thanh toán',
-            });
-        }
-    };
+    //         const paymentUrl = (response as any).data.payUrl;
+    //         return res.status(201).json({
+    //             success: true,
+    //             paymentUrl,
+    //             order,
+    //         });
+    //     } catch (error) {
+    //         console.log(`Prolem with request: ${(error as any).message}`);
+    //         return res.status(500).json({
+    //             success: false,
+    //             message: 'Lỗi khi tạo URL thanh toán',
+    //         });
+    //     }
+    // };
 
     handleIpn_vnpay = async (req, res) => {
         try {

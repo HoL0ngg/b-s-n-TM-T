@@ -39,7 +39,7 @@ export default function Footer() {
                     {/* --- Cột 3: Thanh toán & Kết nối --- */}
                     <div className="col-lg-2 col-md-6">
                         <h5 className="text-dark fw-semibold mb-3">Thanh toán</h5>
-                        <img src="assets/momo.png" alt="MoMo" style={{ height: '30px', marginRight: '10px' }} />
+                        {/* <img src="assets/momo.png" alt="MoMo" style={{ height: '30px', marginRight: '10px' }} /> */}
                         <img src="assets/vnpay.svg" alt="VNPay" style={{ height: '30px' }} />
 
                         <h5 className="text-dark fw-semibold mb-3 mt-4">Kết nối</h5>

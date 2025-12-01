@@ -11,6 +11,6 @@ router.post('/cod', verifyToken, paymentController.createOrder, (req, res) => {
         message: "Thêm đơn hàng thành công"
     })
 });
-router.post('/momo', verifyToken, paymentController.createPayment_momo);    
+// router.post('/momo', verifyToken, paymentController.createPayment_momo);    
 router.get('/vnpay/ipn', paymentController.handleIpn_vnpay);
 export default router;

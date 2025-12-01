@@ -91,7 +91,7 @@ export async function getChatReply(message: string): Promise<string> {
    - Chọn sản phẩm → Chọn phân loại (màu sắc, kích thước) → Chọn số lượng
    - Nhấn "Thêm vào giỏ hàng" hoặc "Mua ngay" để thanh toán trực tiếp
    - Tại giỏ hàng, chọn sản phẩm muốn mua → Nhấn "Thanh toán"
-   - Điền địa chỉ giao hàng và chọn phương thức thanh toán (COD/MoMo/VNPay)
+   - Điền địa chỉ giao hàng và chọn phương thức thanh toán (COD/VNPay)
 
 2. **Quản lý đơn hàng:**
    - Vào "Đơn mua" (icon người dùng → Đơn mua)
